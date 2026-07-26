@@ -1,6 +1,6 @@
 # Adaptive Experience Architecture (AEA)
 
-Designing AI-native experiences that evolve with shared understanding.
+Adaptive Experience Architecture enables AI-native applications where shared understanding continuously reshapes the workspace without disrupting the user's flow.
 
 ## Current Reference Implementation
 - Lily's Florist Shop
