@@ -1,0 +1,46 @@
+# CI for the Adaptive Experience Architecture docs repository.
+# - coherence-guard (blocking): docs must match the canonical 7/23+17/40 model.
+# - markdownlint / linkcheck (advisory): quality signals, non-blocking.
+
+stages:
+  - verify
+  - lint
+
+coherence-guard:
+  stage: verify
+  image: alpine:3.20
+  script:
+    - sh scripts/check-coherence.sh
+  rules:
+    - changes:
+        - "docs/**/*"
+        - "implementations/**/*"
+        - "scripts/check-coherence.sh"
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+markdownlint:
+  stage: lint
+  image: node:20-alpine
+  allow_failure: true
+  script:
+    - npm install -g markdownlint-cli2
+    - markdownlint-cli2 "**/*.md" "#node_modules"
+  rules:
+    - changes:
+        - "**/*.md"
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+
+linkcheck:
+  stage: lint
+  image: node:20-alpine
+  allow_failure: true
+  script:
+    - npm install -g markdown-link-check
+    - >
+      find . -name '*.md' -not -path './node_modules/*' -print0
+      | xargs -0 -n1 markdown-link-check -q -c .mlc.json
+  rules:
+    - changes:
+        - "**/*.md"
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
