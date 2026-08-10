@@ -20,7 +20,8 @@ The design surfaces map to the canonical tile catalog (see
 | Order Summary | T-06 Order Summary |
 | Checkout | T-07 Checkout and Confirmation |
 | Tracking | T-08 Order Tracking |
-| Support (Future) | T-09 Support Escalation |
+| Automated Support Overlay (MVP) | ASO — FR-009 FAQ overlay (not a journey tile) |
+| Support Escalation (Future) | T-09 Support Escalation (FR-006) |
 
 ## Typography
 - AEA / H1

@@ -12,5 +12,9 @@
 | 6 | Review, pay, and order | T-06 Order Summary, T-07 Checkout and Confirmation | MVP |
 | 7 | Track delivery | T-08 Order Tracking | MVP |
 
-Support Escalation (T-09) and reorder / customer memory are Future capabilities
-outside the MVP journey.
+The **Automated Support Overlay (ASO)** for FR-009 is available across every
+MVP stage; it is a cross-cutting overlay, not a journey step (see
+`automated-support-overlay.md` and ADR-004).
+
+Support Escalation (T-09 / FR-006) and reorder / customer memory are Future
+capabilities outside the MVP journey.

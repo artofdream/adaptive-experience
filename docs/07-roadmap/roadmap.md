@@ -22,6 +22,7 @@ caching, progressive hydration, and additional industry implementations.
 ## Notes
 - Secure Payment / Checkout (FR-019) and the itemized Order Summary (FR-018) are
   MVP, not deferred.
-- Human support escalation is Future; only automated FAQ support is in the MVP.
+- Human support escalation is Future; only automated FAQ support is in the MVP,
+  delivered as the Automated Support Overlay (ASO / FR-009), distinct from T-09.
 - T-04 is MVP for product selection, basic options, and the card message;
   advanced customization (FR-003) is Future.
