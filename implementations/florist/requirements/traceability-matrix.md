@@ -55,6 +55,24 @@
 
 ## Representative architecture traceability
 
+This section is **intentionally representative**, not a full FR→service→topic
+inventory. Full BG→EP→US→FR/NFR chain coverage lives in the tables above and in
+the workbook; service/topic ownership for every MVP topic lives in
+`docs/04-technical-architecture/topic-contracts.md`.
+
+**Inclusion criteria** (a row is listed here when all apply):
+
+1. The requirement is **MVP** scope.
+2. It has a **primary governed topic** (or a short, ordered MVP topic chain)
+   already named in technical architecture.
+3. It illustrates a distinct **authority boundary** (AI Concierge interpretive
+   assist vs domain-service validation vs payment/order confirmation).
+
+Rows are omitted when the FR is Future, when it is satisfied by another listed
+MVP refinement (for example FR-015 via FR-023), or when it is workspace behavior
+without a unique domain topic of its own (FR-020–FR-022 map through
+`workspace.state.updated` / envelope rules rather than a separate domain stream).
+
 | Requirement | Title | Service | Topic |
 |---|---|---|---|
 | FR-001 | Conversation | AI Concierge | customer.message.submitted |
