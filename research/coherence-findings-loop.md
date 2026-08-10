@@ -24,8 +24,8 @@ completed rows because the queue is also the audit trail.
 | 8 | CF-008 | T-04 customization panel drops Colour and Ribbon fields | Medium | verified | 2026-08-10 | 2026-08-10 | #98 / !47 |
 | 9 | CF-009 | T-08 tracking omits Contact Florist and Future T-09 escalation (FR-006) | Medium | verified | 2026-08-10 | 2026-08-10 | #99 / !48 |
 | 10 | CF-010 | GitLab wiki pages are title stubs with no body synced from canonical docs | Medium | verified | 2026-08-10 | 2026-08-10 | #101 / !50 |
-| 11 | CF-011 | Wiki florist page says “reference implementation” while repo naming uses “reference design” | Low | in-mr | 2026-08-10 | 2026-08-10 | #102 / !51 |
-| 12 | CF-012 | GitLab issues #79–#85 remain open though claims are fixed or intentional on main | Low | in-mr | 2026-08-10 | 2026-08-10 | #103 / !52 |
+| 11 | CF-011 | Wiki florist page says “reference implementation” while repo naming uses “reference design” | Low | verified | 2026-08-10 | 2026-08-10 | #102 / !51 |
+| 12 | CF-012 | GitLab issues #79–#85 remain open though claims are fixed or intentional on main | Low | verified | 2026-08-10 | 2026-08-10 | #103 / !52 |
 
 Allowed statuses: `queued`, `investigating`, `ready`, `in-progress`, `in-mr`,
 `verified`, `regressed`, `duplicate`, `not-reproducible`, and `blocked`.
