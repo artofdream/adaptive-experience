@@ -10,9 +10,15 @@ Live file (drafts on Claude tsarafidy's team):
 
 **[AEA Lily Florist Wireframes](https://www.figma.com/design/4PNLwici0GMwU824BpoZ38)**
 
-Page inventory matches `figma/README.md` (AEA Design System, Discovery v0.1,
-Recommendation Journey, Delivery Journey, Customer Support).
+Page inventory (see `figma/README.md`):
 
+- **AEA Design System** — components + `adaptive-workspace-mvp`
+- **Discovery v0.1** — composed MVP shell (T-01…T-08, ASO)
+- **Recommendation / Delivery / Customer Support** — stubs
+- **Discovery v1.0 / v2 / Presentation** — planned stubs
+
+MVP fidelity matches local SVGs (Available badges, Colour/Ribbon, Contact Florist
++ Future escalate).
 ## Local artifacts
 
 | Path | Description |

@@ -4,16 +4,24 @@ Active file (Lily's Florist MVP wireframes):
 
 **[AEA Lily Florist Wireframes](https://www.figma.com/design/4PNLwici0GMwU824BpoZ38)**
 
-Recommended pages (present in the file above unless noted):
+## Pages (live inventory)
 
-1. AEA Design System — grayscale components + imported SVG assets
-2. Discovery v0.1 — Adaptive Workspace MVP (Header, T-01, T-02, T-03…T-08, ASO)
-3. Discovery v1.0 — planned
-4. Discovery v2 — planned
-5. Recommendation Journey — sample journey step frames
-6. Delivery Journey — page stub
-7. Customer Support — page stub (ASO / future escalation)
-8. Presentation — planned
+| Page | Status | Contents |
+|---|---|---|
+| AEA Design System | Active | Grayscale components + `adaptive-workspace-mvp` frame (Header, T-01…T-08, ASO) |
+| Discovery v0.1 | Active | Composed Adaptive Workspace MVP (component instances) |
+| Recommendation Journey | Stub | Placeholder for journey step frames |
+| Delivery Journey | Stub | Placeholder |
+| Customer Support | Stub | ASO / Future T-09 escalation placeholder |
+| Discovery v1.0 | Planned stub | Not yet designed |
+| Discovery v2 | Planned stub | Not yet designed |
+| Presentation | Planned stub | Not yet designed |
+
+MVP fidelity (aligned with local SVGs / CF-007–CF-009):
+
+- T-03 — Available badges on recommendation cards
+- T-04 — Flower Type, Colour, Size, Ribbon, Gift Card
+- T-08 — Contact Florist + Escalate (Future)
 
 Local SVG exports and structure notes:
 `implementations/florist/wireframes/` (see that README).
@@ -21,7 +29,7 @@ Reusable split assets: `assets/`.
 
 ## Cursor integration
 
-This folder is the **planned page inventory** for AEA design work in Figma.
+This folder is the **page inventory** for AEA design work in Figma.
 The live file URL is linked above; do not commit Figma tokens here.
 
 Cursor is wired to the **official Figma MCP** via the Figma plugin
