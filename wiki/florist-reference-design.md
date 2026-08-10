@@ -1,7 +1,7 @@
 # Florist reference design
 
-Lily's Florist is the AEA reference implementation (docs + wireframes + assets —
-not a runtime app in this repository).
+Lily's Florist is the AEA reference design (docs + wireframes + assets — not a
+runtime app in this repository).
 
 MVP pathway:
 **Discover → Understand → Recommend → Customize → Deliver → Checkout → Track**
