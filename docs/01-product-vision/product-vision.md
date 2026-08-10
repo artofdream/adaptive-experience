@@ -19,3 +19,4 @@ Create an AI-native florist experience where customers express needs naturally a
 - Experiences earn attention
 - Continuity before immediacy
 - Latest relevant intent wins
+- AI interprets; domain services validate
