@@ -5,7 +5,9 @@ status: in-mr
 finding_id: CF-012
 severity: low
 issue: #103
+mr: !52
 branch: docs/cf-012-close-stale-issues
+closed_issues: "#79 #80 #81 #82 #83 #84 #85"
 
 ## Claim
 
