@@ -24,7 +24,6 @@ coherence-guard:
 markdownlint:
   stage: lint
   image: node:20-alpine
-  allow_failure: true
   script:
     - npm install -g markdownlint-cli2
     - markdownlint-cli2 "**/*.md" "#node_modules"
@@ -36,7 +35,6 @@ markdownlint:
 linkcheck:
   stage: lint
   image: node:20-alpine
-  allow_failure: true
   script:
     - npm install -g markdown-link-check
     - >
