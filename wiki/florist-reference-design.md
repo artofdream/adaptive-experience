@@ -11,3 +11,4 @@ Wireframes and reusable assets:
 - [implementations/florist/](https://gitlab.com/artof-group/adaptive-experience-architecture/-/tree/main/implementations/florist)
 - [assets/](https://gitlab.com/artof-group/adaptive-experience-architecture/-/tree/main/assets)
 - Figma: [AEA Lily Florist Wireframes](https://www.figma.com/design/4PNLwici0GMwU824BpoZ38)
+  (Design System + Discovery v0.1 active; other pages stubbed — see `figma/README.md`)
