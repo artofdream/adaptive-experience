@@ -20,7 +20,7 @@
 | T-05 | Delivery and Recipient | Recipient details and valid dates/windows. | MVP |
 | T-06 | Order Summary | Selections, fees, taxes, discounts, and total; continuously updated (FR-018). | MVP |
 | T-07 | Checkout and Confirmation | Initiates secure payment; confirmed order only after payment succeeds (FR-019). | MVP |
-| T-08 | Order Tracking | Latest authoritative preparation/dispatch/delay/delivery/completion status (FR-023). | MVP |
+| T-08 | Order Tracking | Latest authoritative preparation/dispatch/delay/delivery/completion status (FR-015, refined by FR-023). | MVP |
 | T-09 | Support Escalation | Conditional overlay for unresolved requests (FR-006). | Future |
 
 ## MVP overlays

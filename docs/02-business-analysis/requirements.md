@@ -33,6 +33,11 @@
 | FR-022 | US-022 | Workspace Behavior | MVP | The system shall reject stale responses whose context version does not match the active experience state. |
 | FR-023 | US-023 | Order Tracking | MVP | The system shall publish order preparation, dispatch, delivery, delay, and completion status through a versioned order-status topic and display the latest authoritative state to the customer. |
 
+> **FR-015 / FR-023:** FR-023 is the architecture refinement of FR-015. Both
+> describe the same customer-visible order-status capability; FR-023 binds it to
+> the versioned `order.status.updated` topic and tile T-08. Satisfying FR-023
+> satisfies FR-015.
+
 ## Non-Functional Requirements
 
 | ID | Story | Category | Scope | Requirement |
