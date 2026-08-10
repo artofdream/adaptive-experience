@@ -20,7 +20,7 @@ active experience state are rejected (FR-022).
 ## Rationale
 Context versioning preserves the customer's most recent decisions without
 blocking the workspace, and keeps completed choices stable during selective
-regeneration (FR-020, NFR-005). It is the core correctness guarantee of the
+regeneration (FR-020). It is the core correctness guarantee of the
 adaptive workspace.
 
 ## Consequences
