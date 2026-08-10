@@ -68,3 +68,17 @@
 | Engagement and CRM | FR-016, FR-017 |
 | Workspace Behavior | FR-020, FR-021, FR-022 |
 | Order Tracking | FR-023 |
+
+## Scope notes
+
+**FR-010 (Future) vs MVP support and tracking.** FR-010 automates responses about
+order status, delivery information, and product availability beyond the MVP
+surfaces. It does **not** replace:
+
+- **FR-009 / ASO** — MVP automated FAQ from approved product and policy content
+- **FR-015 / FR-023 / T-08** — authoritative order-status display via
+  `order.status.updated`
+- domain Inventory / Delivery facts shown through validated tiles
+
+FR-006 / T-09 remains Future human escalation, separate from both FR-009 and
+FR-010.
