@@ -27,7 +27,9 @@ follow `research/claude-obsidian-loop.md`.
 4. Do not commit or propose committing `.obsidian/`, `.trash/`, or vault sync
    credentials.
 5. Optional Cursor `/loop` triage is a reminder cadence only; do not start a
-   loop unless the user asks.
+   loop unless the user asks. When they ask for an hourly coherence loop, use
+   the Hourly tick prompt in `research/coherence-findings-loop.md` (`/loop 1h`
+   or `AGENT_LOOP_TICK_coherence`).
 6. When iterating coherence findings, use
    `research/coherence-findings-loop.md`, process exactly one queued row per
    iteration, and verify the merged result on `main` before advancing.

@@ -14,12 +14,12 @@ completed rows because the queue is also the audit trail.
 
 | Order | ID | Finding | Severity | Status | First seen | Last seen | Issue / MR |
 |-------|----|---------|----------|--------|------------|-----------|------------|
-| 1 | CF-001 | Validate complete BG→EP→US→FR/NFR mappings and scope, not only ID inventories | Medium | queued | 2026-08-10 | 2026-08-10 | |
-| 2 | CF-002 | Generate and verify the canonical CSV export against the workbook | Medium | queued | 2026-08-10 | 2026-08-10 | |
-| 3 | CF-003 | Add explicit topic schema versions and machine-readable contracts | Medium | queued | 2026-08-10 | 2026-08-10 | |
-| 4 | CF-004 | Restore root README repository-area links lost during merge resolution | Low | queued | 2026-08-10 | 2026-08-10 | |
-| 5 | CF-005 | Correct stale CI and coherence-guard descriptions | Low | queued | 2026-08-10 | 2026-08-10 | |
-| 6 | CF-006 | Add a full post-merge documentation verification path | Low | queued | 2026-08-10 | 2026-08-10 | |
+| 1 | CF-001 | Validate complete BG→EP→US→FR/NFR mappings and scope, not only ID inventories | Medium | verified | 2026-08-10 | 2026-08-10 | #86 / !32 |
+| 2 | CF-002 | Generate and verify the canonical CSV export against the workbook | Medium | verified | 2026-08-10 | 2026-08-10 | #87 / !33 |
+| 3 | CF-003 | Add explicit topic schema versions and machine-readable contracts | Medium | verified | 2026-08-10 | 2026-08-10 | #88 / !34 |
+| 4 | CF-004 | Restore root README repository-area links lost during merge resolution | Low | verified | 2026-08-10 | 2026-08-10 | #92 / !38 |
+| 5 | CF-005 | Correct stale CI and coherence-guard descriptions | Low | verified | 2026-08-10 | 2026-08-10 | #93 / !39 |
+| 6 | CF-006 | Add a full post-merge documentation verification path | Low | verified | 2026-08-10 | 2026-08-10 | #95 / !41 |
 
 Allowed statuses: `queued`, `investigating`, `ready`, `in-progress`, `in-mr`,
 `verified`, `regressed`, `duplicate`, `not-reproducible`, and `blocked`.
@@ -110,5 +110,34 @@ issues, branches, or MRs during intake. Stop after reporting the reconciled
 queue and next finding.
 ```
 
-For a recurring Cursor Agents reminder, use the prompt above with `/loop 1d`.
-For lower volume, run it manually from Obsidian or Claude.
+## Hourly automatic cadence
+
+Default recurring mode for this repository:
+
+1. **Session loop** — `/loop 1h` (or an armed `AGENT_LOOP_TICK_coherence` shell) runs
+   the **Hourly tick prompt** below in this Agents chat until stopped.
+2. **Cursor Automation** (optional, persists outside the chat) — schedule
+   `0 * * * *` against this repo with the same tick prompt.
+
+### Hourly tick prompt
+
+```text
+Hourly coherence tick for this repo. Follow research/coherence-findings-loop.md,
+.cursor/rules/coherence-findings-sop.mdc, and .cursor/rules/claude-obsidian-loop.mdc.
+
+1. Fetch/pull origin/main. Refresh glab PATH on Windows if needed.
+2. Reconcile research/coherence-findings-loop.md Status and Issue/MR columns
+   against GitLab (open/merged). Do not invent CF IDs.
+3. If any row is queued or regressed: run ONE remediation iteration on the first
+   such row (severity then dependency). Reproduce; if confirmed, one issue → one
+   isolated branch → one focused fix → one MR. Do not merge.
+4. If none queued/regressed: run python scripts/check_coherence.py plus a light
+   inconsistency/gap scan. If new findings appear, run assessment INTAKE only
+   (dated assessment + queue update). Do not remediate in the same tick.
+5. Update the coherence canvas if the verdict changed.
+6. Report: mode (intake|remediation|idle), finding ID, MR URL if any, next
+   queued item, and any stop condition hit.
+```
+
+For a lower-volume reminder, use `/loop 1d` with the single-finding Loop prompt
+above. Manual runs from Obsidian or Claude remain valid.
