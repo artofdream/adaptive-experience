@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from xml.sax.saxutils import escape
 
 ROOT = Path(__file__).resolve().parents[1]
 ASSETS = ROOT / "assets"
@@ -355,13 +356,15 @@ def adaptive_workspace() -> str:
 
 
 def journey_step(num: int, title: str, action: str, body: str, w: int = 280, h: int = 420) -> str:
-    return f'''<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}" role="img" aria-label="Step {num}: {title}">
+    title_xml = escape(title)
+    action_xml = escape(action)
+    return f'''<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}" role="img" aria-label="Step {num}: {title_xml}">
   <rect width="{w}" height="{h}" rx="12" fill="{G['bg']}" stroke="{G['border']}"/>
   <rect x="0" y="0" width="{w}" height="56" rx="12" fill="{G['bg-muted']}"/>
   <rect x="0" y="44" width="{w}" height="12" fill="{G['bg-muted']}"/>
   <text x="16" y="24" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="{G['text-muted']}">Step {num}</text>
-  <text x="16" y="44" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="{G['text']}">{title}</text>
-  <text x="16" y="80" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="{G['text-sec']}">{action}</text>
+  <text x="16" y="44" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="{G['text']}">{title_xml}</text>
+  <text x="16" y="80" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="{G['text-sec']}">{action_xml}</text>
   {body}
   <rect x="12" y="{h - 48}" width="{w - 24}" height="28" rx="6" fill="{G['fill-dark']}"/>
   <text x="{w // 2}" y="{h - 29}" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="{G['bg']}">Continue</text>
