@@ -1,3 +1,8 @@
 .DS_Store
 *.tmp
 *.bak
+
+# Obsidian (local vault workspace — do not publish)
+.obsidian/
+.trash/
+.space/

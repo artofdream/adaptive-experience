@@ -1,0 +1,36 @@
+---
+description: Claude ↔ Obsidian knowledge loop boundaries for this docs repo
+alwaysApply: true
+---
+
+# Claude ↔ Obsidian loop
+
+When capturing, triaging, or promoting working knowledge for this repository,
+follow `research/claude-obsidian-loop.md`.
+
+## Boundaries
+
+- **Obsidian / inbox** (`research/inbox/`, or a private vault): fleeting notes.
+- **`research/`**: shared pre-canonical scratch; safe to draft and iterate.
+- **`docs/` + `implementations/`**: canonical; change only with a clear promote
+  intent and a tight diff.
+- **`archive/` xlsx**: requirements SoT — do not invent or casually renumber IDs.
+
+## Agent behavior
+
+1. Prefer synthesizing inbox notes into `research/` promotion candidates before
+   editing canonical docs.
+2. Never invent BG/US/FR/NFR IDs; cite existing ones or flag archive impact.
+3. Coherence inconsistencies/gaps still use the coherence findings SOP (one
+   finding → one issue → one branch → one MR). Structural/loop work is not
+   itself a coherence finding unless docs already conflict.
+4. Do not commit or propose committing `.obsidian/`, `.trash/`, or vault sync
+   credentials.
+5. Optional Cursor `/loop` triage is a reminder cadence only; do not start a
+   loop unless the user asks.
+6. When iterating coherence findings, use
+   `research/coherence-findings-loop.md`, process exactly one queued row per
+   iteration, and verify the merged result on `main` before advancing.
+7. Ingest a future assessment in a separate intake pass: assign or reuse stable
+   `CF-NNN` IDs, deduplicate against history and GitLab, reopen regressions, and
+   stop before starting remediation.
