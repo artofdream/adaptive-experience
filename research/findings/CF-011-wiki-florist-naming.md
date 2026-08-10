@@ -5,6 +5,7 @@ status: in-mr
 finding_id: CF-011
 severity: low
 issue: #102
+mr: !51
 branch: docs/cf-011-wiki-florist-naming
 published: 2026-08-10 florist-reference-design wiki republished
 
