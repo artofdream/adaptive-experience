@@ -1,13 +1,14 @@
 # CF-010 — Stub GitLab wiki pages
 
 tags: #aea #coherence-finding
-status: in-mr
+status: verified
 finding_id: CF-010
 severity: medium
 issue: #101
 mr: !50
 branch: docs/cf-010-populate-gitlab-wiki
 published: 2026-08-10 via scripts/publish_wiki.py
+verified_on_main: 660db1e
 
 ## Claim
 
