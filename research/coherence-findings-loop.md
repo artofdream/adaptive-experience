@@ -20,6 +20,7 @@ completed rows because the queue is also the audit trail.
 | 4 | CF-004 | Restore root README repository-area links lost during merge resolution | Low | verified | 2026-08-10 | 2026-08-10 | #92 / !38 |
 | 5 | CF-005 | Correct stale CI and coherence-guard descriptions | Low | verified | 2026-08-10 | 2026-08-10 | #93 / !39 |
 | 6 | CF-006 | Add a full post-merge documentation verification path | Low | verified | 2026-08-10 | 2026-08-10 | #95 / !41 |
+| 9 | CF-009 | T-08 tracking omits Contact Florist and the Future T-09 escalation (FR-006) affordance | Medium | in-mr | 2026-08-10 | 2026-08-10 | #99 / !TBD |
 
 Allowed statuses: `queued`, `investigating`, `ready`, `in-progress`, `in-mr`,
 `verified`, `regressed`, `duplicate`, `not-reproducible`, and `blocked`.
