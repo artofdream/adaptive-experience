@@ -2,9 +2,25 @@
 
 ## Sections
 - Header
-- Conversation
-- Shared Understanding
-- Adaptive Workspace
+- Conversation (tile T-01 Conversation and Intent)
+- Shared Understanding (tile T-02 Intent Summary)
+- Adaptive Workspace (tiles T-03..T-08)
+
+## Tile mapping
+The design surfaces map to the canonical tile catalog (see
+`docs/03-functional-design/functional-design.md`):
+
+| UX surface | Tile |
+|---|---|
+| Conversation | T-01 Conversation and Intent |
+| Shared Understanding | T-02 Intent Summary |
+| Recommendations | T-03 Curated Recommendations |
+| Customization | T-04 Product Selection and Customization |
+| Delivery | T-05 Delivery and Recipient |
+| Order Summary | T-06 Order Summary |
+| Checkout | T-07 Checkout and Confirmation |
+| Tracking | T-08 Order Tracking |
+| Support (Future) | T-09 Support Escalation |
 
 ## Typography
 - AEA / H1
