@@ -59,6 +59,7 @@
 |---|---|---|---|
 | FR-001 | Conversation | AI Concierge | customer.message.submitted |
 | FR-007 | Recommendations | Recommendation | product.recommendations.ready |
+| FR-009 | Automated FAQ (ASO) | AI Concierge | support.faq.answered |
 | FR-011 | Inventory | Inventory | inventory.availability.validated |
 | FR-014 | Delivery | Delivery | delivery.slot.selected |
 | FR-018 | Order Summary | Pricing | order.summary.updated |
