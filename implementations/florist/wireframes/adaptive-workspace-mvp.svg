@@ -79,12 +79,16 @@
       <rect x="948" y="276" width="468" height="280" rx="12" fill="#FFFFFF" stroke="#CFCFCF"/>
       <text x="968" y="304" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#222222">T-04 Product Selection and Customization</text>
       <rect x="968" y="324" width="180" height="100" rx="6" fill="#D9D9D9"/>
-      <text x="1168" y="344" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#666666">Flower Type</text>
-      <rect x="1168" y="352" width="220" height="28" rx="4" fill="#FFFFFF" stroke="#CFCFCF"/>
-      <text x="1168" y="404" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#666666">Size</text>
-      <rect x="1168" y="412" width="220" height="28" rx="4" fill="#FFFFFF" stroke="#CFCFCF"/>
-      <text x="1168" y="464" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#666666">Gift Card</text>
-      <rect x="1168" y="472" width="220" height="28" rx="4" fill="#FFFFFF" stroke="#CFCFCF"/>
+      <text x="1168" y="340" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#666666">Flower Type</text>
+      <rect x="1168" y="348" width="220" height="24" rx="4" fill="#FFFFFF" stroke="#CFCFCF"/>
+      <text x="1168" y="384" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#666666">Colour</text>
+      <rect x="1168" y="392" width="220" height="24" rx="4" fill="#FFFFFF" stroke="#CFCFCF"/>
+      <text x="1168" y="428" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#666666">Size</text>
+      <rect x="1168" y="436" width="220" height="24" rx="4" fill="#FFFFFF" stroke="#CFCFCF"/>
+      <text x="1168" y="472" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#666666">Ribbon</text>
+      <rect x="1168" y="480" width="220" height="24" rx="4" fill="#FFFFFF" stroke="#CFCFCF"/>
+      <text x="1168" y="516" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#666666">Gift Card</text>
+      <rect x="1168" y="524" width="220" height="24" rx="4" fill="#FFFFFF" stroke="#CFCFCF"/>
       <rect x="968" y="500" width="100" height="32" rx="6" fill="#4A4A4A"/>
       <text x="1018" y="520" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#FFFFFF">Update</text>
     </g>
