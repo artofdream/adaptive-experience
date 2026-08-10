@@ -53,6 +53,8 @@ requirements:
 - NFR-017 — payloads carry only the minimum fields each authorized subscriber needs.
 
 ## Topic groups (MVP)
+The governed owner, publisher, subscriber, and minimum-payload registry is
+defined in [MVP Topic Contracts](topic-contracts.md).
 | Group | Topics |
 |---|---|
 | Intent | customer.message.submitted; experience.intent.updated |
