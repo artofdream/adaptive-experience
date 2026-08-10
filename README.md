@@ -14,6 +14,7 @@ Lily's Florist Shop.
 - Architecture Decision Records
 - Roadmap
 - Florist reference design
+- Research / Claude ↔ Obsidian loop ([`research/claude-obsidian-loop.md`](research/claude-obsidian-loop.md))
 
 ## Source of truth
 The canonical requirements model lives in [`archive/`](archive/):
