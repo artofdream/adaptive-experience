@@ -16,6 +16,7 @@ coherence-guard:
         - "docs/**/*"
         - "implementations/**/*"
         - "archive/**/*.xlsx"
+        - "archive/**/*.csv"
         - "scripts/check-coherence.sh"
         - "scripts/check_coherence.py"
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
