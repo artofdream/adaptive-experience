@@ -2,7 +2,7 @@
 
 Designing AI-native experiences that evolve with shared understanding.
 
-## Reference implementation
+## Reference design
 Lily's Florist Shop.
 
 ## Repository areas
@@ -13,7 +13,7 @@ Lily's Florist Shop.
 - UX design guide
 - Architecture Decision Records
 - Roadmap
-- Florist reference implementation
+- Florist reference design
 
 ## Source of truth
 The canonical requirements model lives in [`archive/`](archive/):
