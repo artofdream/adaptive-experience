@@ -22,6 +22,7 @@ ROOT = Path(__file__).resolve().parents[1]
 XLSX = ROOT / "archive" / "Quantic_Project_Consolidated_Coherence_Validated.xlsx"
 BG_MD = ROOT / "docs" / "02-business-analysis" / "business-goals-epics-stories.md"
 REQ_MD = ROOT / "docs" / "02-business-analysis" / "requirements.md"
+TRACE_MD = ROOT / "implementations" / "florist" / "requirements" / "traceability-matrix.md"
 
 NS = {"m": "http://schemas.openxmlformats.org/spreadsheetml/2006/main"}
 EXPECTED = {
@@ -31,6 +32,10 @@ EXPECTED = {
     "FR": 23,
     "NFR": 17,
 }
+
+
+def expected_ids(kind: str, count: int) -> set[str]:
+    return {f"{kind}-{number:03d}" for number in range(1, count + 1)}
 
 
 def _shared_strings(zf: zipfile.ZipFile) -> list[str]:
@@ -89,7 +94,7 @@ def _workbook_sheet_paths(zf: zipfile.ZipFile) -> dict[str, str]:
     return sheets
 
 
-def counts_from_xlsx(path: Path) -> dict[str, int]:
+def ids_from_xlsx(path: Path) -> dict[str, set[str]]:
     with zipfile.ZipFile(path) as zf:
         strings = _shared_strings(zf)
         sheets = _workbook_sheet_paths(zf)
@@ -115,19 +120,27 @@ def counts_from_xlsx(path: Path) -> dict[str, int]:
                 buckets["FR"].add(value)
             elif re.fullmatch(r"NFR-\d+", value):
                 buckets["NFR"].add(value)
-    return {key: len(values) for key, values in buckets.items()}
+    return buckets
 
 
-def counts_from_markdown() -> dict[str, int]:
+def ids_from_markdown() -> tuple[dict[str, list[str]], dict[str, list[str]]]:
     bg_text = BG_MD.read_text(encoding="utf-8")
     req_text = REQ_MD.read_text(encoding="utf-8")
-    return {
-        "BG": len(re.findall(r"^\| BG-", bg_text, flags=re.M)),
-        "US": len(re.findall(r"^\| US-\d", bg_text, flags=re.M)),
-        "NFR-US": len(re.findall(r"^\| NFR-US-", bg_text, flags=re.M)),
-        "FR": len(re.findall(r"^\| FR-\d", req_text, flags=re.M)),
-        "NFR": len(re.findall(r"^\| NFR-\d", req_text, flags=re.M)),
+    inventories = {
+        "BG": re.findall(r"^\| (BG-\d+)", bg_text, flags=re.M),
+        "US": re.findall(r"^\| (US-\d+)", bg_text, flags=re.M),
+        "NFR-US": re.findall(r"^\| (NFR-US-\d+)", bg_text, flags=re.M),
+        "FR": re.findall(r"^\| (FR-\d+)", req_text, flags=re.M),
+        "NFR": re.findall(r"^\| (NFR-\d+)", req_text, flags=re.M),
     }
+    trace_text = TRACE_MD.read_text(encoding="utf-8")
+    trace = {
+        "US": re.findall(r"^\| BG-\d+ \| EP-\d+ \| (US-\d+) \| FR-\d+ \|", trace_text, flags=re.M),
+        "NFR-US": re.findall(r"^\| BG-\d+ \| EP-\d+ \| (NFR-US-\d+) \| NFR-\d+ \|", trace_text, flags=re.M),
+        "FR": re.findall(r"^\| BG-\d+ \| EP-\d+ \| US-\d+ \| (FR-\d+) \|", trace_text, flags=re.M),
+        "NFR": re.findall(r"^\| BG-\d+ \| EP-\d+ \| NFR-US-\d+ \| (NFR-\d+) \|", trace_text, flags=re.M),
+    }
+    return inventories, trace
 
 
 def main() -> int:
@@ -135,33 +148,43 @@ def main() -> int:
         print(f"FAIL: missing canonical workbook {XLSX.relative_to(ROOT)}")
         return 1
 
-    xlsx = counts_from_xlsx(XLSX)
-    md = counts_from_markdown()
+    xlsx_ids = ids_from_xlsx(XLSX)
+    md_ids, trace_ids = ids_from_markdown()
     fail = 0
 
     print("Canonical workbook (Consolidated Mapping unique IDs):")
     for key, expected in EXPECTED.items():
-        actual = xlsx[key]
-        status = "ok" if actual == expected else "FAIL"
-        if actual != expected:
+        expected_set = expected_ids(key, expected)
+        actual_set = xlsx_ids[key]
+        status = "ok" if actual_set == expected_set else "FAIL"
+        if actual_set != expected_set:
             fail = 1
-        print(f"  {status}: xlsx {key} = {actual} (expected {expected})")
+        print(f"  {status}: xlsx {key} IDs = {len(actual_set)} (expected exact 001..{expected:03d})")
 
     print("Markdown docs:")
     for key, expected in EXPECTED.items():
-        actual = md[key]
-        status = "ok" if actual == expected else "FAIL"
-        if actual != expected:
+        actual = md_ids[key]
+        expected_set = expected_ids(key, expected)
+        status = "ok" if set(actual) == expected_set and len(actual) == len(set(actual)) else "FAIL"
+        if status == "FAIL":
             fail = 1
-        print(f"  {status}: docs {key} = {actual} (expected {expected})")
+        print(f"  {status}: docs {key} rows = {len(actual)}; unique IDs = {len(set(actual))}")
 
     print("Docs vs workbook:")
     for key in EXPECTED:
-        if md[key] != xlsx[key]:
-            print(f"  FAIL: {key} docs={md[key]} xlsx={xlsx[key]}")
+        if set(md_ids[key]) != xlsx_ids[key]:
+            print(f"  FAIL: {key} docs and xlsx ID sets differ")
             fail = 1
         else:
-            print(f"  ok:   {key} docs == xlsx ({md[key]})")
+            print(f"  ok:   {key} docs ID set == xlsx ID set")
+
+    print("Traceability matrix vs published requirements:")
+    for key in ("US", "NFR-US", "FR", "NFR"):
+        if len(trace_ids[key]) != len(set(trace_ids[key])) or set(trace_ids[key]) != set(md_ids[key]):
+            print(f"  FAIL: {key} traceability rows are missing, duplicated, or divergent")
+            fail = 1
+        else:
+            print(f"  ok:   {key} traceability IDs match published requirements")
 
     if fail:
         print("Coherence guard FAILED - docs diverge from the canonical xlsx model.")
