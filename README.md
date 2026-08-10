@@ -23,6 +23,7 @@ Lily's Florist Shop.
 - [Roadmap](docs/07-roadmap/roadmap.md)
 - [Florist reference design](implementations/florist/README.md)
 - Research / Claude ↔ Obsidian loop ([`research/claude-obsidian-loop.md`](research/claude-obsidian-loop.md))
+- GitLab wiki source ([`wiki/`](wiki/) — publish with `python scripts/publish_wiki.py`)
 
 ## Source of truth
 The canonical requirements model lives in [`archive/`](archive/):
