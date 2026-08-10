@@ -8,7 +8,7 @@ source_assessment: research/assessments/2026-08-10-wireframe-sample-fidelity.md
 supersedes:
 issue: "#97"
 branch: docs/cf-007-t03-availability-badge
-merge_request:
+merge_request: "!46"
 
 ## Claim
 
