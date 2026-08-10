@@ -20,6 +20,7 @@ completed rows because the queue is also the audit trail.
 | 4 | CF-004 | Restore root README repository-area links lost during merge resolution | Low | verified | 2026-08-10 | 2026-08-10 | #92 / !38 |
 | 5 | CF-005 | Correct stale CI and coherence-guard descriptions | Low | verified | 2026-08-10 | 2026-08-10 | #93 / !39 |
 | 6 | CF-006 | Add a full post-merge documentation verification path | Low | verified | 2026-08-10 | 2026-08-10 | #95 / !41 |
+| 7 | CF-007 | T-03 recommendation cards omit the Available (FR-011) badge in the MVP wireframe | Medium | in-mr | 2026-08-10 | 2026-08-10 | #97 / !TBD |
 
 Allowed statuses: `queued`, `investigating`, `ready`, `in-progress`, `in-mr`,
 `verified`, `regressed`, `duplicate`, `not-reproducible`, and `blocked`.
