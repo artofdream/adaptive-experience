@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="56" viewBox="0 0 1200 56" role="img" aria-label="Header bar">
+  <rect width="1200" height="56" fill="#FFFFFF" stroke="#CFCFCF"/>
+  <text x="24" y="34" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#222222">Lily's Florist</text>
+  <text x="1040" y="34" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#666666">Orders</text>
+  <text x="1120" y="34" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#666666">Help</text>
+</svg>

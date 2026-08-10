@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="280" height="420" viewBox="0 0 280 420" role="img" aria-label="Step 3: View recommendations">
+  <rect width="280" height="420" rx="12" fill="#FFFFFF" stroke="#CFCFCF"/>
+  <rect x="0" y="0" width="280" height="56" rx="12" fill="#F5F5F5"/>
+  <rect x="0" y="44" width="280" height="12" fill="#F5F5F5"/>
+  <text x="16" y="24" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#888888">Step 3</text>
+  <text x="16" y="44" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#222222">View recommendations</text>
+  <text x="16" y="80" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#666666">Validated curated options</text>
+  <rect x="16" y="110" width="112" height="160" rx="8" fill="#FFFFFF" stroke="#CFCFCF"/>
+  <rect x="28" y="122" width="88" height="60" rx="4" fill="#D9D9D9"/>
+  <text x="28" y="204" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#222222">$125</text>
+  <rect x="152" y="110" width="112" height="160" rx="8" fill="#FFFFFF" stroke="#CFCFCF"/>
+  <rect x="164" y="122" width="88" height="60" rx="4" fill="#D9D9D9"/>
+  <text x="164" y="204" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#222222">$95</text>
+  <rect x="12" y="372" width="256" height="28" rx="6" fill="#4A4A4A"/>
+  <text x="140" y="391" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#FFFFFF">Continue</text>
+</svg>
