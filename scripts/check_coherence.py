@@ -4,7 +4,10 @@
 Canonical source:
   archive/Quantic_Project_Consolidated_Coherence_Validated.xlsx
   (Consolidated Mapping sheet: unique BG / US / NFR-US / FR / NFR,
-   plus BG→EP→US/NFR-US→FR/NFR chains and MVP/Future scope)
+   plus BG->EP->US/NFR-US->FR/NFR chains and MVP/Future scope)
+
+Also verifies archive/canonical-requirements.csv against workbook
+requirement_id, story_id, and scope triples.
 
 Runnable locally:
   python scripts/check_coherence.py
@@ -13,6 +16,7 @@ Runnable locally:
 
 from __future__ import annotations
 
+import csv
 import re
 import sys
 import zipfile
@@ -21,6 +25,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 XLSX = ROOT / "archive" / "Quantic_Project_Consolidated_Coherence_Validated.xlsx"
+CSV_EXPORT = ROOT / "archive" / "canonical-requirements.csv"
 BG_MD = ROOT / "docs" / "02-business-analysis" / "business-goals-epics-stories.md"
 REQ_MD = ROOT / "docs" / "02-business-analysis" / "requirements.md"
 TRACE_MD = ROOT / "implementations" / "florist" / "requirements" / "traceability-matrix.md"
@@ -256,6 +261,33 @@ def bg_ep_from_goals() -> dict[str, str]:
     return mapping
 
 
+def requirement_triples_from_mapping(
+    rows: list[dict[str, str]],
+) -> dict[str, tuple[str, str]]:
+    """Map requirement_id -> (story_id, scope) from Consolidated Mapping rows."""
+    return {row["req"]: (row["story"], row["scope"]) for row in rows}
+
+
+def requirement_triples_from_csv(path: Path) -> dict[str, tuple[str, str]]:
+    """Map requirement_id -> (story_id, scope) from canonical CSV export."""
+    with path.open(encoding="utf-8", newline="") as handle:
+        reader = csv.DictReader(handle)
+        expected = {"requirement_id", "story_id", "scope"}
+        if reader.fieldnames is None or set(reader.fieldnames) != expected:
+            raise ValueError(
+                f"CSV header must be exactly {sorted(expected)}, got {reader.fieldnames!r}"
+            )
+        triples: dict[str, tuple[str, str]] = {}
+        for row in reader:
+            req = (row.get("requirement_id") or "").strip()
+            story = (row.get("story_id") or "").strip()
+            scope = (row.get("scope") or "").strip()
+            if not (req and story and scope):
+                continue
+            triples[req] = (story, scope)
+    return triples
+
+
 def main() -> int:
     if not XLSX.is_file():
         print(f"FAIL: missing canonical workbook {XLSX.relative_to(ROOT)}")
@@ -391,6 +423,37 @@ def main() -> int:
         fail = 1
     else:
         print("  ok:   BG->EP, story->EP, and req->story links match workbook")
+
+    print("Canonical CSV vs workbook:")
+    if not CSV_EXPORT.is_file():
+        print(f"  FAIL: missing CSV export {CSV_EXPORT.relative_to(ROOT)}")
+        fail = 1
+    else:
+        try:
+            xlsx_triples = requirement_triples_from_mapping(mapping_rows)
+            csv_triples = requirement_triples_from_csv(CSV_EXPORT)
+        except ValueError as exc:
+            print(f"  FAIL: {exc}")
+            fail = 1
+        else:
+            if xlsx_triples != csv_triples:
+                print("  FAIL: canonical-requirements.csv drifts from Consolidated Mapping")
+                missing = sorted(set(xlsx_triples) - set(csv_triples))
+                extra = sorted(set(csv_triples) - set(xlsx_triples))
+                mismatched = sorted(
+                    req
+                    for req in set(xlsx_triples) & set(csv_triples)
+                    if xlsx_triples[req] != csv_triples[req]
+                )
+                if missing[:5]:
+                    print(f"    missing in CSV (sample): {missing[:5]}")
+                if extra[:5]:
+                    print(f"    extra in CSV (sample): {extra[:5]}")
+                if mismatched[:5]:
+                    print(f"    mismatched triples (sample): {mismatched[:5]}")
+                fail = 1
+            else:
+                print(f"  ok:   {len(csv_triples)} CSV requirement triples match workbook")
 
     if fail:
         print("Coherence guard FAILED - docs diverge from the canonical xlsx model.")
