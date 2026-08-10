@@ -8,7 +8,7 @@ source_assessment: research/assessments/2026-08-10-wireframe-sample-fidelity.md
 supersedes:
 issue: "#98"
 branch: docs/cf-008-t04-colour-ribbon
-merge_request:
+merge_request: "!47"
 
 ## Claim
 
