@@ -7,6 +7,7 @@ Canonical requirements live in [`archive/`](https://gitlab.com/artof-group/adapt
 | `Quantic_Project_Consolidated_Coherence_Validated.xlsx` | Authoritative mapping (7/23/17/40) |
 | `canonical-requirements.csv` | Reviewable text export (must match workbook) |
 | `Lilys_Florist_final.pdf` | Requirements-engineering report |
+| `sample-layout-3.png` | Unannotated sample workspace layout |
 | `sample-layout-3-with-notes.png` | Annotated sample workspace layout |
 
 Published docs under `docs/` and `implementations/` derive from the workbook.

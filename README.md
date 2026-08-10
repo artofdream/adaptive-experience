@@ -30,6 +30,7 @@ The canonical requirements model lives in [`archive/`](archive/):
 
 - [`Quantic_Project_Consolidated_Coherence_Validated.xlsx`](archive/Quantic_Project_Consolidated_Coherence_Validated.xlsx) — canonical mapping (7 business goals · 7 epics · 23 user stories · 17 non-functional stories · 40 requirements). Docs under `docs/` derive from this file. The CI coherence guard (`scripts/check-coherence.sh` → `scripts/check_coherence.py`) parses the workbook's Consolidated Mapping sheet and fails if markdown BG/US/NFR-US/FR/NFR counts diverge from it.
 - [`Lilys_Florist_final.pdf`](archive/Lilys_Florist_final.pdf) — full requirements-engineering report.
+- [`sample-layout-3.png`](archive/sample-layout-3.png) — unannotated sample workspace layout.
 - [`sample-layout-3-with-notes.png`](archive/sample-layout-3-with-notes.png) — annotated sample workspace layout.
 - [`canonical-requirements.csv`](archive/canonical-requirements.csv) — reviewable
   text export of requirement, story, and scope rows. Update it in the same
