@@ -1,0 +1,29 @@
+---
+description: SOP for turning coherence findings into issues, branches, and MRs
+alwaysApply: true
+---
+
+# Coherence findings workflow
+
+When a coherence assessment surfaces **inconsistencies** or **gaps**, treat each
+item as its own unit of work. Do not batch unrelated findings into one MR.
+
+## Per finding
+
+1. **Issue** — Open one GitLab issue describing the finding, severity, evidence
+   paths, and the intended fix.
+2. **Branch** — Create one feature branch from updated `main`, named for the
+   fix (e.g. `docs/name-support-faq-publisher`).
+3. **Fix** — Change only what that finding requires; keep scope tight.
+4. **MR** — Open one merge request linked to the issue (`Closes #N`), with a
+   short summary and test plan.
+
+## Ordering
+
+Prefer severity then dependency: medium before low; fix publishers/ownership
+before dependent traceability rows when both exist.
+
+## Out of scope for this SOP
+
+- Pure **risks** (e.g. advisory lint) unless the user asks to address them.
+- Unrelated refactors, renames, or drive-by doc edits.
