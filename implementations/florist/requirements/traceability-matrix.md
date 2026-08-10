@@ -63,5 +63,5 @@
 | FR-011 | Inventory | Inventory | inventory.availability.validated |
 | FR-014 | Delivery | Delivery | delivery.slot.selected |
 | FR-018 | Order Summary | Pricing | order.summary.updated |
-| FR-019 | Checkout | Payment | order.checkout.requested |
+| FR-019 | Checkout and authoritative payment | Orchestration / Payment / Order | order.checkout.requested → payment.authorization.requested → payment.authorization.succeeded / payment.authorization.failed → order.confirmed |
 | FR-023 | Tracking | Order | order.status.updated |
