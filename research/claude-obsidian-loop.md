@@ -109,6 +109,24 @@ confirmed work to the coherence findings SOP, verify the merged result on
 `main`, then stop. This prevents later MRs from silently undoing earlier
 remediation.
 
+## Post-merge documentation verification
+
+After an MR that touches requirements, mappings, topics, or CI lands on
+`main`, run this short path (not a separate tooling system):
+
+1. `git checkout main && git pull`
+2. `python scripts/check_coherence.py` (or `sh scripts/check-coherence.sh`)
+3. Confirm the **main** pipeline `coherence-guard` job is green
+4. Spot-check linked paths changed in the MR (README area links, topic
+   contracts, or the finding's evidence paths)
+
+### MR checklist (docs / coherence)
+
+- [ ] `Closes #N` links the finding issue
+- [ ] Scope is one finding only
+- [ ] Local coherence guard run when IDs, chains, scope, or CSV/workbook move
+- [ ] After merge: verification steps 1–3 above on updated `main`
+
 ## Optional Cursor `/loop`
 
 For a recurring triage reminder in an Agents session (not a cloud cron):
