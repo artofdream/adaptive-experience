@@ -1,5 +1,5 @@
 # CI for the Adaptive Experience Architecture docs repository.
-# - coherence-guard (blocking): docs must match the canonical 7/23+17/40 model.
+# - coherence-guard (blocking): parse canonical xlsx and match docs counts (7/23+17/40).
 # - markdownlint / linkcheck (advisory): quality signals, non-blocking.
 
 stages:
@@ -8,14 +8,16 @@ stages:
 
 coherence-guard:
   stage: verify
-  image: alpine:3.20
+  image: python:3.12-alpine
   script:
     - sh scripts/check-coherence.sh
   rules:
     - changes:
         - "docs/**/*"
         - "implementations/**/*"
+        - "archive/**/*.xlsx"
         - "scripts/check-coherence.sh"
+        - "scripts/check_coherence.py"
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_COMMIT_BRANCH == "main"'
 

@@ -18,7 +18,7 @@ Lily's Florist Shop.
 ## Source of truth
 The canonical requirements model lives in [`archive/`](archive/):
 
-- [`Quantic_Project_Consolidated_Coherence_Validated.xlsx`](archive/Quantic_Project_Consolidated_Coherence_Validated.xlsx) — canonical mapping (7 business goals · 7 epics · 23 user stories · 17 non-functional stories · 40 requirements). Everything under `docs/` and the CI coherence guard (`scripts/check-coherence.sh`) derive from this file.
+- [`Quantic_Project_Consolidated_Coherence_Validated.xlsx`](archive/Quantic_Project_Consolidated_Coherence_Validated.xlsx) — canonical mapping (7 business goals · 7 epics · 23 user stories · 17 non-functional stories · 40 requirements). Docs under `docs/` derive from this file. The CI coherence guard (`scripts/check-coherence.sh` → `scripts/check_coherence.py`) parses the workbook's Consolidated Mapping sheet and fails if markdown BG/US/NFR-US/FR/NFR counts diverge from it.
 - [`Lilys_Florist_final.pdf`](archive/Lilys_Florist_final.pdf) — full requirements-engineering report.
 - [`sample-layout-3-with-notes.png`](archive/sample-layout-3-with-notes.png) — annotated sample workspace layout.
 

@@ -1,31 +1,23 @@
 #!/usr/bin/env sh
 # Coherence guard: docs must match the canonical model in
 # archive/Quantic_Project_Consolidated_Coherence_Validated.xlsx
-# (7 business goals, 23 functional + 17 non-functional user stories,
-#  23 FR + 17 NFR). Runnable locally: `sh scripts/check-coherence.sh`
+# (unique IDs on the Consolidated Mapping sheet:
+#  7 BG, 23 US, 17 NFR-US, 23 FR, 17 NFR).
+# Parses the workbook and compares it to markdown row counts.
+# Runnable locally: `sh scripts/check-coherence.sh`
+#               or: `python scripts/check_coherence.py`
 set -u
 
-BG=docs/02-business-analysis/business-goals-epics-stories.md
-REQ=docs/02-business-analysis/requirements.md
+ROOT=$(CDPATH= cd -- "$(dirname "$0")/.." && pwd)
+cd "$ROOT" || exit 1
 
-fail=0
-check() { # $1 label  $2 actual  $3 expected
-  if [ "$2" -ne "$3" ]; then
-    echo "FAIL: $1 = $2 (expected $3)"
-    fail=1
-  else
-    echo "ok:   $1 = $2"
-  fi
-}
-
-check "BG rows"      "$(grep -c '^| BG-' "$BG")"       7
-check "US rows"      "$(grep -c '^| US-[0-9]' "$BG")"  23
-check "NFR-US rows"  "$(grep -c '^| NFR-US-' "$BG")"   17
-check "FR rows"      "$(grep -c '^| FR-[0-9]' "$REQ")" 23
-check "NFR rows"     "$(grep -c '^| NFR-[0-9]' "$REQ")" 17
-
-if [ "$fail" -ne 0 ]; then
-  echo "Coherence guard FAILED - docs diverge from the canonical model."
+if command -v python3 >/dev/null 2>&1; then
+  PY=python3
+elif command -v python >/dev/null 2>&1; then
+  PY=python
+else
+  echo "FAIL: python3/python required to parse the canonical xlsx."
   exit 1
 fi
-echo "Coherence guard passed."
+
+exec "$PY" scripts/check_coherence.py
