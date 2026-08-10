@@ -32,7 +32,8 @@ status — are validated by dedicated domain services before display.
 | Payment | Initiate and confirm secure payment via external provider | Yes |
 
 Support Service (human escalation for FR-006 / T-09) and Customer Memory / CRM
-are **Future** (not part of the initial MVP).
+are **Future** (not part of the initial MVP). The Future human-escalation topic
+is `support.escalation.requested` (publisher: Support Service; outside MVP).
 
 MVP automated FAQ (FR-009 / ASO) does **not** require Support Service. The
 **AI Floral Concierge** publishes `support.faq.answered` from approved product

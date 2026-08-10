@@ -33,7 +33,8 @@ leaving a defined extension point (T-09).
   `automated-support-overlay.md`, and `ux-design-guide.md`).
 - Technical architecture assigns MVP publication of `support.faq.answered` to
   the AI Floral Concierge; Support Service remains Future for human escalation.
-- The support tile T-09 and human-escalation topic remain a Future overlay.
+- The support tile T-09 and Future topic `support.escalation.requested` remain
+  a Future overlay (human escalation; not part of MVP ASO).
 - **FR-010** (Future automated responses about order status, delivery, and
   availability) stays outside MVP ASO. It does not replace FR-009 FAQ answers or
   authoritative tracking via FR-015 / FR-023 / T-08.
