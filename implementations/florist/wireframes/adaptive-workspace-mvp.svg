@@ -1,0 +1,147 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900" role="img" aria-label="Adaptive Workspace MVP wireframe">
+  <rect width="1440" height="900" fill="#F5F5F5"/>
+
+  <!-- Header -->
+  <g id="Header">
+    <rect x="0" y="0" width="1440" height="64" fill="#FFFFFF" stroke="#CFCFCF"/>
+    <text x="32" y="40" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" fill="#222222">Lily's Florist</text>
+    <text x="1240" y="40" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#666666">Orders</text>
+    <text x="1330" y="40" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#666666">Help</text>
+  </g>
+
+  <!-- Left: Conversation T-01 -->
+  <g id="T-01-Conversation">
+    <rect x="24" y="88" width="420" height="788" rx="12" fill="#FFFFFF" stroke="#CFCFCF"/>
+    <text x="44" y="120" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" fill="#222222">T-01 Conversation and Intent</text>
+    <text x="44" y="142" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#666666">Persistent AI Floral Concierge</text>
+
+    <rect x="44" y="164" width="380" height="100" rx="8" fill="#EEEEEE"/>
+    <text x="60" y="192" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#222222">Welcome to Lily's Florist</text>
+    <text x="60" y="214" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#666666">AI-assisted flower purchase</text>
+    <rect x="300" y="180" width="100" height="64" rx="6" fill="#D9D9D9"/>
+
+    <circle cx="60" cy="310" r="14" fill="#D9D9D9" stroke="#9A9A9A"/>
+    <rect x="84" y="292" width="300" height="52" rx="10" fill="#F5F5F5" stroke="#CFCFCF"/>
+    <text x="100" y="314" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#222222">Hello! What occasion are you shopping for today?</text>
+    <text x="100" y="332" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#888888">AI disclosure visible</text>
+
+    <rect x="120" y="368" width="300" height="52" rx="10" fill="#4A4A4A"/>
+    <text x="136" y="390" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#FFFFFF">I need 10 pink flowers for a baby shower.</text>
+    <text x="136" y="408" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#D9D9D9">Budget is $400.</text>
+
+    <circle cx="60" cy="464" r="14" fill="#D9D9D9" stroke="#9A9A9A"/>
+    <rect x="84" y="446" width="300" height="44" rx="10" fill="#F5F5F5" stroke="#CFCFCF"/>
+    <text x="100" y="472" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#222222">Great — I've understood your needs...</text>
+
+    <rect x="44" y="800" width="320" height="44" rx="22" fill="#FFFFFF" stroke="#9A9A9A"/>
+    <text x="64" y="827" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#888888">Type your message...</text>
+    <circle cx="388" cy="822" r="16" fill="#4A4A4A"/>
+  </g>
+
+  <!-- Right column stack -->
+  <g id="T-02-Shared-Understanding">
+    <rect x="460" y="88" width="956" height="140" rx="12" fill="#FFFFFF" stroke="#CFCFCF"/>
+    <text x="480" y="120" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" fill="#222222">T-02 Intent Summary (Shared Understanding)</text>
+    <text x="480" y="148" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#666666">Occasion: Baby shower</text>
+    <text x="700" y="148" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#666666">Qty / colour: 10 pink</text>
+    <text x="920" y="148" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#666666">Budget: $400</text>
+    <rect x="480" y="168" width="120" height="32" rx="6" fill="#FFFFFF" stroke="#9A9A9A"/>
+    <text x="510" y="188" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#222222">Correct</text>
+  </g>
+
+  <g id="Adaptive-Workspace">
+    <text x="480" y="260" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" fill="#222222">Adaptive Workspace (T-03 … T-08)</text>
+
+    <!-- T-03 -->
+    <g id="T-03">
+      <rect x="460" y="276" width="468" height="280" rx="12" fill="#FFFFFF" stroke="#CFCFCF"/>
+      <text x="480" y="304" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#222222">T-03 Curated Recommendations</text>
+      <rect x="480" y="324" width="190" height="200" rx="8" fill="#FFFFFF" stroke="#CFCFCF"/>
+      <rect x="492" y="336" width="166" height="90" rx="6" fill="#D9D9D9"/>
+      <text x="492" y="448" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="700" fill="#222222">Pink Flower Vase</text>
+      <text x="492" y="468" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#222222">$125.00</text>
+      <rect x="492" y="480" width="166" height="28" rx="6" fill="#4A4A4A"/>
+      <text x="575" y="498" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#FFFFFF">Select</text>
+      <rect x="690" y="324" width="190" height="200" rx="8" fill="#FFFFFF" stroke="#CFCFCF"/>
+      <rect x="702" y="336" width="166" height="90" rx="6" fill="#D9D9D9"/>
+      <text x="702" y="448" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="700" fill="#222222">Lilac Bouquet</text>
+      <text x="702" y="468" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#222222">$95.00</text>
+      <rect x="702" y="480" width="166" height="28" rx="6" fill="#4A4A4A"/>
+      <text x="785" y="498" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#FFFFFF">Select</text>
+    </g>
+
+    <!-- T-04 -->
+    <g id="T-04">
+      <rect x="948" y="276" width="468" height="280" rx="12" fill="#FFFFFF" stroke="#CFCFCF"/>
+      <text x="968" y="304" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#222222">T-04 Product Selection and Customization</text>
+      <rect x="968" y="324" width="180" height="100" rx="6" fill="#D9D9D9"/>
+      <text x="1168" y="344" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#666666">Flower Type</text>
+      <rect x="1168" y="352" width="220" height="28" rx="4" fill="#FFFFFF" stroke="#CFCFCF"/>
+      <text x="1168" y="404" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#666666">Size</text>
+      <rect x="1168" y="412" width="220" height="28" rx="4" fill="#FFFFFF" stroke="#CFCFCF"/>
+      <text x="1168" y="464" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#666666">Gift Card</text>
+      <rect x="1168" y="472" width="220" height="28" rx="4" fill="#FFFFFF" stroke="#CFCFCF"/>
+      <rect x="968" y="500" width="100" height="32" rx="6" fill="#4A4A4A"/>
+      <text x="1018" y="520" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#FFFFFF">Update</text>
+    </g>
+
+    <!-- T-05 -->
+    <g id="T-05">
+      <rect x="460" y="572" width="308" height="304" rx="12" fill="#FFFFFF" stroke="#CFCFCF"/>
+      <text x="480" y="600" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#222222">T-05 Delivery and Recipient</text>
+      <circle cx="492" cy="640" r="8" fill="#4A4A4A"/>
+      <text x="512" y="644" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#222222">10:00–12:00 · Available</text>
+      <circle cx="492" cy="676" r="8" fill="#FFFFFF" stroke="#9A9A9A"/>
+      <text x="512" y="680" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#222222">12:00–14:00 · Available</text>
+      <circle cx="492" cy="712" r="8" fill="#FFFFFF" stroke="#9A9A9A"/>
+      <text x="512" y="716" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#222222">14:00–16:00 · Available</text>
+      <text x="480" y="760" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#666666">Deliver to: 123 Flower St</text>
+      <text x="480" y="784" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#666666">Recipient: Sarah Johnson</text>
+      <rect x="480" y="808" width="260" height="36" rx="8" fill="#4A4A4A"/>
+      <text x="610" y="830" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#FFFFFF">Confirm Delivery</text>
+    </g>
+
+    <!-- T-06 / T-07 -->
+    <g id="T-06-T-07">
+      <rect x="784" y="572" width="308" height="304" rx="12" fill="#FFFFFF" stroke="#CFCFCF"/>
+      <text x="804" y="600" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#222222">T-06 Order Summary</text>
+      <text x="804" y="636" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#666666">Arrangement</text>
+      <text x="1040" y="636" text-anchor="end" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#222222">$125.00</text>
+      <text x="804" y="660" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#666666">Delivery</text>
+      <text x="1040" y="660" text-anchor="end" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#222222">$12.00</text>
+      <text x="804" y="684" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#666666">Tax</text>
+      <text x="1040" y="684" text-anchor="end" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#222222">$0.50</text>
+      <line x1="804" y1="700" x2="1056" y2="700" stroke="#CFCFCF"/>
+      <text x="804" y="728" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#222222">Total $137.50</text>
+      <text x="804" y="764" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#222222">T-07 Checkout</text>
+      <text x="804" y="788" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#666666">Card ···· 4242</text>
+      <rect x="804" y="808" width="260" height="36" rx="8" fill="#4A4A4A"/>
+      <text x="934" y="830" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#FFFFFF">Place Order</text>
+    </g>
+
+    <!-- T-08 -->
+    <g id="T-08">
+      <rect x="1108" y="572" width="308" height="304" rx="12" fill="#FFFFFF" stroke="#CFCFCF"/>
+      <text x="1128" y="600" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#222222">T-08 Order Tracking</text>
+      <rect x="1128" y="616" width="268" height="28" rx="6" fill="#EEEEEE" stroke="#CFCFCF"/>
+      <text x="1140" y="635" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#222222">Order Confirmed</text>
+      <line x1="1144" y1="668" x2="1144" y2="800" stroke="#9A9A9A" stroke-width="2"/>
+      <circle cx="1144" cy="672" r="6" fill="#4A4A4A"/>
+      <text x="1160" y="676" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#222222">Order Received</text>
+      <circle cx="1144" cy="716" r="6" fill="#6B6B6B" stroke="#222222"/>
+      <text x="1160" y="720" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#222222">Preparing Bouquet</text>
+      <circle cx="1144" cy="760" r="6" fill="#FFFFFF" stroke="#9A9A9A"/>
+      <text x="1160" y="764" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#888888">Out for Delivery</text>
+      <circle cx="1144" cy="804" r="6" fill="#FFFFFF" stroke="#9A9A9A"/>
+      <text x="1160" y="808" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#888888">Delivered</text>
+      <text x="1128" y="848" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#888888">Updates every minute</text>
+    </g>
+  </g>
+
+  <!-- ASO overlay affordance -->
+  <g id="ASO">
+    <circle cx="1388" cy="840" r="28" fill="#4A4A4A"/>
+    <text x="1388" y="846" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#FFFFFF">?</text>
+    <text x="1280" y="888" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#666666">ASO FAQ overlay</text>
+  </g>
+</svg>

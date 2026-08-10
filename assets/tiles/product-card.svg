@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="260" viewBox="0 0 200 260" role="img" aria-label="Product card">
+  <rect width="200" height="260" rx="12" fill="#FFFFFF" stroke="#CFCFCF"/>
+  <rect x="12" y="12" width="176" height="120" rx="8" fill="#D9D9D9"/>
+  <text x="12" y="156" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#222222">Product name</text>
+  <text x="12" y="178" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#222222">$0.00</text>
+  <rect x="12" y="190" width="88" height="22" rx="11" fill="#EEEEEE" stroke="#9A9A9A"/>
+  <text x="28" y="205" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#222222">Available</text>
+  <rect x="12" y="222" width="176" height="28" rx="6" fill="#4A4A4A"/>
+  <text x="100" y="240" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#FFFFFF">Select</text>
+</svg>

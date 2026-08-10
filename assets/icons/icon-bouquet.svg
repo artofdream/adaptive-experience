@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" role="img" aria-label="Bouquet">
+  <path d="M12 14c-3-4-6-5-6-8a3 3 0 0 1 6 0 3 3 0 0 1 6 0c0 3-3 4-6 8Z" stroke="#222222" stroke-width="1.5"/>
+  <path d="M12 14v7M10 21h4" stroke="#222222" stroke-width="1.5" stroke-linecap="round"/>
+</svg>

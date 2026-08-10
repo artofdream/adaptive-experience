@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="280" height="420" viewBox="0 0 280 420" role="img" aria-label="Step 6: Confirm & pay">
+  <rect width="280" height="420" rx="12" fill="#FFFFFF" stroke="#CFCFCF"/>
+  <rect x="0" y="0" width="280" height="56" rx="12" fill="#F5F5F5"/>
+  <rect x="0" y="44" width="280" height="12" fill="#F5F5F5"/>
+  <text x="16" y="24" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#888888">Step 6</text>
+  <text x="16" y="44" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#222222">Confirm & pay</text>
+  <text x="16" y="80" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#666666">Summary + secure payment</text>
+  <text x="16" y="120" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#222222">Arrangement $125.00</text>
+  <text x="16" y="144" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#222222">Delivery $12.00</text>
+  <text x="16" y="176" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="#222222">Total $137.50</text>
+  <text x="16" y="220" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#666666">Card ···· 4242</text>
+  <rect x="12" y="372" width="256" height="28" rx="6" fill="#4A4A4A"/>
+  <text x="140" y="391" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#FFFFFF">Continue</text>
+</svg>
