@@ -68,7 +68,9 @@ queue but does not start remediation in the same iteration.
    issue, branch, or MR.
 6. After merge, verify the resulting `main`, not merely the source branch.
    Record the main pipeline and any cross-MR regression before setting
-   `verified`.
+   `verified`. Use the post-merge path in
+   [`claude-obsidian-loop.md`](claude-obsidian-loop.md)
+   (`python scripts/check_coherence.py` + main `coherence-guard`).
 7. Stop. The next scheduled or human-triggered pass starts with the next
    `queued` row.
 
