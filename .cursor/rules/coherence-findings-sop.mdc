@@ -5,17 +5,28 @@ alwaysApply: true
 
 # Coherence findings workflow
 
-When a coherence assessment surfaces **inconsistencies** or **gaps**, treat each
-item as its own unit of work. Do not batch unrelated findings into one MR.
+When a coherence assessment **or** the coherence review canvas surfaces
+**inconsistencies** or **gaps**, treat each item as its own unit of work. Do
+not batch unrelated findings into one MR. Do not leave an open inconsistency
+or gap without either a queued CF row (intake) or an active remediation cycle.
+
+This SOP is also required by `.cursor/rules/claude-obsidian-loop.mdc` and
+`research/coherence-findings-loop.md` (one queued finding per remediation
+iteration).
 
 ## Per finding
 
-1. **Issue** — Open one GitLab issue describing the finding, severity, evidence
+1. **Intake** — Assign or reuse a stable `CF-NNN` in
+   `research/coherence-findings-loop.md` when the claim is new or regressed
+   (assessment intake pass; no branch yet).
+2. **Issue** — Open one GitLab issue describing the finding, severity, evidence
    paths, and the intended fix.
-2. **Branch** — Create one feature branch from updated `main`, named for the
+3. **Branch** — Create one feature branch from updated `main`, named for the
    fix (e.g. `docs/name-support-faq-publisher`).
-3. **Fix** — Change only what that finding requires; keep scope tight.
-4. **MR** — Open one merge request linked to the issue (`Closes #N`), with a
+4. **Fix** — Change only what that finding requires; keep scope tight.
+   Implement the finding as stated (docs, scripts, CI, or matrix) — do not
+   substitute a drive-by refactor.
+5. **MR** — Open one merge request linked to the issue (`Closes #N`), with a
    short summary and test plan.
 
 ## Ordering
@@ -23,7 +34,15 @@ item as its own unit of work. Do not batch unrelated findings into one MR.
 Prefer severity then dependency: medium before low; fix publishers/ownership
 before dependent traceability rows when both exist.
 
+## Intentional / accepted claims
+
+If a review labels something a “gap” but the docs already document it as
+**intentional** (with clear criteria), do **not** open a new fix branch.
+Record it in the queue as `verified` or `not-reproducible` with evidence that
+the intentional design is documented, and clear it from the open findings list.
+
 ## Out of scope for this SOP
 
 - Pure **risks** (e.g. advisory lint) unless the user asks to address them.
 - Unrelated refactors, renames, or drive-by doc edits.
+- Auto-merging MRs (humans approve merges).
