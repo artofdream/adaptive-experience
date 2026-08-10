@@ -55,6 +55,7 @@ requirements:
 | Delivery | delivery.details.updated; delivery.slots.ready; delivery.slot.selected |
 | Order | order.summary.updated; order.checkout.requested; order.confirmed; order.status.updated |
 | Payment | payment.authorization.requested; payment.authorization.succeeded; payment.authorization.failed |
+| Support | support.faq.answered |
 | Workspace | workspace.state.updated |
 
 ## Supersession (Latest Relevant Intent Wins)
