@@ -5,6 +5,14 @@ Designing AI-native experiences that evolve with shared understanding.
 ## Reference design
 Lily's Florist Shop.
 
+## Naming
+- **AEA** — Adaptive Experience Architecture (this repository / product architecture).
+- **Lily's Florist Shop** — the reference design (also shortened to **Florist** under
+  `implementations/florist/`).
+- **Quantic** — legacy label retained only in some `archive/` filenames (for example
+  the canonical workbook). Do not rename those archive files; treat Quantic as
+  historical packaging, not a current product name.
+
 ## Repository areas
 - [Product vision](docs/01-product-vision/product-vision.md)
 - [Business analysis](docs/02-business-analysis/business-goals-epics-stories.md)
