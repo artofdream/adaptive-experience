@@ -31,6 +31,8 @@ leaving a defined extension point (T-09).
 - Functional design catalogs ASO under MVP overlays; the UX guide maps it as a
   distinct surface from T-09 (see `functional-design.md`,
   `automated-support-overlay.md`, and `ux-design-guide.md`).
+- Technical architecture assigns MVP publication of `support.faq.answered` to
+  the AI Floral Concierge; Support Service remains Future for human escalation.
 - The support tile T-09 and human-escalation topic remain a Future overlay.
 - **FR-010** (Future automated responses about order status, delivery, and
   availability) stays outside MVP ASO. It does not replace FR-009 FAQ answers or

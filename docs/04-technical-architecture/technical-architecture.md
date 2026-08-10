@@ -31,7 +31,14 @@ status — are validated by dedicated domain services before display.
 | Order | Maintain draft order; create the confirmed order | Yes |
 | Payment | Initiate and confirm secure payment via external provider | Yes |
 
-Support Service and Customer Memory / CRM are **Future** (not part of the initial MVP).
+Support Service (human escalation for FR-006 / T-09) and Customer Memory / CRM
+are **Future** (not part of the initial MVP).
+
+MVP automated FAQ (FR-009 / ASO) does **not** require Support Service. The
+**AI Floral Concierge** publishes `support.faq.answered` from approved product
+and policy information (FR-005). Concierge FAQ answers are interpretive
+assistance and remain non-authoritative for business facts (see authority
+boundary).
 
 ## Message contract (versioned envelope)
 Each message on the bus carries: message ID, topic, type (event / command /
@@ -55,7 +62,7 @@ requirements:
 | Delivery | delivery.details.updated; delivery.slots.ready; delivery.slot.selected |
 | Order | order.summary.updated; order.checkout.requested; order.confirmed; order.status.updated |
 | Payment | payment.authorization.requested; payment.authorization.succeeded; payment.authorization.failed |
-| Support | support.faq.answered |
+| Support | support.faq.answered (publisher: AI Floral Concierge; ASO / FR-009) |
 | Workspace | workspace.state.updated |
 
 ## Supersession (Latest Relevant Intent Wins)
