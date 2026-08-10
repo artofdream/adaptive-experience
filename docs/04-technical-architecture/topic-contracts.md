@@ -39,3 +39,9 @@ topic name before implementation.
   possible. Subscribers receive only fields in the table above (NFR-017).
 - The envelope and outcome are recorded for every publication (NFR-016).
 - Consumers must be idempotent by message ID and reject stale context versions.
+
+## Future topics (not MVP)
+
+| Topic | Schema version | Owner / publisher | Authorized subscribers | Minimum payload | Scope |
+|---|---|---|---|---|---|
+| support.escalation.requested | 1.0.0 | Support Service | Orchestration, Workspace | escalation reason, session / context reference | Future (FR-006 / T-09) |
