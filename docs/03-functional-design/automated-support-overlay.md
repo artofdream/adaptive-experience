@@ -32,7 +32,8 @@ inside the adaptive workspace (FR-009, backed by FR-005).
 - None required for MVP (no CRM memory write-back)
 
 ## Events Published
-- `support.faq.answered` (informational; does not mutate order state)
+- `support.faq.answered` (publisher: AI Floral Concierge / AI Concierge;
+  informational; does not mutate order state)
 
 ## Events Consumed
 - None required to open the overlay; may read current Shared Understanding for

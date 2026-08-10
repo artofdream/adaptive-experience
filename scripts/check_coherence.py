@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
-"""Coherence guard: compare docs markdown counts to the canonical xlsx model.
+"""Coherence guard: compare docs markdown to the canonical xlsx model.
 
 Canonical source:
   archive/Quantic_Project_Consolidated_Coherence_Validated.xlsx
-  (Consolidated Mapping sheet: unique BG / US / NFR-US / FR / NFR)
+  (Consolidated Mapping sheet: unique BG / US / NFR-US / FR / NFR,
+   plus BG->EP->US/NFR-US->FR/NFR chains and MVP/Future scope)
+
+Also verifies archive/canonical-requirements.csv against workbook
+requirement_id, story_id, and scope triples.
 
 Runnable locally:
   python scripts/check_coherence.py
@@ -12,6 +16,7 @@ Runnable locally:
 
 from __future__ import annotations
 
+import csv
 import re
 import sys
 import zipfile
@@ -20,6 +25,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 XLSX = ROOT / "archive" / "Quantic_Project_Consolidated_Coherence_Validated.xlsx"
+CSV_EXPORT = ROOT / "archive" / "canonical-requirements.csv"
 BG_MD = ROOT / "docs" / "02-business-analysis" / "business-goals-epics-stories.md"
 REQ_MD = ROOT / "docs" / "02-business-analysis" / "requirements.md"
 TRACE_MD = ROOT / "implementations" / "florist" / "requirements" / "traceability-matrix.md"
@@ -32,6 +38,7 @@ EXPECTED = {
     "FR": 23,
     "NFR": 17,
 }
+EXPECTED_EP = 7
 
 
 def expected_ids(kind: str, count: int) -> set[str]:
@@ -94,33 +101,60 @@ def _workbook_sheet_paths(zf: zipfile.ZipFile) -> dict[str, str]:
     return sheets
 
 
-def ids_from_xlsx(path: Path) -> dict[str, set[str]]:
+def mapping_rows_from_xlsx(path: Path) -> list[dict[str, str]]:
+    """Return Consolidated Mapping data rows as BG/EP/story/req/scope dicts."""
     with zipfile.ZipFile(path) as zf:
         strings = _shared_strings(zf)
         sheets = _workbook_sheet_paths(zf)
         mapping = sheets["Consolidated Mapping"]
         rows = _sheet_rows(zf, mapping, strings)
 
+    parsed: list[dict[str, str]] = []
+    for row in rows[1:]:
+        bg = row.get("A", "").strip()
+        ep = row.get("C", "").strip()
+        story = row.get("F", "").strip()
+        req = row.get("I", "").strip()
+        scope = row.get("L", "").strip()
+        if not (bg and ep and story and req and scope):
+            continue
+        parsed.append(
+            {
+                "bg": bg,
+                "ep": ep,
+                "story": story,
+                "req": req,
+                "scope": scope,
+            }
+        )
+    return parsed
+
+
+def ids_from_mapping(rows: list[dict[str, str]]) -> dict[str, set[str]]:
     buckets = {
         "BG": set(),
+        "EP": set(),
         "US": set(),
         "NFR-US": set(),
         "FR": set(),
         "NFR": set(),
     }
-    for row in rows[1:]:
-        for value in row.values():
-            if re.fullmatch(r"BG-\d+", value):
-                buckets["BG"].add(value)
-            elif re.fullmatch(r"US-\d+", value):
-                buckets["US"].add(value)
-            elif re.fullmatch(r"NFR-US-\d+", value):
-                buckets["NFR-US"].add(value)
-            elif re.fullmatch(r"FR-\d+", value):
-                buckets["FR"].add(value)
-            elif re.fullmatch(r"NFR-\d+", value):
-                buckets["NFR"].add(value)
+    for row in rows:
+        buckets["BG"].add(row["bg"])
+        buckets["EP"].add(row["ep"])
+        if row["story"].startswith("NFR-US-"):
+            buckets["NFR-US"].add(row["story"])
+        elif row["story"].startswith("US-"):
+            buckets["US"].add(row["story"])
+        if row["req"].startswith("NFR-"):
+            buckets["NFR"].add(row["req"])
+        elif row["req"].startswith("FR-"):
+            buckets["FR"].add(row["req"])
     return buckets
+
+
+def chain_key(row: dict[str, str]) -> tuple[str, str, str, str]:
+    return (row["bg"], row["ep"], row["story"], row["req"])
 
 
 def ids_from_markdown() -> tuple[dict[str, list[str]], dict[str, list[str]]]:
@@ -136,11 +170,122 @@ def ids_from_markdown() -> tuple[dict[str, list[str]], dict[str, list[str]]]:
     trace_text = TRACE_MD.read_text(encoding="utf-8")
     trace = {
         "US": re.findall(r"^\| BG-\d+ \| EP-\d+ \| (US-\d+) \| FR-\d+ \|", trace_text, flags=re.M),
-        "NFR-US": re.findall(r"^\| BG-\d+ \| EP-\d+ \| (NFR-US-\d+) \| NFR-\d+ \|", trace_text, flags=re.M),
+        "NFR-US": re.findall(
+            r"^\| BG-\d+ \| EP-\d+ \| (NFR-US-\d+) \| NFR-\d+ \|", trace_text, flags=re.M
+        ),
         "FR": re.findall(r"^\| BG-\d+ \| EP-\d+ \| US-\d+ \| (FR-\d+) \|", trace_text, flags=re.M),
-        "NFR": re.findall(r"^\| BG-\d+ \| EP-\d+ \| NFR-US-\d+ \| (NFR-\d+) \|", trace_text, flags=re.M),
+        "NFR": re.findall(
+            r"^\| BG-\d+ \| EP-\d+ \| NFR-US-\d+ \| (NFR-\d+) \|", trace_text, flags=re.M
+        ),
     }
     return inventories, trace
+
+
+def chains_from_traceability() -> list[dict[str, str]]:
+    text = TRACE_MD.read_text(encoding="utf-8")
+    rows: list[dict[str, str]] = []
+    for match in re.finditer(
+        r"^\| (BG-\d+) \| (EP-\d+) \| ((?:NFR-)?US-\d+) \| ((?:NFR|FR)-\d+) \| (MVP|Future) \|",
+        text,
+        flags=re.M,
+    ):
+        rows.append(
+            {
+                "bg": match.group(1),
+                "ep": match.group(2),
+                "story": match.group(3),
+                "req": match.group(4),
+                "scope": match.group(5),
+            }
+        )
+    return rows
+
+
+def scopes_from_requirements() -> dict[str, str]:
+    text = REQ_MD.read_text(encoding="utf-8")
+    scopes: dict[str, str] = {}
+    for match in re.finditer(
+        r"^\| ((?:FR|NFR)-\d+) \| ((?:NFR-)?US-\d+) \| [^|]+ \| (MVP|Future) \|",
+        text,
+        flags=re.M,
+    ):
+        scopes[match.group(1)] = match.group(3)
+    return scopes
+
+
+def scopes_from_stories() -> dict[str, str]:
+    text = BG_MD.read_text(encoding="utf-8")
+    scopes: dict[str, str] = {}
+    for match in re.finditer(
+        r"^\| (US-\d+) \| EP-\d+ \| (MVP|Future) \|",
+        text,
+        flags=re.M,
+    ):
+        scopes[match.group(1)] = match.group(2)
+    for match in re.finditer(
+        r"^\| (NFR-US-\d+) \| EP-\d+ \| [^|]+ \| (MVP|Future) \|",
+        text,
+        flags=re.M,
+    ):
+        scopes[match.group(1)] = match.group(2)
+    return scopes
+
+
+def story_ep_from_stories() -> dict[str, str]:
+    text = BG_MD.read_text(encoding="utf-8")
+    mapping: dict[str, str] = {}
+    for match in re.finditer(r"^\| (US-\d+) \| (EP-\d+) \|", text, flags=re.M):
+        mapping[match.group(1)] = match.group(2)
+    for match in re.finditer(r"^\| (NFR-US-\d+) \| (EP-\d+) \|", text, flags=re.M):
+        mapping[match.group(1)] = match.group(2)
+    return mapping
+
+
+def req_story_from_requirements() -> dict[str, str]:
+    text = REQ_MD.read_text(encoding="utf-8")
+    mapping: dict[str, str] = {}
+    for match in re.finditer(
+        r"^\| ((?:FR|NFR)-\d+) \| ((?:NFR-)?US-\d+) \|",
+        text,
+        flags=re.M,
+    ):
+        mapping[match.group(1)] = match.group(2)
+    return mapping
+
+
+def bg_ep_from_goals() -> dict[str, str]:
+    text = BG_MD.read_text(encoding="utf-8")
+    mapping: dict[str, str] = {}
+    for match in re.finditer(r"^\| (BG-\d+) [^|]*\| (EP-\d+)", text, flags=re.M):
+        mapping[match.group(1)] = match.group(2)
+    return mapping
+
+
+def requirement_triples_from_mapping(
+    rows: list[dict[str, str]],
+) -> dict[str, tuple[str, str]]:
+    """Map requirement_id -> (story_id, scope) from Consolidated Mapping rows."""
+    return {row["req"]: (row["story"], row["scope"]) for row in rows}
+
+
+def requirement_triples_from_csv(path: Path) -> dict[str, tuple[str, str]]:
+    """Map requirement_id -> (story_id, scope) from canonical CSV export."""
+    with path.open(encoding="utf-8", newline="") as handle:
+        reader = csv.DictReader(handle)
+        expected = {"requirement_id", "story_id", "scope"}
+        if reader.fieldnames is None or set(reader.fieldnames) != expected:
+            raise ValueError(
+                f"CSV header must be exactly {sorted(expected)}, got {reader.fieldnames!r}"
+            )
+        triples: dict[str, tuple[str, str]] = {}
+        for row in reader:
+            req = (row.get("requirement_id") or "").strip()
+            story = (row.get("story_id") or "").strip()
+            scope = (row.get("scope") or "").strip()
+            if not (req and story and scope):
+                continue
+            triples[req] = (story, scope)
+    return triples
 
 
 def main() -> int:
@@ -148,7 +293,8 @@ def main() -> int:
         print(f"FAIL: missing canonical workbook {XLSX.relative_to(ROOT)}")
         return 1
 
-    xlsx_ids = ids_from_xlsx(XLSX)
+    mapping_rows = mapping_rows_from_xlsx(XLSX)
+    xlsx_ids = ids_from_mapping(mapping_rows)
     md_ids, trace_ids = ids_from_markdown()
     fail = 0
 
@@ -161,11 +307,31 @@ def main() -> int:
             fail = 1
         print(f"  {status}: xlsx {key} IDs = {len(actual_set)} (expected exact 001..{expected:03d})")
 
+    ep_expected = expected_ids("EP", EXPECTED_EP)
+    if xlsx_ids["EP"] != ep_expected:
+        print(f"  FAIL: xlsx EP IDs = {len(xlsx_ids['EP'])} (expected exact 001..{EXPECTED_EP:03d})")
+        fail = 1
+    else:
+        print(f"  ok: xlsx EP IDs = {len(xlsx_ids['EP'])} (expected exact 001..{EXPECTED_EP:03d})")
+
+    if len(mapping_rows) != EXPECTED["FR"] + EXPECTED["NFR"]:
+        print(
+            f"  FAIL: xlsx mapping rows = {len(mapping_rows)} "
+            f"(expected {EXPECTED['FR'] + EXPECTED['NFR']})"
+        )
+        fail = 1
+    else:
+        print(f"  ok: xlsx mapping rows = {len(mapping_rows)}")
+
     print("Markdown docs:")
     for key, expected in EXPECTED.items():
         actual = md_ids[key]
         expected_set = expected_ids(key, expected)
-        status = "ok" if set(actual) == expected_set and len(actual) == len(set(actual)) else "FAIL"
+        status = (
+            "ok"
+            if set(actual) == expected_set and len(actual) == len(set(actual))
+            else "FAIL"
+        )
         if status == "FAIL":
             fail = 1
         print(f"  {status}: docs {key} rows = {len(actual)}; unique IDs = {len(set(actual))}")
@@ -180,11 +346,114 @@ def main() -> int:
 
     print("Traceability matrix vs published requirements:")
     for key in ("US", "NFR-US", "FR", "NFR"):
-        if len(trace_ids[key]) != len(set(trace_ids[key])) or set(trace_ids[key]) != set(md_ids[key]):
+        if len(trace_ids[key]) != len(set(trace_ids[key])) or set(trace_ids[key]) != set(
+            md_ids[key]
+        ):
             print(f"  FAIL: {key} traceability rows are missing, duplicated, or divergent")
             fail = 1
         else:
             print(f"  ok:   {key} traceability IDs match published requirements")
+
+    print("BG->EP->US/NFR-US->FR/NFR chains:")
+    xlsx_chains = {chain_key(row): row["scope"] for row in mapping_rows}
+    trace_rows = chains_from_traceability()
+    trace_chains = {chain_key(row): row["scope"] for row in trace_rows}
+    if set(xlsx_chains) != set(trace_chains):
+        missing = sorted(set(xlsx_chains) - set(trace_chains))
+        extra = sorted(set(trace_chains) - set(xlsx_chains))
+        print("  FAIL: traceability chains diverge from workbook Consolidated Mapping")
+        if missing[:5]:
+            print(f"    missing in matrix (sample): {missing[:5]}")
+        if extra[:5]:
+            print(f"    extra in matrix (sample): {extra[:5]}")
+        fail = 1
+    else:
+        print(f"  ok:   {len(xlsx_chains)} chain tuples match workbook")
+
+    print("Scope fidelity (MVP/Future):")
+    req_scopes = scopes_from_requirements()
+    story_scopes = scopes_from_stories()
+    scope_fail = 0
+    for row in mapping_rows:
+        req = row["req"]
+        story = row["story"]
+        scope = row["scope"]
+        if req_scopes.get(req) != scope:
+            print(f"  FAIL: {req} scope docs={req_scopes.get(req)!r} xlsx={scope!r}")
+            scope_fail = 1
+        if story_scopes.get(story) != scope:
+            print(f"  FAIL: {story} scope docs={story_scopes.get(story)!r} xlsx={scope!r}")
+            scope_fail = 1
+        if xlsx_chains.get(chain_key(row)) != trace_chains.get(chain_key(row)):
+            print(
+                f"  FAIL: chain {chain_key(row)} scope matrix="
+                f"{trace_chains.get(chain_key(row))!r} xlsx={scope!r}"
+            )
+            scope_fail = 1
+    if scope_fail:
+        fail = 1
+    else:
+        print("  ok:   requirement, story, and matrix scopes match workbook")
+
+    print("Published membership links:")
+    bg_ep = bg_ep_from_goals()
+    story_ep = story_ep_from_stories()
+    req_story = req_story_from_requirements()
+    link_fail = 0
+    for row in mapping_rows:
+        if bg_ep.get(row["bg"]) != row["ep"]:
+            print(
+                f"  FAIL: {row['bg']}->{row['ep']} goals table has "
+                f"{bg_ep.get(row['bg'])!r}"
+            )
+            link_fail = 1
+        if story_ep.get(row["story"]) != row["ep"]:
+            print(
+                f"  FAIL: {row['story']}->{row['ep']} stories table has "
+                f"{story_ep.get(row['story'])!r}"
+            )
+            link_fail = 1
+        if req_story.get(row["req"]) != row["story"]:
+            print(
+                f"  FAIL: {row['req']}->{row['story']} requirements table has "
+                f"{req_story.get(row['req'])!r}"
+            )
+            link_fail = 1
+    if link_fail:
+        fail = 1
+    else:
+        print("  ok:   BG->EP, story->EP, and req->story links match workbook")
+
+    print("Canonical CSV vs workbook:")
+    if not CSV_EXPORT.is_file():
+        print(f"  FAIL: missing CSV export {CSV_EXPORT.relative_to(ROOT)}")
+        fail = 1
+    else:
+        try:
+            xlsx_triples = requirement_triples_from_mapping(mapping_rows)
+            csv_triples = requirement_triples_from_csv(CSV_EXPORT)
+        except ValueError as exc:
+            print(f"  FAIL: {exc}")
+            fail = 1
+        else:
+            if xlsx_triples != csv_triples:
+                print("  FAIL: canonical-requirements.csv drifts from Consolidated Mapping")
+                missing = sorted(set(xlsx_triples) - set(csv_triples))
+                extra = sorted(set(csv_triples) - set(xlsx_triples))
+                mismatched = sorted(
+                    req
+                    for req in set(xlsx_triples) & set(csv_triples)
+                    if xlsx_triples[req] != csv_triples[req]
+                )
+                if missing[:5]:
+                    print(f"    missing in CSV (sample): {missing[:5]}")
+                if extra[:5]:
+                    print(f"    extra in CSV (sample): {extra[:5]}")
+                if mismatched[:5]:
+                    print(f"    mismatched triples (sample): {mismatched[:5]}")
+                fail = 1
+            else:
+                print(f"  ok:   {len(csv_triples)} CSV requirement triples match workbook")
 
     if fail:
         print("Coherence guard FAILED - docs diverge from the canonical xlsx model.")
