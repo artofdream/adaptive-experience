@@ -6,14 +6,14 @@ Designing AI-native experiences that evolve with shared understanding.
 Lily's Florist Shop.
 
 ## Repository areas
-- Product vision
-- Business analysis
-- Functional design
-- Technical architecture
-- UX design guide
-- Architecture Decision Records
-- Roadmap
-- Florist reference implementation
+- [Product vision](docs/01-product-vision/product-vision.md)
+- [Business analysis](docs/02-business-analysis/business-goals-epics-stories.md)
+- [Functional design](docs/03-functional-design/functional-design.md)
+- [Technical architecture](docs/04-technical-architecture/technical-architecture.md)
+- [UX design guide](docs/05-ux-design-guide/ux-design-guide.md)
+- [Architecture Decision Records](docs/06-adr/)
+- [Roadmap](docs/07-roadmap/roadmap.md)
+- [Florist reference implementation](implementations/florist/README.md)
 
 ## Source of truth
 The canonical requirements model lives in [`archive/`](archive/):
