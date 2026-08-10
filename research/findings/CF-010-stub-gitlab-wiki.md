@@ -5,6 +5,7 @@ status: in-mr
 finding_id: CF-010
 severity: medium
 issue: #101
+mr: !50
 branch: docs/cf-010-populate-gitlab-wiki
 published: 2026-08-10 via scripts/publish_wiki.py
 
