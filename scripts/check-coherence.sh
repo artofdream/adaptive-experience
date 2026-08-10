@@ -2,8 +2,9 @@
 # Coherence guard: docs must match the canonical model in
 # archive/Quantic_Project_Consolidated_Coherence_Validated.xlsx
 # (unique IDs on the Consolidated Mapping sheet:
-#  7 BG, 23 US, 17 NFR-US, 23 FR, 17 NFR).
-# Parses the workbook and compares it to markdown row counts.
+#  7 BG, 7 EP, 23 US, 17 NFR-US, 23 FR, 17 NFR;
+#  plus BG->EP->story->requirement chains and MVP/Future scope).
+# Parses the workbook and compares it to markdown inventories, chains, and scope.
 # Runnable locally: `sh scripts/check-coherence.sh`
 #               or: `python scripts/check_coherence.py`
 set -u
