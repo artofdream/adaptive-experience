@@ -8,7 +8,7 @@ source_assessment: research/assessments/2026-08-10-wireframe-sample-fidelity.md
 supersedes:
 issue: "#99"
 branch: docs/cf-009-t09-escalation
-merge_request:
+merge_request: "!48"
 
 ## Claim
 
