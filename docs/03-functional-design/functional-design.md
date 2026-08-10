@@ -23,6 +23,19 @@
 | T-08 | Order Tracking | Latest authoritative preparation/dispatch/delay/delivery/completion status (FR-023). | MVP |
 | T-09 | Support Escalation | Conditional overlay for unresolved requests (FR-006). | Future |
 
+## MVP overlays
+
+Cross-cutting surfaces that are not journey tiles. They may appear over any
+active stage without replacing the adaptive workspace.
+
+| Overlay | Role | Requirement | Scope |
+|---|---|---|---|
+| Automated Support Overlay (ASO) | Answers frequently asked questions from approved product and policy information without leaving the workspace. Never blocks tile interaction. | FR-009 (backed by FR-005) | MVP |
+
+ASO is distinct from Future tile **T-09 Support Escalation** (FR-006), which
+adds human handoff. See ADR-004 and
+`docs/03-functional-design/automated-support-overlay.md`.
+
 ## Interaction principles
 - Progressive thought completion drives intent capture (see ADR-003).
 - Selective regeneration: only affected tiles refresh; completed decisions persist (FR-020).
@@ -40,4 +53,5 @@
 8. Order Summary updates continuously with itemized charges (T-06).
 9. Checkout initiates secure payment; the order is confirmed only after payment succeeds (T-07).
 10. Workspace evolves into Order Tracking (T-08).
-11. Support Escalation (T-09) remains a Future overlay outside the MVP.
+11. Automated Support Overlay (ASO / FR-009) remains available across all stages in the MVP.
+12. Support Escalation (T-09 / FR-006) remains a Future overlay outside the MVP.
