@@ -40,7 +40,7 @@ completed rows because the queue is also the audit trail.
 | 24 | CF-024 | ADR-009 still says BFF “if introduced by deployment ADRs” though ADR-007 Accepted a separate BFF | Low | verified | 2026-08-11 | 2026-08-11 | #119 / !72 |
 | 25 | CF-025 | adaptive-workspace-mvp.png omits T-03 Available badges and T-08 Contact Florist / Escalate present in SVG | Medium | in-mr | 2026-08-11 | 2026-08-11 | #123 / !74 |
 | 26 | CF-029 | Group milestones M3–M7 and Future Backlog reuse M2 description verbatim; M1 description empty | Medium | in-mr | 2026-08-11 | 2026-08-11 | #124 / !75 |
-| 27 | CF-026 | ADR-010 still says Edge/BFF APIs “if present” though ADR-007 Accepted a separate BFF | Low | queued | 2026-08-11 | 2026-08-11 | — |
+| 27 | CF-026 | ADR-010 still says Edge/BFF APIs “if present” though ADR-007 Accepted a separate BFF | Low | in-mr | 2026-08-11 | 2026-08-11 | #125 / !76 |
 | 28 | CF-027 | Wiki ADR page still says “ADR-007 lands with CF-017 / !61” though ADR-007 is Accepted on main | Low | queued | 2026-08-11 | 2026-08-11 | — |
 | 29 | CF-028 | GitLab issue #109 (CF-014) remains open while CF-014 was closed via #110 / !56 | Low | queued | 2026-08-11 | 2026-08-11 | #109 |
 
