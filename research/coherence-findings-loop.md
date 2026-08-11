@@ -27,11 +27,11 @@ completed rows because the queue is also the audit trail.
 | 11 | CF-011 | Wiki florist page says “reference implementation” while repo naming uses “reference design” | Low | verified | 2026-08-10 | 2026-08-10 | #102 / !51 |
 | 12 | CF-012 | GitLab issues #79–#85 remain open though claims are fixed or intentional on main | Low | verified | 2026-08-10 | 2026-08-10 | #103 / !52 |
 | 13 | CF-014 | Misnumbered Accepted ADR stubs (files ADR-008…012 titled ADR-006…010) collide with Proposed ADR-006/007 and gate issues | High | verified | 2026-08-11 | 2026-08-11 | #110 / !56 |
-| 14 | CF-015 | Gate issues #106–#108 lack matching ADR files; slots hold unrelated tech stubs | High | in-mr | 2026-08-11 | 2026-08-11 | #106 / !57 · #107 / !58 · #108 / !59 |
-| 15 | CF-013 | MVP T-04 wireframe/Figma shows advanced customization fields while FR-003 remains Future | Medium | in-mr | 2026-08-11 | 2026-08-11 | #104 / !60 |
+| 14 | CF-015 | Gate issues #106–#108 lack matching ADR files; slots hold unrelated tech stubs | High | verified | 2026-08-11 | 2026-08-11 | #106 / !57 · #107 / !58 · #108 / !59 |
+| 15 | CF-013 | MVP T-04 wireframe/Figma shows advanced customization fields while FR-003 remains Future | Medium | verified | 2026-08-11 | 2026-08-11 | #104 / !60 |
 | 16 | CF-016 | Kafka stub Accepted while Proposed ADR-007 / TA leave broker product-neutral | Medium | queued | 2026-08-11 | 2026-08-11 | — |
-| 17 | CF-017 | Proposed ADR-007 introduces a BFF not listed in technical-architecture.md | Medium | queued | 2026-08-11 | 2026-08-11 | #105 |
-| 18 | CF-018 | FR-003/roadmap Future text lists size and personal messages as Future while T-04 MVP treats catalog size + card message as MVP | Medium | in-mr | 2026-08-11 | 2026-08-11 | #104 / !60 |
+| 17 | CF-017 | Proposed ADR-007 introduces a BFF not listed in technical-architecture.md | Medium | in-mr | 2026-08-11 | 2026-08-11 | #105 / !61 |
+| 18 | CF-018 | FR-003/roadmap Future text lists size and personal messages as Future while T-04 MVP treats catalog size + card message as MVP | Medium | verified | 2026-08-11 | 2026-08-11 | #104 / !60 |
 | 19 | CF-019 | Wiki ADR index still lists only ADR-001…005 | Low | queued | 2026-08-11 | 2026-08-11 | — |
 
 Allowed statuses: `queued`, `investigating`, `ready`, `in-progress`, `in-mr`,
