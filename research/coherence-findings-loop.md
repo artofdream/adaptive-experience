@@ -32,7 +32,7 @@ completed rows because the queue is also the audit trail.
 | 16 | CF-016 | Kafka stub Accepted while Proposed ADR-007 / TA leave broker product-neutral | Medium | queued | 2026-08-11 | 2026-08-11 | — |
 | 17 | CF-017 | Proposed ADR-007 introduces a BFF not listed in technical-architecture.md | Medium | queued | 2026-08-11 | 2026-08-11 | #105 |
 | 18 | CF-018 | FR-003/roadmap Future text lists size and personal messages as Future while T-04 MVP treats catalog size + card message as MVP | Medium | in-mr | 2026-08-11 | 2026-08-11 | #104 / !60 |
-| 19 | CF-019 | Wiki ADR index still lists only ADR-001…005 | Low | queued | 2026-08-11 | 2026-08-11 | — |
+| 19 | CF-019 | Wiki ADR index still lists only ADR-001…005 | Low | in-progress | 2026-08-11 | 2026-08-11 | #112 |
 
 Allowed statuses: `queued`, `investigating`, `ready`, `in-progress`, `in-mr`,
 `verified`, `regressed`, `duplicate`, `not-reproducible`, and `blocked`.
