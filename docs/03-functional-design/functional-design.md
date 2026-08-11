@@ -16,7 +16,7 @@
 | T-01 | Conversation and Intent | Captures natural-language goals and clarification; persistent. | MVP |
 | T-02 | Intent Summary (Shared Understanding) | Shows the current interpretation and permits correction (FR-021). | MVP |
 | T-03 | Curated Recommendations | Presents validated options matching intent, budget, availability, and delivery. | MVP |
-| T-04 | Product Selection and Customization | Product selection, basic options (arrangement, size), and card message. Advanced customization (FR-003) is Future. | MVP |
+| T-04 | Product Selection and Customization | Product/arrangement selection, eligible catalog size, and physical card message (ADR-006). Advanced compositional customization (FR-003: flower type, colour, ribbon) is Future. | MVP |
 | T-05 | Delivery and Recipient | Recipient details and valid dates/windows. | MVP |
 | T-06 | Order Summary | Selections, fees, taxes, discounts, and total; continuously updated (FR-018). | MVP |
 | T-07 | Checkout and Confirmation | Initiates secure payment; confirmed order only after payment succeeds (FR-019). | MVP |

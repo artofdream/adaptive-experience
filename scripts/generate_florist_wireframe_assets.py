@@ -282,13 +282,17 @@ def adaptive_workspace() -> str:
     <g id="T-04">
       <rect x="948" y="276" width="468" height="280" rx="12" fill="{G['bg']}" stroke="{G['border']}"/>
       <text x="968" y="304" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" fill="{G['text']}">T-04 Product Selection and Customization</text>
-      <rect x="968" y="324" width="180" height="100" rx="6" fill="{G['fill']}"/>
-      <text x="1168" y="344" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="{G['text-sec']}">Flower Type</text>
+      <rect x="968" y="324" width="180" height="120" rx="6" fill="{G['fill']}"/>
+      <text x="980" y="456" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="700" fill="{G['text']}">Pink Flower Vase</text>
+      <text x="1168" y="344" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="{G['text-sec']}">Arrangement</text>
       <rect x="1168" y="352" width="220" height="28" rx="4" fill="{G['bg']}" stroke="{G['border']}"/>
+      <text x="1176" y="370" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="{G['text']}">Pink Flower Vase</text>
       <text x="1168" y="404" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="{G['text-sec']}">Size</text>
       <rect x="1168" y="412" width="220" height="28" rx="4" fill="{G['bg']}" stroke="{G['border']}"/>
-      <text x="1168" y="464" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="{G['text-sec']}">Gift Card</text>
-      <rect x="1168" y="472" width="220" height="28" rx="4" fill="{G['bg']}" stroke="{G['border']}"/>
+      <text x="1176" y="430" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="{G['text']}">Standard</text>
+      <text x="1168" y="464" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="{G['text-sec']}">Card message</text>
+      <rect x="1168" y="472" width="220" height="48" rx="4" fill="{G['bg']}" stroke="{G['border']}"/>
+      <text x="1176" y="492" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="{G['text-sec']}">Happy baby shower!</text>
       <rect x="968" y="500" width="100" height="32" rx="6" fill="{G['fill-dark']}"/>
       <text x="1018" y="520" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="{G['bg']}">Update</text>
     </g>

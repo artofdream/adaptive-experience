@@ -17,8 +17,8 @@ Page inventory (see `figma/README.md`):
 - **Recommendation / Delivery / Customer Support** — stubs
 - **Discovery v1.0 / v2 / Presentation** — planned stubs
 
-MVP fidelity matches local SVGs (Available badges, Colour/Ribbon, Contact Florist
-+ Future escalate).
+MVP fidelity matches local SVGs and ADR-006 (Available badges; T-04 Arrangement /
+Size / Card message; Contact Florist + Future escalate).
 ## Local artifacts
 
 | Path | Description |
