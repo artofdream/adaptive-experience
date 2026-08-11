@@ -75,8 +75,18 @@ class PrivacyTests(unittest.TestCase):
     def test_sensitive_data_cannot_hide_in_security_or_outcome_metadata(self):
         message = envelope()
         message["security_context"]["email"] = "private@example.invalid"
-        with self.assertRaisesRegex(ValueError, "raw sensitive fields"):
+        with self.assertRaisesRegex(ValueError, "unauthorized fields"):
             self.guard.validate_publication("orchestration", message["topic"], message)
+
+    def test_source_and_security_context_are_governed(self):
+        wrong_source = envelope()
+        wrong_source["source"] = "workspace"
+        with self.assertRaisesRegex(ValueError, "governed publisher"):
+            self.guard.validate_publication("orchestration", wrong_source["topic"], wrong_source)
+        unauthorized_context = envelope()
+        unauthorized_context["security_context"]["raw_claims"] = {"role": "admin"}
+        with self.assertRaisesRegex(ValueError, "unauthorized fields"):
+            self.guard.validate_publication("orchestration", unauthorized_context["topic"], unauthorized_context)
 
     def test_missing_minimum_field_and_unknown_schema_are_rejected(self):
         message = envelope()

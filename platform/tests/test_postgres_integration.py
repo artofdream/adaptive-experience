@@ -5,6 +5,7 @@ import os
 import sys
 import unittest
 import uuid
+from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -25,8 +26,9 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
 
     def setUp(self):
         with self.connection.transaction():
-            self.connection.execute("TRUNCATE orchestration.outbox_message, orchestration.experience_invalidation, "
-                                    "orchestration.consumed_message, orchestration.experience_session CASCADE")
+            self.connection.execute("TRUNCATE orchestration.message_audit, orchestration.outbox_message, "
+                                    "orchestration.experience_invalidation, orchestration.consumed_message, "
+                                    "orchestration.experience_session CASCADE")
 
     def create_session(self):
         session_id = uuid.uuid4()
@@ -42,7 +44,12 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         message_id = message_id or uuid.uuid4()
         envelope = {
             "message_id": str(message_id), "topic": "experience.intent.updated",
-            "context_version": expected + 1, "payload": {}
+            "message_type": "event", "schema_version": "1.0.0",
+            "session_id": str(session_id), "correlation_id": "correlation-test",
+            "source": "orchestration", "context_version": expected + 1,
+            "publication_time": datetime.now(timezone.utc).isoformat(),
+            "security_context": {"classification": "confidential"},
+            "payload": {"structured_intent": {"occasion": "birthday"}}, "outcome": {}
         }
         messages = [{"message_id": str(message_id), "topic": "experience.intent.updated",
                      "aggregate_key": str(session_id), "envelope": envelope}]
@@ -96,7 +103,7 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         versions = [row[0] for row in self.connection.execute(
             "SELECT version FROM orchestration.schema_migration ORDER BY version"
         ).fetchall()]
-        self.assertEqual([1, 2], versions)
+        self.assertEqual([1, 2, 3], versions)
 
     def test_consumer_idempotency_and_stale_outcome_are_transactional(self):
         from aea_platform.adapters import PsycopgConsumerTransaction
@@ -106,7 +113,9 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         applied = []
         message = {
             "message_id": str(uuid.uuid4()), "topic": "experience.intent.updated",
-            "session_id": str(session_id), "context_version": 0, "correlation_id": "test"
+            "session_id": str(session_id), "context_version": 0, "correlation_id": "test",
+            "source": "orchestration", "publication_time": datetime.now(timezone.utc).isoformat(),
+            "security_context": {"classification": "confidential"},
         }
         self.assertEqual("applied", transaction.apply("workspace", message, lambda item: applied.append(item)))
         self.assertEqual("duplicate", transaction.apply("workspace", message, lambda item: applied.append(item)))
@@ -117,3 +126,55 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         stale = dict(message, message_id=str(uuid.uuid4()), context_version=0)
         self.assertEqual("stale", transaction.apply("workspace", stale, lambda item: applied.append(item)))
         self.assertEqual(1, len(applied))
+
+    def test_payload_free_audit_trace_records_publication_and_consumption(self):
+        from aea_platform.adapters import PsycopgAuditReader, PsycopgConsumerTransaction, PsycopgOutboxStore
+
+        session_id = self.create_session()
+        message_id = uuid.uuid4()
+        with self.connection.transaction():
+            self.mutation(session_id, 0, message_id)
+        store = PsycopgOutboxStore(self.connection)
+        published_at = datetime.now(timezone.utc)
+        claimed = store.claim("audit-test", 1)
+        self.assertEqual(str(message_id), claimed[0].message_id)
+        store.mark_published(str(message_id), published_at)
+
+        envelope = claimed[0].envelope
+        transaction = PsycopgConsumerTransaction(self.connection)
+        self.assertEqual("applied", transaction.apply("workspace", envelope, lambda _: None))
+        trace = PsycopgAuditReader(self.connection).trace("correlation-test")
+        self.assertEqual(["publication", "consumption"], [item["stage"] for item in trace])
+        self.assertEqual("published", trace[0]["outcome"]["status"])
+        self.assertEqual("applied", trace[1]["outcome"]["status"])
+        for item in trace:
+            self.assertEqual(str(message_id), item["message_id"])
+            self.assertEqual("experience.intent.updated", item["topic"])
+            self.assertEqual("orchestration", item["source"])
+            self.assertEqual(1, item["context_version"])
+            self.assertEqual({"classification": "confidential"}, item["security_context"])
+            self.assertNotIn("payload", item)
+
+        columns = {row[0] for row in self.connection.execute(
+            "SELECT column_name FROM information_schema.columns "
+            "WHERE table_schema='orchestration' AND table_name='message_audit'"
+        ).fetchall()}
+        self.assertNotIn("payload", columns)
+
+    def test_retry_outcome_is_audited_with_sanitized_failure_code(self):
+        from aea_platform.adapters import PsycopgAuditReader, PsycopgConsumerTransaction
+
+        session_id = self.create_session()
+        message = {
+            "message_id": str(uuid.uuid4()), "topic": "experience.intent.updated",
+            "session_id": str(session_id), "context_version": 0,
+            "correlation_id": "retry-correlation", "source": "orchestration",
+            "publication_time": datetime.now(timezone.utc).isoformat(),
+            "security_context": {},
+        }
+        PsycopgConsumerTransaction(self.connection).record_outcome(
+            "workspace", message, "retry", "TimeoutError"
+        )
+        trace = PsycopgAuditReader(self.connection).trace("retry-correlation")
+        self.assertEqual("retry", trace[0]["outcome"]["status"])
+        self.assertEqual("TimeoutError", trace[0]["outcome"]["failure_code"])

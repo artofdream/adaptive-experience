@@ -16,6 +16,8 @@ class ConsumerTransaction(Protocol):
     def outcome(self, consumer_group: str, message_id: str) -> str | None: ...
     def active_context_version(self, session_id: str) -> int | None: ...
     def apply(self, consumer_group: str, message: dict, handler: Callable[[dict], None]) -> str: ...
+    def record_outcome(self, consumer_group: str, message: dict,
+                       outcome: str, failure_code: str | None = None) -> None: ...
 
 
 class ManualOffsetConsumer(Protocol):
@@ -62,5 +64,8 @@ class GovernedConsumer:
             outcome = self.failures.route(self.group, record, error)
             if outcome not in {"retry", "dead_letter"}:
                 raise RuntimeError("failure router did not durably transfer message")
+            self.transaction.record_outcome(
+                self.group, envelope, outcome, type(error).__name__[:128]
+            )
         self.offsets.commit(record)
         return outcome

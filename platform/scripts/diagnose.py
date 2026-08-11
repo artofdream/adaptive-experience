@@ -14,11 +14,16 @@ def main() -> None:
         pending, expired_claims = cursor.fetchone()
         cursor.execute("SELECT max(version) FROM orchestration.schema_migration")
         version = cursor.fetchone()[0]
+        cursor.execute(
+            "SELECT count(*), count(*) FILTER (WHERE outcome ->> 'status' IN ('retry','dead_letter')) "
+            "FROM orchestration.message_audit"
+        )
+        audit_records, failed_outcomes = cursor.fetchone()
     metadata = AdminClient({"bootstrap.servers": os.environ.get("AEA_KAFKA_BOOTSTRAP", "localhost:9092")}).list_topics(timeout=10)
     print({"migration_version": version, "pending_outbox": pending,
-           "expired_outbox_claims": expired_claims, "kafka_topics": len(metadata.topics)})
+           "expired_outbox_claims": expired_claims, "audit_records": audit_records,
+           "failed_outcomes": failed_outcomes, "kafka_topics": len(metadata.topics)})
 
 
 if __name__ == "__main__":
     main()
-

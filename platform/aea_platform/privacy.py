@@ -20,9 +20,13 @@ class PayloadPrivacyGuard:
         "security_context", "payload", "outcome",
     }
     RAW_SENSITIVE_FIELDS = {
-        "address", "card_number", "cardholder_name", "customer_email",
+        "access_token", "address", "api_key", "authorization", "card_number", "cardholder_name", "customer_email",
         "customer_name", "cvv", "email", "phone", "recipient_address",
-        "recipient_email", "recipient_name",
+        "password", "recipient_email", "recipient_name", "refresh_token",
+    }
+    SECURITY_CONTEXT_FIELDS = {
+        "authentication_strength", "classification", "scopes",
+        "subject_reference", "tenant_reference",
     }
 
     def __init__(self, policy: KafkaPolicy, schema_dir: Path):
@@ -32,17 +36,26 @@ class PayloadPrivacyGuard:
 
     def validate_publication(self, principal: str, topic: str, envelope: dict) -> None:
         policy = self.policy.require_publish(principal, topic)
-        self._validate(topic, policy.schema_version, envelope)
+        self._validate(topic, policy.schema_version, policy.publisher, envelope)
 
     def validate_delivery(self, subscriber: str, topic: str, envelope: dict) -> None:
         policy = self.policy.require_consume(subscriber, topic)
-        self._validate(topic, policy.schema_version, envelope)
+        self._validate(topic, policy.schema_version, policy.publisher, envelope)
 
-    def _validate(self, topic: str, active_version: str, envelope: dict) -> None:
+    def _validate(self, topic: str, active_version: str,
+                  expected_source: str, envelope: dict) -> None:
         if set(envelope) != self.ENVELOPE_FIELDS:
             raise ValueError("envelope differs from the minimum governed contract")
         if envelope.get("topic") != topic:
             raise ValueError("envelope topic does not match transport topic")
+        if envelope.get("source") != expected_source:
+            raise ValueError("envelope source does not match the governed publisher")
+        security_context = envelope.get("security_context")
+        if not isinstance(security_context, dict):
+            raise ValueError("security_context must be an object")
+        unknown_security = sorted(set(security_context) - self.SECURITY_CONTEXT_FIELDS)
+        if unknown_security:
+            raise ValueError(f"security_context contains unauthorized fields: {unknown_security}")
         version = envelope.get("schema_version")
         if not isinstance(version, str):
             raise ValueError("schema_version is required")

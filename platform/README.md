@@ -52,6 +52,12 @@ plaintext production listeners are prohibited by ADR-012.
   `PrivacyEnforcingPublisher`; raw names, addresses, contact details, or card
   data are prohibited. Governed contracts use opaque references and
   provider-issued payment tokens instead.
+- PostgreSQL keeps a payload-free `message_audit` ledger for publication and
+  consumption stages. It records message/topic/source identity, correlation
+  and context versions, publication time, sanitized outcomes, and the governed
+  security context. Operators query a workflow by correlation ID without
+  exposing business payloads; diagnostics report aggregate audit/failure
+  counts only.
 
 ## Recovery
 
