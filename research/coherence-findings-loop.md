@@ -26,8 +26,8 @@ completed rows because the queue is also the audit trail.
 | 10 | CF-010 | GitLab wiki pages are title stubs with no body synced from canonical docs | Medium | verified | 2026-08-10 | 2026-08-10 | #101 / !50 |
 | 11 | CF-011 | Wiki florist page says “reference implementation” while repo naming uses “reference design” | Low | verified | 2026-08-10 | 2026-08-10 | #102 / !51 |
 | 12 | CF-012 | GitLab issues #79–#85 remain open though claims are fixed or intentional on main | Low | verified | 2026-08-10 | 2026-08-10 | #103 / !52 |
-| 13 | CF-014 | Misnumbered Accepted ADR stubs (files ADR-008…012 titled ADR-006…010) collide with Proposed ADR-006/007 and gate issues | High | in-mr | 2026-08-11 | 2026-08-11 | #110 / !56 |
-| 14 | CF-015 | Gate issues #106–#108 lack matching ADR files; slots hold unrelated tech stubs | High | queued | 2026-08-11 | 2026-08-11 | #106–#108 |
+| 13 | CF-014 | Misnumbered Accepted ADR stubs (files ADR-008…012 titled ADR-006…010) collide with Proposed ADR-006/007 and gate issues | High | verified | 2026-08-11 | 2026-08-11 | #110 / !56 |
+| 14 | CF-015 | Gate issues #106–#108 lack matching ADR files; slots hold unrelated tech stubs | High | in-progress | 2026-08-11 | 2026-08-11 | #106 |
 | 15 | CF-013 | MVP T-04 wireframe/Figma shows advanced customization fields while FR-003 remains Future | Medium | queued | 2026-08-11 | 2026-08-11 | #104 |
 | 16 | CF-016 | Kafka stub Accepted while Proposed ADR-007 / TA leave broker product-neutral | Medium | queued | 2026-08-11 | 2026-08-11 | — |
 | 17 | CF-017 | Proposed ADR-007 introduces a BFF not listed in technical-architecture.md | Medium | queued | 2026-08-11 | 2026-08-11 | #105 |

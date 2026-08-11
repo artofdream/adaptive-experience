@@ -47,6 +47,9 @@ query / response), schema version, session ID, correlation ID, source, context
 version, publication time, security context, minimum authorized payload, and
 outcome or recoverable error information.
 
+Authoritative publications use **contract-first JSON Schemas** and a
+**transactional outbox** (see [ADR-008](../06-adr/ADR-008-contract-first-messaging.md)).
+
 This envelope backs the governance, auditability, and least-privilege
 requirements:
 - NFR-015 — every topic has an owner, a versioned schema, and documented publisher/subscriber permissions.
