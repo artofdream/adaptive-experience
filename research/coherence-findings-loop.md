@@ -22,7 +22,7 @@ completed rows because the queue is also the audit trail.
 | 6 | CF-006 | Add a full post-merge documentation verification path | Low | verified | 2026-08-10 | 2026-08-10 | #95 / !41 |
 | 7 | CF-007 | T-03 recommendation cards omit the Available badge (FR-011) | Medium | verified | 2026-08-10 | 2026-08-10 | #97 / !46 |
 | 8 | CF-008 | T-04 customization panel drops Colour and Ribbon fields | Medium | verified | 2026-08-10 | 2026-08-10 | #98 / !47 |
-| 9 | CF-009 | T-08 tracking omits Contact Florist and Future T-09 escalation (FR-006) | Medium | in-mr | 2026-08-10 | 2026-08-11 | #99 / !48 · #114 |
+| 9 | CF-009 | T-08 tracking omits Contact Florist and Future T-09 escalation (FR-006) | Medium | in-mr | 2026-08-10 | 2026-08-11 | #99 / !48 · #114 / !65 |
 | 10 | CF-010 | GitLab wiki pages are title stubs with no body synced from canonical docs | Medium | verified | 2026-08-10 | 2026-08-10 | #101 / !50 |
 | 11 | CF-011 | Wiki florist page says “reference implementation” while repo naming uses “reference design” | Low | verified | 2026-08-10 | 2026-08-10 | #102 / !51 |
 | 12 | CF-012 | GitLab issues #79–#85 remain open though claims are fixed or intentional on main | Low | verified | 2026-08-10 | 2026-08-10 | #103 / !52 |
