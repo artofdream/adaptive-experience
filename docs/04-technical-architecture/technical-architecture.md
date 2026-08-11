@@ -6,6 +6,11 @@
 ## Style
 Asynchronous, event-driven, experience-oriented.
 
+Customer-facing commands receive **synchronous acknowledgement** at application
+edges; authoritative domain progression remains **asynchronous** on the bus
+(see [ADR-010](../06-adr/ADR-010-command-event-boundaries.md)). Clients do not
+publish directly to infrastructure messaging.
+
 ## Authority boundary
 **AI interprets; domain services validate.** The AI Floral Concierge interprets
 natural-language intent and generates explanations, but it is never the
