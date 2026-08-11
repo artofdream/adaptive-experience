@@ -68,7 +68,8 @@ class PsycopgConsumerTransaction:
     def active_context_version(self, session_id: str, *, lock: bool = False) -> int | None:
         suffix = " FOR UPDATE" if lock else ""
         row = self.connection.execute(
-            "SELECT context_version FROM orchestration.experience_session WHERE session_id=%s" + suffix,
+            "SELECT context_version FROM orchestration.experience_session "
+            "WHERE session_id=%s AND lifecycle_status='active'" + suffix,
             (session_id,),
         ).fetchone()
         return row[0] if row else None
@@ -89,7 +90,7 @@ class PsycopgConsumerTransaction:
             # is required: neither an older result nor a result from an unknown
             # future context may mutate the active workspace projection.
             active = self.active_context_version(message["session_id"], lock=True)
-            outcome = "stale" if active is not None and message["context_version"] != active else "applied"
+            outcome = "applied" if message["context_version"] == active else "stale"
             if outcome == "applied":
                 handler(message)
             self.connection.execute(

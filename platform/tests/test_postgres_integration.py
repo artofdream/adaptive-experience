@@ -137,6 +137,27 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         ).fetchall()
         self.assertEqual({(0, "applied", 1), (0, "stale", 1), (2, "stale", 1)}, set(outcomes))
 
+    def test_missing_session_result_is_recorded_stale_without_handler(self):
+        from aea_platform.adapters import PsycopgConsumerTransaction
+
+        missing_session_id = uuid.uuid4()
+        message = {
+            "message_id": str(uuid.uuid4()), "topic": "experience.intent.updated",
+            "session_id": str(missing_session_id), "context_version": 0,
+            "correlation_id": "missing-session", "source": "orchestration",
+            "publication_time": datetime.now(timezone.utc).isoformat(),
+            "security_context": {"classification": "confidential"},
+        }
+        applied = []
+        transaction = PsycopgConsumerTransaction(self.connection)
+        self.assertEqual("stale", transaction.apply("workspace", message, applied.append))
+        self.assertEqual([], applied)
+        self.assertEqual("stale", self.connection.execute(
+            "SELECT outcome FROM orchestration.consumed_message "
+            "WHERE consumer_group='workspace' AND message_id=%s",
+            (message["message_id"],),
+        ).fetchone()[0])
+
     def test_payload_free_audit_trace_records_publication_and_consumption(self):
         from aea_platform.adapters import PsycopgAuditReader, PsycopgConsumerTransaction, PsycopgOutboxStore
 
