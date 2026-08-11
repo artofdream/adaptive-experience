@@ -107,7 +107,7 @@ class KafkaAcknowledgedPublisher:
 
         self.producer.produce(topic, key=key.encode(), value=json.dumps(message).encode(), callback=delivered)
         remaining = self.producer.flush(30)
-        if remaining or result.get("error") is not None:
+        if remaining or result.get("error") is not None or "message" not in result:
             raise RuntimeError("KafkaAcknowledgementFailed")
 
 

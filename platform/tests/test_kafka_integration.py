@@ -28,6 +28,11 @@ class KafkaIntegrationTests(unittest.TestCase):
             "auto.offset.reset": "earliest",
         })
         consumer.subscribe(["customer.message.submitted"])
+        assignment_deadline = time.monotonic() + 60
+        while time.monotonic() < assignment_deadline and not consumer.assignment():
+            consumer.poll(0.5)
+        self.assertTrue(consumer.assignment(), "consumer group did not receive a partition assignment")
+
         session_id = str(uuid.uuid4())
         message_id = str(uuid.uuid4())
         envelope = {
@@ -47,11 +52,13 @@ class KafkaIntegrationTests(unittest.TestCase):
         publisher = KafkaAcknowledgedPublisher(bootstrap, "outbox-relay-ci")
         publisher.publish(envelope["topic"], session_id, envelope)
 
-        deadline = time.monotonic() + 30
+        deadline = time.monotonic() + 60
         received = None
         while time.monotonic() < deadline:
             candidate = consumer.poll(1)
-            if candidate is not None and candidate.error() is None:
+            if candidate is not None and candidate.error() is not None:
+                self.fail(f"Kafka consume failed: {candidate.error()}")
+            if candidate is not None:
                 import json
                 decoded = json.loads(candidate.value())
                 if decoded["message_id"] == message_id:
