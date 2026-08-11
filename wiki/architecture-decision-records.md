@@ -15,7 +15,7 @@ Accepted ADRs (see `docs/06-adr/`):
 | ADR-009 | Experience-state ownership and persistence |
 | ADR-010 | Synchronous command and asynchronous event boundaries |
 
-ADR-007 lands with CF-017 / !61. Broker **product** selection remains deferred
+ADR-007 is Accepted on main. Broker **product** selection remains deferred
 (CF-016); the Kafka draft stays in `research/adr-candidates/`.
 
 ## Canonical docs
