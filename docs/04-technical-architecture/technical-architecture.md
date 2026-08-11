@@ -20,15 +20,29 @@ status — are validated by dedicated domain services before display.
 
 ## Core elements
 - Adaptive UI Workspace (persistent; hosts tiles, manages arrangement)
+- Backend-for-Frontend / BFF (browser session, CSRF, aggregation, streaming, and
+  least-data workspace projections; separately deployed)
 - AI Floral Concierge (intent interpretation and explanation)
 - Experience Orchestration Engine (shared context, dependencies, workflows, context versioning, selective regeneration)
-- Central Message Bus (governed, versioned topic contracts)
+- Central Message Bus (governed, versioned topic contracts; external broker)
 - Shared Understanding / experience state store
 
 Authoritative **experience-state ownership, persistence, context versioning,
 projections, and invalidation** are defined in
 [ADR-009](../06-adr/ADR-009-experience-state-ownership.md). Domain services remain
 authoritative for business facts.
+
+## Initial deployment topology
+MVP deployment follows [ADR-007](../06-adr/ADR-007-initial-deployment-topology.md):
+
+- **Modular monolith backend** — Orchestration, Concierge, and authoritative
+  domain modules share one deployable process with explicit module boundaries.
+- **Separate Adaptive UI** — talks to the BFF, not to domain modules or the
+  infrastructure broker directly.
+- **Separate BFF** — owns browser-facing transport only; does not own experience
+  state, workflow decisions, or domain authority.
+- **External message broker** — concrete Central Message Bus for governed MVP
+  topics; broker **product** remains deferred (see ADR-007 and CF-016).
 
 ## Domain services (MVP)
 | Service | Responsibility | Authoritative |
