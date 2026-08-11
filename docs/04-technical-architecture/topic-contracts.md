@@ -7,22 +7,28 @@ version**; machine-readable JSON Schemas use the same topic name and version
 under [`schemas/`](schemas/) before implementation (for example,
 `schemas/support.faq.answered.v1.0.0.json`).
 
+**Owner / publisher** means the **bus publisher** of the governed topic (ADR-008
+outbox). The Adaptive UI Workspace is a **projection** (ADR-009): it never
+publishes directly to the infrastructure broker (ADR-007, ADR-010). Browser
+commands enter through the BFF; **Orchestration** accepts them and publishes the
+corresponding MVP topics below.
+
 | Topic | Schema version | Owner / publisher | Authorized subscribers | Minimum payload |
 |---|---|---|---|---|
-| customer.message.submitted | 1.0.0 | Workspace | AI Concierge, Orchestration | message text |
+| customer.message.submitted | 1.0.0 | Orchestration | AI Concierge, Workspace | message text |
 | experience.intent.updated | 1.0.0 | Orchestration | Workspace, Recommendation, Delivery | structured intent |
 | product.recommendations.requested | 1.0.0 | Orchestration | Recommendation | intent reference |
 | product.recommendations.ready | 1.0.0 | Recommendation | Orchestration, Workspace | eligible product IDs, ranking |
-| product.selected | 1.0.0 | Workspace | Orchestration, Inventory, Pricing, Order | product ID, options |
-| product.customization.updated | 1.0.0 | Workspace | Orchestration, Pricing, Order | product ID, basic options |
+| product.selected | 1.0.0 | Orchestration | Inventory, Pricing, Order, Workspace | product ID, options |
+| product.customization.updated | 1.0.0 | Orchestration | Pricing, Order, Workspace | product ID, basic options |
 | inventory.availability.requested | 1.0.0 | Orchestration | Inventory | product IDs, delivery date |
 | inventory.availability.validated | 1.0.0 | Inventory | Orchestration, Recommendation, Workspace | product IDs, availability |
 | inventory.reservation.confirmed | 1.0.0 | Inventory | Order, Orchestration | reservation ID, product IDs |
-| delivery.details.updated | 1.0.0 | Workspace | Orchestration, Delivery, Order | destination reference, timing |
+| delivery.details.updated | 1.0.0 | Orchestration | Delivery, Order, Workspace | destination reference, timing |
 | delivery.slots.ready | 1.0.0 | Delivery | Orchestration, Workspace | eligible slot IDs |
-| delivery.slot.selected | 1.0.0 | Workspace | Orchestration, Pricing, Order | slot ID |
+| delivery.slot.selected | 1.0.0 | Orchestration | Pricing, Order, Workspace | slot ID |
 | order.summary.updated | 1.0.0 | Pricing | Orchestration, Workspace, Order | itemized charges, total |
-| order.checkout.requested | 1.0.0 | Workspace | Orchestration, Order, Payment | draft order ID, total |
+| order.checkout.requested | 1.0.0 | Orchestration | Order, Payment, Workspace | draft order ID, total |
 | payment.authorization.requested | 1.0.0 | Orchestration | Payment | draft order ID, amount, payment token |
 | payment.authorization.succeeded | 1.0.0 | Payment | Orchestration, Order | authorization ID, draft order ID |
 | payment.authorization.failed | 1.0.0 | Payment | Orchestration, Workspace | draft order ID, recoverable error |
