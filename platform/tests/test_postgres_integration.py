@@ -103,7 +103,55 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         versions = [row[0] for row in self.connection.execute(
             "SELECT version FROM orchestration.schema_migration ORDER BY version"
         ).fetchall()]
-        self.assertEqual([1, 2, 3], versions)
+        self.assertEqual([1, 2, 3, 4], versions)
+
+    def test_selective_patch_preserves_decisions_and_invalidates_only_dependents(self):
+        from aea_platform.adapters import PsycopgExperienceStateStore
+        from aea_platform.state import StatePatch
+
+        session_id = self.create_session()
+        initial = {
+            "shared_understanding": {"occasion": "birthday", "budget": 60},
+            "decisions": {"product": {"id": "rose-1", "completed": True}},
+            "tiles": {"delivery": {"status": "complete"}},
+        }
+        self.connection.execute(
+            "UPDATE orchestration.experience_session SET state=%s::jsonb WHERE session_id=%s",
+            (json.dumps(initial), session_id),
+        )
+        store = PsycopgExperienceStateStore(self.connection)
+        version = store.apply_patch(
+            str(session_id), 0, 1,
+            StatePatch.create(
+                {"shared_understanding": {"budget": 75}},
+                ["shared_understanding.budget"],
+            ),
+        )
+        restored = store.load(str(session_id))
+        self.assertEqual(1, version)
+        self.assertEqual("birthday", restored["state"]["shared_understanding"]["occasion"])
+        self.assertEqual(75, restored["state"]["shared_understanding"]["budget"])
+        self.assertEqual(initial["decisions"], restored["state"]["decisions"])
+        self.assertEqual(initial["tiles"], restored["state"]["tiles"])
+        invalidated = {row[0] for row in self.connection.execute(
+            "SELECT projection_key FROM orchestration.experience_invalidation "
+            "WHERE session_id=%s AND context_version=1", (session_id,)
+        ).fetchall()}
+        self.assertEqual({"recommendations", "order_summary"}, invalidated)
+
+    def test_selective_patch_rejects_unknown_dependency_facet(self):
+        from aea_platform.adapters import PsycopgExperienceStateStore
+        from aea_platform.state import StatePatch
+
+        session_id = self.create_session()
+        store = PsycopgExperienceStateStore(self.connection)
+        with self.assertRaises(self.psycopg.errors.InvalidParameterValue):
+            store.apply_patch(
+                str(session_id), 0, 1,
+                StatePatch.create({"unknown": {"facet": True}}, ["unknown.facet"]),
+            )
+        self.connection.rollback()
+        self.assertEqual(0, store.load(str(session_id))["context_version"])
 
     def test_consumer_idempotency_and_stale_outcome_are_transactional(self):
         from aea_platform.adapters import PsycopgConsumerTransaction

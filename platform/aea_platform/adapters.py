@@ -6,6 +6,35 @@ from datetime import datetime, timedelta, timezone
 
 from .outbox import OutboxRecord
 from .policy import KafkaPolicy
+from .state import StatePatch
+
+
+class PsycopgExperienceStateStore:
+    """Authoritative selective-mutation boundary for experience state."""
+
+    def __init__(self, connection):
+        self.connection = connection
+
+    def apply_patch(self, session_id: str, expected_context_version: int,
+                    state_schema_version: int, patch: StatePatch,
+                    messages: list[dict] | None = None) -> int:
+        row = self.connection.execute(
+            "SELECT orchestration.apply_experience_patch(%s,%s,%s,%s::jsonb,%s::jsonb,%s::jsonb)",
+            (session_id, expected_context_version, state_schema_version,
+             json.dumps(patch.values), json.dumps(patch.changed_facets),
+             json.dumps(messages or [])),
+        ).fetchone()
+        return row[0]
+
+    def load(self, session_id: str) -> dict | None:
+        row = self.connection.execute(
+            "SELECT state_schema_version,context_version,state FROM orchestration.experience_session "
+            "WHERE session_id=%s AND lifecycle_status='active'",
+            (session_id,),
+        ).fetchone()
+        if row is None:
+            return None
+        return {"state_schema_version": row[0], "context_version": row[1], "state": row[2]}
 
 
 class PsycopgOutboxStore:

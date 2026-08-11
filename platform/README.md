@@ -34,6 +34,10 @@ plaintext production listeners are prohibited by ADR-012.
 
 - `orchestration.experience_session`, invalidation records, and outbox rows are
   written by one PostgreSQL transaction with optimistic context-version checks.
+- Application mutations use `PsycopgExperienceStateStore.apply_patch`: deep
+  object patches preserve completed decisions and unaffected tile state, while
+  the canonical `projection_dependency` registry derives only the projections
+  that must regenerate. Unknown dependency facets fail closed.
 - Relay claims use `FOR UPDATE SKIP LOCKED`; a row becomes published only after
   the Kafka producer returns an `acks=all` delivery acknowledgement.
 - Message IDs remain stable across relay retries.
