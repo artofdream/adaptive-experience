@@ -1,0 +1,32 @@
+name: adaptive-experience-edge
+
+services:
+  bff:
+    build:
+      context: .
+      dockerfile: bff/Dockerfile
+    environment:
+      AEA_ENVIRONMENT: local
+      AEA_ALLOWED_ORIGIN: https://localhost:8443
+      AEA_LOCAL_BEARER_TOKEN: local-browser-token
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/healthz')"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    expose:
+      - "8080"
+
+  gateway:
+    build:
+      context: gateway
+    depends_on:
+      bff:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --no-check-certificate -O- https://127.0.0.1:8443/healthz >/dev/null"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    ports:
+      - "8443:8443"
