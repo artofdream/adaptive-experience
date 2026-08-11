@@ -20,19 +20,24 @@ completed rows because the queue is also the audit trail.
 | 4 | CF-004 | Restore root README repository-area links lost during merge resolution | Low | verified | 2026-08-10 | 2026-08-10 | #92 / !38 |
 | 5 | CF-005 | Correct stale CI and coherence-guard descriptions | Low | verified | 2026-08-10 | 2026-08-10 | #93 / !39 |
 | 6 | CF-006 | Add a full post-merge documentation verification path | Low | verified | 2026-08-10 | 2026-08-10 | #95 / !41 |
-| 7 | CF-007 | T-03 recommendation cards omit the Available badge (FR-011) | Medium | verified | 2026-08-10 | 2026-08-10 | #97 / !46 |
+| 7 | CF-007 | T-03 recommendation cards omit the Available badge (FR-011) | Medium | in-mr | 2026-08-10 | 2026-08-11 | #97 / !46 · #113 / !64 |
 | 8 | CF-008 | T-04 customization panel drops Colour and Ribbon fields | Medium | verified | 2026-08-10 | 2026-08-10 | #98 / !47 |
 | 9 | CF-009 | T-08 tracking omits Contact Florist and Future T-09 escalation (FR-006) | Medium | in-mr | 2026-08-10 | 2026-08-11 | #99 / !48 · #114 / !65 |
 | 10 | CF-010 | GitLab wiki pages are title stubs with no body synced from canonical docs | Medium | verified | 2026-08-10 | 2026-08-10 | #101 / !50 |
 | 11 | CF-011 | Wiki florist page says “reference implementation” while repo naming uses “reference design” | Low | verified | 2026-08-10 | 2026-08-10 | #102 / !51 |
 | 12 | CF-012 | GitLab issues #79–#85 remain open though claims are fixed or intentional on main | Low | verified | 2026-08-10 | 2026-08-10 | #103 / !52 |
 | 13 | CF-014 | Misnumbered Accepted ADR stubs (files ADR-008…012 titled ADR-006…010) collide with Proposed ADR-006/007 and gate issues | High | verified | 2026-08-11 | 2026-08-11 | #110 / !56 |
-| 14 | CF-015 | Gate issues #106–#108 lack matching ADR files; slots hold unrelated tech stubs | High | in-mr | 2026-08-11 | 2026-08-11 | #106 / !57 · #107 / !58 · #108 / !59 |
-| 15 | CF-013 | MVP T-04 wireframe/Figma shows advanced customization fields while FR-003 remains Future | Medium | in-mr | 2026-08-11 | 2026-08-11 | #104 / !60 |
-| 16 | CF-016 | Kafka stub Accepted while Proposed ADR-007 / TA leave broker product-neutral | Medium | queued | 2026-08-11 | 2026-08-11 | — |
-| 17 | CF-017 | Proposed ADR-007 introduces a BFF not listed in technical-architecture.md | Medium | queued | 2026-08-11 | 2026-08-11 | #105 |
-| 18 | CF-018 | FR-003/roadmap Future text lists size and personal messages as Future while T-04 MVP treats catalog size + card message as MVP | Medium | in-mr | 2026-08-11 | 2026-08-11 | #104 / !60 |
-| 19 | CF-019 | Wiki ADR index still lists only ADR-001…005 | Low | in-mr | 2026-08-11 | 2026-08-11 | #112 / !63 |
+| 14 | CF-015 | Gate issues #106–#108 lack matching ADR files; slots hold unrelated tech stubs | High | verified | 2026-08-11 | 2026-08-11 | #106 / !57 · #107 / !58 · #108 / !59 |
+| 15 | CF-013 | MVP T-04 wireframe/Figma shows advanced customization fields while FR-003 remains Future | Medium | verified | 2026-08-11 | 2026-08-11 | #104 / !60 |
+| 16 | CF-016 | Kafka stub Accepted while Proposed ADR-007 / TA leave broker product-neutral | Medium | verified | 2026-08-11 | 2026-08-11 | #111 / !62 |
+| 17 | CF-017 | Proposed ADR-007 introduces a BFF not listed in technical-architecture.md | Medium | verified | 2026-08-11 | 2026-08-11 | #105 / !61 |
+| 18 | CF-018 | FR-003/roadmap Future text lists size and personal messages as Future while T-04 MVP treats catalog size + card message as MVP | Medium | verified | 2026-08-11 | 2026-08-11 | #104 / !60 |
+| 19 | CF-019 | Wiki ADR index still lists only ADR-001…005 | Low | verified | 2026-08-11 | 2026-08-11 | #112 / !63 |
+| 20 | CF-020 | Topic contracts name Workspace as bus publisher for UI-originated topics while ADR-007/009/010 require BFF/Orchestration edges and forbid client→broker publish | Medium | queued | 2026-08-11 | 2026-08-11 | — |
+| 21 | CF-021 | ADR-008 requires schemas under schemas/ plus CI contract checks before publishers ship; only schemas/README exists and CI has no schema job | Medium | queued | 2026-08-11 | 2026-08-11 | — |
+| 22 | CF-022 | adaptive-workspace-mvp.png still shows Colour/Ribbon/Gift Card as MVP T-04 after ADR-006 aligned the SVG | Medium | queued | 2026-08-11 | 2026-08-11 | — |
+| 23 | CF-023 | research/adr-candidates/README still says ADR-006…010 gate slots are open though those ADRs are Accepted | Low | queued | 2026-08-11 | 2026-08-11 | — |
+| 24 | CF-024 | ADR-009 still says BFF “if introduced by deployment ADRs” though ADR-007 Accepted a separate BFF | Low | queued | 2026-08-11 | 2026-08-11 | — |
 
 Allowed statuses: `queued`, `investigating`, `ready`, `in-progress`, `in-mr`,
 `verified`, `regressed`, `duplicate`, `not-reproducible`, and `blocked`.

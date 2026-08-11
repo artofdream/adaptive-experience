@@ -268,12 +268,16 @@ def adaptive_workspace() -> str:
       <rect x="492" y="336" width="166" height="90" rx="6" fill="{G['fill']}"/>
       <text x="492" y="448" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="700" fill="{G['text']}">Pink Flower Vase</text>
       <text x="492" y="468" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="{G['text']}">$125.00</text>
+      <rect x="594" y="454" width="64" height="18" rx="9" fill="{G['bg-soft']}" stroke="{G['border-strong']}"/>
+      <text x="626" y="467" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="{G['text']}">Available</text>
       <rect x="492" y="480" width="166" height="28" rx="6" fill="{G['fill-dark']}"/>
       <text x="575" y="498" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="{G['bg']}">Select</text>
       <rect x="690" y="324" width="190" height="200" rx="8" fill="{G['bg']}" stroke="{G['border']}"/>
       <rect x="702" y="336" width="166" height="90" rx="6" fill="{G['fill']}"/>
       <text x="702" y="448" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="700" fill="{G['text']}">Lilac Bouquet</text>
       <text x="702" y="468" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="{G['text']}">$95.00</text>
+      <rect x="804" y="454" width="64" height="18" rx="9" fill="{G['bg-soft']}" stroke="{G['border-strong']}"/>
+      <text x="836" y="467" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="{G['text']}">Available</text>
       <rect x="702" y="480" width="166" height="28" rx="6" fill="{G['fill-dark']}"/>
       <text x="785" y="498" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="{G['bg']}">Select</text>
     </g>
