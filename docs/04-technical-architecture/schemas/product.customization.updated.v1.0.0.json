@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gitlab.com/artof-group/adaptive-experience-architecture/-/blob/main/docs/04-technical-architecture/schemas/product.customization.updated.v1.0.0.json",
+  "title": "product.customization.updated",
+  "description": "Minimum payload contract for product.customization.updated (NFR-015/017). Envelope fields live in the bus envelope, not this payload schema.",
+  "type": "object",
+  "properties": {
+    "product_id": {
+      "type": "string"
+    },
+    "basic_options": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "product_id"
+  ],
+  "additionalProperties": false
+}

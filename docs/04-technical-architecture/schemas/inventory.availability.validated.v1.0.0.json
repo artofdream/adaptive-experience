@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gitlab.com/artof-group/adaptive-experience-architecture/-/blob/main/docs/04-technical-architecture/schemas/inventory.availability.validated.v1.0.0.json",
+  "title": "inventory.availability.validated",
+  "description": "Minimum payload contract for inventory.availability.validated (NFR-015/017). Envelope fields live in the bus envelope, not this payload schema.",
+  "type": "object",
+  "properties": {
+    "product_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "availability": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "product_ids",
+    "availability"
+  ],
+  "additionalProperties": false
+}

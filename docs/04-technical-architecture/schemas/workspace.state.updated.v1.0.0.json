@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gitlab.com/artof-group/adaptive-experience-architecture/-/blob/main/docs/04-technical-architecture/schemas/workspace.state.updated.v1.0.0.json",
+  "title": "workspace.state.updated",
+  "description": "Minimum payload contract for workspace.state.updated (NFR-015/017). Envelope fields live in the bus envelope, not this payload schema.",
+  "type": "object",
+  "properties": {
+    "affected_tiles": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "state_version": {
+      "type": "integer"
+    }
+  },
+  "required": [
+    "affected_tiles",
+    "state_version"
+  ],
+  "additionalProperties": false
+}

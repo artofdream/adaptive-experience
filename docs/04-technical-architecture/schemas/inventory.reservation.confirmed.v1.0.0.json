@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gitlab.com/artof-group/adaptive-experience-architecture/-/blob/main/docs/04-technical-architecture/schemas/inventory.reservation.confirmed.v1.0.0.json",
+  "title": "inventory.reservation.confirmed",
+  "description": "Minimum payload contract for inventory.reservation.confirmed (NFR-015/017). Envelope fields live in the bus envelope, not this payload schema.",
+  "type": "object",
+  "properties": {
+    "reservation_id": {
+      "type": "string"
+    },
+    "product_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "reservation_id",
+    "product_ids"
+  ],
+  "additionalProperties": false
+}
