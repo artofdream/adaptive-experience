@@ -20,7 +20,7 @@ completed rows because the queue is also the audit trail.
 | 4 | CF-004 | Restore root README repository-area links lost during merge resolution | Low | verified | 2026-08-10 | 2026-08-10 | #92 / !38 |
 | 5 | CF-005 | Correct stale CI and coherence-guard descriptions | Low | verified | 2026-08-10 | 2026-08-10 | #93 / !39 |
 | 6 | CF-006 | Add a full post-merge documentation verification path | Low | verified | 2026-08-10 | 2026-08-10 | #95 / !41 |
-| 7 | CF-007 | T-03 recommendation cards omit the Available badge (FR-011) | Medium | in-progress | 2026-08-10 | 2026-08-11 | #97 / !46 · #113 |
+| 7 | CF-007 | T-03 recommendation cards omit the Available badge (FR-011) | Medium | in-mr | 2026-08-10 | 2026-08-11 | #97 / !46 · #113 / !64 |
 | 8 | CF-008 | T-04 customization panel drops Colour and Ribbon fields | Medium | verified | 2026-08-10 | 2026-08-10 | #98 / !47 |
 | 9 | CF-009 | T-08 tracking omits Contact Florist and Future T-09 escalation (FR-006) | Medium | regressed | 2026-08-10 | 2026-08-11 | #99 / !48 |
 | 10 | CF-010 | GitLab wiki pages are title stubs with no body synced from canonical docs | Medium | verified | 2026-08-10 | 2026-08-10 | #101 / !50 |
