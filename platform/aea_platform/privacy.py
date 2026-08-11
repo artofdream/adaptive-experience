@@ -31,14 +31,14 @@ class PayloadPrivacyGuard:
         self._schemas: dict[tuple[str, str], dict] = {}
 
     def validate_publication(self, principal: str, topic: str, envelope: dict) -> None:
-        self.policy.require_publish(principal, topic)
-        self._validate(topic, envelope)
+        policy = self.policy.require_publish(principal, topic)
+        self._validate(topic, policy.schema_version, envelope)
 
     def validate_delivery(self, subscriber: str, topic: str, envelope: dict) -> None:
-        self.policy.require_consume(subscriber, topic)
-        self._validate(topic, envelope)
+        policy = self.policy.require_consume(subscriber, topic)
+        self._validate(topic, policy.schema_version, envelope)
 
-    def _validate(self, topic: str, envelope: dict) -> None:
+    def _validate(self, topic: str, active_version: str, envelope: dict) -> None:
         if set(envelope) != self.ENVELOPE_FIELDS:
             raise ValueError("envelope differs from the minimum governed contract")
         if envelope.get("topic") != topic:
@@ -46,6 +46,8 @@ class PayloadPrivacyGuard:
         version = envelope.get("schema_version")
         if not isinstance(version, str):
             raise ValueError("schema_version is required")
+        if version != active_version:
+            raise ValueError("schema_version is not the active governed version")
         schema = self._schema(topic, version)
         payload = envelope.get("payload")
         if not isinstance(payload, dict):

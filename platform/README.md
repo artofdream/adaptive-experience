@@ -41,6 +41,9 @@ plaintext production listeners are prohibited by ADR-012.
   idempotency transaction succeeds or a durable retry/DLQ transfer succeeds.
 - The reviewed registry is the source for canonical topics, partition keys,
   publishers, consumer groups, retry tiers, DLQs, and policy tests.
+- Every registry entry names an accountable owner and active semantic schema
+  version. CI reconciles those fields and the publisher/subscriber permissions
+  with the reviewed topic catalog and verifies that the schema file exists.
 - `PayloadPrivacyGuard` reconciles every broker publication and subscriber
   delivery with that registry and the closed payload schema. Unknown envelope
   or payload fields, raw customer/payment fields, unauthorized subscribers,

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 import sys
 import unittest
 from pathlib import Path
@@ -106,11 +107,32 @@ class FoundationTests(unittest.TestCase):
             self.policy.require_consume("payment", "customer.message.submitted")
 
     def test_every_topic_has_distinct_authorized_parties_and_key(self):
+        schema_dir = ROOT.parent / "docs" / "04-technical-architecture" / "schemas"
         for topic in self.policy.topics.values():
+            self.assertTrue(topic.owner)
             self.assertTrue(topic.publisher)
             self.assertTrue(topic.key)
+            self.assertRegex(topic.schema_version, r"^[0-9]+\.[0-9]+\.[0-9]+$")
+            self.assertTrue((schema_dir / topic.schema_filename).is_file())
             self.assertEqual(len(topic.subscribers), len(set(topic.subscribers)))
             self.assertTrue(topic.subscribers)
+
+    def test_registry_governance_matches_documented_contracts(self):
+        contracts = (ROOT.parent / "docs" / "04-technical-architecture" / "topic-contracts.md").read_text(encoding="utf-8")
+        rows = re.findall(
+            r"^\| ([a-z0-9_.]+) \| ([0-9.]+) \| ([^|]+) \| ([^|]+) \|",
+            contracts.split("## Future topics", 1)[0], re.MULTILINE,
+        )
+        documented = {
+            name: (version, owner.strip().lower().replace(" ", "-"),
+                   tuple(item.strip().lower().replace(" ", "-") for item in subscribers.split(",")))
+            for name, version, owner, subscribers in rows
+        }
+        executable = {
+            topic.name: (topic.schema_version, topic.owner, topic.subscribers)
+            for topic in self.policy.topics.values()
+        }
+        self.assertEqual(documented, executable)
 
     def test_retry_and_dlq_names_are_consumer_specific(self):
         topic = self.policy.topics["customer.message.submitted"]

@@ -85,7 +85,7 @@ class PrivacyTests(unittest.TestCase):
             self.guard.validate_publication("orchestration", message["topic"], message)
         unknown = copy.deepcopy(envelope())
         unknown["schema_version"] = "9.0.0"
-        with self.assertRaisesRegex(ValueError, "unregistered payload schema"):
+        with self.assertRaisesRegex(ValueError, "active governed version"):
             self.guard.validate_publication("orchestration", unknown["topic"], unknown)
 
 
