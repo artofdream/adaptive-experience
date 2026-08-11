@@ -1,8 +1,9 @@
 # ADR promotion candidates (quarantined)
 
 These drafts were briefly staged under `docs/06-adr/` with **wrong ADR numbers**
-and premature **Accepted** status (CF-014). They must not occupy ADR-006…010
-until M0 gate issues #104–#108 are satisfied with correctly numbered ADRs.
+and premature **Accepted** status (CF-014). They were quarantined here so
+**ADR-006…010** could land as the correctly numbered M0 gate ADRs (#104–#108).
+Those gate ADRs are now **Accepted** on `main`.
 
 | Candidate file | Topic | Future slot (tentative) |
 |---|---|---|
@@ -13,4 +14,4 @@ until M0 gate issues #104–#108 are satisfied with correctly numbered ADRs.
 | `rag-hybrid-retrieval.md` | RAG hybrid retrieval | ADR-011+ |
 
 Status of each file: **Draft** (research only). Promote into `docs/06-adr/` only
-via a dedicated ADR MR with the next free number after the gate ADRs land.
+via a dedicated ADR MR with the next free number (**ADR-011+**).
