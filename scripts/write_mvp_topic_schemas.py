@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Write minimal MVP topic JSON Schema stubs (ADR-008 / CF-021)."""
+"""Write MVP topic JSON Schemas from the reviewed payload manifest.
+
+TOPICS is imported by check_topic_schemas.py so generation and validation use
+one minimum-payload inventory (ADR-008 / #129).
+"""
 
 from __future__ import annotations
 

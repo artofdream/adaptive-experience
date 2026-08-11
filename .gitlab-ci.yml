@@ -27,11 +27,14 @@ topic-schema-guard:
   image: python:3.12-alpine
   script:
     - python scripts/check_topic_schemas.py
+    - python scripts/test_topic_schema_guard.py
   rules:
     - changes:
         - "docs/04-technical-architecture/topic-contracts.md"
         - "docs/04-technical-architecture/schemas/**/*"
         - "scripts/check_topic_schemas.py"
+        - "scripts/test_topic_schema_guard.py"
+        - "scripts/write_mvp_topic_schemas.py"
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_COMMIT_BRANCH == "main"'
 
