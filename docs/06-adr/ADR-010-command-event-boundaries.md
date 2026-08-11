@@ -72,7 +72,7 @@ publisher.
 
 ## Consequences
 
-- Edge/BFF APIs (if present) are the only client entry points to commands and
+- Edge/BFF APIs are the only client entry points to commands and
   queries; broker credentials stay off the client.
 - Orchestration translates accepted commands into outbox publications (ADR-008).
 - Test plans cover ack latency, timeout behavior, correlation, and stale-result
