@@ -86,8 +86,9 @@ business truth.
 
 ## Consequences
 
-- BFF or API edges (if introduced by deployment ADRs) read/write experience
-  state only through orchestration APIs — never as a second store of record.
+- The separately deployed BFF from [ADR-007](ADR-007-initial-deployment-topology.md)
+  reads/writes experience state only through orchestration APIs — never as a
+  second store of record.
 - Domain services must not silently mutate experience-state fields they do not
   own.
 - Test plans assert context-version increments, selective regeneration, and
