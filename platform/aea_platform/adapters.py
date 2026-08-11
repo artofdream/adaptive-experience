@@ -29,6 +29,12 @@ class PsycopgOutboxStore:
             )
             if cursor.rowcount != 1:
                 raise RuntimeError("outbox publication claim was lost")
+            cursor.execute(
+                "UPDATE orchestration.message_audit SET outcome=outcome || %s::jsonb, recorded_at=%s "
+                "WHERE message_id=%s AND stage='publication'",
+                (json.dumps({"status": "published", "published_at": published_at.isoformat()}),
+                 published_at, message_id),
+            )
 
     def release_for_retry(self, message_id: str, error_code: str, delay_seconds: int) -> None:
         retry_at = datetime.now(timezone.utc) + timedelta(seconds=delay_seconds)
@@ -37,6 +43,11 @@ class PsycopgOutboxStore:
                 "UPDATE orchestration.outbox_message SET next_attempt_at=%s, claimed_by=NULL, "
                 "claimed_until=NULL, last_error_code=%s WHERE message_id=%s AND published_at IS NULL",
                 (retry_at, error_code[:128], message_id),
+            )
+            cursor.execute(
+                "UPDATE orchestration.message_audit SET outcome=outcome || %s::jsonb, recorded_at=clock_timestamp() "
+                "WHERE message_id=%s AND stage='publication'",
+                (json.dumps({"status": "retry", "failure_code": error_code[:128]}), message_id),
             )
 
 
@@ -84,7 +95,53 @@ class PsycopgConsumerTransaction:
                 (consumer_group, message_id, message["topic"], message["session_id"],
                  message["context_version"], outcome, message.get("correlation_id")),
             )
+            self._write_audit(consumer_group, message, outcome)
             return outcome
+
+    def record_outcome(self, consumer_group: str, message: dict,
+                       outcome: str, failure_code: str | None = None) -> None:
+        with self.connection.transaction():
+            self.connection.execute(
+                "INSERT INTO orchestration.consumed_message "
+                "(consumer_group,message_id,topic,session_id,context_version,outcome,failure_code,correlation_id) "
+                "VALUES (%s,%s,%s,%s,%s,%s,%s,%s) ON CONFLICT (consumer_group,message_id) DO NOTHING",
+                (consumer_group, message["message_id"], message["topic"], message.get("session_id"),
+                 message["context_version"], outcome, failure_code, message["correlation_id"]),
+            )
+            self._write_audit(consumer_group, message, outcome, failure_code)
+
+    def _write_audit(self, consumer_group: str, message: dict, outcome: str,
+                     failure_code: str | None = None) -> None:
+        details = {"status": outcome}
+        if failure_code:
+            details["failure_code"] = failure_code
+        self.connection.execute(
+            "INSERT INTO orchestration.message_audit "
+            "(message_id,stage,actor,topic,source,correlation_id,context_version,publication_time,outcome,security_context) "
+            "VALUES (%s,'consumption',%s,%s,%s,%s,%s,%s,%s::jsonb,%s::jsonb) "
+            "ON CONFLICT (message_id,stage,actor) DO UPDATE SET outcome=EXCLUDED.outcome, recorded_at=clock_timestamp()",
+            (message["message_id"], consumer_group, message["topic"], message["source"],
+             message["correlation_id"], message["context_version"], message["publication_time"],
+             json.dumps(details), json.dumps(message["security_context"])),
+        )
+
+
+class PsycopgAuditReader:
+    """Return payload-free workflow trace metadata for authorized operator paths."""
+
+    def __init__(self, connection):
+        self.connection = connection
+
+    def trace(self, correlation_id: str) -> list[dict]:
+        rows = self.connection.execute(
+            "SELECT message_id::text,stage,actor,topic,source,correlation_id,context_version,"
+            "publication_time,outcome,security_context,recorded_at "
+            "FROM orchestration.message_audit WHERE correlation_id=%s ORDER BY recorded_at",
+            (correlation_id,),
+        ).fetchall()
+        keys = ("message_id", "stage", "actor", "topic", "source", "correlation_id",
+                "context_version", "publication_time", "outcome", "security_context", "recorded_at")
+        return [dict(zip(keys, row)) for row in rows]
 
 
 class KafkaAcknowledgedPublisher:

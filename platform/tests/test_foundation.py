@@ -47,6 +47,7 @@ class FakeTransaction:
         self.version = version
         self.prior = prior
         self.applied = []
+        self.recorded = []
 
     def outcome(self, group, message_id):
         return self.prior
@@ -60,6 +61,9 @@ class FakeTransaction:
         handler(message)
         self.applied.append(message["message_id"])
         return "applied"
+
+    def record_outcome(self, group, message, outcome, failure_code=None):
+        self.recorded.append((group, message["message_id"], outcome, failure_code))
 
 
 class FakeOffsets:
@@ -172,9 +176,11 @@ class FoundationTests(unittest.TestCase):
 
     def test_handler_failure_commits_only_after_durable_retry(self):
         offsets = FakeOffsets()
-        consumer = GovernedConsumer("workspace", FakeTransaction(), offsets, FakeFailures("retry"), FakePrivacy())
+        transaction = FakeTransaction()
+        consumer = GovernedConsumer("workspace", transaction, offsets, FakeFailures("retry"), FakePrivacy())
         record = ConsumedRecord("topic", 0, 11, {"message_id":"id", "session_id":"s", "context_version":1})
         self.assertEqual("retry", consumer.process(record, lambda _: (_ for _ in ()).throw(ValueError())))
+        self.assertEqual([("workspace", "id", "retry", "ValueError")], transaction.recorded)
         self.assertEqual([11], offsets.committed)
 
     def test_offset_does_not_commit_when_retry_transfer_fails(self):
