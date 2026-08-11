@@ -8,9 +8,15 @@ from pathlib import Path
 @dataclass(frozen=True)
 class TopicPolicy:
     name: str
+    owner: str
     publisher: str
     subscribers: tuple[str, ...]
     key: str
+    schema_version: str
+
+    @property
+    def schema_filename(self) -> str:
+        return f"{self.name}.v{self.schema_version}.json"
 
     def retry_topic(self, consumer_group: str, tier: str) -> str:
         self.require_subscriber(consumer_group)
@@ -30,7 +36,8 @@ class KafkaPolicy:
         self.defaults = raw["defaults"]
         self.topics = {
             item["name"]: TopicPolicy(
-                item["name"], item["publisher"], tuple(item["subscribers"]), item["key"]
+                item["name"], item["owner"], item["publisher"],
+                tuple(item["subscribers"]), item["key"], item["schema_version"]
             )
             for item in raw["topics"]
         }
@@ -61,4 +68,3 @@ class KafkaPolicy:
                 names.extend(policy.retry_topic(subscriber, tier) for tier in tiers)
                 names.append(policy.dlq_topic(subscriber))
         return names
-
