@@ -10,8 +10,10 @@ but are not yet promoted into `docs/`.
 | [`claude-obsidian-loop.md`](claude-obsidian-loop.md) | Claude ↔ Obsidian knowledge loop SOP |
 | [`coherence-findings-loop.md`](coherence-findings-loop.md) | Ordered, one-finding-per-iteration remediation queue |
 | [`inbox/`](inbox/) | Fleeting Obsidian captures awaiting triage |
+| [`adr-candidates/`](adr-candidates/) | Draft tech ADRs quarantined from misnumbered `docs/06-adr/` stubs (CF-014) |
 | [`templates/`](templates/) | Inbox, promotion, finding, and assessment templates |
 | `assessments/` | Dated coherence assessments after their first intake pass |
+| `findings/` | Per-CF reproduction notes |
 
 Empty folders (aside from placeholders) are intentional until notes are added.
 Do not treat emptiness as repository drift.
