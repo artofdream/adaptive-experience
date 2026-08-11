@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gitlab.com/artof-group/adaptive-experience-architecture/-/blob/main/docs/04-technical-architecture/schemas/order.confirmed.v1.0.0.json",
+  "title": "order.confirmed",
+  "description": "Minimum payload contract for order.confirmed (NFR-015/017). Envelope fields live in the bus envelope, not this payload schema.",
+  "type": "object",
+  "properties": {
+    "order_id": {
+      "type": "string"
+    },
+    "confirmation_state": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "order_id",
+    "confirmation_state"
+  ],
+  "additionalProperties": false
+}

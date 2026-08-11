@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gitlab.com/artof-group/adaptive-experience-architecture/-/blob/main/docs/04-technical-architecture/schemas/order.status.updated.v1.0.0.json",
+  "title": "order.status.updated",
+  "description": "Minimum payload contract for order.status.updated (NFR-015/017). Envelope fields live in the bus envelope, not this payload schema.",
+  "type": "object",
+  "properties": {
+    "order_id": {
+      "type": "string"
+    },
+    "authoritative_status": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "order_id",
+    "authoritative_status"
+  ],
+  "additionalProperties": false
+}

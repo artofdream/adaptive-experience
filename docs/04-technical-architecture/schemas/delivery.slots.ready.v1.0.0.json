@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gitlab.com/artof-group/adaptive-experience-architecture/-/blob/main/docs/04-technical-architecture/schemas/delivery.slots.ready.v1.0.0.json",
+  "title": "delivery.slots.ready",
+  "description": "Minimum payload contract for delivery.slots.ready (NFR-015/017). Envelope fields live in the bus envelope, not this payload schema.",
+  "type": "object",
+  "properties": {
+    "eligible_slot_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "eligible_slot_ids"
+  ],
+  "additionalProperties": false
+}

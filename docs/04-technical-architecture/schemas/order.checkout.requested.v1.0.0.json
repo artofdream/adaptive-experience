@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gitlab.com/artof-group/adaptive-experience-architecture/-/blob/main/docs/04-technical-architecture/schemas/order.checkout.requested.v1.0.0.json",
+  "title": "order.checkout.requested",
+  "description": "Minimum payload contract for order.checkout.requested (NFR-015/017). Envelope fields live in the bus envelope, not this payload schema.",
+  "type": "object",
+  "properties": {
+    "draft_order_id": {
+      "type": "string"
+    },
+    "total": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "draft_order_id",
+    "total"
+  ],
+  "additionalProperties": false
+}

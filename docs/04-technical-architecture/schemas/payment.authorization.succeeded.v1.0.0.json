@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gitlab.com/artof-group/adaptive-experience-architecture/-/blob/main/docs/04-technical-architecture/schemas/payment.authorization.succeeded.v1.0.0.json",
+  "title": "payment.authorization.succeeded",
+  "description": "Minimum payload contract for payment.authorization.succeeded (NFR-015/017). Envelope fields live in the bus envelope, not this payload schema.",
+  "type": "object",
+  "properties": {
+    "authorization_id": {
+      "type": "string"
+    },
+    "draft_order_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "authorization_id",
+    "draft_order_id"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,203 @@
+#!/usr/bin/env python3
+"""Write minimal MVP topic JSON Schema stubs (ADR-008 / CF-021)."""
+
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+SCHEMAS = ROOT / "docs" / "04-technical-architecture" / "schemas"
+
+TOPICS: list[tuple[str, str, dict, list[str]]] = [
+    (
+        "customer.message.submitted",
+        "1.0.0",
+        {"message_text": {"type": "string"}},
+        ["message_text"],
+    ),
+    (
+        "experience.intent.updated",
+        "1.0.0",
+        {"structured_intent": {"type": "object"}},
+        ["structured_intent"],
+    ),
+    (
+        "product.recommendations.requested",
+        "1.0.0",
+        {"intent_reference": {"type": "string"}},
+        ["intent_reference"],
+    ),
+    (
+        "product.recommendations.ready",
+        "1.0.0",
+        {
+            "eligible_product_ids": {"type": "array", "items": {"type": "string"}},
+            "ranking": {"type": "array"},
+        },
+        ["eligible_product_ids"],
+    ),
+    (
+        "product.selected",
+        "1.0.0",
+        {"product_id": {"type": "string"}, "options": {"type": "object"}},
+        ["product_id"],
+    ),
+    (
+        "product.customization.updated",
+        "1.0.0",
+        {"product_id": {"type": "string"}, "basic_options": {"type": "object"}},
+        ["product_id"],
+    ),
+    (
+        "inventory.availability.requested",
+        "1.0.0",
+        {
+            "product_ids": {"type": "array", "items": {"type": "string"}},
+            "delivery_date": {"type": "string"},
+        },
+        ["product_ids"],
+    ),
+    (
+        "inventory.availability.validated",
+        "1.0.0",
+        {
+            "product_ids": {"type": "array", "items": {"type": "string"}},
+            "availability": {"type": "object"},
+        },
+        ["product_ids", "availability"],
+    ),
+    (
+        "inventory.reservation.confirmed",
+        "1.0.0",
+        {
+            "reservation_id": {"type": "string"},
+            "product_ids": {"type": "array", "items": {"type": "string"}},
+        },
+        ["reservation_id", "product_ids"],
+    ),
+    (
+        "delivery.details.updated",
+        "1.0.0",
+        {
+            "destination_reference": {"type": "string"},
+            "timing": {"type": "object"},
+        },
+        ["destination_reference"],
+    ),
+    (
+        "delivery.slots.ready",
+        "1.0.0",
+        {"eligible_slot_ids": {"type": "array", "items": {"type": "string"}}},
+        ["eligible_slot_ids"],
+    ),
+    ("delivery.slot.selected", "1.0.0", {"slot_id": {"type": "string"}}, ["slot_id"]),
+    (
+        "order.summary.updated",
+        "1.0.0",
+        {"itemized_charges": {"type": "array"}, "total": {"type": "number"}},
+        ["itemized_charges", "total"],
+    ),
+    (
+        "order.checkout.requested",
+        "1.0.0",
+        {"draft_order_id": {"type": "string"}, "total": {"type": "number"}},
+        ["draft_order_id", "total"],
+    ),
+    (
+        "payment.authorization.requested",
+        "1.0.0",
+        {
+            "draft_order_id": {"type": "string"},
+            "amount": {"type": "number"},
+            "payment_token": {"type": "string"},
+        },
+        ["draft_order_id", "amount", "payment_token"],
+    ),
+    (
+        "payment.authorization.succeeded",
+        "1.0.0",
+        {
+            "authorization_id": {"type": "string"},
+            "draft_order_id": {"type": "string"},
+        },
+        ["authorization_id", "draft_order_id"],
+    ),
+    (
+        "payment.authorization.failed",
+        "1.0.0",
+        {
+            "draft_order_id": {"type": "string"},
+            "recoverable_error": {"type": "object"},
+        },
+        ["draft_order_id", "recoverable_error"],
+    ),
+    (
+        "order.confirmed",
+        "1.0.0",
+        {
+            "order_id": {"type": "string"},
+            "confirmation_state": {"type": "string"},
+        },
+        ["order_id", "confirmation_state"],
+    ),
+    (
+        "order.status.updated",
+        "1.0.0",
+        {
+            "order_id": {"type": "string"},
+            "authoritative_status": {"type": "string"},
+        },
+        ["order_id", "authoritative_status"],
+    ),
+    (
+        "support.faq.answered",
+        "1.0.0",
+        {
+            "answer": {"type": "string"},
+            "approved_source_references": {
+                "type": "array",
+                "items": {"type": "string"},
+            },
+        },
+        ["answer"],
+    ),
+    (
+        "workspace.state.updated",
+        "1.0.0",
+        {
+            "affected_tiles": {"type": "array", "items": {"type": "string"}},
+            "state_version": {"type": "integer"},
+        },
+        ["affected_tiles", "state_version"],
+    ),
+]
+
+
+def main() -> None:
+    SCHEMAS.mkdir(parents=True, exist_ok=True)
+    for topic, version, props, required in TOPICS:
+        name = f"{topic}.v{version}.json"
+        doc = {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$id": (
+                "https://gitlab.com/artof-group/adaptive-experience-architecture/"
+                f"-/blob/main/docs/04-technical-architecture/schemas/{name}"
+            ),
+            "title": topic,
+            "description": (
+                f"Minimum payload contract for {topic} (NFR-015/017). "
+                "Envelope fields live in the bus envelope, not this payload schema."
+            ),
+            "type": "object",
+            "properties": props,
+            "required": required,
+            "additionalProperties": False,
+        }
+        path = SCHEMAS / name
+        path.write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8")
+        print("wrote", path.relative_to(ROOT))
+
+
+if __name__ == "__main__":
+    main()

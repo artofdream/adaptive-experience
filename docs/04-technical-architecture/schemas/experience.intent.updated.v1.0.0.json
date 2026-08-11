@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gitlab.com/artof-group/adaptive-experience-architecture/-/blob/main/docs/04-technical-architecture/schemas/experience.intent.updated.v1.0.0.json",
+  "title": "experience.intent.updated",
+  "description": "Minimum payload contract for experience.intent.updated (NFR-015/017). Envelope fields live in the bus envelope, not this payload schema.",
+  "type": "object",
+  "properties": {
+    "structured_intent": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "structured_intent"
+  ],
+  "additionalProperties": false
+}
