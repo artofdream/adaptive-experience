@@ -1,9 +1,10 @@
 # CF-018 — FR-003 Future wording vs MVP size + card message
 
 tags: #aea #coherence-finding
-status: queued
+status: in-mr
 finding_id: CF-018
 severity: medium
+issue: "#104 (clarified with ADR-006 / CF-013)"
 
 ## Claim
 

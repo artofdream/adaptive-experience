@@ -17,10 +17,10 @@ Active file (Lily's Florist MVP wireframes):
 | Discovery v2 | Planned stub | Not yet designed |
 | Presentation | Planned stub | Not yet designed |
 
-MVP fidelity (aligned with local SVGs / CF-007–CF-009):
+MVP fidelity (aligned with local SVGs / ADR-006):
 
 - T-03 — Available badges on recommendation cards
-- T-04 — Flower Type, Colour, Size, Ribbon, Gift Card
+- T-04 — Arrangement, Size, Card message (MVP); flower type / colour / ribbon are Future (FR-003), omitted from production MVP surfaces
 - T-08 — Contact Florist + Escalate (Future)
 
 Local SVG exports and structure notes:
