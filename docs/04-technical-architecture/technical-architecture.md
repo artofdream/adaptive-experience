@@ -20,6 +20,11 @@ status — are validated by dedicated domain services before display.
 - Central Message Bus (governed, versioned topic contracts)
 - Shared Understanding / experience state store
 
+Authoritative **experience-state ownership, persistence, context versioning,
+projections, and invalidation** are defined in
+[ADR-009](../06-adr/ADR-009-experience-state-ownership.md). Domain services remain
+authoritative for business facts.
+
 ## Domain services (MVP)
 | Service | Responsibility | Authoritative |
 |---|---|---|
