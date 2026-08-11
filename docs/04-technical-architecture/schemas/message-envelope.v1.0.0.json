@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gitlab.com/artof-group/adaptive-experience-architecture/-/blob/main/docs/04-technical-architecture/schemas/message-envelope.v1.0.0.json",
+  "title": "adaptive-experience.message-envelope",
+  "description": "Governed message envelope required by ADR-008. Topic-specific content is validated through payload.",
+  "type": "object",
+  "properties": {
+    "message_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "topic": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:[._][a-z0-9]+)*$"
+    },
+    "message_type": {
+      "type": "string",
+      "enum": [
+        "event",
+        "command",
+        "query",
+        "response"
+      ]
+    },
+    "schema_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "session_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "correlation_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source": {
+      "type": "string",
+      "minLength": 1
+    },
+    "context_version": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "publication_time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "security_context": {
+      "type": "object",
+      "description": "Minimum authorized security context; secrets and raw credentials are prohibited."
+    },
+    "payload": {
+      "type": "object"
+    },
+    "outcome": {
+      "type": "object",
+      "description": "Publication or processing outcome, including sanitized recoverable-error information where applicable."
+    }
+  },
+  "required": [
+    "message_id",
+    "topic",
+    "message_type",
+    "schema_version",
+    "session_id",
+    "correlation_id",
+    "source",
+    "context_version",
+    "publication_time",
+    "security_context",
+    "payload",
+    "outcome"
+  ],
+  "additionalProperties": false
+}
