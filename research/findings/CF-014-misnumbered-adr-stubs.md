@@ -1,12 +1,12 @@
 # CF-014 — Misnumbered Accepted ADR stubs collide with ADR-006/007
 
 tags: #aea #coherence-finding
-status: in-mr
+status: verified
 finding_id: CF-014
 severity: high
 issue: #110
 mr: !56
-branch: docs/cf-014-quarantine-misnumbered-adr-stubs
+verified_on_main: a0ab098
 
 ## Claim
 
