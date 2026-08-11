@@ -33,11 +33,11 @@ completed rows because the queue is also the audit trail.
 | 17 | CF-017 | Proposed ADR-007 introduces a BFF not listed in technical-architecture.md | Medium | verified | 2026-08-11 | 2026-08-11 | #105 / !61 |
 | 18 | CF-018 | FR-003/roadmap Future text lists size and personal messages as Future while T-04 MVP treats catalog size + card message as MVP | Medium | verified | 2026-08-11 | 2026-08-11 | #104 / !60 |
 | 19 | CF-019 | Wiki ADR index still lists only ADR-001…005 | Low | verified | 2026-08-11 | 2026-08-11 | #112 / !63 |
-| 20 | CF-020 | Topic contracts name Workspace as bus publisher for UI-originated topics while ADR-007/009/010 require BFF/Orchestration edges and forbid client→broker publish | Medium | queued | 2026-08-11 | 2026-08-11 | — |
-| 21 | CF-021 | ADR-008 requires schemas under schemas/ plus CI contract checks before publishers ship; only schemas/README exists and CI has no schema job | Medium | queued | 2026-08-11 | 2026-08-11 | — |
-| 22 | CF-022 | adaptive-workspace-mvp.png still shows Colour/Ribbon/Gift Card as MVP T-04 after ADR-006 aligned the SVG | Medium | queued | 2026-08-11 | 2026-08-11 | — |
-| 23 | CF-023 | research/adr-candidates/README still says ADR-006…010 gate slots are open though those ADRs are Accepted | Low | queued | 2026-08-11 | 2026-08-11 | — |
-| 24 | CF-024 | ADR-009 still says BFF “if introduced by deployment ADRs” though ADR-007 Accepted a separate BFF | Low | queued | 2026-08-11 | 2026-08-11 | — |
+| 20 | CF-020 | Topic contracts name Workspace as bus publisher for UI-originated topics while ADR-007/009/010 require BFF/Orchestration edges and forbid client→broker publish | Medium | verified | 2026-08-11 | 2026-08-11 | #115 / !66 |
+| 21 | CF-021 | ADR-008 requires schemas under schemas/ plus CI contract checks before publishers ship; only schemas/README exists and CI has no schema job | Medium | verified | 2026-08-11 | 2026-08-11 | #116 / !67 |
+| 22 | CF-022 | adaptive-workspace-mvp.png still shows Colour/Ribbon/Gift Card as MVP T-04 after ADR-006 aligned the SVG | Medium | verified | 2026-08-11 | 2026-08-11 | #117 / !68 |
+| 23 | CF-023 | research/adr-candidates/README still says ADR-006…010 gate slots are open though those ADRs are Accepted | Low | verified | 2026-08-11 | 2026-08-11 | #118 / !69 |
+| 24 | CF-024 | ADR-009 still says BFF “if introduced by deployment ADRs” though ADR-007 Accepted a separate BFF | Low | verified | 2026-08-11 | 2026-08-11 | #119 / !72 |
 
 Allowed statuses: `queued`, `investigating`, `ready`, `in-progress`, `in-mr`,
 `verified`, `regressed`, `duplicate`, `not-reproducible`, and `blocked`.
