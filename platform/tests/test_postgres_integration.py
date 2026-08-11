@@ -1,0 +1,119 @@
+from __future__ import annotations
+
+import json
+import os
+import sys
+import unittest
+import uuid
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+
+@unittest.skipUnless(os.environ.get("AEA_INTEGRATION") == "1", "container integration test")
+class PostgreSQLIntegrationTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        import psycopg
+        cls.psycopg = psycopg
+        cls.connection = psycopg.connect(os.environ["AEA_POSTGRES_DSN"], autocommit=True)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.connection.close()
+
+    def setUp(self):
+        with self.connection.transaction():
+            self.connection.execute("TRUNCATE orchestration.outbox_message, orchestration.experience_invalidation, "
+                                    "orchestration.consumed_message, orchestration.experience_session CASCADE")
+
+    def create_session(self):
+        session_id = uuid.uuid4()
+        self.connection.execute(
+            "INSERT INTO orchestration.experience_session "
+            "(session_id, state_schema_version, expires_at) VALUES (%s, 1, clock_timestamp() + interval '1 day')",
+            (session_id,),
+        )
+        self.connection.commit()
+        return session_id
+
+    def mutation(self, session_id, expected, message_id=None):
+        message_id = message_id or uuid.uuid4()
+        envelope = {
+            "message_id": str(message_id), "topic": "experience.intent.updated",
+            "context_version": expected + 1, "payload": {}
+        }
+        messages = [{"message_id": str(message_id), "topic": "experience.intent.updated",
+                     "aggregate_key": str(session_id), "envelope": envelope}]
+        return self.connection.execute(
+            "SELECT orchestration.apply_experience_mutation(%s,%s,1,%s::jsonb,%s::jsonb,%s::jsonb)",
+            (session_id, expected, json.dumps({"intent": "birthday"}),
+             json.dumps([{"projection_key": "recommendations", "reason": "intent_changed"}]),
+             json.dumps(messages)),
+        ).fetchone()[0]
+
+    def test_state_version_invalidation_and_outbox_commit_together(self):
+        session_id = self.create_session()
+        with self.connection.transaction():
+            self.assertEqual(1, self.mutation(session_id, 0))
+        row = self.connection.execute(
+            "SELECT s.context_version, count(DISTINCT i.projection_key), count(DISTINCT o.message_id) "
+            "FROM orchestration.experience_session s "
+            "LEFT JOIN orchestration.experience_invalidation i USING (session_id) "
+            "LEFT JOIN orchestration.outbox_message o USING (session_id) "
+            "WHERE s.session_id=%s GROUP BY s.context_version", (session_id,)
+        ).fetchone()
+        self.assertEqual((1, 1, 1), row)
+
+    def test_failure_rolls_back_state_and_outbox(self):
+        session_id = self.create_session()
+        with self.assertRaises(RuntimeError):
+            with self.connection.transaction():
+                self.mutation(session_id, 0)
+                raise RuntimeError("injected after mutation")
+        self.connection.rollback()
+        self.assertEqual(0, self.connection.execute(
+            "SELECT context_version FROM orchestration.experience_session WHERE session_id=%s", (session_id,)
+        ).fetchone()[0])
+        self.assertEqual(0, self.connection.execute(
+            "SELECT count(*) FROM orchestration.outbox_message WHERE session_id=%s", (session_id,)
+        ).fetchone()[0])
+
+    def test_stale_compare_and_set_rejects_second_writer(self):
+        session_id = self.create_session()
+        with self.connection.transaction():
+            self.mutation(session_id, 0)
+        with self.assertRaises(self.psycopg.errors.SerializationFailure):
+            with self.connection.transaction():
+                self.mutation(session_id, 0)
+        self.connection.rollback()
+        self.assertEqual(1, self.connection.execute(
+            "SELECT context_version FROM orchestration.experience_session WHERE session_id=%s", (session_id,)
+        ).fetchone()[0])
+
+    def test_migrations_are_at_latest_version(self):
+        versions = [row[0] for row in self.connection.execute(
+            "SELECT version FROM orchestration.schema_migration ORDER BY version"
+        ).fetchall()]
+        self.assertEqual([1, 2], versions)
+
+    def test_consumer_idempotency_and_stale_outcome_are_transactional(self):
+        from aea_platform.adapters import PsycopgConsumerTransaction
+
+        session_id = self.create_session()
+        transaction = PsycopgConsumerTransaction(self.connection)
+        applied = []
+        message = {
+            "message_id": str(uuid.uuid4()), "topic": "experience.intent.updated",
+            "session_id": str(session_id), "context_version": 0, "correlation_id": "test"
+        }
+        self.assertEqual("applied", transaction.apply("workspace", message, lambda item: applied.append(item)))
+        self.assertEqual("duplicate", transaction.apply("workspace", message, lambda item: applied.append(item)))
+        self.assertEqual(1, len(applied))
+
+        with self.connection.transaction():
+            self.mutation(session_id, 0)
+        stale = dict(message, message_id=str(uuid.uuid4()), context_version=0)
+        self.assertEqual("stale", transaction.apply("workspace", stale, lambda item: applied.append(item)))
+        self.assertEqual(1, len(applied))
