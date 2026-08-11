@@ -346,7 +346,11 @@ def adaptive_workspace() -> str:
       <text x="1160" y="764" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="{G['text-muted']}">Out for Delivery</text>
       <circle cx="1144" cy="804" r="6" fill="{G['bg']}" stroke="{G['border-strong']}"/>
       <text x="1160" y="808" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="{G['text-muted']}">Delivered</text>
-      <text x="1128" y="848" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="{G['text-muted']}">Updates every minute</text>
+      <text x="1128" y="826" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="{G['text-muted']}">Updates every minute</text>
+      <rect x="1128" y="838" width="106" height="26" rx="6" fill="{G['bg']}" stroke="{G['border-strong']}"/>
+      <text x="1181" y="855" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="{G['text']}">Contact Florist</text>
+      <rect x="1244" y="838" width="106" height="26" rx="6" fill="{G['bg']}" stroke="{G['border-strong']}" stroke-dasharray="4 3"/>
+      <text x="1297" y="855" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="{G['text-sec']}">Escalate (Future)</text>
     </g>
   </g>
 
