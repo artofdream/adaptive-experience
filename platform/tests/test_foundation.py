@@ -77,6 +77,11 @@ class FakeFailures:
         return self.outcome
 
 
+class FakePrivacy:
+    def validate_delivery(self, subscriber, topic, envelope):
+        return None
+
+
 class FoundationTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -131,21 +136,21 @@ class FoundationTests(unittest.TestCase):
 
     def test_duplicate_commits_offset_without_reapplying(self):
         offsets = FakeOffsets()
-        consumer = GovernedConsumer("workspace", FakeTransaction(prior="applied"), offsets, FakeFailures())
+        consumer = GovernedConsumer("workspace", FakeTransaction(prior="applied"), offsets, FakeFailures(), FakePrivacy())
         record = ConsumedRecord("topic", 0, 9, {"message_id":"id", "session_id":"s", "context_version":1})
         self.assertEqual("duplicate", consumer.process(record, lambda _: self.fail("must not apply")))
         self.assertEqual([9], offsets.committed)
 
     def test_stale_context_is_rejected_then_offset_commits(self):
         offsets = FakeOffsets()
-        consumer = GovernedConsumer("workspace", FakeTransaction(version=3), offsets, FakeFailures())
+        consumer = GovernedConsumer("workspace", FakeTransaction(version=3), offsets, FakeFailures(), FakePrivacy())
         record = ConsumedRecord("topic", 0, 10, {"message_id":"id", "session_id":"s", "context_version":2})
         self.assertEqual("stale", consumer.process(record, lambda _: self.fail("must not apply")))
         self.assertEqual([10], offsets.committed)
 
     def test_handler_failure_commits_only_after_durable_retry(self):
         offsets = FakeOffsets()
-        consumer = GovernedConsumer("workspace", FakeTransaction(), offsets, FakeFailures("retry"))
+        consumer = GovernedConsumer("workspace", FakeTransaction(), offsets, FakeFailures("retry"), FakePrivacy())
         record = ConsumedRecord("topic", 0, 11, {"message_id":"id", "session_id":"s", "context_version":1})
         self.assertEqual("retry", consumer.process(record, lambda _: (_ for _ in ()).throw(ValueError())))
         self.assertEqual([11], offsets.committed)
@@ -157,7 +162,7 @@ class FoundationTests(unittest.TestCase):
             def route(self, group, record, error):
                 raise TimeoutError("retry topic unavailable")
 
-        consumer = GovernedConsumer("workspace", FakeTransaction(), offsets, FailedRouter())
+        consumer = GovernedConsumer("workspace", FakeTransaction(), offsets, FailedRouter(), FakePrivacy())
         record = ConsumedRecord("topic", 0, 12, {"message_id":"id", "session_id":"s", "context_version":1})
         with self.assertRaises(TimeoutError):
             consumer.process(record, lambda _: (_ for _ in ()).throw(RuntimeError()))

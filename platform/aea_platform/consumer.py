@@ -26,16 +26,23 @@ class DurableFailureRouter(Protocol):
     def route(self, consumer_group: str, record: ConsumedRecord, error: Exception) -> str: ...
 
 
+class DeliveryGuard(Protocol):
+    def validate_delivery(self, subscriber: str, topic: str, envelope: dict) -> None: ...
+
+
 class GovernedConsumer:
     def __init__(self, group: str, transaction: ConsumerTransaction,
-                 offsets: ManualOffsetConsumer, failures: DurableFailureRouter):
+                 offsets: ManualOffsetConsumer, failures: DurableFailureRouter,
+                 privacy: DeliveryGuard):
         self.group = group
         self.transaction = transaction
         self.offsets = offsets
         self.failures = failures
+        self.privacy = privacy
 
     def process(self, record: ConsumedRecord, handler: Callable[[dict], None]) -> str:
         envelope = record.message
+        self.privacy.validate_delivery(self.group, record.topic, envelope)
         message_id = envelope["message_id"]
         prior = self.transaction.outcome(self.group, message_id)
         if prior is not None:
@@ -57,4 +64,3 @@ class GovernedConsumer:
                 raise RuntimeError("failure router did not durably transfer message")
         self.offsets.commit(record)
         return outcome
-
