@@ -480,7 +480,10 @@ def main() -> None:
     write(ASSETS / "tiles" / "order-summary.svg", order_summary())
     write(ASSETS / "tiles" / "tracking-timeline.svg", tracking_timeline())
 
-    write(WIREFRAMES / "adaptive-workspace-mvp.svg", adaptive_workspace())
+    svg_mvp = WIREFRAMES / "adaptive-workspace-mvp.svg"
+    png_mvp = WIREFRAMES / "adaptive-workspace-mvp.png"
+    write(svg_mvp, adaptive_workspace())
+    render_png_raster(svg_mvp, png_mvp)
     for name, svg in journey_bodies().items():
         write(WIREFRAMES / "journey-steps" / name, svg)
 
@@ -488,5 +491,41 @@ def main() -> None:
     print("Generated wireframes under", WIREFRAMES)
 
 
+def render_png_raster(svg_path: Path, png_path: Path) -> None:
+    import shutil
+    import subprocess
+
+    edge_bin = shutil.which("msedge") or r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
+    chrome_bin = (
+        shutil.which("chrome")
+        or shutil.which("google-chrome")
+        or r"C:\Program Files\Google\Chrome\Application\chrome.exe"
+    )
+    browser = (
+        edge_bin
+        if Path(edge_bin).exists()
+        else (chrome_bin if Path(chrome_bin).exists() else None)
+    )
+    if not browser:
+        print(f"Skipping PNG rendering for {svg_path.name} (no browser binary found)")
+        return
+
+    cmd = [
+        browser,
+        "--headless",
+        "--disable-gpu",
+        f"--screenshot={png_path.resolve()}",
+        "--window-size=1440,900",
+        "--hide-scrollbars",
+        f"file:///{svg_path.resolve()}",
+    ]
+    res = subprocess.run(cmd, capture_output=True, text=True)
+    if res.returncode == 0 and png_path.exists():
+        print(f"Rendered PNG raster {png_path.name} ({png_path.stat().st_size} bytes)")
+    else:
+        print(f"Warning: Failed to render PNG raster for {svg_path.name}: {res.stderr}")
+
+
 if __name__ == "__main__":
     main()
+
