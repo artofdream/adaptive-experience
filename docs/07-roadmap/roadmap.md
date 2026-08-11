@@ -30,13 +30,13 @@ The delivery pipeline is structured into 8 implementation milestones (M0–M7) p
 | Milestone | Title | Focus & Primary Deliverables | Requirements Coverage |
 |---|---|---|---|
 | **M0** | ADR Scope Gate | Decision gate for ADR-006 through ADR-010 (MVP boundary, topology, topic rules, datastore ownership) | Architectural decision gate |
-| **M1** | Contracts & Platform Foundation | Publish 21 MVP topic schemas (`schemas/`), establish BFF & Edge API Gateway perimeter, build CI contract guards | Platform & schema foundation |
+| **M1** | Contracts & Platform Foundation | Publish 21 MVP topic schemas (`schemas/`), establish the PostgreSQL outbox and Kafka integration foundation, establish the BFF & Edge API Gateway perimeter, build CI contract guards, and enforce baseline topic governance, audit tracing, and least-data access controls | NFR-015, NFR-016, NFR-017 baseline implementation; platform & schema foundation |
 | **M2** | Shared Understanding | Deliver T-01 Conversation and Intent plus T-02 editable Shared Understanding, progressive thought completion, and context versioning | FR-001, FR-002, FR-004, FR-020, FR-021, FR-022; NFR-001, NFR-002, NFR-004, NFR-005 |
 | **M3** | Validated Recommendations | Deliver T-03 Curated Recommendations, real-time product availability badges, and selection events | FR-005, FR-011; NFR-003 |
 | **M4** | Selection, Delivery & Pricing | Deliver T-04 Product Selection (catalog size & card message per ADR-006), T-05 Delivery time slot planning, and dynamic pricing | FR-013, FR-014, FR-015; NFR-006, NFR-007 |
 | **M5** | Checkout & Confirmation | Deliver T-06 Order Summary breakdown, T-07 Payment & Checkout integration, and Order Confirmation | FR-018, FR-019; NFR-013, NFR-014 |
 | **M6** | Tracking & Automated Support | Deliver T-08 Order Tracking timeline, Contact Florist action, and Automated Support Overlay (ASO / FR-009) | FR-009, FR-023; NFR-008, NFR-009 |
-| **M7** | MVP Hardening | End-to-end integration, performance optimization, security audit, and reference deployment validation | NFR-010, NFR-011, NFR-012, NFR-015, NFR-016, NFR-017 |
+| **M7** | MVP Hardening | End-to-end integration, performance optimization, security audit, reference deployment validation, and final verification of the governance, auditability, and privacy controls introduced in M1 | NFR-010, NFR-011, NFR-012; final validation and hardening of NFR-015, NFR-016, NFR-017 |
 | **Future** | Future Backlog | Advanced compositional customization (FR-003), human support escalation (FR-006/T-09), CRM analytics (FR-007, FR-008, FR-016, FR-017), inventory forecasting (FR-012) | FR-003, FR-006, FR-007, FR-008, FR-010, FR-012, FR-016, FR-017; NFR-014 |
 
 ## Notes
@@ -47,4 +47,9 @@ The delivery pipeline is structured into 8 implementation milestones (M0–M7) p
 - T-04 is MVP for product/arrangement selection, eligible catalog size, and the
   physical card message (ADR-006). FR-003 Future covers advanced compositional
   customization (flower type, colour, ribbon), not those MVP fields.
+- NFR-015, NFR-016, and NFR-017 are implemented as platform baselines in M1 so
+  governance, traceability, and least-data security are built into the BFF,
+  PostgreSQL outbox, and Kafka foundation. M7 audits, exercises, and hardens
+  those controls; it does not defer their first implementation until the end of
+  the MVP.
 
