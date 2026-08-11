@@ -41,6 +41,14 @@ plaintext production listeners are prohibited by ADR-012.
   idempotency transaction succeeds or a durable retry/DLQ transfer succeeds.
 - The reviewed registry is the source for canonical topics, partition keys,
   publishers, consumer groups, retry tiers, DLQs, and policy tests.
+- `PayloadPrivacyGuard` reconciles every broker publication and subscriber
+  delivery with that registry and the closed payload schema. Unknown envelope
+  or payload fields, raw customer/payment fields, unauthorized subscribers,
+  and unregistered schema versions fail closed before application handling.
+- Production relays wrap their broker adapter with
+  `PrivacyEnforcingPublisher`; raw names, addresses, contact details, or card
+  data are prohibited. Governed contracts use opaque references and
+  provider-issued payment tokens instead.
 
 ## Recovery
 
