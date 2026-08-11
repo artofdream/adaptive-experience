@@ -127,6 +127,16 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         self.assertEqual("stale", transaction.apply("workspace", stale, lambda item: applied.append(item)))
         self.assertEqual(1, len(applied))
 
+        future = dict(message, message_id=str(uuid.uuid4()), context_version=2)
+        self.assertEqual("stale", transaction.apply("workspace", future, lambda item: applied.append(item)))
+        self.assertEqual(1, len(applied))
+
+        outcomes = self.connection.execute(
+            "SELECT context_version,outcome,count(*) FROM orchestration.consumed_message "
+            "WHERE consumer_group='workspace' GROUP BY context_version,outcome"
+        ).fetchall()
+        self.assertEqual({(0, "applied", 1), (0, "stale", 1), (2, "stale", 1)}, set(outcomes))
+
     def test_payload_free_audit_trace_records_publication_and_consumption(self):
         from aea_platform.adapters import PsycopgAuditReader, PsycopgConsumerTransaction, PsycopgOutboxStore
 
