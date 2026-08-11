@@ -1,0 +1,35 @@
+{
+  "defaults": {
+    "partitions": 3,
+    "production_replication_factor": 3,
+    "local_replication_factor": 1,
+    "retention_ms": 86400000,
+    "max_message_bytes": 1048576,
+    "retry_tiers": [{"name": "1m", "delay_seconds": 60}, {"name": "15m", "delay_seconds": 900}],
+    "dlq_retention_ms": 604800000
+  },
+  "topics": [
+    {"name":"customer.message.submitted","publisher":"orchestration","subscribers":["ai-concierge","workspace"],"key":"session_id"},
+    {"name":"experience.intent.updated","publisher":"orchestration","subscribers":["workspace","recommendation","delivery"],"key":"session_id"},
+    {"name":"product.recommendations.requested","publisher":"orchestration","subscribers":["recommendation"],"key":"session_id"},
+    {"name":"product.recommendations.ready","publisher":"recommendation","subscribers":["orchestration","workspace"],"key":"session_id"},
+    {"name":"product.selected","publisher":"orchestration","subscribers":["inventory","pricing","order","workspace"],"key":"session_id"},
+    {"name":"product.customization.updated","publisher":"orchestration","subscribers":["pricing","order","workspace"],"key":"session_id"},
+    {"name":"inventory.availability.requested","publisher":"orchestration","subscribers":["inventory"],"key":"session_id"},
+    {"name":"inventory.availability.validated","publisher":"inventory","subscribers":["orchestration","recommendation","workspace"],"key":"session_id"},
+    {"name":"inventory.reservation.confirmed","publisher":"inventory","subscribers":["order","orchestration"],"key":"session_id"},
+    {"name":"delivery.details.updated","publisher":"orchestration","subscribers":["delivery","order","workspace"],"key":"session_id"},
+    {"name":"delivery.slots.ready","publisher":"delivery","subscribers":["orchestration","workspace"],"key":"session_id"},
+    {"name":"delivery.slot.selected","publisher":"orchestration","subscribers":["pricing","order","workspace"],"key":"session_id"},
+    {"name":"order.summary.updated","publisher":"pricing","subscribers":["orchestration","workspace","order"],"key":"session_id"},
+    {"name":"order.checkout.requested","publisher":"orchestration","subscribers":["order","payment","workspace"],"key":"draft_order_id"},
+    {"name":"payment.authorization.requested","publisher":"orchestration","subscribers":["payment"],"key":"draft_order_id"},
+    {"name":"payment.authorization.succeeded","publisher":"payment","subscribers":["orchestration","order"],"key":"draft_order_id"},
+    {"name":"payment.authorization.failed","publisher":"payment","subscribers":["orchestration","workspace"],"key":"draft_order_id"},
+    {"name":"order.confirmed","publisher":"order","subscribers":["orchestration","workspace","inventory","delivery"],"key":"order_id"},
+    {"name":"order.status.updated","publisher":"order","subscribers":["orchestration","workspace"],"key":"order_id"},
+    {"name":"support.faq.answered","publisher":"ai-concierge","subscribers":["workspace"],"key":"session_id"},
+    {"name":"workspace.state.updated","publisher":"orchestration","subscribers":["workspace"],"key":"session_id"}
+  ]
+}
+

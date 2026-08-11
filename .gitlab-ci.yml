@@ -4,6 +4,7 @@
 
 stages:
   - verify
+  - integration
   - lint
 
 coherence-guard:
@@ -35,6 +36,64 @@ topic-schema-guard:
         - "scripts/check_topic_schemas.py"
         - "scripts/test_topic_schema_guard.py"
         - "scripts/write_mvp_topic_schemas.py"
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+platform-foundation-unit:
+  stage: verify
+  image: python:3.12-alpine
+  script:
+    - python -m unittest discover -s platform/tests -v
+  rules:
+    - changes:
+        - "platform/**/*"
+        - "docs/04-technical-architecture/schemas/**/*"
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+platform-foundation-integration:
+  stage: integration
+  image: python:3.12
+  services:
+    - name: postgres:16-alpine
+      alias: postgres
+    - name: apache/kafka:3.9.1
+      alias: kafka
+      variables:
+        KAFKA_NODE_ID: "1"
+        KAFKA_PROCESS_ROLES: "broker,controller"
+        KAFKA_LISTENERS: "PLAINTEXT://:9092,CONTROLLER://:9093"
+        KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:9092"
+        KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT"
+        KAFKA_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
+        # The combined broker/controller reaches its own controller listener
+        # inside the service container; the job still reaches the broker via
+        # the external `kafka:9092` service alias.
+        KAFKA_CONTROLLER_QUORUM_VOTERS: "1@localhost:9093"
+        KAFKA_INTER_BROKER_LISTENER_NAME: "PLAINTEXT"
+        KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: "1"
+        KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: "1"
+        KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: "1"
+        KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+  variables:
+    POSTGRES_DB: adaptive_experience
+    POSTGRES_USER: aea_migration
+    POSTGRES_PASSWORD: ci-migration-only
+    AEA_POSTGRES_DSN: postgresql://aea_migration:ci-migration-only@postgres:5432/adaptive_experience
+    AEA_KAFKA_BOOTSTRAP: kafka:9092
+  before_script:
+    - pip install -r platform/requirements.txt
+  script:
+    - python platform/scripts/wait_for_services.py
+    - python platform/scripts/apply_migrations.py
+    - python platform/scripts/apply_migrations.py
+    - python platform/scripts/provision_kafka.py
+    - AEA_INTEGRATION=1 python -m unittest discover -s platform/tests -v
+    - python platform/scripts/diagnose.py
+  rules:
+    - changes:
+        - "platform/**/*"
+        - ".gitlab-ci.yml"
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_COMMIT_BRANCH == "main"'
 

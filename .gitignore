@@ -1,6 +1,9 @@
 .DS_Store
 *.tmp
 *.bak
+__pycache__/
+*.py[cod]
+.venv/
 
 # Obsidian (local vault workspace — do not publish)
 .obsidian/
