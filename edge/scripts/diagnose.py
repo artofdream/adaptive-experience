@@ -32,3 +32,22 @@ with urllib.request.urlopen(projection_request, context=context, timeout=5) as r
     }:
         raise SystemExit("Shared Understanding projection is unexpected")
 print("authenticated Edge-to-Orchestration Shared Understanding path is healthy")
+
+message_request = urllib.request.Request(
+    "https://localhost:8443/api/v1/conversation/messages", method="POST",
+    data=json.dumps({"message_text": "birthday roses",
+                     "observed_context_version": 0}).encode(),
+    headers={**base_headers, "Cookie": cookie, "X-CSRF-Token": session["csrf_token"],
+             "Content-Type": "application/json"})
+with urllib.request.urlopen(message_request, context=context, timeout=5) as response:
+    acceptance = json.load(response)
+    if response.status != 202 or acceptance.get("context_version") != 2:
+        raise SystemExit("assistant did not analyze the accepted conversation")
+
+with urllib.request.urlopen(projection_request, context=context, timeout=5) as response:
+    projection = json.load(response)
+    if projection["structured_intent"] != {
+        "occasion": "birthday", "flower_preference": "roses"
+    } or not projection["suggestions"]:
+        raise SystemExit("assistant intent/fallback projection is unexpected")
+print("24/7 assistant analysis and fallback path is healthy")
