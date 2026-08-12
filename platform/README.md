@@ -1,8 +1,11 @@
 # PostgreSQL and Kafka Foundation
 
-This directory is the executable M1 foundation defined by ADR-008, ADR-011,
-and ADR-012. It is deliberately product-neutral: M2 application behavior uses
-these boundaries but is not implemented here.
+This directory contains the executable, product-neutral platform foundation
+defined by ADR-008, ADR-011, and ADR-012. It implements the M1 PostgreSQL
+outbox/Kafka/governance baseline and the M2 Conversation, Intent, Shared
+Understanding, context-version, state-preservation, correction, stale-result,
+and provider-neutral AI orchestration services. Florist presentation and domain
+copy remain outside this boundary.
 
 ## Local startup
 
