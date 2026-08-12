@@ -1,6 +1,35 @@
 name: adaptive-experience-edge
 
 services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: adaptive_experience
+      POSTGRES_USER: aea_migration
+      POSTGRES_PASSWORD: local-migration-only
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aea_migration -d adaptive_experience"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  orchestration:
+    build:
+      context: ..
+      dockerfile: platform/Dockerfile.orchestration
+    environment:
+      AEA_POSTGRES_DSN: postgresql://aea_migration:local-migration-only@postgres:5432/adaptive_experience
+      AEA_ORCHESTRATION_TOKEN: local-internal-token
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: ["sh", "-c", "python platform/scripts/apply_migrations.py && uvicorn aea_platform.internal_runtime:app --host 0.0.0.0 --port 8081 --no-server-header"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; r=urllib.request.Request('http://localhost:8081/internal/v1/sessions/00000000-0000-0000-0000-000000000000', method='PUT', headers={'Authorization':'Bearer local-internal-token','X-Subject-Reference':'health'}); urllib.request.urlopen(r)"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
   bff:
     build:
       context: .
@@ -9,6 +38,11 @@ services:
       AEA_ENVIRONMENT: local
       AEA_ALLOWED_ORIGIN: https://localhost:8443
       AEA_LOCAL_BEARER_TOKEN: local-browser-token
+      AEA_ORCHESTRATION_URL: http://orchestration:8081
+      AEA_ORCHESTRATION_TOKEN: local-internal-token
+    depends_on:
+      orchestration:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/healthz')"]
       interval: 3s

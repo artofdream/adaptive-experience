@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import secrets
 import time
+import uuid
 from dataclasses import dataclass
 
 
@@ -19,7 +20,7 @@ class SessionStore:
         self._sessions: dict[str, Session] = {}
 
     def create(self, subject: str) -> Session:
-        session = Session(secrets.token_urlsafe(32), subject, secrets.token_urlsafe(32),
+        session = Session(str(uuid.uuid4()), subject, secrets.token_urlsafe(32),
                           time.time() + self.ttl_seconds)
         self._sessions[session.session_id] = session
         return session
