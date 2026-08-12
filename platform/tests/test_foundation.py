@@ -17,6 +17,12 @@ from aea_platform.conversation import (
     ConversationSessionNotFound,
     ConversationValidationError,
 )
+from aea_platform.intent import (
+    IntentAnalysisService,
+    IntentInterpretation,
+    IntentValidationError,
+    ReferenceIntentInterpreter,
+)
 from aea_platform.consumer import ConsumedRecord, GovernedConsumer
 from aea_platform.outbox import OutboxRecord, OutboxRelay
 from aea_platform.policy import KafkaPolicy
@@ -106,6 +112,96 @@ class FakePrivacy:
 
 
 class FoundationTests(unittest.TestCase):
+    def test_reference_interpreter_extracts_supported_intent_and_prompts_for_gaps(self):
+        result = ReferenceIntentInterpreter().interpret(
+            "Bright roses for Mum's birthday tomorrow, budget €75", {}
+        )
+        self.assertEqual({
+            "occasion": "birthday", "budget": 75.0, "recipient": "mother",
+            "style": "bright", "flower_preference": "roses", "timing": "tomorrow",
+        }, result.facets)
+        self.assertEqual((), result.suggestions)
+
+        partial = ReferenceIntentInterpreter().interpret("Something for my friend", {})
+        self.assertEqual({"recipient": "friend"}, partial.facets)
+        self.assertEqual(3, len(partial.suggestions))
+        self.assertIn("occasion", partial.suggestions[0].lower())
+
+    def test_intent_analysis_updates_only_supported_facets_and_publishes_event(self):
+        store = FakeStateStore({
+            "state_schema_version": 1, "context_version": 4,
+            "state": {"shared_understanding": {"occasion": "birthday", "budget": 50},
+                      "decisions": {"product": {"completed": True}}},
+        })
+        class Interpreter:
+            def interpret(self, message_text, current_intent):
+                self.current = current_intent
+                return IntentInterpretation({"budget": 75, "style": "bright"},
+                                            ("Any flower preferences?",))
+        interpreter = Interpreter()
+        service = IntentAnalysisService(
+            store, interpreter,
+            now=lambda: datetime(2026, 8, 12, tzinfo=timezone.utc),
+            new_id=lambda: uuid.UUID("00000000-0000-0000-0000-000000000021"),
+        )
+        result = service.analyze(
+            session_id="session", message_text="brighter, up to 75", observed_context_version=4,
+            correlation_id="correlation", subject_reference="subject",
+        )
+        self.assertEqual({"occasion": "birthday", "budget": 75, "style": "bright"},
+                         result.structured_intent)
+        _, expected, _, patch, messages = store.applied[0]
+        self.assertEqual(4, expected)
+        self.assertEqual({"budget": 75, "style": "bright"},
+                         patch.values["shared_understanding"])
+        self.assertEqual(["Any flower preferences?"],
+                         patch.values["thought_completion"]["suggestions"])
+        self.assertEqual({"structured_intent": result.structured_intent},
+                         messages[0]["envelope"]["payload"])
+
+    def test_intent_analysis_rejects_interpreter_scope_and_invalid_values(self):
+        current = {"state_schema_version": 1, "context_version": 0, "state": {}}
+        for interpretation in (
+            IntentInterpretation({"product_id": "rose-1"}),
+            IntentInterpretation({"budget": -1}),
+            IntentInterpretation({"style": "x" * 121}),
+            IntentInterpretation({}, ("x" * 161,)),
+        ):
+            class Interpreter:
+                def interpret(self, *_): return interpretation
+            store = FakeStateStore(current)
+            with self.assertRaises(IntentValidationError):
+                IntentAnalysisService(store, Interpreter()).analyze(
+                    session_id="session", message_text="flowers", observed_context_version=0,
+                    correlation_id="correlation", subject_reference="subject",
+                )
+            self.assertEqual([], store.applied)
+
+    def test_unrecognized_input_updates_prompts_without_publishing_empty_intent(self):
+        store = FakeStateStore({"state_schema_version": 1, "context_version": 0, "state": {}})
+        result = IntentAnalysisService(store, ReferenceIntentInterpreter()).analyze(
+            session_id="session", message_text="I need some help",
+            observed_context_version=0, correlation_id="correlation",
+            subject_reference="subject",
+        )
+        self.assertEqual("", result.message_id)
+        self.assertEqual({}, result.structured_intent)
+        self.assertEqual([], store.applied[0][4])
+        self.assertEqual(("thought_completion.suggestions",),
+                         store.applied[0][3].changed_facets)
+
+    def test_corrupted_existing_intent_fails_closed_before_interpretation(self):
+        store = FakeStateStore({
+            "state_schema_version": 1, "context_version": 0,
+            "state": {"shared_understanding": {"product_id": "not-authorized"}},
+        })
+        with self.assertRaises(IntentValidationError):
+            IntentAnalysisService(store, ReferenceIntentInterpreter()).analyze(
+                session_id="session", message_text="birthday", observed_context_version=0,
+                correlation_id="correlation", subject_reference="subject",
+            )
+        self.assertEqual([], store.applied)
+
     def test_conversation_submission_persists_and_publishes_one_governed_message(self):
         store = FakeStateStore({
             "state_schema_version": 1,

@@ -36,6 +36,14 @@ def envelope(topic="payment.authorization.requested", payload=None):
 
 
 class PrivacyTests(unittest.TestCase):
+    def test_intent_contract_rejects_unsupported_nested_facets(self):
+        message = envelope(
+            "experience.intent.updated",
+            {"structured_intent": {"product_id": "rose-1"}},
+        )
+        with self.assertRaises(ValueError):
+            self.guard.validate_publication("orchestration", "experience.intent.updated", message)
+
     @classmethod
     def setUpClass(cls):
         policy = KafkaPolicy.load(ROOT / "config" / "kafka-policy.json")

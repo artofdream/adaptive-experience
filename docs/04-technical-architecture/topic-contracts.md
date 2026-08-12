@@ -16,7 +16,7 @@ corresponding MVP topics below.
 | Topic | Schema version | Owner / publisher | Authorized subscribers | Minimum payload |
 |---|---|---|---|---|
 | customer.message.submitted | 1.0.0 | Orchestration | AI Concierge, Workspace | message text |
-| experience.intent.updated | 1.0.0 | Orchestration | Workspace, Recommendation, Delivery | structured intent |
+| experience.intent.updated | 1.0.0 | Orchestration | Workspace, Recommendation, Delivery | structured occasion, budget, recipient, style, flower preference, and timing intent |
 | product.recommendations.requested | 1.0.0 | Orchestration | Recommendation | intent reference |
 | product.recommendations.ready | 1.0.0 | Recommendation | Orchestration, Workspace | eligible product IDs, ranking |
 | product.selected | 1.0.0 | Orchestration | Inventory, Pricing, Order, Workspace | product ID, options |

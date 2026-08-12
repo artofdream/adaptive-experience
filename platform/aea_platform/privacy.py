@@ -76,6 +76,49 @@ class PayloadPrivacyGuard:
         leaked = sorted(self._sensitive_keys(envelope))
         if leaked:
             raise ValueError(f"raw sensitive fields are prohibited; use references or tokens: {leaked}")
+        self._validate_schema(payload, schema, "payload")
+
+    def _validate_schema(self, value, schema: dict, path: str) -> None:
+        expected = schema.get("type")
+        valid = {
+            "object": isinstance(value, dict),
+            "array": isinstance(value, list),
+            "string": isinstance(value, str),
+            "integer": isinstance(value, int) and not isinstance(value, bool),
+            "number": isinstance(value, (int, float)) and not isinstance(value, bool),
+            "boolean": isinstance(value, bool),
+        }
+        if expected in valid and not valid[expected]:
+            raise ValueError(f"{path} does not match its governed schema type")
+        if expected == "object":
+            properties = schema.get("properties", {})
+            required = set(schema.get("required", []))
+            missing = required - set(value)
+            if missing:
+                raise ValueError(f"{path} omits required fields: {sorted(missing)}")
+            if schema.get("additionalProperties") is False:
+                unknown = set(value) - set(properties)
+                if unknown:
+                    raise ValueError(f"{path} contains unsupported fields: {sorted(unknown)}")
+            if len(value) < int(schema.get("minProperties", 0)):
+                raise ValueError(f"{path} contains too few fields")
+            for key, nested in value.items():
+                if key in properties:
+                    self._validate_schema(nested, properties[key], f"{path}.{key}")
+        elif expected == "array":
+            item_schema = schema.get("items", {})
+            for index, item in enumerate(value):
+                self._validate_schema(item, item_schema, f"{path}[{index}]")
+        elif expected == "string":
+            if len(value) < int(schema.get("minLength", 0)):
+                raise ValueError(f"{path} is too short")
+            if "maxLength" in schema and len(value) > int(schema["maxLength"]):
+                raise ValueError(f"{path} is too long")
+        elif expected in {"number", "integer"}:
+            if "minimum" in schema and value < schema["minimum"]:
+                raise ValueError(f"{path} is below its minimum")
+            if "maximum" in schema and value > schema["maximum"]:
+                raise ValueError(f"{path} exceeds its maximum")
 
     def _schema(self, topic: str, version: str) -> dict:
         key = (topic, version)
