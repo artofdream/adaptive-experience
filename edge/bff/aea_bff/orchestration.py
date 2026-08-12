@@ -83,13 +83,13 @@ class HttpOrchestration:
                                 int(data.get("context_version", 0)), data.get("message_id"))
 
     def accept_command(self, **kwargs):
-        data = self._call("POST", f"/internal/v1/sessions/{kwargs['session_id']}/commands",
-                          subject=kwargs["subject"], payload=kwargs)
-        return CommandResult(data["status"] == 202, data.get("code", "rejected"))
+        # Internal Orchestration has no command HTTP surface yet (CF-037).
+        return CommandResult(False, "orchestration_unavailable")
 
     def workspace_projection(self, **kwargs):
-        return self._call("GET", f"/internal/v1/sessions/{kwargs['session_id']}/workspace",
-                          subject=kwargs["subject"])
+        # Internal Orchestration has no workspace HTTP surface yet (CF-037).
+        return {"context_version": 0, "tiles": []}
 
     def stream_events(self, **kwargs):
+        # Internal Orchestration has no stream surface yet (CF-037).
         return ()

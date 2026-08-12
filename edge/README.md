@@ -41,10 +41,11 @@ responses, and logs contain no PostgreSQL or Kafka connection details.
 
 ## API boundary
 
-- `POST /api/v1/session` creates an opaque browser session and CSRF token.
-- `POST /api/v1/commands` performs transport validation and delegates command
-  acceptance to Orchestration. Responses include correlation ID and observed
-  context version.
+Wired end-to-end through authenticated `HttpOrchestration` to Internal
+Orchestration (M2 Conversation and Shared Understanding):
+
+- `POST /api/v1/session` creates an opaque browser session and CSRF token, then
+  ensures the matching internal experience session.
 - `POST /api/v1/conversation/messages` accepts a T-01 customer message and
   returns its message ID, correlation ID, and new context version immediately;
   AI processing continues asynchronously through `customer.message.submitted`.
@@ -58,10 +59,18 @@ responses, and logs contain no PostgreSQL or Kafka connection details.
   always include `ai_generated`, the active `assistant_mode`, and a plain-language
   disclosure telling customers to review and correct the interpretation
   (NFR-005). These fields remain present when the availability fallback is used.
-- `GET /api/v1/workspace` returns a least-data workspace projection.
-- `GET /api/v1/stream` emits reconnectable server-sent events and honors
-  `Last-Event-ID`.
 - `GET /healthz` is an unauthenticated liveness check without dependency data.
+
+Perimeter placeholders (Edge transport, auth, CSRF, and least-data shaping only).
+Internal Orchestration does not yet expose matching HTTP resources; the BFF must
+not invent authoritative command acceptance, workspace tiles, or stream events:
+
+- `POST /api/v1/commands` validates transport shape and fails closed until
+  Orchestration publishes an internal command surface.
+- `GET /api/v1/workspace` returns an empty least-data projection
+  (`context_version` 0, no tiles) until an internal workspace projection exists.
+- `GET /api/v1/stream` keeps the reconnectable SSE contract and honors
+  `Last-Event-ID`, but emits no events until Orchestration publishes a stream.
 
 The integration runner builds the containers, waits for both health checks,
 verifies the HTTPS gateway, and executes ten standard assistant queries through
