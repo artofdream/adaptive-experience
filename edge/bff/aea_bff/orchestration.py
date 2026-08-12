@@ -55,7 +55,9 @@ class HttpOrchestration:
                               "correlation_id": kwargs["correlation_id"],
                           })
         return ConversationResult(data["status"] == 202, data.get("code", "rejected"),
-                                  int(data.get("context_version", 0)), data.get("message_id"))
+                                  int(data.get("context_version", 0)), data.get("message_id"),
+                                  bool(data.get("ai_generated", False)),
+                                  data.get("assistant_mode"), data.get("disclosure"))
 
     def ensure_session(self, **kwargs):
         self._call("PUT", f"/internal/v1/sessions/{kwargs['session_id']}",

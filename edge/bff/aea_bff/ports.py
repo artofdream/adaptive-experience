@@ -16,6 +16,9 @@ class ConversationResult:
     code: str
     context_version: int
     message_id: str | None = None
+    ai_generated: bool = False
+    assistant_mode: str | None = None
+    disclosure: str | None = None
 
 
 @dataclass(frozen=True)
