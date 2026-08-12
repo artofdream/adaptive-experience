@@ -5,7 +5,7 @@ finding_id: CF-039
 status: verified
 severity: medium
 source_assessment: research/assessments/2026-08-12-pre-m4-hygiene-reconciliation.md
-supersedes:
+supersedes: research/findings/CF-039-roadmap-gitlab-m4-m5.md (intake stub, consolidated)
 issue: "#141"
 branch: docs/cf-039-roadmap-milestone-coherence
 merge_request: "!110"
