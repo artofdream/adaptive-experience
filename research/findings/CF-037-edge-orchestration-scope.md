@@ -57,7 +57,7 @@ boundary in `platform/README.md`.
 - [x] GitLab issue created
 - [x] Dedicated branch created from updated `main`
 - [x] Focused fix committed and pushed
-- [ ] Relevant checks passed
-- [ ] MR includes `Closes #N`, summary, and test plan
+- [x] Relevant checks passed
+- [x] MR includes `Closes #N`, summary, and test plan
 - [ ] MR merged
 - [ ] Post-merge verification passed on `main`
