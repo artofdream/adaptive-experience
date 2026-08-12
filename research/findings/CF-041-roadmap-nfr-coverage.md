@@ -2,7 +2,7 @@
 
 tags: #aea #coherence
 finding_id: CF-041
-status: in-mr
+status: verified
 severity: medium
 source_assessment: research/assessments/2026-08-13-nfr-milestone-coverage-intake.md
 supersedes:
@@ -56,6 +56,7 @@ roadmap NFR coverage is reconciled to GitLab.
 |------|-------|-------------------|
 | 2026-08-13 | queued | Intake (2026-08-13-nfr-milestone-coverage-intake) |
 | 2026-08-13 | in-mr | Issue #146; roadmap M5/M6/M7/Future NFR rows reconciled to GitLab |
+| 2026-08-13 | verified | !123 merged (main d6f3767); M5/M6/M7/Future NFR rows correct on `main`; `check_coherence.py` passes |
 
 ## Completion
 
@@ -63,7 +64,7 @@ roadmap NFR coverage is reconciled to GitLab.
 - [x] GitLab issue created (#146)
 - [x] Dedicated branch created from updated `main`
 - [x] Focused fix committed and pushed
-- [ ] Relevant checks passed
-- [ ] MR includes `Closes #N`, summary, and test plan
-- [ ] MR merged
-- [ ] Post-merge verification passed on `main`
+- [x] Relevant checks passed
+- [x] MR includes `Closes #N`, summary, and test plan
+- [x] MR merged
+- [x] Post-merge verification passed on `main`
