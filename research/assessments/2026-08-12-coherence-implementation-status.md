@@ -1,126 +1,97 @@
 # Coherence + implementation status — 2026-08-12
 
 tags: #aea #coherence-assessment #implementation-status
-status: refreshed-intake-complete
-assessed_ref: 49fa772
+status: m3-ready
+assessed_ref: cb09376
 assessed_by: codex
 
-## Scope
+## Scope and verdict
 
-- Guards: `check_coherence.py` passes; `check_topic_schemas.py` passes for the
-  21 governed MVP payload schemas and envelope.
-- Code: merged `platform/`, `edge/`, CI unit tests, and PostgreSQL/Kafka
-  integration evidence through issue #40.
-- Docs: ADR-001…012 Accepted; roadmap M0–M7; canonical requirements and topic
-  contracts.
-- GitLab milestones: M0 and M1 closed; M2 active for 2026-09-06…2026-09-19.
-- M2 issue inventory: 5 closed and 5 open across its six FRs and four NFRs.
-- CF queue: CF-030…034 remain queued; this refresh performs intake/status
-  reconciliation only and does not remediate a finding.
+This refresh assesses merged `main` after completion of the M0–M2 delivery
+sequence. The canonical workbook, published requirements, traceability matrix,
+21 governed MVP payload schemas, executable `platform/` and `edge/` runtimes,
+and live GitLab milestones were reconciled.
 
-## Coherence verdict
+**M0, M1, and M2 are complete.** The coherence and topic-schema guards pass.
+GitLab records M0 as 5/5 closed, M1 as 8/8 closed, and M2 as 11/11 closed.
+M2 was closed after this verification.
 
-**Requirements and canonical documentation remain coherent.** The executable
-foundation and the core M2 state behavior are now merged. The principal
-docs-to-code/runtime gap is that the Edge BFF still uses an unavailable
-orchestration adapter and does not expose the merged Conversation and Shared
-Understanding services end to end.
+## Milestone coverage
 
-| ID | Claim | Sev | Queue |
-|----|-------|-----|-------|
-| CF-030 | Wiki ADR index lists only ADR-001…010 and still describes the broker product as deferred / Kafka as draft although ADR-011/012 are Accepted | Medium | queued |
-| CF-034 | Edge BFF uses `UnavailableOrchestration`; Conversation and Shared Understanding are not wired to browser-facing routes | Medium | queued |
-| CF-031 | `CLAUDE.md` still describes the repository as docs-only although `platform/` and `edge/` are executable | Medium | queued |
-| CF-033 | `platform/README.md` introduction says M2 behavior is not implemented although Conversation, Intent, and Shared Understanding services are present | Medium | queued |
-| CF-032 | Root README repository areas omit `platform/` and `edge/` | Low | queued |
+| MS | GitLab | Implementation assessment |
+|----|--------|---------------------------|
+| M0 | Closed, 5/5 | ADR-006–012 accepted; scope, topology, messaging, state, datastore, and broker decisions complete |
+| M1 | Closed, 8/8 | Contract, PostgreSQL/outbox, Kafka, Edge/BFF, audit, privacy, and CI baseline complete |
+| M2 | Closed, 11/11 | T-01/T-02, AI availability/fallback, state preservation, correction, stale-result rejection, browser UX, compatibility, performance, transparency, and Edge wiring complete |
+| M3 | Upcoming, 2/4 complete | Accuracy and inventory-integrity NFR baselines closed; inventory (#30) and recommendations (#26) remain |
 
-## Implementation status (milestones)
+## M0 implementation coverage
 
-| MS | GitLab | Coverage | Assessment |
-|----|--------|----------|------------|
-| M0 | Closed | 5/5 tracked issues closed; ADR-006…012 Accepted | Complete |
-| M1 | Closed | 8/8 tracked issues closed | Complete platform baseline; final production hardening remains in M7 |
-| M2 | Active | 5/10 planned issues closed; 5/6 functional requirements implemented | Partial; platform behavior exists but the runnable Edge-to-Orchestration path and four NFR validations remain |
-| M3–M7 | Active/planned | Contracts and schemas only | Not implemented in this assessment scope |
+- ADR-006 defines the MVP customization boundary.
+- ADR-007 defines the initial modular-monolith deployment topology.
+- ADR-008 defines contract-first messaging and the transactional outbox.
+- ADR-009 defines experience-state ownership and persistence.
+- ADR-010 defines synchronous commands and asynchronous events.
+- ADR-011 selects PostgreSQL; ADR-012 selects Kafka.
 
-## M0 coverage
+## M1 implementation coverage
 
-| Activity | Evidence | Status |
-|----------|----------|--------|
-| MVP customization boundary | ADR-006 / #104 | Complete |
-| Initial deployment topology | ADR-007 / #105 | Complete |
-| Contract-first messaging and transactional outbox | ADR-008 / #106 | Complete |
-| Experience-state ownership | ADR-009 / #107 | Complete |
-| Command/event boundaries | ADR-010 / #108 | Complete |
-| PostgreSQL and Kafka product decisions | ADR-011 / #121; ADR-012 / #120 | Complete |
+- 21 versioned MVP semantic payload schemas plus the governed envelope.
+- PostgreSQL experience state, optimistic mutation, transactional outbox, and
+  projection dependencies.
+- Kafka provisioning, acknowledged publication, manual offsets, retry/DLQ
+  routing, and idempotent consumption.
+- TLS Edge Gateway and BFF perimeter with authentication, session, CSRF,
+  least-data projections, correlation, and no browser broker access.
+- Publisher/consumer authorization, payload-free audit tracing, sensitive-field
+  rejection, and CI coherence/schema/unit/container checks.
 
-## M1 coverage
+These are production-oriented baselines. M7 retains deployment, resilience,
+security, and operational hardening.
 
-| Activity | Evidence | Status |
-|----------|----------|--------|
-| Topic governance and 21 semantic payload contracts | #57, #129 | Complete baseline |
-| Auditable message tracing | #58 | Complete baseline |
-| Least-data privacy and security enforcement | #59 | Complete baseline |
-| PostgreSQL state, transactional outbox, and Kafka integration | #128 | Complete baseline |
-| BFF and Edge API Gateway perimeter | #127 | Perimeter complete; orchestration runtime wiring remains CF-034 |
-| CI schema, coherence, unit, PostgreSQL, and Kafka checks | repository CI and integration suite | Complete baseline |
+## M2 implementation coverage
 
-## M2 coverage
+| Capability | Evidence | Status |
+|------------|----------|--------|
+| Conversational discovery | #20 / FR-001 | Complete |
+| Structured intent and progressive prompts | #21 / FR-002 | Complete |
+| Available provider-neutral AI with fallback | #23 / FR-004 | Complete |
+| Preserve unaffected state | #39 / FR-020 | Complete |
+| Review and correct inference | #40 / FR-021 | Complete |
+| Reject stale/future results | #41 / FR-022 | Complete |
+| Intuitive browser interface | #43 / NFR-001 | Complete baseline |
+| Desktop/tablet/mobile compatibility | #44 / NFR-002 | Complete baseline |
+| Standard-query response within three seconds | #46 / NFR-004 | Complete reference-path evidence |
+| AI-generated response disclosure | #47 / NFR-005 | Complete |
+| Edge-to-Orchestration runtime path | #130 / CF-034 | Complete |
 
-| Requirement / capability | Issue | Status | Implementation evidence |
-|--------------------------|-------|--------|-------------------------|
-| FR-001 conversational discovery | #20 | Closed | Validated customer-message acceptance, bounded transcript state, and governed outbox event |
-| FR-002 intent analysis | #21 | Closed | Provider-neutral interpreter, six structured facets, progressive prompts, and atomic intent event |
-| FR-004 24/7 Generative AI chatbot | #23 | Open | Deterministic reference interpreter exists; production provider and availability behavior are not implemented |
-| FR-020 preserve unaffected state | #39 | Closed | Deep selective patches retain siblings and completed decisions |
-| FR-021 review and correct inference | #40 | Closed | Least-data review projection and optimistic partial corrections |
-| FR-022 stale-response rejection | #41 | Closed | Exact active-context matching and durable stale outcomes |
-| NFR-001 usability | #43 | Open | No measurable usability acceptance evidence yet |
-| NFR-002 browser/device compatibility | #44 | Open | No defined automated compatibility matrix yet |
-| NFR-004 standard query response within 3 seconds | #46 | Open | No end-to-end SLO instrumentation or representative performance evidence yet |
-| NFR-005 transparency | #47 | Open | Shared Understanding is reviewable, but transparency criteria and evidence remain open |
+The reference integration exercises TLS, authentication, BFF, Orchestration,
+PostgreSQL, AI fallback, context versions, and least-data projections. The
+latest ten-query guard measured about 0.09 seconds p95/max against NFR-004's
+three-second limit.
 
-The latest merged M2 implementation was validated locally with 51/51 full
-PostgreSQL/Kafka tests, plus passing topic-schema and coherence guards. This is
-strong platform-layer evidence, not proof of a browser-to-AI production path.
+## M3 readiness and dependency order
 
-## Coverage (MVP capabilities)
+M3 is **Validated Recommendations** and covers FR-007, FR-011, NFR-006, and
+NFR-009. GitLab already records #48/NFR-006 and #51/NFR-009 complete. The clean
+implementation order is:
 
-| Capability | Status |
-|------------|--------|
-| M0 architecture decisions | Complete |
-| M1 contracts, outbox/Kafka, governance, audit, privacy, and Edge perimeter | Complete baseline |
-| T-01 Conversation | Implemented in platform; browser-facing orchestration runtime disconnected |
-| T-02 Shared Understanding | Implemented in platform; browser-facing routes disconnected |
-| Progressive thought completion | Implemented in platform |
-| Context versioning, state preservation, and stale-result rejection | Implemented and integration-tested |
-| Production Generative AI provider and 24/7 behavior | Missing |
-| M2 usability, compatibility, performance, and transparency evidence | Missing or partial |
-| T-03…T-08, FAQ, inventory, pricing, payment, and tracking | Planned for M3–M6; not implemented |
+1. **#30 / FR-011 — Inventory:** establish the authoritative availability read
+   model, governed availability validation, freshness, and selection-time
+   revalidation.
+2. **#26 / FR-007 — Recommendations:** consume current intent plus validated
+   availability and produce explainable, selectable recommendations.
 
-## Recommended priority
+FR-005 remains in M6 with approved product/policy answers. NFR-003 remains in
+M7 for measured 99.5% assistant availability and operational hardening. This
+placement matches live GitLab and prevents those requirements from being
+silently treated as M3 completion criteria.
 
-1. **P0 — CF-034:** create one remediation issue and wire the existing Edge BFF
-   to Conversation and Shared Understanding orchestration commands/queries with
-   end-to-end context-version and correlation propagation.
-2. **P0 — #23 / FR-004:** add the production Generative AI adapter, availability
-   behavior, timeouts, health checks, and graceful degradation behind the
-   existing provider-neutral port.
-3. **P1 — #47 / NFR-005:** make inference, uncertainty, prompts, and corrections
-   visibly transparent.
-4. **P1 — #46 / NFR-004:** instrument and prove the three-second standard-query
-   SLO against the real end-to-end path.
-5. **P2 — #43 / NFR-001:** establish measurable T-01/T-02 usability acceptance
-   and accessibility evidence.
-6. **P2 — #44 / NFR-002:** define the supported browser/device matrix and add
-   responsive compatibility tests.
+## Remaining coherence queue before M3 code
 
-Do not close M2 until CF-034 and issues #23, #43, #44, #46, and #47 are
-addressed with end-to-end acceptance evidence.
+- P1: CF-030 Wiki ADR index, CF-031 obsolete docs-only repository description,
+  CF-033 stale platform introduction, and post-merge verification of CF-034.
+- P2: CF-032 root README repository-area navigation.
 
-## Intake stop condition
-
-This refresh introduces no new CF identifier and performs no remediation.
-Under the coherence-findings SOP, the next remediation iteration remains the
-first queued finding by severity and dependency: CF-030, unless the owner
-explicitly prioritizes the runtime-blocking CF-034 first.
+No unresolved M0–M2 implementation issue blocks M3 after those documentation
+and audit-trail corrections.
