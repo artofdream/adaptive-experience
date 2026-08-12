@@ -6,6 +6,7 @@ from datetime import datetime, timedelta, timezone
 from urllib.parse import parse_qs
 
 from .conversation import ConversationService, ConversationSessionNotFound, ConversationValidationError
+from .delivery import DeliveryValidationError, normalize_delivery_details
 from .intent import (IntentAnalysisService, IntentSessionNotFound, IntentValidationError,
                      ReferenceIntentInterpreter, SharedUnderstandingService)
 from .inventory import (InventoryAvailabilityService, InventoryUnavailableError,
@@ -105,6 +106,12 @@ class InternalOrchestrationApp:
                     return await self._send(send, 404, {"code": "session_not_found"})
                 body = await self._body(receive)
                 return await self._select_product(send, session_id, subject, loaded, body)
+            if resource == "delivery" and method == "POST":
+                loaded = self.store.load(session_id)
+                if loaded is None:
+                    return await self._send(send, 404, {"code": "session_not_found"})
+                body = await self._body(receive)
+                return await self._update_delivery(send, session_id, subject, loaded, body)
             if resource == "stream" and method == "GET":
                 loaded = self.store.load(session_id)
                 if loaded is None:
@@ -148,9 +155,13 @@ class InternalOrchestrationApp:
             },
             "recommendations": {"items": self.recommendation.preview(intent=shared.structured_intent)},
         }
-        selection = (state.get("decisions") or {}).get("product")
+        decisions = state.get("decisions") or {}
+        selection = decisions.get("product")
         if isinstance(selection, dict):
             facets["selection"] = selection
+        delivery = decisions.get("delivery")
+        if isinstance(delivery, dict):
+            facets["delivery"] = delivery
         return {
             "context_version": int(loaded["context_version"]),
             "facets": facets,
@@ -206,6 +217,42 @@ class InternalOrchestrationApp:
             new_version = self.store.apply_patch(
                 session_id, observed, int(loaded["state_schema_version"]), patch,
                 [{"message_id": message_id, "topic": "product.selected",
+                  "aggregate_key": session_id, "envelope": envelope}])
+        except Exception as error:
+            if getattr(error, "sqlstate", None) == "40001":
+                self.connection.rollback()
+                return await self._send(send, 409, {"code": "stale_context"})
+            raise
+        return await self._send(send, 202, {"code": "accepted",
+            "context_version": new_version, "message_id": message_id})
+
+    async def _update_delivery(self, send, session_id: str, subject: str,
+                               loaded: dict, body: dict):
+        observed = body.get("observed_context_version")
+        correlation_id = body.get("correlation_id")
+        if (not isinstance(correlation_id, str) or not correlation_id.strip()
+                or not isinstance(observed, int) or isinstance(observed, bool) or observed < 0):
+            return await self._send(send, 422, {"code": "validation_failed"})
+        try:
+            # Reference-only recipient data (FR-014); raw PII is rejected.
+            details = normalize_delivery_details(body.get("delivery"))
+        except DeliveryValidationError:
+            return await self._send(send, 422, {"code": "validation_failed"})
+        message_id = str(uuid.uuid4())
+        envelope = {
+            "message_id": message_id, "topic": "delivery.details.updated",
+            "message_type": "event", "schema_version": "1.0.0", "session_id": session_id,
+            "correlation_id": correlation_id.strip(), "source": "orchestration",
+            "context_version": observed,
+            "publication_time": datetime.now(timezone.utc).isoformat(),
+            "security_context": {"classification": "confidential", "subject_reference": subject},
+            "payload": details, "outcome": {},
+        }
+        patch = StatePatch.create({"decisions": {"delivery": details}}, ["decisions.delivery"])
+        try:
+            new_version = self.store.apply_patch(
+                session_id, observed, int(loaded["state_schema_version"]), patch,
+                [{"message_id": message_id, "topic": "delivery.details.updated",
                   "aggregate_key": session_id, "envelope": envelope}])
         except Exception as error:
             if getattr(error, "sqlstate", None) == "40001":

@@ -81,6 +81,12 @@ Internal Orchestration (#144; contract in
   exactly once at the new context version. Unavailable/stale inventory returns
   409; the recommendations read surface stays the workspace facet (there is no
   standalone `GET /api/v1/recommendations`).
+- `POST /api/v1/delivery` records the FR-014 delivery decision (`timing` = date +
+  window, and an opaque `destination_reference`). Recipient details are
+  reference-only: raw recipient name/address/contact are rejected at the edge, so
+  no personally identifiable recipient data enters experience state or the
+  governed `delivery.details.updated` event. The workspace `delivery` facet
+  exposes only the timing and the reference.
 - `GET /api/v1/stream` is the reconnectable SSE contract. A cold connection
   receives one `snapshot` event carrying the workspace; a reconnection with
   `Last-Event-ID` (or `?after=`) receives only the `invalidation` deltas it

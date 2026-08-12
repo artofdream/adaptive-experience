@@ -176,6 +176,53 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         self.assertIn("recommendations",
                       [p["projection_key"] for p in delta["events"][0]["invalidated_projections"]])
 
+    def test_delivery_details_write_facet_and_event_without_raw_pii(self):
+        import asyncio
+        from aea_platform.adapters import PsycopgExperienceStateStore
+        from aea_platform.internal_api import InternalOrchestrationApp
+        from aea_platform.state import StatePatch
+
+        session_id = self.create_session()
+        app = InternalOrchestrationApp(self.connection, "internal-token")
+
+        def drive(method, path, body=b""):
+            return asyncio.run(self._invoke_internal(app, method, path, body))
+
+        body = json.dumps({"delivery": {"destination_reference": "addr-ref-9",
+                                        "timing": {"date": "2026-09-01", "window": "morning"}},
+                           "observed_context_version": 0, "correlation_id": "del"}).encode()
+        status, result = drive("POST", f"/internal/v1/sessions/{session_id}/delivery", body)
+        self.assertEqual(202, status)
+        self.assertEqual(1, result["context_version"])
+
+        envelope = self.connection.execute(
+            "SELECT envelope FROM orchestration.outbox_message "
+            "WHERE session_id=%s AND topic='delivery.details.updated'", (session_id,)).fetchone()[0]
+        self.assertEqual({"destination_reference": "addr-ref-9",
+                          "timing": {"date": "2026-09-01", "window": "morning"}},
+                         envelope["payload"])
+
+        _, workspace = drive("GET", f"/internal/v1/sessions/{session_id}/workspace")
+        self.assertEqual("addr-ref-9", workspace["facets"]["delivery"]["destination_reference"])
+        self.assertEqual({"date": "2026-09-01", "window": "morning"},
+                         workspace["facets"]["delivery"]["timing"])
+
+        # Raw recipient PII is rejected with no state mutation.
+        bad = json.dumps({"delivery": {"recipient_name": "Jane", "destination_reference": "r",
+                                       "timing": {"date": "2026-09-01", "window": "morning"}},
+                          "observed_context_version": result["context_version"],
+                          "correlation_id": "del2"}).encode()
+        self.assertEqual(422, drive("POST", f"/internal/v1/sessions/{session_id}/delivery", bad)[0])
+
+        # FR-020: an unrelated intent change preserves the delivery decision.
+        store = PsycopgExperienceStateStore(self.connection)
+        with self.connection.transaction():
+            store.apply_patch(str(session_id), result["context_version"], 1,
+                StatePatch.create({"shared_understanding": {"occasion": "anniversary"}},
+                                  ["shared_understanding.occasion"]), [])
+        _, workspace2 = drive("GET", f"/internal/v1/sessions/{session_id}/workspace")
+        self.assertEqual("addr-ref-9", workspace2["facets"]["delivery"]["destination_reference"])
+
     @staticmethod
     async def _invoke_internal(app, method, path, body=b"", query=b""):
         sent = []

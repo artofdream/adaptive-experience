@@ -81,6 +81,12 @@ plaintext production listeners are prohibited by ADR-012.
   and a normalized physical `card_message` (ADR-006 /
   `docs/04-technical-architecture/t04-card-message-contract.md`); FR-003 controls
   are rejected, so Future customization cannot enter the MVP contract.
+- Delivery scheduling (#33, FR-014): `POST .../delivery` validates a `timing`
+  (date + window) and an opaque `destination_reference`, writes the
+  `decisions.delivery` facet, and emits `delivery.details.updated` in one
+  versioned transaction. Recipient details are reference-only - raw recipient
+  name/address/contact are rejected - so no PII enters experience state or the
+  event, consistent with `PayloadPrivacyGuard`.
 - `OpenAICompatibleIntentInterpreter` supplies a vendor-neutral Generative AI
   boundary using strict JSON output and a timeout capped at 2.5 seconds.
   `AvailableIntentInterpreter` fails over to the deterministic local interpreter

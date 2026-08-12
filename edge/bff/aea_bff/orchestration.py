@@ -4,7 +4,8 @@ import json
 import urllib.error
 import urllib.request
 
-from .ports import CommandResult, ConversationResult, CorrectionResult, SelectionResult
+from .ports import (CommandResult, ConversationResult, CorrectionResult, DeliveryResult,
+                    SelectionResult)
 
 
 class OrchestrationUnavailable(RuntimeError):
@@ -99,6 +100,16 @@ class HttpOrchestration:
                           })
         return SelectionResult(data["status"] == 202, data.get("code", "rejected"),
                                int(data.get("context_version", 0)), data.get("message_id"))
+
+    def update_delivery(self, **kwargs):
+        data = self._call("POST", f"/internal/v1/sessions/{kwargs['session_id']}/delivery",
+                          subject=kwargs["subject"], payload={
+                              "delivery": kwargs["delivery"],
+                              "observed_context_version": kwargs["observed_context_version"],
+                              "correlation_id": kwargs["correlation_id"],
+                          })
+        return DeliveryResult(data["status"] == 202, data.get("code", "rejected"),
+                              int(data.get("context_version", 0)), data.get("message_id"))
 
     def workspace_projection(self, **kwargs):
         return self._call("GET", f"/internal/v1/sessions/{kwargs['session_id']}/workspace",
