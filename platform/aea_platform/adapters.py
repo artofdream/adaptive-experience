@@ -254,6 +254,41 @@ class PsycopgOrderStore:
             return None
         return {"order_id": row[0], "status": row[1]}
 
+    def advance_status(self, *, session_id: str, target_status: str,
+                       allowed_priors: tuple[str, ...], message_id: str,
+                       correlation_id: str, subject_reference: str,
+                       published_at: datetime) -> dict | None:
+        with self.connection.transaction():
+            row = self.connection.execute(
+                "SELECT order_id::text,status,context_version FROM orchestration.customer_order "
+                "WHERE session_id=%s FOR UPDATE", (session_id,),
+            ).fetchone()
+            if row is None:
+                return None
+            order_id, current, context_version = row
+            if current not in allowed_priors:
+                return {"order_id": order_id, "status": current, "changed": False}
+            self.connection.execute(
+                "UPDATE orchestration.customer_order SET status=%s, updated_at=clock_timestamp() "
+                "WHERE session_id=%s", (target_status, session_id))
+            envelope = {
+                "message_id": message_id, "topic": "order.status.updated",
+                "message_type": "event", "schema_version": "1.0.0", "session_id": session_id,
+                "correlation_id": correlation_id, "source": "order",
+                "context_version": context_version,
+                "publication_time": published_at.isoformat(),
+                "security_context": {"classification": "confidential",
+                                     "subject_reference": subject_reference},
+                "payload": {"order_id": order_id, "authoritative_status": target_status},
+                "outcome": {},
+            }
+            self.connection.execute(
+                "INSERT INTO orchestration.outbox_message "
+                "(message_id,session_id,context_version,topic,aggregate_key,envelope) "
+                "VALUES (%s,%s,%s,'order.status.updated',%s,%s::jsonb)",
+                (message_id, session_id, context_version, order_id, json.dumps(envelope)))
+            return {"order_id": order_id, "status": target_status, "changed": True}
+
 
 class PsycopgOutboxStore:
     def __init__(self, connection):
