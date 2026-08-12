@@ -22,6 +22,10 @@ Lily's Florist Shop.
 - [Architecture Decision Records](docs/06-adr/ADR-001-shared-understanding.md)
 - [Roadmap](docs/07-roadmap/roadmap.md)
 - [Florist reference design](implementations/florist/README.md)
+- [Platform foundation](platform/README.md) — product-neutral PostgreSQL,
+  outbox, Kafka, governance, and orchestration services.
+- [Edge browser perimeter](edge/README.md) — TLS gateway, BFF, browser UI, and
+  least-data Edge-to-Orchestration contracts.
 - Research / Claude ↔ Obsidian loop ([`research/claude-obsidian-loop.md`](research/claude-obsidian-loop.md))
 - GitLab wiki source ([`wiki/`](wiki/) — publish with `python scripts/publish_wiki.py`)
 
