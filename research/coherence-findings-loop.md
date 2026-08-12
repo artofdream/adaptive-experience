@@ -50,7 +50,9 @@ completed rows because the queue is also the audit trail.
 | 34 | CF-032 | Root README repository navigation omitted `platform/` and `edge/` | Low | verified | 2026-08-12 | 2026-08-12 | #135 / !102 |
 | 35 | CF-035 | Repo wiki/architecture-decision-records.md still omits ADR-011/012 and retains broker-deferred wording after CF-030 live-wiki verify | Medium | verified | 2026-08-12 | 2026-08-12 | #138 / !106 |
 | 36 | CF-036 | Roadmap Future Backlog lists FR-007 under CRM analytics while FR-007 is MVP Recommendations (M3) | Medium | verified | 2026-08-12 | 2026-08-12 | #139 / !107 |
-| 37 | CF-037 | Edge documents/routes commands, workspace, and stream while Internal orchestration only implements conversation + Shared Understanding | Medium | in-mr | 2026-08-12 | 2026-08-12 | #140 / !108 |
+| 37 | CF-037 | Edge documents/routes commands, workspace, and stream while Internal orchestration only implements conversation + Shared Understanding | Medium | verified | 2026-08-12 | 2026-08-12 | #140 / !108 |
+| 38 | CF-038 | GitLab issue #137 (CF-035) remains open though CF-035 was closed via #138 / !106 | Low | verified | 2026-08-12 | 2026-08-12 | #137 closed (dup #138 / !106) |
+| 39 | CF-039 | Roadmap M4/M5 FR coverage disagrees with GitLab milestone assignments (FR-013/015/018; NFR-014) | Medium | in-mr | 2026-08-12 | 2026-08-12 | #141 / !TBD |
 
 Allowed statuses: `queued`, `investigating`, `ready`, `in-progress`, `in-mr`,
 `verified`, `regressed`, `duplicate`, `not-reproducible`, and `blocked`.
