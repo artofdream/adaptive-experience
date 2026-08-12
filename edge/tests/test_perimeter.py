@@ -4,11 +4,14 @@ import pathlib
 import unittest
 
 from edge.bff.aea_bff.app import BffApp
-from edge.bff.aea_bff.ports import CommandResult
+from edge.bff.aea_bff.ports import CommandResult, ConversationResult
 from edge.bff.aea_bff.security import FixedWindowRateLimiter, StaticTokenAuthenticator
 
 
 class FakeOrchestration:
+    def __init__(self):
+        self.messages = []
+
     def accept_command(self, **kwargs):
         return CommandResult(True, "accepted")
 
@@ -18,6 +21,18 @@ class FakeOrchestration:
     def stream_events(self, **kwargs):
         after = kwargs.get("after_event_id")
         return [] if after == "2" else [{"event_id": "2", "projection": self.workspace_projection()}]
+
+    def submit_conversation_message(self, **kwargs):
+        self.messages.append({
+            "message_id": "message-1", "role": "customer",
+            "text": kwargs["message_text"].strip(), "status": "submitted",
+            "submitted_at": "2026-08-12T00:00:00+00:00", "private": "omit",
+        })
+        return ConversationResult(True, "accepted", kwargs["observed_context_version"] + 1,
+                                  "message-1")
+
+    def conversation_projection(self, **kwargs):
+        return {"context_version": len(self.messages), "messages": self.messages, "secret": "omit"}
 
 
 async def invoke(app, method, path, headers=None, body=b"", query=b""):
@@ -67,6 +82,40 @@ class PerimeterTests(unittest.TestCase):
         headers = {**self.auth, "cookie": cookie}
         self.assertIn(b"id: 2", self.call("GET", "/api/v1/stream", headers)[2])
         self.assertEqual(b"", self.call("GET", "/api/v1/stream", {**headers, "last-event-id": "2"})[2])
+
+    def test_conversation_message_acceptance_and_projection(self):
+        cookie, csrf = self.session()
+        headers = {**self.auth, "cookie": cookie, "x-csrf-token": csrf,
+                   "content-type": "application/json"}
+        status, _, body = self.call(
+            "POST", "/api/v1/conversation/messages", headers,
+            json.dumps({"message_text": "  flowers for Mum  ",
+                        "observed_context_version": 0}).encode(),
+        )
+        result = json.loads(body)
+        self.assertEqual(202, status)
+        self.assertEqual("message-1", result["message_id"])
+        self.assertEqual(1, result["context_version"])
+        status, _, body = self.call("GET", "/api/v1/conversation",
+                                    {**self.auth, "cookie": cookie})
+        self.assertEqual(200, status)
+        projection = json.loads(body)
+        self.assertEqual("flowers for Mum", projection["messages"][0]["text"])
+        self.assertNotIn("private", projection["messages"][0])
+
+    def test_conversation_rejects_empty_oversized_and_extra_fields(self):
+        cookie, csrf = self.session()
+        headers = {**self.auth, "cookie": cookie, "x-csrf-token": csrf,
+                   "content-type": "application/json"}
+        for payload in (
+            {"message_text": " ", "observed_context_version": 0},
+            {"message_text": "x" * 2001, "observed_context_version": 0},
+            {"message_text": "roses", "observed_context_version": 0, "extra": True},
+        ):
+            self.assertEqual(422, self.call(
+                "POST", "/api/v1/conversation/messages", headers,
+                json.dumps(payload).encode(),
+            )[0])
 
     def test_origin_size_rate_and_shape_controls(self):
         self.assertEqual(403, self.call("POST", "/api/v1/session", {"authorization": "Bearer good", "origin": "https://evil.invalid"})[0])

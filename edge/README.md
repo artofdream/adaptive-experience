@@ -26,6 +26,11 @@ responses, and logs contain no PostgreSQL or Kafka connection details.
 - `POST /api/v1/commands` performs transport validation and delegates command
   acceptance to Orchestration. Responses include correlation ID and observed
   context version.
+- `POST /api/v1/conversation/messages` accepts a T-01 customer message and
+  returns its message ID, correlation ID, and new context version immediately;
+  AI processing continues asynchronously through `customer.message.submitted`.
+- `GET /api/v1/conversation` returns the authenticated session's least-data
+  conversation projection (up to 50 visible messages).
 - `GET /api/v1/workspace` returns a least-data workspace projection.
 - `GET /api/v1/stream` emits reconnectable server-sent events and honors
   `Last-Event-ID`.

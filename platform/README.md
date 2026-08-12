@@ -38,6 +38,11 @@ plaintext production listeners are prohibited by ADR-012.
   object patches preserve completed decisions and unaffected tile state, while
   the canonical `projection_dependency` registry derives only the projections
   that must regenerate. Unknown dependency facets fail closed.
+- `ConversationService` accepts validated T-01 customer messages, preserves the
+  bounded visible transcript in authoritative experience state, and writes the
+  governed `customer.message.submitted` outbox event in the same optimistic
+  transaction. The acknowledgement does not wait for or invent an AI result
+  (FR-001 / ADR-010).
 - Relay claims use `FOR UPDATE SKIP LOCKED`; a row becomes published only after
   the Kafka producer returns an `acks=all` delivery acknowledgement.
 - Message IDs remain stable across relay retries.

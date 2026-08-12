@@ -4,16 +4,36 @@ import json
 import re
 import sys
 import unittest
+import uuid
+from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from aea_platform.adapters import KafkaFailureRouter
+from aea_platform.conversation import (
+    ConversationService,
+    ConversationSessionNotFound,
+    ConversationValidationError,
+)
 from aea_platform.consumer import ConsumedRecord, GovernedConsumer
 from aea_platform.outbox import OutboxRecord, OutboxRelay
 from aea_platform.policy import KafkaPolicy
 from aea_platform.state import StatePatch, merge_state
+
+
+class FakeStateStore:
+    def __init__(self, current=None):
+        self.current = current
+        self.applied = []
+
+    def load(self, session_id):
+        return self.current
+
+    def apply_patch(self, session_id, expected, schema_version, patch, messages):
+        self.applied.append((session_id, expected, schema_version, patch, messages))
+        return expected + 1
 
 
 class FakeOutbox:
@@ -86,6 +106,63 @@ class FakePrivacy:
 
 
 class FoundationTests(unittest.TestCase):
+    def test_conversation_submission_persists_and_publishes_one_governed_message(self):
+        store = FakeStateStore({
+            "state_schema_version": 1,
+            "context_version": 3,
+            "state": {"conversation": {"messages": [{"message_id": "prior"}]},
+                      "decisions": {"product": {"completed": True}}},
+        })
+        fixed_id = uuid.UUID("00000000-0000-0000-0000-000000000020")
+        service = ConversationService(
+            store,
+            now=lambda: datetime(2026, 8, 12, tzinfo=timezone.utc),
+            new_id=lambda: fixed_id,
+        )
+        result = service.submit(
+            session_id="session-1", subject_reference="subject-1",
+            message_text="  flowers for Mum  ", observed_context_version=3,
+            correlation_id="correlation-1",
+        )
+        self.assertEqual(4, result.context_version)
+        _, expected, _, patch, outbox = store.applied[0]
+        self.assertEqual(3, expected)
+        self.assertEqual(("conversation.messages",), patch.changed_facets)
+        self.assertEqual("prior", patch.values["conversation"]["messages"][0]["message_id"])
+        self.assertEqual("flowers for Mum", patch.values["conversation"]["messages"][1]["text"])
+        envelope = outbox[0]["envelope"]
+        self.assertEqual("customer.message.submitted", envelope["topic"])
+        self.assertEqual({"message_text": "flowers for Mum"}, envelope["payload"])
+        self.assertEqual("subject-1", envelope["security_context"]["subject_reference"])
+
+    def test_conversation_validation_and_missing_session_fail_closed(self):
+        service = ConversationService(FakeStateStore())
+        with self.assertRaises(ConversationSessionNotFound):
+            service.submit(session_id="missing", subject_reference="subject",
+                           message_text="roses", observed_context_version=0,
+                           correlation_id="correlation")
+        store = FakeStateStore({"state_schema_version": 1, "context_version": 0, "state": {}})
+        service = ConversationService(store)
+        for value in ("", " ", "x" * 2001, "bad\x00text"):
+            with self.assertRaises(ConversationValidationError):
+                service.submit(session_id="session", subject_reference="subject",
+                               message_text=value, observed_context_version=0,
+                               correlation_id="correlation")
+        self.assertEqual([], store.applied)
+
+    def test_conversation_projection_is_bounded_and_least_data(self):
+        messages = [{"message_id": str(index), "role": "customer", "text": str(index),
+                     "status": "submitted", "submitted_at": "now", "secret": "omit"}
+                    for index in range(60)]
+        service = ConversationService(FakeStateStore({
+            "state_schema_version": 1, "context_version": 60,
+            "state": {"conversation": {"messages": messages}},
+        }))
+        projection = service.projection(session_id="session")
+        self.assertEqual(50, len(projection["messages"]))
+        self.assertEqual("10", projection["messages"][0]["message_id"])
+        self.assertNotIn("secret", projection["messages"][0])
+
     @classmethod
     def setUpClass(cls):
         cls.policy = KafkaPolicy.load(ROOT / "config" / "kafka-policy.json")
