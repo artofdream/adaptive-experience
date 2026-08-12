@@ -1,7 +1,12 @@
 from __future__ import annotations
 
 import uuid
+from datetime import datetime, timezone
 from typing import Callable
+
+# FR-015 authoritative order status lifecycle: creation through delivery. Status
+# only moves forward along this sequence.
+ORDER_STATUS_SEQUENCE = ("created", "submitted", "preparing", "dispatched", "delivered")
 
 
 class OrderIncompleteError(RuntimeError):
@@ -12,6 +17,14 @@ class OrderIncompleteError(RuntimeError):
         self.missing = missing
 
 
+class OrderNotFound(RuntimeError):
+    """No order exists for the session."""
+
+
+class OrderStatusError(ValueError):
+    """An order status transition is not a valid forward move (FR-015)."""
+
+
 class OrderService:
     """Assemble a customer order from completed decisions (FR-013).
 
@@ -20,9 +33,11 @@ class OrderService:
     is idempotent per session: a session has at most one order.
     """
 
-    def __init__(self, store, *, new_id: Callable[[], uuid.UUID] | None = None):
+    def __init__(self, store, *, new_id: Callable[[], uuid.UUID] | None = None,
+                 now: Callable[[], datetime] | None = None):
         self.store = store
         self.new_id = new_id or uuid.uuid4
+        self.now = now or (lambda: datetime.now(timezone.utc))
 
     def create(self, *, session_id: str, decisions: dict, context_version: int) -> dict:
         product = decisions.get("product") if isinstance(decisions, dict) else None
@@ -37,3 +52,26 @@ class OrderService:
 
     def projection(self, *, session_id: str) -> dict | None:
         return self.store.by_session(session_id)
+
+    def advance_status(self, *, session_id: str, target_status: str,
+                       correlation_id: str, subject_reference: str) -> dict:
+        """Move the order forward to an authoritative status and publish it (FR-015).
+
+        Forward-only: ``target_status`` must be later in ``ORDER_STATUS_SEQUENCE``
+        than the current status. The status update and the governed
+        ``order.status.updated`` event commit together.
+        """
+        if target_status not in ORDER_STATUS_SEQUENCE:
+            raise OrderStatusError(f"unknown status: {target_status}")
+        allowed_priors = ORDER_STATUS_SEQUENCE[:ORDER_STATUS_SEQUENCE.index(target_status)]
+        result = self.store.advance_status(
+            session_id=session_id, target_status=target_status,
+            allowed_priors=allowed_priors, message_id=str(self.new_id()),
+            correlation_id=correlation_id, subject_reference=subject_reference,
+            published_at=self.now().astimezone(timezone.utc))
+        if result is None:
+            raise OrderNotFound(session_id)
+        if not result["changed"]:
+            raise OrderStatusError(
+                f"cannot move from {result['status']} to {target_status}")
+        return result

@@ -103,7 +103,7 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         versions = [row[0] for row in self.connection.execute(
             "SELECT version FROM orchestration.schema_migration ORDER BY version"
         ).fetchall()]
-        self.assertEqual([1, 2, 3, 4, 5, 6, 7, 8], versions)
+        self.assertEqual([1, 2, 3, 4, 5, 6, 7, 8, 9], versions)
 
     def test_inventory_snapshots_are_monotonic_fresh_and_governed(self):
         from aea_platform.adapters import PsycopgInventoryAvailabilityStore
@@ -224,6 +224,62 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         self.assertEqual(1, self.connection.execute(
             "SELECT count(*) FROM orchestration.customer_order WHERE session_id=%s",
             (session_id,)).fetchone()[0])
+
+    def test_order_status_advances_forward_and_publishes(self):
+        import asyncio
+        from aea_platform.adapters import PsycopgExperienceStateStore
+        from aea_platform.internal_api import InternalOrchestrationApp
+        from aea_platform.state import StatePatch
+
+        session_id = self.create_session()
+        app = InternalOrchestrationApp(self.connection, "internal-token")
+
+        def drive(method, path, body=b""):
+            return asyncio.run(self._invoke_internal(app, method, path, body))
+
+        status_path = f"/internal/v1/sessions/{session_id}/order/status"
+
+        # No order yet -> 404.
+        body = json.dumps({"target_status": "preparing", "correlation_id": "st"}).encode()
+        self.assertEqual(404, drive("POST", status_path, body)[0])
+
+        # Assemble decisions and create the order.
+        store = PsycopgExperienceStateStore(self.connection)
+        with self.connection.transaction():
+            store.apply_patch(str(session_id), 0, 1, StatePatch.create(
+                {"decisions": {"product": {"product_id": "classic-rose-dozen"}}},
+                ["decisions.product"]), [])
+        with self.connection.transaction():
+            store.apply_patch(str(session_id), 1, 1, StatePatch.create(
+                {"decisions": {"delivery": {"destination_reference": "addr-9",
+                                            "timing": {"date": "2026-09-01", "window": "morning"}}}},
+                ["decisions.delivery"]), [])
+        drive("POST", f"/internal/v1/sessions/{session_id}/order",
+              json.dumps({"correlation_id": "ord"}).encode())
+
+        # Forward transitions each publish order.status.updated and update the facet.
+        for target in ("preparing", "dispatched", "delivered"):
+            status, result = drive("POST", status_path,
+                json.dumps({"target_status": target, "correlation_id": "st"}).encode())
+            self.assertEqual(202, status)
+            self.assertEqual(target, result["status"])
+            _, workspace = drive("GET", f"/internal/v1/sessions/{session_id}/workspace")
+            self.assertEqual(target, workspace["facets"]["order"]["status"])
+
+        self.assertEqual(3, self.connection.execute(
+            "SELECT count(*) FROM orchestration.outbox_message "
+            "WHERE session_id=%s AND topic='order.status.updated'", (session_id,)).fetchone()[0])
+        self.assertEqual(1, self.connection.execute(
+            "SELECT count(*) FROM orchestration.outbox_message "
+            "WHERE session_id=%s AND topic='order.status.updated' "
+            "AND envelope->'payload'->>'authoritative_status'='delivered'",
+            (session_id,)).fetchone()[0])
+
+        # Backward and unknown transitions are rejected.
+        self.assertEqual(409, drive("POST", status_path,
+            json.dumps({"target_status": "preparing", "correlation_id": "st"}).encode())[0])
+        self.assertEqual(422, drive("POST", status_path,
+            json.dumps({"target_status": "teleported", "correlation_id": "st"}).encode())[0])
 
     def test_delivery_details_write_facet_and_event_without_raw_pii(self):
         import asyncio

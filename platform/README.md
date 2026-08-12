@@ -92,6 +92,14 @@ plaintext production listeners are prohibited by ADR-012.
   aggregate (migration 008), one order per session (idempotent). It is a separate
   authoritative aggregate, pre-checkout; the workspace `order` facet surfaces
   `order_id` + `status`. Checkout, payment, and confirmation remain M5.
+- Order status (#34, FR-015): `POST .../order/status` advances the order
+  forward-only through `created -> submitted -> preparing -> dispatched ->
+  delivered` (migration 009), updating the aggregate and publishing
+  `order.status.updated` (`order_id`, `authoritative_status`) in one transaction.
+  This is the order/fulfillment authority, not a customer action; customers read
+  the current status through the workspace `order` facet. Backward transitions
+  return 409 and unknown statuses 422. Reactive push of status changes over the
+  browser SSE stream is a follow-on.
 - `OpenAICompatibleIntentInterpreter` supplies a vendor-neutral Generative AI
   boundary using strict JSON output and a timeout capped at 2.5 seconds.
   `AvailableIntentInterpreter` fails over to the deterministic local interpreter

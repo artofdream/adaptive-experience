@@ -7,17 +7,29 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from aea_platform.order import OrderIncompleteError, OrderService
+from aea_platform.order import (OrderIncompleteError, OrderNotFound, OrderService,
+                                OrderStatusError)
 
 
 class FakeOrderStore:
-    def __init__(self):
+    def __init__(self, *, current="created", exists=True):
         self.created = None
+        self.advanced = None
+        self.current = current
+        self.exists = exists
 
     def create_or_get(self, **kwargs):
         self.created = kwargs
         return {"order_id": kwargs["order_id"], "status": "created",
                 "context_version": kwargs["context_version"]}
+
+    def advance_status(self, **kwargs):
+        self.advanced = kwargs
+        if not self.exists:
+            return None
+        if self.current not in kwargs["allowed_priors"]:
+            return {"order_id": "order-1", "status": self.current, "changed": False}
+        return {"order_id": "order-1", "status": kwargs["target_status"], "changed": True}
 
 
 class OrderServiceTests(unittest.TestCase):
@@ -49,6 +61,30 @@ class OrderServiceTests(unittest.TestCase):
         self.assertEqual("created", result["status"])
         self.assertEqual({"product_id": "p", "options": {"size": "large"}}, store.created["product"])
         self.assertEqual(3, store.created["context_version"])
+
+    def test_advance_status_forward_only(self):
+        store = FakeOrderStore(current="created")
+        service = OrderService(store, new_id=lambda: "m-1")
+        result = service.advance_status(session_id="s", target_status="preparing",
+                                        correlation_id="c", subject_reference="subj")
+        self.assertEqual("preparing", result["status"])
+        self.assertIn("created", store.advanced["allowed_priors"])
+        self.assertNotIn("preparing", store.advanced["allowed_priors"])
+
+    def test_advance_status_rejects_unknown_and_backward(self):
+        service = OrderService(FakeOrderStore(current="dispatched"))
+        with self.assertRaises(OrderStatusError):
+            service.advance_status(session_id="s", target_status="teleported",
+                                   correlation_id="c", subject_reference="subj")
+        with self.assertRaises(OrderStatusError):
+            service.advance_status(session_id="s", target_status="preparing",
+                                   correlation_id="c", subject_reference="subj")
+
+    def test_advance_status_missing_order(self):
+        service = OrderService(FakeOrderStore(exists=False))
+        with self.assertRaises(OrderNotFound):
+            service.advance_status(session_id="s", target_status="preparing",
+                                   correlation_id="c", subject_reference="subj")
 
 
 if __name__ == "__main__":
