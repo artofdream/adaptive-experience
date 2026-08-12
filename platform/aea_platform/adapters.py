@@ -36,6 +36,25 @@ class PsycopgExperienceStateStore:
             return None
         return {"state_schema_version": row[0], "context_version": row[1], "state": row[2]}
 
+    def invalidations_after(self, session_id: str, after_context_version: int) -> list[dict]:
+        """Per-context-version change trail for the workspace stream.
+
+        Groups `experience_invalidation` rows (written by `apply_experience_patch`)
+        into one event per context version, in monotonic order, so a resuming
+        client receives only the deltas it missed.
+        """
+        rows = self.connection.execute(
+            "SELECT context_version,projection_key,reason FROM orchestration.experience_invalidation "
+            "WHERE session_id=%s AND context_version > %s ORDER BY context_version,projection_key",
+            (session_id, after_context_version),
+        ).fetchall()
+        grouped: dict[int, list] = {}
+        for context_version, projection_key, reason in rows:
+            grouped.setdefault(int(context_version), []).append(
+                {"projection_key": projection_key, "reason": reason})
+        return [{"context_version": version, "invalidated_projections": grouped[version]}
+                for version in sorted(grouped)]
+
 
 class PsycopgInventoryAvailabilityStore:
     """Monotonic inventory authority with atomic validation publication."""

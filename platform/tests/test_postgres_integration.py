@@ -133,6 +133,62 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         self.assertEqual("inventory.availability.validated", event["topic"])
         self.assertEqual(result.availability, event["payload"]["availability"])
 
+    def test_workspace_projection_and_stream_expose_facets_and_invalidations(self):
+        import asyncio
+        from aea_platform.adapters import PsycopgExperienceStateStore
+        from aea_platform.internal_api import InternalOrchestrationApp
+        from aea_platform.state import StatePatch
+
+        session_id = self.create_session()
+        store = PsycopgExperienceStateStore(self.connection)
+        # A shared-understanding change bumps the context version and derives a
+        # recommendations invalidation through the projection_dependency registry.
+        with self.connection.transaction():
+            new_version = store.apply_patch(
+                str(session_id), 0, 1,
+                StatePatch.create({"shared_understanding": {"occasion": "birthday"}},
+                                  ["shared_understanding.occasion"]), [])
+        self.assertEqual(1, new_version)
+
+        trail = store.invalidations_after(str(session_id), 0)
+        self.assertEqual(1, trail[0]["context_version"])
+        self.assertIn("recommendations",
+                      [p["projection_key"] for p in trail[0]["invalidated_projections"]])
+
+        app = InternalOrchestrationApp(self.connection, "internal-token")
+
+        def drive(path, query=b""):
+            return asyncio.run(self._invoke_internal(app, "GET", path, query))
+
+        status, workspace = drive(f"/internal/v1/sessions/{session_id}/workspace")
+        self.assertEqual(200, status)
+        self.assertEqual(1, workspace["context_version"])
+        self.assertEqual("birthday",
+                         workspace["facets"]["shared_understanding"]["structured_intent"]["occasion"])
+        self.assertIn("conversation", workspace["facets"])
+
+        _, snapshot = drive(f"/internal/v1/sessions/{session_id}/stream")
+        self.assertEqual("snapshot", snapshot["events"][0]["kind"])
+        self.assertEqual(1, snapshot["events"][0]["context_version"])
+
+        _, delta = drive(f"/internal/v1/sessions/{session_id}/stream", b"after=0")
+        self.assertEqual("invalidation", delta["events"][0]["kind"])
+        self.assertIn("recommendations",
+                      [p["projection_key"] for p in delta["events"][0]["invalidated_projections"]])
+
+    @staticmethod
+    async def _invoke_internal(app, method, path, query=b""):
+        sent = []
+        async def receive():
+            return {"type": "http.request", "body": b"", "more_body": False}
+        async def send(message):
+            sent.append(message)
+        scope = {"type": "http", "method": method, "path": path, "query_string": query,
+                 "headers": [(b"authorization", b"Bearer internal-token"),
+                             (b"x-subject-reference", b"subject-1")]}
+        await app(scope, receive, send)
+        return sent[0]["status"], json.loads(sent[1]["body"] or b"{}")
+
     def test_recommendations_publish_ready_for_available_ranked_catalog(self):
         from aea_platform.adapters import (
             PsycopgInventoryAvailabilityStore,

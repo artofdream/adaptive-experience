@@ -181,18 +181,25 @@ class BffApp:
             }, correlation_id)
 
         if path == "/api/v1/workspace" and method == "GET":
-            raw = self.orchestration.workspace_projection(session_id=session.session_id, subject=subject)
-            return await self._json(send, 200, self._least_data_projection(raw), correlation_id)
+            try:
+                raw = self.orchestration.workspace_projection(
+                    session_id=session.session_id, subject=subject)
+            except OrchestrationUnavailable:
+                return await self._error(send, 503, "orchestration_unavailable", correlation_id)
+            return await self._json(send, 200, self._least_data_workspace(raw), correlation_id)
 
         if path == "/api/v1/stream" and method == "GET":
             query = parse_qs(scope.get("query_string", b"").decode())
             after = headers.get("last-event-id") or (query.get("after") or [None])[0]
-            events = self.orchestration.stream_events(
-                session_id=session.session_id, subject=subject, after_event_id=after,
-            )
+            try:
+                events = self.orchestration.stream_events(
+                    session_id=session.session_id, subject=subject, after_event_id=after,
+                )
+            except OrchestrationUnavailable:
+                return await self._error(send, 503, "orchestration_unavailable", correlation_id)
             chunks = []
             for event in events:
-                safe = self._least_data_projection(event["projection"])
+                safe = self._least_data_stream_event(event)
                 chunks.append(f"id: {event['event_id']}\nevent: workspace\ndata: {json.dumps(safe)}\n\n")
             await self._send(send, 200, "".join(chunks).encode(), "text/event-stream", correlation_id,
                              {"x-accel-buffering": "no"})
@@ -229,11 +236,38 @@ class BffApp:
             return str(uuid.uuid4())
 
     @staticmethod
-    def _least_data_projection(raw: dict) -> dict:
-        tiles = []
-        for tile in raw.get("tiles", []):
-            tiles.append({key: tile[key] for key in ("id", "status", "summary", "ai_generated") if key in tile})
-        return {"context_version": int(raw.get("context_version", 0)), "tiles": tiles}
+    def _least_data_workspace(raw: dict) -> dict:
+        facets_in = raw.get("facets") or {}
+        facets = {}
+        if isinstance(facets_in.get("conversation"), dict):
+            facets["conversation"] = {
+                "messages": BffApp._least_data_conversation(facets_in["conversation"])["messages"]}
+        if isinstance(facets_in.get("shared_understanding"), dict):
+            shaped = BffApp._least_data_shared_understanding(facets_in["shared_understanding"])
+            facets["shared_understanding"] = {
+                "structured_intent": shaped["structured_intent"],
+                "suggestions": shaped["suggestions"]}
+        return {"context_version": int(raw.get("context_version", 0)),
+                "facets": facets,
+                "ai_generated": bool(raw.get("ai_generated", False)),
+                "assistant_mode": raw.get("assistant_mode"),
+                "disclosure": raw.get("disclosure")}
+
+    @staticmethod
+    def _least_data_stream_event(event: dict) -> dict:
+        shaped = {"event_id": str(event.get("event_id", "")),
+                  "context_version": int(event.get("context_version", 0)),
+                  "kind": event.get("kind")}
+        if event.get("kind") == "snapshot":
+            shaped["workspace"] = BffApp._least_data_workspace(event.get("workspace") or {})
+        else:
+            projections = []
+            for item in event.get("invalidated_projections") or []:
+                if isinstance(item, dict) and "projection_key" in item:
+                    projections.append({key: item[key] for key in ("projection_key", "reason")
+                                        if key in item})
+            shaped["invalidated_projections"] = projections
+        return shaped
 
     @staticmethod
     def _least_data_conversation(raw: dict) -> dict:
