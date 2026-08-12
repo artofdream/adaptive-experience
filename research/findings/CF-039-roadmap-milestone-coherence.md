@@ -8,7 +8,7 @@ source_assessment: research/assessments/2026-08-12-pre-m4-hygiene-reconciliation
 supersedes:
 issue: "#141"
 branch: docs/cf-039-roadmap-milestone-coherence
-merge_request:
+merge_request: "!110"
 
 ## Claim
 
