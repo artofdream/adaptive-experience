@@ -60,6 +60,11 @@ plaintext production listeners are prohibited by ADR-012.
   derive only affected projection invalidations, reject stale context versions,
   and publish the resulting `experience.intent.updated` event in the same
   transaction (FR-021).
+- The authenticated Internal Orchestration HTTP surface currently exposes session
+  create, conversation submit/projection, Shared Understanding review/correction,
+  and AI health. Browser `commands`, workspace projection, and SSE stream remain
+  Edge perimeter placeholders until matching internal resources ship (see
+  `edge/README.md`).
 - `OpenAICompatibleIntentInterpreter` supplies a vendor-neutral Generative AI
   boundary using strict JSON output and a timeout capped at 2.5 seconds.
   `AvailableIntentInterpreter` fails over to the deterministic local interpreter

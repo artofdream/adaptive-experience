@@ -1,6 +1,7 @@
 import unittest
 
 from edge.bff.aea_bff.orchestration import HttpOrchestration, OrchestrationUnavailable
+from edge.bff.aea_bff.ports import CommandResult
 
 
 class HttpOrchestrationTests(unittest.TestCase):
@@ -23,3 +24,19 @@ class HttpOrchestrationTests(unittest.TestCase):
         adapter = HttpOrchestration("http://orchestration:8081", "internal", transport=transport)
         with self.assertRaises(OrchestrationUnavailable):
             adapter.conversation_projection(session_id="s1", subject="user1")
+
+    def test_unwired_command_workspace_stream_do_not_call_internal(self):
+        calls = []
+        def transport(*args):
+            calls.append(args)
+            return 500, "{}"
+        adapter = HttpOrchestration("http://orchestration:8081", "internal", transport=transport)
+        command = adapter.accept_command(
+            session_id="s1", subject="user1", command={"type": "continue"},
+            observed_context_version=1, correlation_id="c1")
+        workspace = adapter.workspace_projection(session_id="s1", subject="user1")
+        events = list(adapter.stream_events(session_id="s1", subject="user1", after_event_id=None))
+        self.assertEqual(CommandResult(False, "orchestration_unavailable"), command)
+        self.assertEqual({"context_version": 0, "tiles": []}, workspace)
+        self.assertEqual([], events)
+        self.assertEqual([], calls)
