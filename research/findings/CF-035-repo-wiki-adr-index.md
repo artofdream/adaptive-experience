@@ -8,7 +8,7 @@ source_assessment: research/assessments/2026-08-12-pm-coherence-implementation.m
 supersedes: CF-030 (live wiki only)
 issue: #138
 branch: docs/cf-035-wiki-adr-index
-merge_request:
+merge_request: !106
 
 ## Claim
 
@@ -58,8 +58,8 @@ Replace the repo wiki ADR index content so it matches the live wiki index
 - [x] Not already covered by an open issue or MR
 - [x] GitLab issue created
 - [x] Dedicated branch created from updated `main`
-- [ ] Focused fix committed and pushed
-- [ ] Relevant checks passed
-- [ ] MR includes `Closes #N`, summary, and test plan
+- [x] Focused fix committed and pushed
+- [x] Relevant checks passed
+- [x] MR includes `Closes #N`, summary, and test plan
 - [ ] MR merged
 - [ ] Post-merge verification passed on `main`
