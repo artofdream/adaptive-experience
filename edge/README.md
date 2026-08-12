@@ -45,7 +45,13 @@ responses, and logs contain no PostgreSQL or Kafka connection details.
 - `GET /healthz` is an unauthenticated liveness check without dependency data.
 
 The integration runner builds the containers, waits for both health checks,
-verifies the HTTPS gateway, and always tears the stack down. Run
+verifies the HTTPS gateway, and executes ten standard assistant queries through
+the real TLS, authentication, BFF, and Orchestration path. The run reports p95
+and maximum latency and fails if any measured response exceeds the NFR-004
+three-second limit. This reference-path guard complements the 2.5-second maximum
+AI-provider timeout; production deployments must retain equivalent percentile
+telemetry for their configured provider and infrastructure. The runner always
+tears the stack down. Run
 `python -m unittest discover -s edge/tests -v` for the same security and
 boundary suite used by GitLab CI. The BFF
 uses an authenticated `HttpOrchestration` adapter. Runtime configuration
