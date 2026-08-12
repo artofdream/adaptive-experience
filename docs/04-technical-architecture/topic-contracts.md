@@ -19,7 +19,7 @@ corresponding MVP topics below.
 | experience.intent.updated | 1.0.0 | Orchestration | Workspace, Recommendation, Delivery | structured occasion, budget, recipient, style, flower preference, and timing intent |
 | product.recommendations.requested | 1.0.0 | Orchestration | Recommendation | intent reference |
 | product.recommendations.ready | 1.0.0 | Recommendation | Orchestration, Workspace | eligible product IDs, ranking |
-| product.selected | 1.0.0 | Orchestration | Inventory, Pricing, Order, Workspace | product ID, options |
+| product.selected | 1.0.0 | Orchestration | Inventory, Pricing, Order, Workspace | product ID, options (size, card message) |
 | product.customization.updated | 1.0.0 | Orchestration | Pricing, Order, Workspace | product ID, basic options |
 | inventory.availability.requested | 1.0.0 | Orchestration | Inventory | product IDs, delivery date |
 | inventory.availability.validated | 1.0.0 | Inventory | Orchestration, Recommendation, Workspace | product IDs, availability |

@@ -156,6 +156,15 @@ class PerimeterTests(unittest.TestCase):
             json.dumps({"product_id": "", "observed_context_version": 7}).encode())[0])
         self.assertEqual(422, self.call("POST", "/api/v1/selection", headers,
             json.dumps({"product_id": "x", "observed_context_version": -1}).encode())[0])
+        # MVP options only (ADR-006): size + card message accepted; FR-003 controls rejected.
+        self.assertEqual(202, self.call("POST", "/api/v1/selection", headers,
+            json.dumps({"product_id": "classic-rose-dozen",
+                        "options": {"size": "large", "card_message": "hi"},
+                        "observed_context_version": 7}).encode())[0])
+        for control in ({"colour": "red"}, {"ribbon": "gold"}, {"flower_type": "rose"}):
+            self.assertEqual(422, self.call("POST", "/api/v1/selection", headers,
+                json.dumps({"product_id": "classic-rose-dozen", "options": control,
+                            "observed_context_version": 7}).encode())[0])
 
     def test_stream_reconnect(self):
         cookie, _ = self.session()
