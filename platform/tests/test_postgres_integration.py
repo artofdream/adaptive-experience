@@ -103,7 +103,60 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         versions = [row[0] for row in self.connection.execute(
             "SELECT version FROM orchestration.schema_migration ORDER BY version"
         ).fetchall()]
-        self.assertEqual([1, 2, 3, 4], versions)
+        self.assertEqual([1, 2, 3, 4, 5], versions)
+
+    def test_conversation_submission_commits_transcript_invalidation_and_outbox(self):
+        from aea_platform.adapters import PsycopgExperienceStateStore
+        from aea_platform.conversation import ConversationService
+
+        session_id = self.create_session()
+        service = ConversationService(
+            PsycopgExperienceStateStore(self.connection),
+            now=lambda: datetime(2026, 8, 12, tzinfo=timezone.utc),
+            new_id=lambda: uuid.UUID("00000000-0000-0000-0000-000000000020"),
+        )
+        result = service.submit(
+            session_id=str(session_id), subject_reference="subject-reference",
+            message_text="flowers for Mum", observed_context_version=0,
+            correlation_id="conversation-correlation",
+        )
+        self.assertEqual(1, result.context_version)
+        projection = service.projection(session_id=str(session_id))
+        self.assertEqual("flowers for Mum", projection["messages"][0]["text"])
+        invalidations = self.connection.execute(
+            "SELECT projection_key,reason FROM orchestration.experience_invalidation "
+            "WHERE session_id=%s", (session_id,),
+        ).fetchall()
+        self.assertEqual([("conversation", "customer_message_submitted")], invalidations)
+        outbox = self.connection.execute(
+            "SELECT topic,context_version,envelope FROM orchestration.outbox_message "
+            "WHERE session_id=%s", (session_id,),
+        ).fetchone()
+        self.assertEqual("customer.message.submitted", outbox[0])
+        self.assertEqual(1, outbox[1])
+        self.assertEqual({"message_text": "flowers for Mum"}, outbox[2]["payload"])
+        self.assertEqual("subject-reference", outbox[2]["security_context"]["subject_reference"])
+
+    def test_conversation_submission_rejects_stale_writer_without_partial_state(self):
+        from aea_platform.adapters import PsycopgExperienceStateStore
+        from aea_platform.conversation import ConversationService
+
+        session_id = self.create_session()
+        service = ConversationService(PsycopgExperienceStateStore(self.connection))
+        service.submit(session_id=str(session_id), subject_reference="subject",
+                       message_text="first", observed_context_version=0,
+                       correlation_id="first")
+        with self.assertRaises(self.psycopg.errors.SerializationFailure):
+            service.submit(session_id=str(session_id), subject_reference="subject",
+                           message_text="stale", observed_context_version=0,
+                           correlation_id="stale")
+        self.connection.rollback()
+        projection = service.projection(session_id=str(session_id))
+        self.assertEqual(["first"], [item["text"] for item in projection["messages"]])
+        self.assertEqual(1, self.connection.execute(
+            "SELECT count(*) FROM orchestration.outbox_message WHERE session_id=%s",
+            (session_id,),
+        ).fetchone()[0])
 
     def test_selective_patch_preserves_decisions_and_invalidates_only_dependents(self):
         from aea_platform.adapters import PsycopgExperienceStateStore

@@ -89,6 +89,49 @@ class BffApp:
                 "correlation_id": correlation_id, "observed_context_version": observed,
             }, correlation_id)
 
+        if path == "/api/v1/conversation/messages" and method == "POST":
+            if headers.get("content-type", "").split(";", 1)[0].strip() != "application/json":
+                return await self._error(send, 415, "unsupported_media_type", correlation_id)
+            body = await self._body(receive, headers)
+            if isinstance(body, tuple):
+                return await self._error(send, body[0], body[1], correlation_id)
+            try:
+                submission = json.loads(body)
+            except (UnicodeDecodeError, json.JSONDecodeError):
+                return await self._error(send, 400, "invalid_json", correlation_id)
+            if set(submission) != {"message_text", "observed_context_version"}:
+                return await self._error(send, 422, "invalid_conversation_shape", correlation_id)
+            message_text = submission["message_text"]
+            observed = submission["observed_context_version"]
+            if (not isinstance(message_text, str) or not message_text.strip()
+                    or len(message_text.strip()) > 2000
+                    or any(ord(character) < 32 and character not in "\n\t"
+                           for character in message_text.strip())):
+                return await self._error(send, 422, "invalid_message_text", correlation_id)
+            if not isinstance(observed, int) or isinstance(observed, bool) or observed < 0:
+                return await self._error(send, 422, "invalid_context_version", correlation_id)
+            result = self.orchestration.submit_conversation_message(
+                session_id=session.session_id,
+                subject=subject,
+                message_text=message_text,
+                observed_context_version=observed,
+                correlation_id=correlation_id,
+            )
+            status = 202 if result.accepted else (409 if result.code == "stale_context" else 422)
+            return await self._json(send, status, {
+                "accepted": result.accepted,
+                "code": result.code,
+                "message_id": result.message_id,
+                "correlation_id": correlation_id,
+                "context_version": result.context_version,
+            }, correlation_id)
+
+        if path == "/api/v1/conversation" and method == "GET":
+            raw = self.orchestration.conversation_projection(
+                session_id=session.session_id, subject=subject,
+            )
+            return await self._json(send, 200, self._least_data_conversation(raw), correlation_id)
+
         if path == "/api/v1/workspace" and method == "GET":
             raw = self.orchestration.workspace_projection(session_id=session.session_id, subject=subject)
             return await self._json(send, 200, self._least_data_projection(raw), correlation_id)
@@ -143,6 +186,17 @@ class BffApp:
         for tile in raw.get("tiles", []):
             tiles.append({key: tile[key] for key in ("id", "status", "summary", "ai_generated") if key in tile})
         return {"context_version": int(raw.get("context_version", 0)), "tiles": tiles}
+
+    @staticmethod
+    def _least_data_conversation(raw: dict) -> dict:
+        messages = []
+        for item in raw.get("messages", [])[-50:]:
+            if not isinstance(item, dict):
+                continue
+            messages.append({key: item[key] for key in
+                             ("message_id", "role", "text", "status", "submitted_at")
+                             if key in item})
+        return {"context_version": int(raw.get("context_version", 0)), "messages": messages}
 
     async def _error(self, send, status, code, correlation_id, extra_headers=None):
         await self._json(send, status, {"error": code, "correlation_id": correlation_id},
