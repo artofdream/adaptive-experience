@@ -43,7 +43,11 @@ completed rows because the queue is also the audit trail.
 | 27 | CF-026 | ADR-010 still says Edge/BFF APIs “if present” though ADR-007 Accepted a separate BFF | Low | verified | 2026-08-11 | 2026-08-11 | #125 / !76 |
 | 28 | CF-027 | Wiki ADR page still says “ADR-007 lands with CF-017 / !61” though ADR-007 is Accepted on main | Low | verified | 2026-08-11 | 2026-08-11 | #126 / !77 |
 | 29 | CF-028 | GitLab issue #109 (CF-014) remains open while CF-014 was closed via #110 / !56 | Low | verified | 2026-08-11 | 2026-08-11 | #109 / !56 |
-| 30 | CF-034 | Edge BFF uses UnavailableOrchestration; Shared Understanding has no BFF routes despite platform M2 services | Medium | in-progress | 2026-08-12 | 2026-08-12 | #130 |
+| 30 | CF-030 | Wiki ADR index omitted Accepted ADR-011/012 and retained obsolete broker-deferred wording | Medium | verified | 2026-08-12 | 2026-08-12 | #132 / Wiki c8a1af4 |
+| 31 | CF-034 | Edge BFF used UnavailableOrchestration; Shared Understanding lacked browser-facing runtime routes | Medium | verified | 2026-08-12 | 2026-08-12 | #130 / !93 |
+| 32 | CF-031 | `CLAUDE.md` described the repository as docs-only despite executable `platform/` and `edge/` areas | Medium | verified | 2026-08-12 | 2026-08-12 | #133 / !100 |
+| 33 | CF-033 | `platform/README.md` said M2 behavior was not implemented despite merged M2 services | Medium | verified | 2026-08-12 | 2026-08-12 | #134 / !101 |
+| 34 | CF-032 | Root README repository navigation omitted `platform/` and `edge/` | Low | verified | 2026-08-12 | 2026-08-12 | #135 / !102 |
 
 Allowed statuses: `queued`, `investigating`, `ready`, `in-progress`, `in-mr`,
 `verified`, `regressed`, `duplicate`, `not-reproducible`, and `blocked`.
