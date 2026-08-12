@@ -30,6 +30,11 @@ from aea_platform.inventory import (
     InventoryUnavailableError,
     InventoryValidationError,
 )
+from aea_platform.recommendation import (
+    CatalogProduct,
+    RecommendationService,
+    RecommendationValidationError,
+)
 from aea_platform.consumer import ConsumedRecord, GovernedConsumer
 from aea_platform.outbox import OutboxRecord, OutboxRelay
 from aea_platform.policy import KafkaPolicy
@@ -135,6 +140,14 @@ class FakeInventoryStore:
                 for product_id in values["product_ids"]}
 
 
+class FakeRecommendationStore:
+    def __init__(self):
+        self.ready = []
+
+    def enqueue_ready(self, **values):
+        self.ready.append(values)
+
+
 class FoundationTests(unittest.TestCase):
     def test_inventory_records_validated_snapshot_and_deduplicates_request(self):
         now = datetime(2026, 8, 12, 12, 0, tzinfo=timezone.utc)
@@ -161,6 +174,63 @@ class FoundationTests(unittest.TestCase):
                          AvailabilitySnapshot("rose", 1, -1, now)):
             with self.assertRaises(InventoryValidationError):
                 service.record(snapshot)
+
+    def test_recommendations_rank_available_products_against_intent_and_budget(self):
+        now = datetime(2026, 8, 12, 12, 0, tzinfo=timezone.utc)
+        inventory = FakeInventoryStore({
+            "pink-flower-vase": {"status": "available", "freshness": "current"},
+            "lilac-bouquet": {"status": "available", "freshness": "current"},
+            "classic-rose-dozen": {"status": "available", "freshness": "current"},
+            "budget-mixed-bunch": {"status": "unavailable", "freshness": "current"},
+            "premium-orchid": {"status": "available", "freshness": "current"},
+        })
+        inventory_service = InventoryAvailabilityService(inventory, now=lambda: now)
+        ready_store = FakeRecommendationStore()
+        service = RecommendationService(
+            ready_store, inventory_service, now=lambda: now,
+            new_id=lambda: uuid.UUID("00000000-0000-0000-0000-000000000026"),
+        )
+        result = service.generate(
+            session_id="session",
+            observed_context_version=2,
+            correlation_id="rec-correlation",
+            subject_reference="subject",
+            intent={"occasion": "birthday", "budget": 100, "flower_preference": "roses"},
+        )
+        self.assertEqual(["classic-rose-dozen", "lilac-bouquet"], result.eligible_product_ids)
+        self.assertEqual("classic-rose-dozen", result.ranking[0]["product_id"])
+        self.assertNotIn("premium-orchid", result.eligible_product_ids)
+        self.assertNotIn("budget-mixed-bunch", result.eligible_product_ids)
+        self.assertEqual(
+            ["classic-rose-dozen", "budget-mixed-bunch", "lilac-bouquet"],
+            list(inventory.validations[0]["product_ids"]),
+        )
+        self.assertEqual(
+            ["classic-rose-dozen", "lilac-bouquet"],
+            ready_store.ready[0]["eligible_product_ids"],
+        )
+
+    def test_recommendations_reject_invalid_intent_and_empty_when_none_available(self):
+        inventory = InventoryAvailabilityService(FakeInventoryStore())
+        service = RecommendationService(FakeRecommendationStore(), inventory)
+        with self.assertRaises(RecommendationValidationError):
+            service.generate(
+                session_id="session", observed_context_version=0,
+                correlation_id="c", subject_reference="s", intent={"budget": -1},
+            )
+        now = datetime(2026, 8, 12, 12, 0, tzinfo=timezone.utc)
+        empty = RecommendationService(
+            FakeRecommendationStore(),
+            InventoryAvailabilityService(FakeInventoryStore(), now=lambda: now),
+            catalog=(CatalogProduct("x", 10.0, frozenset({"birthday"}), frozenset(), frozenset()),),
+            now=lambda: now,
+        )
+        result = empty.generate(
+            session_id="session", observed_context_version=0,
+            correlation_id="c", subject_reference="s",
+            intent={"occasion": "birthday", "budget": 50},
+        )
+        self.assertEqual([], result.eligible_product_ids)
 
     def test_reference_interpreter_extracts_supported_intent_and_prompts_for_gaps(self):
         result = ReferenceIntentInterpreter().interpret(
