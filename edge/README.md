@@ -16,6 +16,12 @@ ephemeral and self-signed. The local bearer token is a non-production fixture
 declared in Compose; production authentication material must come from the
 deployment environment.
 
+The root URL serves the MVP browser shell. It offers one plain-language
+conversation entry point, visible ordering progress, a persistent “What we
+understand” region, correction reassurance, keyboard focus treatment, semantic
+landmarks, and an optional three-step help dialog. These are the executable
+NFR-001 baseline; usability research remains the production validation method.
+
 The BFF container has no host port. Nginx is the only published backend entry
 point and strips internal identity headers before proxying. Browser assets,
 responses, and logs contain no PostgreSQL or Kafka connection details.

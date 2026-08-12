@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A guided flower discovery and ordering experience.">
+  <title>Lily — guided flower ordering</title>
+  <link rel="stylesheet" href="/assets/styles.css">
+  <script src="/assets/app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#conversation">Skip to conversation</a>
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="Lily home">Lily</a>
+    <p>Flowers, made simple</p>
+    <button class="help-button" type="button" aria-controls="help" aria-expanded="false">How it works</button>
+  </header>
+
+  <main>
+    <section class="welcome" aria-labelledby="page-title">
+      <p class="eyebrow">Your flower assistant</p>
+      <h1 id="page-title">Tell us who the flowers are for</h1>
+      <p>Write naturally. We’ll ask only what is needed, show what we understood, and let you correct it.</p>
+      <ol class="steps" aria-label="Ordering progress">
+        <li aria-current="step"><span>1</span> Share</li>
+        <li><span>2</span> Choose</li>
+        <li><span>3</span> Deliver</li>
+        <li><span>4</span> Review</li>
+      </ol>
+    </section>
+
+    <div class="workspace">
+      <section id="conversation" class="panel conversation" aria-labelledby="conversation-title">
+        <header>
+          <div>
+            <p class="eyebrow">Step 1</p>
+            <h2 id="conversation-title">Start the conversation</h2>
+          </div>
+          <span class="status">AI assistant</span>
+        </header>
+        <div id="messages" class="messages" role="log" aria-live="polite" aria-relevant="additions">
+          <p class="assistant-message">Hi, I can help you find the right flowers. What’s the occasion?</p>
+        </div>
+        <form id="message-form" aria-describedby="message-hint">
+          <label for="message">Your message</label>
+          <textarea id="message" name="message" rows="3" maxlength="2000" required
+                    placeholder="For example: Birthday roses for Mum, under €75"></textarea>
+          <p id="message-hint">Include anything you already know. You can change every detail later.</p>
+          <button class="primary" type="submit">Continue</button>
+        </form>
+      </section>
+
+      <aside class="panel understanding" aria-labelledby="understanding-title">
+        <p class="eyebrow">Always visible</p>
+        <h2 id="understanding-title">What we understand</h2>
+        <p id="understanding-empty">Your occasion, recipient, budget, style, flower preference, and timing will appear here.</p>
+        <dl id="understanding-list" hidden></dl>
+        <p class="reassurance">Nothing is final until you review the order.</p>
+      </aside>
+    </div>
+
+    <section class="next-steps" aria-labelledby="next-title">
+      <p class="eyebrow">Coming next</p>
+      <h2 id="next-title">Your order at a glance</h2>
+      <div class="tile-grid">
+        <article><span>2</span><h3>Recommendations</h3><p>Options matched to what you tell us.</p></article>
+        <article><span>3</span><h3>Customize</h3><p>Arrangement, size, and a physical message card.</p></article>
+        <article><span>4</span><h3>Delivery</h3><p>Recipient, date, time, and location.</p></article>
+        <article><span>5</span><h3>Review and pay</h3><p>A clear summary before confirmation.</p></article>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="help" aria-labelledby="help-title">
+    <h2 id="help-title">How it works</h2>
+    <ol><li>Describe what you need in your own words.</li><li>Check and correct what the assistant understood.</li><li>Choose flowers, delivery, and review before paying.</li></ol>
+    <button type="button" data-close-help>Got it</button>
+  </dialog>
+  <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
+</body>
+</html>
