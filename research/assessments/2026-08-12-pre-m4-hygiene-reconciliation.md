@@ -15,8 +15,8 @@ assessed_by: cursor-agent
 
 | ID | Gap | Sev | Decision |
 |----|-----|-----|----------|
-| CF-039 | Roadmap M4/M5 FR placement disagrees with GitLab milestones | Medium | queued |
-| — | M3 group milestone still **active** with 0 open M3 issues while Edge T-03/workspace/selection remain unwired | Medium | delivery residual (not a new CF unless ticketed) |
+| CF-039 | Roadmap M4/M5 FR placement disagrees with GitLab milestones | Medium | verified (!110 merged; queue + finding note closed) |
+| #142 | M3 group milestone still **active** with 0 open M3 issues while Edge T-03/recommendations/selection remain unwired | Medium | ticketed 2026-08-12 as #142 (`scope::mvp`, `type::chore`, M3); implementation open |
 | — | Untracked local assessments / activity report / artifacts not on `main` | Low | promote via hygiene MR or leave local |
 
 ### CF-039 detail
@@ -45,7 +45,11 @@ Also: roadmap M5 lists **NFR-014** while Future Backlog also lists NFR-014
 
 ## Next
 
-1. Land CF-038 queue verify MR
-2. Remediate CF-039 (align GitLab milestones and/or roadmap coverage columns)
-3. Decide M3 close vs open Edge T-03 follow-on issue
-4. Then M4 build: #122 → #33 → …
+1. ~~Land CF-038 queue verify MR~~ done (#137 closed; queue verified)
+2. ~~Remediate CF-039~~ done (!110 merged; roadmap M5 corrected; #32/#34→M4, #37→M5;
+   queue row + finding note verified post-merge on `6184c22`)
+3. ~~Decide M3 close vs open Edge T-03 follow-on~~ opened #142 for the Edge
+   recommendations/availability/`product.selected` wiring; M3 closes on #142
+4. **Next build item:** implement #142 (M3 Edge wiring) before M4, since T-04
+   Product Selection depends on a `product.selected` path at the edge
+5. Then M4 build: #122 → #33 → #32 → #34
