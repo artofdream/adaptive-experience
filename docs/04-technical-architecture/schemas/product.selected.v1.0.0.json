@@ -9,7 +9,20 @@
       "type": "string"
     },
     "options": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "size": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "card_message": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 280
+        }
+      },
+      "additionalProperties": false
     }
   },
   "required": [

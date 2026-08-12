@@ -248,6 +248,58 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
             "SELECT context_version FROM orchestration.experience_session "
             "WHERE session_id=%s", (session_id,)).fetchone()[0])
 
+    def test_selection_options_contract_and_fr020_preservation(self):
+        import asyncio
+        from aea_platform.adapters import (PsycopgExperienceStateStore,
+                                           PsycopgInventoryAvailabilityStore)
+        from aea_platform.internal_api import InternalOrchestrationApp
+        from aea_platform.inventory import AvailabilitySnapshot, InventoryAvailabilityService
+        from aea_platform.state import StatePatch
+
+        session_id = self.create_session()
+        now = datetime.now(timezone.utc)
+        inventory = InventoryAvailabilityService(
+            PsycopgInventoryAvailabilityStore(self.connection), now=lambda: now)
+        inventory.record(AvailabilitySnapshot("classic-rose-dozen", 5, 1, now))
+
+        app = InternalOrchestrationApp(self.connection, "internal-token")
+
+        def drive(method, path, body=b""):
+            return asyncio.run(self._invoke_internal(app, method, path, body))
+
+        # Selection carries only the normalized MVP options (ADR-006).
+        body = json.dumps({"product_id": "classic-rose-dozen",
+                           "options": {"size": "large", "card_message": "  Happy birthday  "},
+                           "observed_context_version": 0, "correlation_id": "sel"}).encode()
+        status, result = drive("POST", f"/internal/v1/sessions/{session_id}/selection", body)
+        self.assertEqual(202, status)
+        envelope = self.connection.execute(
+            "SELECT envelope FROM orchestration.outbox_message "
+            "WHERE session_id=%s AND topic='product.selected'", (session_id,)).fetchone()[0]
+        self.assertEqual({"size": "large", "card_message": "Happy birthday"},
+                         envelope["payload"]["options"])
+        self.assertEqual("classic-rose-dozen", envelope["payload"]["product_id"])
+
+        # An FR-003 control is rejected before any state mutation.
+        bad = json.dumps({"product_id": "classic-rose-dozen", "options": {"colour": "red"},
+                          "observed_context_version": result["context_version"],
+                          "correlation_id": "sel2"}).encode()
+        self.assertEqual(422, drive("POST", f"/internal/v1/sessions/{session_id}/selection", bad)[0])
+        self.assertEqual(1, self.connection.execute(
+            "SELECT count(*) FROM orchestration.outbox_message "
+            "WHERE session_id=%s AND topic='product.selected'", (session_id,)).fetchone()[0])
+
+        # FR-020: an unrelated intent change preserves the recorded product decision.
+        store = PsycopgExperienceStateStore(self.connection)
+        with self.connection.transaction():
+            store.apply_patch(str(session_id), result["context_version"], 1,
+                StatePatch.create({"shared_understanding": {"occasion": "anniversary"}},
+                                  ["shared_understanding.occasion"]), [])
+        _, workspace = drive("GET", f"/internal/v1/sessions/{session_id}/workspace")
+        self.assertEqual("classic-rose-dozen", workspace["facets"]["selection"]["product_id"])
+        self.assertEqual({"size": "large", "card_message": "Happy birthday"},
+                         workspace["facets"]["selection"]["options"])
+
     def test_recommendations_publish_ready_for_available_ranked_catalog(self):
         from aea_platform.adapters import (
             PsycopgInventoryAvailabilityStore,

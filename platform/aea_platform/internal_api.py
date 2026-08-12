@@ -11,6 +11,7 @@ from .intent import (IntentAnalysisService, IntentSessionNotFound, IntentValidat
 from .inventory import (InventoryAvailabilityService, InventoryUnavailableError,
                         InventoryValidationError)
 from .recommendation import RecommendationService
+from .selection import SelectionValidationError, normalize_selection_options
 from .state import StatePatch
 
 
@@ -161,12 +162,16 @@ class InternalOrchestrationApp:
     async def _select_product(self, send, session_id: str, subject: str,
                               loaded: dict, body: dict):
         product_id = body.get("product_id")
-        options = body.get("options") if body.get("options") is not None else {}
         observed = body.get("observed_context_version")
         correlation_id = body.get("correlation_id")
         if (not isinstance(product_id, str) or not product_id.strip()
-                or not isinstance(options, dict)
                 or not isinstance(correlation_id, str) or not correlation_id.strip()):
+            return await self._send(send, 422, {"code": "validation_failed"})
+        try:
+            # Explicit MVP T-04 options only (ADR-006): normalized size and card
+            # message; any FR-003 control is rejected here.
+            options = normalize_selection_options(body.get("options"))
+        except SelectionValidationError:
             return await self._send(send, 422, {"code": "validation_failed"})
         try:
             # Authoritative selection-time revalidation (publishes + audits); rejects

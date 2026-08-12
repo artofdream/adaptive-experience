@@ -77,6 +77,10 @@ plaintext production listeners are prohibited by ADR-012.
   revalidation (published and audited; rejects unavailable or stale), writes the
   `decisions.product` facet, and emits `product.selected` in one versioned
   `apply_experience_patch` transaction (exactly once at the new context version).
+  Selection `options` are the explicit MVP T-04 fields only - an eligible `size`
+  and a normalized physical `card_message` (ADR-006 /
+  `docs/04-technical-architecture/t04-card-message-contract.md`); FR-003 controls
+  are rejected, so Future customization cannot enter the MVP contract.
 - `OpenAICompatibleIntentInterpreter` supplies a vendor-neutral Generative AI
   boundary using strict JSON output and a timeout capped at 2.5 seconds.
   `AvailableIntentInterpreter` fails over to the deterministic local interpreter

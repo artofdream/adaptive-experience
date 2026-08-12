@@ -56,7 +56,17 @@ TOPICS: list[tuple[str, str, dict, list[str]]] = [
     (
         "product.selected",
         "1.0.0",
-        {"product_id": {"type": "string"}, "options": {"type": "object"}},
+        {
+            "product_id": {"type": "string"},
+            "options": {
+                "type": "object",
+                "properties": {
+                    "size": {"type": "string", "minLength": 1, "maxLength": 40},
+                    "card_message": {"type": "string", "minLength": 1, "maxLength": 280},
+                },
+                "additionalProperties": False,
+            },
+        },
         ["product_id"],
     ),
     (

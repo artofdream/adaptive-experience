@@ -71,12 +71,16 @@ Internal Orchestration (#144; contract in
   carrying a real-time `available` badge from `InventoryAvailabilityService` -
   FR-011/FR-007), and `selection` once a product is chosen. The browser renders
   one coherent snapshot instead of racing per-tile fetches.
-- `POST /api/v1/selection` selects a recommended product (`product_id`, optional
-  `options`, `observed_context_version`). Orchestration revalidates availability
-  authoritatively at selection time, records `decisions.product`, and emits the
-  governed `product.selected` event exactly once at the new context version.
-  Unavailable/stale inventory returns 409; the recommendations read surface stays
-  the workspace facet (there is no standalone `GET /api/v1/recommendations`).
+- `POST /api/v1/selection` selects a recommended product (`product_id`,
+  `observed_context_version`, and optional `options` limited to an eligible
+  `size` and a physical `card_message` per ADR-006 -
+  `docs/04-technical-architecture/t04-card-message-contract.md`). FR-003 controls
+  (flower type, colour, ribbon, gift-card value) are rejected at the edge.
+  Orchestration revalidates availability authoritatively at selection time,
+  records `decisions.product`, and emits the governed `product.selected` event
+  exactly once at the new context version. Unavailable/stale inventory returns
+  409; the recommendations read surface stays the workspace facet (there is no
+  standalone `GET /api/v1/recommendations`).
 - `GET /api/v1/stream` is the reconnectable SSE contract. A cold connection
   receives one `snapshot` event carrying the workspace; a reconnection with
   `Last-Event-ID` (or `?after=`) receives only the `invalidation` deltas it
