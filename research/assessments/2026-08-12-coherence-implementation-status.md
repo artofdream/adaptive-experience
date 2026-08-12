@@ -1,8 +1,8 @@
 # Coherence + implementation status — 2026-08-12
 
 tags: #aea #coherence-assessment #implementation-status
-status: m3-ready
-assessed_ref: cb09376
+status: m3-ready-post-merge-verified
+assessed_ref: e61813b
 assessed_by: codex
 
 ## Scope and verdict
@@ -93,5 +93,6 @@ silently treated as M3 completion criteria.
   CF-033 stale platform introduction, and post-merge verification of CF-034.
 - P2: CF-032 root README repository-area navigation.
 
-No unresolved M0–M2 implementation issue blocks M3 after those documentation
-and audit-trail corrections.
+Post-merge verification confirms CF-030 through CF-034 are resolved and linked
+in the durable findings register. No queued or regressed finding remains, and
+no unresolved M0–M2 implementation or reconciliation issue blocks M3.
