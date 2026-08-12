@@ -22,6 +22,7 @@ from aea_platform.intent import (
     IntentInterpretation,
     IntentValidationError,
     ReferenceIntentInterpreter,
+    SharedUnderstandingService,
 )
 from aea_platform.consumer import ConsumedRecord, GovernedConsumer
 from aea_platform.outbox import OutboxRecord, OutboxRelay
@@ -201,6 +202,62 @@ class FoundationTests(unittest.TestCase):
                 correlation_id="correlation", subject_reference="subject",
             )
         self.assertEqual([], store.applied)
+
+    def test_shared_understanding_can_be_reviewed_and_partially_corrected(self):
+        store = FakeStateStore({
+            "state_schema_version": 1, "context_version": 7,
+            "state": {
+                "shared_understanding": {"occasion": "birthday", "budget": 50},
+                "thought_completion": {"suggestions": ["Who are the flowers for?"]},
+                "decisions": {"product": {"id": "kept", "completed": True}},
+            },
+        })
+        service = SharedUnderstandingService(
+            store,
+            now=lambda: datetime(2026, 8, 12, tzinfo=timezone.utc),
+            new_id=lambda: uuid.UUID("00000000-0000-0000-0000-000000000040"),
+        )
+        projection = service.projection(session_id="session")
+        self.assertEqual(7, projection.context_version)
+        self.assertEqual({"occasion": "birthday", "budget": 50},
+                         projection.structured_intent)
+        self.assertEqual(("Who are the flowers for?",), projection.suggestions)
+
+        result = service.correct(
+            session_id="session", corrections={"budget": 75, "recipient": "mother"},
+            observed_context_version=7, correlation_id="correction",
+            subject_reference="subject",
+        )
+        self.assertEqual(8, result.context_version)
+        self.assertEqual({"occasion": "birthday", "budget": 75, "recipient": "mother"},
+                         result.structured_intent)
+        _, expected, _, patch, messages = store.applied[0]
+        self.assertEqual(7, expected)
+        self.assertEqual({"budget": 75, "recipient": "mother"},
+                         patch.values["shared_understanding"])
+        self.assertNotIn("decisions", patch.values)
+        self.assertEqual(
+            ("shared_understanding.budget", "shared_understanding.recipient",
+             "thought_completion.suggestions"), patch.changed_facets,
+        )
+        self.assertEqual(result.structured_intent,
+                         messages[0]["envelope"]["payload"]["structured_intent"])
+
+    def test_shared_understanding_correction_rejects_invalid_or_unchanged_input(self):
+        current = {
+            "state_schema_version": 1, "context_version": 2,
+            "state": {"shared_understanding": {"occasion": "birthday"}},
+        }
+        for corrections in ({}, {"occasion": "birthday"}, {"product_id": "rose-1"},
+                            {"budget": 0}):
+            store = FakeStateStore(current)
+            with self.assertRaises(IntentValidationError):
+                SharedUnderstandingService(store).correct(
+                    session_id="session", corrections=corrections,
+                    observed_context_version=2, correlation_id="correction",
+                    subject_reference="subject",
+                )
+            self.assertEqual([], store.applied)
 
     def test_conversation_submission_persists_and_publishes_one_governed_message(self):
         store = FakeStateStore({
