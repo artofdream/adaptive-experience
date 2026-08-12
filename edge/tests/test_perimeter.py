@@ -33,14 +33,16 @@ class FakeOrchestration:
             "submitted_at": "2026-08-12T00:00:00+00:00", "private": "omit",
         })
         return ConversationResult(True, "accepted", kwargs["observed_context_version"] + 1,
-                                  "message-1")
+                                  "message-1", True, "primary", "AI-generated; review it.")
 
     def conversation_projection(self, **kwargs):
         return {"context_version": len(self.messages), "messages": self.messages, "secret": "omit"}
 
     def shared_understanding_projection(self, **kwargs):
         return {"context_version": 1, "structured_intent": self.intent,
-                "suggestions": ["What budget?"], "secret": "omit"}
+                "suggestions": ["What budget?"], "secret": "omit",
+                "ai_generated": True, "assistant_mode": "primary",
+                "disclosure": "AI-generated; review it."}
 
     def correct_shared_understanding(self, **kwargs):
         self.intent.update(kwargs["corrections"])
@@ -109,6 +111,8 @@ class PerimeterTests(unittest.TestCase):
         self.assertEqual(202, status)
         self.assertEqual("message-1", result["message_id"])
         self.assertEqual(1, result["context_version"])
+        self.assertTrue(result["ai_generated"])
+        self.assertIn("AI-generated", result["disclosure"])
         status, _, body = self.call("GET", "/api/v1/conversation",
                                     {**self.auth, "cookie": cookie})
         self.assertEqual(200, status)
@@ -150,6 +154,8 @@ class PerimeterTests(unittest.TestCase):
         self.assertEqual(200, status)
         self.assertEqual({"occasion": "birthday"},
                          json.loads(body)["structured_intent"])
+        self.assertTrue(json.loads(body)["ai_generated"])
+        self.assertIn("AI-generated", json.loads(body)["disclosure"])
         headers = {**self.auth, "cookie": cookie, "x-csrf-token": csrf,
                    "content-type": "application/json", "x-correlation-id":
                    "00000000-0000-0000-0000-000000000034"}

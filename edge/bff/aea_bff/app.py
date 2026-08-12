@@ -128,6 +128,9 @@ class BffApp:
                 "message_id": result.message_id,
                 "correlation_id": correlation_id,
                 "context_version": result.context_version,
+                "ai_generated": result.ai_generated,
+                "assistant_mode": result.assistant_mode,
+                "disclosure": result.disclosure,
             }, correlation_id)
 
         if path == "/api/v1/conversation" and method == "GET":
@@ -252,7 +255,10 @@ class BffApp:
         suggestions = [item for item in (raw.get("suggestions") or [])[:3]
                        if isinstance(item, str)]
         return {"context_version": int(raw.get("context_version", 0)),
-                "structured_intent": safe_intent, "suggestions": suggestions}
+                "structured_intent": safe_intent, "suggestions": suggestions,
+                "ai_generated": bool(raw.get("ai_generated", False)),
+                "assistant_mode": raw.get("assistant_mode"),
+                "disclosure": raw.get("disclosure")}
 
     async def _error(self, send, status, code, correlation_id, extra_headers=None):
         await self._json(send, status, {"error": code, "correlation_id": correlation_id},

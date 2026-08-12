@@ -35,6 +35,10 @@ responses, and logs contain no PostgreSQL or Kafka connection details.
   current context version, and up to three thought-completion suggestions.
 - `PATCH /api/v1/shared-understanding` delegates partial corrections with the
   authenticated subject, correlation ID, and observed context version.
+- AI-derived conversation acknowledgements and Shared Understanding projections
+  always include `ai_generated`, the active `assistant_mode`, and a plain-language
+  disclosure telling customers to review and correct the interpretation
+  (NFR-005). These fields remain present when the availability fallback is used.
 - `GET /api/v1/workspace` returns a least-data workspace projection.
 - `GET /api/v1/stream` emits reconnectable server-sent events and honors
   `Last-Event-ID`.

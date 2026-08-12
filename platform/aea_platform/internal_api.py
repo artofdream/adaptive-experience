@@ -64,12 +64,16 @@ class InternalOrchestrationApp:
                     correlation_id=body.get("correlation_id"), subject_reference=subject)
                 return await self._send(send, 202, {"code": "accepted",
                     "context_version": analysis.context_version, "message_id": result.message_id,
-                    "assistant_mode": getattr(self.interpreter, "last_mode", "reference")})
+                    "ai_generated": True,
+                    "assistant_mode": getattr(self.interpreter, "last_mode", "reference"),
+                    "disclosure": "AI-generated interpretation; review and correct before ordering."})
             if resource == "shared-understanding" and method == "GET":
                 value = self.shared.projection(session_id=session_id)
                 return await self._send(send, 200, {"context_version": value.context_version,
                     "structured_intent": value.structured_intent,
-                    "suggestions": list(value.suggestions)})
+                    "suggestions": list(value.suggestions), "ai_generated": True,
+                    "assistant_mode": getattr(self.interpreter, "last_mode", "reference"),
+                    "disclosure": "AI-generated interpretation; review and correct before ordering."})
             if resource == "shared-understanding" and method == "PATCH":
                 body = await self._body(receive)
                 result = self.shared.correct(
