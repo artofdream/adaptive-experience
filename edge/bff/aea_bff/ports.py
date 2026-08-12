@@ -29,10 +29,21 @@ class CorrectionResult:
     message_id: str | None = None
 
 
+@dataclass(frozen=True)
+class SelectionResult:
+    accepted: bool
+    code: str
+    context_version: int
+    message_id: str | None = None
+
+
 class OrchestrationPort(Protocol):
     def ensure_session(self, *, session_id: str, subject: str) -> None: ...
     def accept_command(self, *, session_id: str, subject: str, command: dict,
                        observed_context_version: int, correlation_id: str) -> CommandResult: ...
+    def select_product(self, *, session_id: str, subject: str, product_id: str,
+                       options: dict, observed_context_version: int,
+                       correlation_id: str) -> SelectionResult: ...
     def workspace_projection(self, *, session_id: str, subject: str) -> dict: ...
     def stream_events(self, *, session_id: str, subject: str,
                       after_event_id: str | None) -> Iterable[dict]: ...
@@ -51,6 +62,9 @@ class UnavailableOrchestration:
 
     def accept_command(self, **kwargs) -> CommandResult:
         return CommandResult(False, "orchestration_unavailable")
+
+    def select_product(self, **kwargs) -> SelectionResult:
+        return SelectionResult(False, "orchestration_unavailable", 0)
 
     def workspace_projection(self, **kwargs) -> dict:
         return {"context_version": 0, "tiles": []}

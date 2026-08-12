@@ -118,9 +118,30 @@ data: {"context_version":7,"changed_facets":["recommendations.items"],
 
 - Recommendations/selection are delivered as workspace facets + stream deltas.
   #142 keeps `POST /api/v1/selection` (write) but its read surface becomes the
-  `recommendations.*` / `selection.*` facets rather than a standalone
-  `GET /api/v1/recommendations`. Update #142's acceptance criteria to consume the
-  workspace projection once #144 lands.
+  `recommendations` / `selection` facets rather than a standalone
+  `GET /api/v1/recommendations`.
+
+### #142 refinement (implemented 2026-08-12)
+
+The two facets have different natures, which the implementation makes explicit:
+
+- **`recommendations` is a derived read projection, NOT stored state.** The
+  `projection_dependency` registry already models `recommendations` as a
+  projection_key regenerated from intent, so the workspace route computes it on
+  read (`RecommendationService.preview`): rank the catalog against current intent
+  and annotate each candidate with a real-time Available badge from a
+  **non-authoritative** availability read (`InventoryAvailabilityService.availability`,
+  which publishes no event, so it is safe on a GET). The stream's existing
+  `recommendations` invalidation (emitted when intent changes) tells the browser
+  to refetch. Recommendations are therefore **not** written via
+  `apply_experience_patch`.
+- **`selection` is authoritative state.** `POST /api/v1/selection` performs an
+  authoritative selection-time revalidation (`inventory.validate` with
+  `purpose="selection"`, which publishes + audits and rejects unavailable/stale),
+  then writes the `decisions.product` facet (an existing `projection_dependency`
+  facet - no migration) and emits `product.selected` in one versioned
+  `apply_experience_patch` transaction, so the event fires exactly once at the new
+  context version. The workspace `selection` facet reads `decisions.product`.
 
 ## Open questions
 

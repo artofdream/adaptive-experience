@@ -132,6 +132,36 @@ class PsycopgInventoryAvailabilityStore:
             )
             return availability
 
+    def read_availability(self, product_ids: tuple[str, ...],
+                          freshness_cutoff: datetime) -> dict[str, dict]:
+        """Non-authoritative availability read for the recommendations badge.
+
+        Reads current snapshots without an experience-context lock and without
+        enqueuing a governed event. Authoritative revalidation with publication
+        and audit stays in `validate_and_enqueue` at selection time.
+        """
+        rows = self.connection.execute(
+            "SELECT product_id,available_quantity,source_version,observed_at "
+            "FROM inventory.product_availability WHERE product_id=ANY(%s)",
+            (list(product_ids),),
+        ).fetchall()
+        indexed = {row[0]: row for row in rows}
+        availability = {}
+        for product_id in product_ids:
+            row = indexed.get(product_id)
+            if row is None:
+                availability[product_id] = {"status": "unknown", "freshness": "missing"}
+            elif row[3] < freshness_cutoff:
+                availability[product_id] = {"status": "unknown", "freshness": "stale",
+                                            "source_version": row[2]}
+            else:
+                availability[product_id] = {
+                    "status": "available" if row[1] > 0 else "unavailable",
+                    "freshness": "current", "available_quantity": row[1],
+                    "source_version": row[2], "observed_at": row[3].isoformat(),
+                }
+        return availability
+
 
 class PsycopgRecommendationStore:
     """Recommendation authority publication for product.recommendations.ready."""
