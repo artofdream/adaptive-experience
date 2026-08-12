@@ -61,16 +61,25 @@ Orchestration (M2 Conversation and Shared Understanding):
   (NFR-005). These fields remain present when the availability fallback is used.
 - `GET /healthz` is an unauthenticated liveness check without dependency data.
 
-Perimeter placeholders (Edge transport, auth, CSRF, and least-data shaping only).
-Internal Orchestration does not yet expose matching HTTP resources; the BFF must
-not invent authoritative command acceptance, workspace tiles, or stream events:
+Reactive workspace substrate, wired end-to-end through `HttpOrchestration` to
+Internal Orchestration (#144; contract in
+`research/adr-candidates/edge-workspace-projection-contract.md`):
 
-- `POST /api/v1/commands` validates transport shape and fails closed until
-  Orchestration publishes an internal command surface.
-- `GET /api/v1/workspace` returns an empty least-data projection
-  (`context_version` 0, no tiles) until an internal workspace projection exists.
-- `GET /api/v1/stream` keeps the reconnectable SSE contract and honors
-  `Last-Event-ID`, but emits no events until Orchestration publishes a stream.
+- `GET /api/v1/workspace` returns one least-data aggregate projection at the
+  current context version. Tiles are namespaced facets (`conversation`,
+  `shared_understanding`, and — as their services begin writing state —
+  `recommendations` / `selection`), so the browser renders one coherent snapshot
+  instead of racing per-tile fetches.
+- `GET /api/v1/stream` is the reconnectable SSE contract. A cold connection
+  receives one `snapshot` event carrying the workspace; a reconnection with
+  `Last-Event-ID` (or `?after=`) receives only the `invalidation` deltas it
+  missed, each naming the projections that must regenerate (derived from the
+  `projection_dependency` registry). Event IDs are the monotonic context version.
+
+`POST /api/v1/commands` is intentionally deferred: selection and later actions
+use dedicated endpoints (e.g. `POST /api/v1/selection`, #142). The generic
+command envelope is not adopted until deliberately standardized, so the route
+validates transport shape and fails closed (`orchestration_unavailable`).
 
 The integration runner builds the containers, waits for both health checks,
 verifies the HTTPS gateway, and executes ten standard assistant queries through

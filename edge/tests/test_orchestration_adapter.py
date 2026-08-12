@@ -25,7 +25,7 @@ class HttpOrchestrationTests(unittest.TestCase):
         with self.assertRaises(OrchestrationUnavailable):
             adapter.conversation_projection(session_id="s1", subject="user1")
 
-    def test_unwired_command_workspace_stream_do_not_call_internal(self):
+    def test_command_stays_deferred_without_calling_internal(self):
         calls = []
         def transport(*args):
             calls.append(args)
@@ -34,9 +34,23 @@ class HttpOrchestrationTests(unittest.TestCase):
         command = adapter.accept_command(
             session_id="s1", subject="user1", command={"type": "continue"},
             observed_context_version=1, correlation_id="c1")
-        workspace = adapter.workspace_projection(session_id="s1", subject="user1")
-        events = list(adapter.stream_events(session_id="s1", subject="user1", after_event_id=None))
         self.assertEqual(CommandResult(False, "orchestration_unavailable"), command)
-        self.assertEqual({"context_version": 0, "tiles": []}, workspace)
-        self.assertEqual([], events)
         self.assertEqual([], calls)
+
+    def test_workspace_and_stream_reach_internal_with_identity(self):
+        calls = []
+        def transport(method, url, headers, payload, timeout):
+            calls.append((method, url, headers))
+            if url.endswith("/workspace"):
+                return 200, '{"context_version":5,"facets":{},"ai_generated":true}'
+            return 200, ('{"events":[{"event_id":"5","context_version":5,"kind":"invalidation",'
+                         '"invalidated_projections":[{"projection_key":"recommendations","reason":"intent_changed"}]}]}')
+        adapter = HttpOrchestration("http://orchestration:8081", "internal", transport=transport)
+        workspace = adapter.workspace_projection(session_id="s1", subject="user1")
+        events = list(adapter.stream_events(session_id="s1", subject="user1", after_event_id="3"))
+        self.assertEqual(5, workspace["context_version"])
+        self.assertEqual("5", events[0]["event_id"])
+        self.assertEqual("recommendations", events[0]["invalidated_projections"][0]["projection_key"])
+        self.assertTrue(any(url.endswith("/sessions/s1/workspace") for _, url, _ in calls))
+        self.assertTrue(any(url.endswith("/sessions/s1/stream?after=3") for _, url, _ in calls))
+        self.assertTrue(all(headers["x-subject-reference"] == "user1" for _, _, headers in calls))

@@ -83,13 +83,20 @@ class HttpOrchestration:
                                 int(data.get("context_version", 0)), data.get("message_id"))
 
     def accept_command(self, **kwargs):
-        # Internal Orchestration has no command HTTP surface yet (CF-037).
+        # Deferred by design: selection and later actions use dedicated endpoints
+        # (POST /api/v1/selection, #142). The generic command envelope is not
+        # adopted until deliberately standardized. See #144 and
+        # research/adr-candidates/edge-workspace-projection-contract.md.
         return CommandResult(False, "orchestration_unavailable")
 
     def workspace_projection(self, **kwargs):
-        # Internal Orchestration has no workspace HTTP surface yet (CF-037).
-        return {"context_version": 0, "tiles": []}
+        return self._call("GET", f"/internal/v1/sessions/{kwargs['session_id']}/workspace",
+                          subject=kwargs["subject"])
 
     def stream_events(self, **kwargs):
-        # Internal Orchestration has no stream surface yet (CF-037).
-        return ()
+        path = f"/internal/v1/sessions/{kwargs['session_id']}/stream"
+        after = kwargs.get("after_event_id")
+        if after:
+            path += f"?after={after}"
+        data = self._call("GET", path, subject=kwargs["subject"])
+        return data.get("events", [])

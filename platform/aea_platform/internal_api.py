@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from datetime import datetime, timedelta, timezone
+from urllib.parse import parse_qs
 
 from .conversation import ConversationService, ConversationSessionNotFound, ConversationValidationError
 from .intent import (IntentAnalysisService, IntentSessionNotFound, IntentValidationError,
@@ -16,6 +17,7 @@ class InternalOrchestrationApp:
             raise ValueError("internal token is required")
         from .adapters import PsycopgExperienceStateStore
         store = PsycopgExperienceStateStore(connection)
+        self.store = store
         self.connection = connection
         self.token = token
         self.conversation = ConversationService(store)
@@ -82,6 +84,26 @@ class InternalOrchestrationApp:
                     correlation_id=body.get("correlation_id"), subject_reference=subject)
                 return await self._send(send, 202, {"code": "accepted",
                     "context_version": result.context_version, "message_id": result.message_id})
+            if resource == "workspace" and method == "GET":
+                loaded = self.store.load(session_id)
+                if loaded is None:
+                    return await self._send(send, 404, {"code": "session_not_found"})
+                return await self._send(send, 200, self._workspace(session_id, loaded))
+            if resource == "stream" and method == "GET":
+                loaded = self.store.load(session_id)
+                if loaded is None:
+                    return await self._send(send, 404, {"code": "session_not_found"})
+                current = int(loaded["context_version"])
+                after = self._query_after(scope)
+                if after is None:
+                    events = [{"event_id": str(current), "context_version": current,
+                               "kind": "snapshot", "workspace": self._workspace(session_id, loaded)}]
+                else:
+                    events = [{"event_id": str(item["context_version"]),
+                               "context_version": item["context_version"], "kind": "invalidation",
+                               "invalidated_projections": item["invalidated_projections"]}
+                              for item in self.store.invalidations_after(session_id, after)]
+                return await self._send(send, 200, {"events": events})
         except (ConversationSessionNotFound, IntentSessionNotFound):
             return await self._send(send, 404, {"code": "session_not_found"})
         except (ConversationValidationError, IntentValidationError, TypeError):
@@ -92,6 +114,39 @@ class InternalOrchestrationApp:
                 return await self._send(send, 409, {"code": "stale_context"})
             raise
         return await self._send(send, 404, {"code": "not_found"})
+
+    def _workspace(self, session_id: str, loaded: dict) -> dict:
+        """Aggregate least-data facet document at the current context version.
+
+        Tiles are namespaced facets (Option A, #144). Recommendations/selection
+        facets slot in as their services begin writing state (#142).
+        """
+        conversation = self.conversation.projection(session_id=session_id)
+        shared = self.shared.projection(session_id=session_id)
+        return {
+            "context_version": int(loaded["context_version"]),
+            "facets": {
+                "conversation": {"messages": conversation.get("messages", [])},
+                "shared_understanding": {
+                    "structured_intent": shared.structured_intent,
+                    "suggestions": list(shared.suggestions),
+                },
+            },
+            "ai_generated": True,
+            "assistant_mode": getattr(self.interpreter, "last_mode", "reference"),
+            "disclosure": "AI-generated interpretation; review and correct before ordering.",
+        }
+
+    @staticmethod
+    def _query_after(scope) -> int | None:
+        raw = parse_qs(scope.get("query_string", b"").decode())
+        value = (raw.get("after") or [None])[0]
+        if value is None:
+            return None
+        try:
+            return int(value)
+        except ValueError:
+            return None
 
     @staticmethod
     async def _body(receive):

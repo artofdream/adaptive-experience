@@ -60,11 +60,14 @@ plaintext production listeners are prohibited by ADR-012.
   derive only affected projection invalidations, reject stale context versions,
   and publish the resulting `experience.intent.updated` event in the same
   transaction (FR-021).
-- The authenticated Internal Orchestration HTTP surface currently exposes session
-  create, conversation submit/projection, Shared Understanding review/correction,
-  and AI health. Browser `commands`, workspace projection, and SSE stream remain
-  Edge perimeter placeholders until matching internal resources ship (see
-  `edge/README.md`).
+- The authenticated Internal Orchestration HTTP surface exposes session create,
+  conversation submit/projection, Shared Understanding review/correction, AI
+  health, and the reactive workspace substrate (#144): `GET .../workspace` returns
+  the aggregate least-data facet document at the current context version, and
+  `GET .../stream` returns a `snapshot` event on cold connect or the per-version
+  `invalidation` deltas after `?after=`, sourced from `experience_invalidation`
+  (the `projection_dependency`-derived trail written by `apply_experience_patch`).
+  The generic browser `commands` envelope stays deferred (see `edge/README.md`).
 - `OpenAICompatibleIntentInterpreter` supplies a vendor-neutral Generative AI
   boundary using strict JSON output and a timeout capped at 2.5 seconds.
   `AvailableIntentInterpreter` fails over to the deterministic local interpreter

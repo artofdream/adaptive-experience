@@ -20,11 +20,26 @@ class FakeOrchestration:
         return CommandResult(True, "accepted")
 
     def workspace_projection(self, **kwargs):
-        return {"context_version": 7, "secret": "omit", "tiles": [{"id": "a", "status": "ready", "summary": "ok", "private": "omit"}]}
+        return {"context_version": 7, "secret": "omit",
+                "facets": {
+                    "conversation": {"messages": [{
+                        "message_id": "m1", "role": "customer", "text": "hi",
+                        "status": "submitted", "submitted_at": "2026-08-12T00:00:00+00:00",
+                        "private": "omit"}]},
+                    "shared_understanding": {
+                        "structured_intent": {"occasion": "birthday", "secret": "omit"},
+                        "suggestions": ["What budget?"]}},
+                "ai_generated": True, "assistant_mode": "primary",
+                "disclosure": "AI-generated; review it."}
 
     def stream_events(self, **kwargs):
         after = kwargs.get("after_event_id")
-        return [] if after == "2" else [{"event_id": "2", "projection": self.workspace_projection()}]
+        if after == "2":
+            return []
+        return [{"event_id": "2", "context_version": 2, "kind": "invalidation",
+                 "invalidated_projections": [{
+                     "projection_key": "recommendations", "reason": "intent_changed",
+                     "secret": "omit"}]}]
 
     def submit_conversation_message(self, **kwargs):
         self.messages.append({
@@ -90,12 +105,28 @@ class PerimeterTests(unittest.TestCase):
         self.assertEqual(7, payload["observed_context_version"])
         self.assertRegex(payload["correlation_id"], r"^[0-9a-f-]{36}$")
         status, _, body = self.call("GET", "/api/v1/workspace", {**self.auth, "cookie": cookie})
-        self.assertEqual({"context_version": 7, "tiles": [{"id": "a", "status": "ready", "summary": "ok"}]}, json.loads(body))
+        self.assertEqual({
+            "context_version": 7,
+            "facets": {
+                "conversation": {"messages": [{
+                    "message_id": "m1", "role": "customer", "text": "hi",
+                    "status": "submitted", "submitted_at": "2026-08-12T00:00:00+00:00"}]},
+                "shared_understanding": {
+                    "structured_intent": {"occasion": "birthday"},
+                    "suggestions": ["What budget?"]}},
+            "ai_generated": True, "assistant_mode": "primary",
+            "disclosure": "AI-generated; review it.",
+        }, json.loads(body))
+        self.assertNotIn(b"secret", body)
+        self.assertNotIn(b"private", body)
 
     def test_stream_reconnect(self):
         cookie, _ = self.session()
         headers = {**self.auth, "cookie": cookie}
-        self.assertIn(b"id: 2", self.call("GET", "/api/v1/stream", headers)[2])
+        first = self.call("GET", "/api/v1/stream", headers)[2]
+        self.assertIn(b"id: 2", first)
+        self.assertIn(b"recommendations", first)
+        self.assertNotIn(b"secret", first)
         self.assertEqual(b"", self.call("GET", "/api/v1/stream", {**headers, "last-event-id": "2"})[2])
 
     def test_conversation_message_acceptance_and_projection(self):
