@@ -158,7 +158,7 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         app = InternalOrchestrationApp(self.connection, "internal-token")
 
         def drive(path, query=b""):
-            return asyncio.run(self._invoke_internal(app, "GET", path, query))
+            return asyncio.run(self._invoke_internal(app, "GET", path, b"", query))
 
         status, workspace = drive(f"/internal/v1/sessions/{session_id}/workspace")
         self.assertEqual(200, status)
@@ -177,10 +177,10 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
                       [p["projection_key"] for p in delta["events"][0]["invalidated_projections"]])
 
     @staticmethod
-    async def _invoke_internal(app, method, path, query=b""):
+    async def _invoke_internal(app, method, path, body=b"", query=b""):
         sent = []
         async def receive():
-            return {"type": "http.request", "body": b"", "more_body": False}
+            return {"type": "http.request", "body": body, "more_body": False}
         async def send(message):
             sent.append(message)
         scope = {"type": "http", "method": method, "path": path, "query_string": query,
@@ -188,6 +188,65 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
                              (b"x-subject-reference", b"subject-1")]}
         await app(scope, receive, send)
         return sent[0]["status"], json.loads(sent[1]["body"] or b"{}")
+
+    def test_selection_emits_product_selected_and_recommendations_show_availability(self):
+        import asyncio
+        from aea_platform.adapters import (PsycopgExperienceStateStore,
+                                           PsycopgInventoryAvailabilityStore)
+        from aea_platform.internal_api import InternalOrchestrationApp
+        from aea_platform.inventory import AvailabilitySnapshot, InventoryAvailabilityService
+        from aea_platform.state import StatePatch
+
+        session_id = self.create_session()
+        now = datetime.now(timezone.utc)
+        inventory = InventoryAvailabilityService(
+            PsycopgInventoryAvailabilityStore(self.connection), now=lambda: now)
+        inventory.record(AvailabilitySnapshot("classic-rose-dozen", 5, 1, now))
+        inventory.record(AvailabilitySnapshot("budget-mixed-bunch", 0, 1, now))  # unavailable
+
+        store = PsycopgExperienceStateStore(self.connection)
+        with self.connection.transaction():
+            store.apply_patch(str(session_id), 0, 1,
+                StatePatch.create({"shared_understanding": {"occasion": "birthday"}},
+                                  ["shared_understanding.occasion"]), [])
+
+        app = InternalOrchestrationApp(self.connection, "internal-token")
+
+        def drive(method, path, body=b""):
+            return asyncio.run(self._invoke_internal(app, method, path, body))
+
+        # Recommendations facet is availability-aware (FR-011).
+        _, workspace = drive("GET", f"/internal/v1/sessions/{session_id}/workspace")
+        by_id = {item["product_id"]: item
+                 for item in workspace["facets"]["recommendations"]["items"]}
+        self.assertTrue(by_id["classic-rose-dozen"]["available"])
+
+        # Selecting an available product emits product.selected exactly once at v2.
+        body = json.dumps({"product_id": "classic-rose-dozen", "options": {"card_message": "hi"},
+                           "observed_context_version": 1, "correlation_id": "sel-corr"}).encode()
+        status, result = drive("POST", f"/internal/v1/sessions/{session_id}/selection", body)
+        self.assertEqual(202, status)
+        self.assertEqual(2, result["context_version"])
+        selected = self.connection.execute(
+            "SELECT count(*) FROM orchestration.outbox_message "
+            "WHERE session_id=%s AND topic='product.selected'", (session_id,)).fetchone()[0]
+        self.assertEqual(1, selected)
+
+        _, workspace2 = drive("GET", f"/internal/v1/sessions/{session_id}/workspace")
+        self.assertEqual("classic-rose-dozen", workspace2["facets"]["selection"]["product_id"])
+
+        # An unavailable product is rejected with no product.selected and no version bump.
+        bad = json.dumps({"product_id": "budget-mixed-bunch", "options": {},
+                          "observed_context_version": 2, "correlation_id": "sel-corr2"}).encode()
+        status_bad, result_bad = drive("POST", f"/internal/v1/sessions/{session_id}/selection", bad)
+        self.assertEqual(409, status_bad)
+        self.assertEqual("product_unavailable", result_bad["code"])
+        self.assertEqual(1, self.connection.execute(
+            "SELECT count(*) FROM orchestration.outbox_message "
+            "WHERE session_id=%s AND topic='product.selected'", (session_id,)).fetchone()[0])
+        self.assertEqual(2, self.connection.execute(
+            "SELECT context_version FROM orchestration.experience_session "
+            "WHERE session_id=%s", (session_id,)).fetchone()[0])
 
     def test_recommendations_publish_ready_for_available_ranked_catalog(self):
         from aea_platform.adapters import (

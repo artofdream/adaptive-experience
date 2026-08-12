@@ -37,6 +37,24 @@ class HttpOrchestrationTests(unittest.TestCase):
         self.assertEqual(CommandResult(False, "orchestration_unavailable"), command)
         self.assertEqual([], calls)
 
+    def test_select_product_posts_to_internal_selection(self):
+        calls = []
+        def transport(method, url, headers, payload, timeout):
+            calls.append((method, url, payload, headers))
+            return 202, '{"code":"accepted","context_version":9,"message_id":"sel-1"}'
+        adapter = HttpOrchestration("http://orchestration:8081", "internal", transport=transport)
+        result = adapter.select_product(
+            session_id="s1", subject="user1", product_id="rose",
+            options={"card_message": "hi"}, observed_context_version=8, correlation_id="c1")
+        self.assertTrue(result.accepted)
+        self.assertEqual(9, result.context_version)
+        self.assertEqual("sel-1", result.message_id)
+        self.assertEqual("POST", calls[0][0])
+        self.assertTrue(calls[0][1].endswith("/sessions/s1/selection"))
+        self.assertEqual("rose", calls[0][2]["product_id"])
+        self.assertEqual("c1", calls[0][2]["correlation_id"])
+        self.assertEqual("user1", calls[0][3]["x-subject-reference"])
+
     def test_workspace_and_stream_reach_internal_with_identity(self):
         calls = []
         def transport(method, url, headers, payload, timeout):

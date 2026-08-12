@@ -4,7 +4,8 @@ import pathlib
 import unittest
 
 from edge.bff.aea_bff.app import BffApp
-from edge.bff.aea_bff.ports import CommandResult, ConversationResult, CorrectionResult
+from edge.bff.aea_bff.ports import (CommandResult, ConversationResult, CorrectionResult,
+                                    SelectionResult)
 from edge.bff.aea_bff.security import FixedWindowRateLimiter, StaticTokenAuthenticator
 
 
@@ -19,6 +20,10 @@ class FakeOrchestration:
     def accept_command(self, **kwargs):
         return CommandResult(True, "accepted")
 
+    def select_product(self, **kwargs):
+        self.selected = {"product_id": kwargs["product_id"], "options": kwargs["options"]}
+        return SelectionResult(True, "accepted", kwargs["observed_context_version"] + 1, "selection-1")
+
     def workspace_projection(self, **kwargs):
         return {"context_version": 7, "secret": "omit",
                 "facets": {
@@ -28,7 +33,13 @@ class FakeOrchestration:
                         "private": "omit"}]},
                     "shared_understanding": {
                         "structured_intent": {"occasion": "birthday", "secret": "omit"},
-                        "suggestions": ["What budget?"]}},
+                        "suggestions": ["What budget?"]},
+                    "recommendations": {"items": [{
+                        "product_id": "classic-rose-dozen", "price": 70.0, "score": 4.0,
+                        "rank": 1, "available": True, "availability_status": "available",
+                        "secret": "omit"}]},
+                    "selection": {"product_id": "classic-rose-dozen",
+                                  "options": {"card_message": "hi"}, "secret": "omit"}},
                 "ai_generated": True, "assistant_mode": "primary",
                 "disclosure": "AI-generated; review it."}
 
@@ -113,12 +124,38 @@ class PerimeterTests(unittest.TestCase):
                     "status": "submitted", "submitted_at": "2026-08-12T00:00:00+00:00"}]},
                 "shared_understanding": {
                     "structured_intent": {"occasion": "birthday"},
-                    "suggestions": ["What budget?"]}},
+                    "suggestions": ["What budget?"]},
+                "recommendations": {"items": [{
+                    "product_id": "classic-rose-dozen", "price": 70.0, "score": 4.0,
+                    "rank": 1, "available": True, "availability_status": "available"}]},
+                "selection": {"product_id": "classic-rose-dozen",
+                              "options": {"card_message": "hi"}}},
             "ai_generated": True, "assistant_mode": "primary",
             "disclosure": "AI-generated; review it.",
         }, json.loads(body))
         self.assertNotIn(b"secret", body)
         self.assertNotIn(b"private", body)
+
+    def test_selection_requires_csrf_and_is_versioned(self):
+        cookie, csrf = self.session()
+        json_headers = {**self.auth, "cookie": cookie, "content-type": "application/json"}
+        payload = json.dumps({"product_id": "classic-rose-dozen",
+                              "options": {"card_message": "hi"},
+                              "observed_context_version": 7}).encode()
+        # CSRF is enforced on the selection write.
+        self.assertEqual(403, self.call("POST", "/api/v1/selection", json_headers, payload)[0])
+        headers = {**json_headers, "x-csrf-token": csrf}
+        status, _, body = self.call("POST", "/api/v1/selection", headers, payload)
+        self.assertEqual(202, status)
+        result = json.loads(body)
+        self.assertTrue(result["accepted"])
+        self.assertEqual("selection-1", result["message_id"])
+        self.assertEqual(8, result["context_version"])
+        # Invalid shapes are rejected before reaching Orchestration.
+        self.assertEqual(422, self.call("POST", "/api/v1/selection", headers,
+            json.dumps({"product_id": "", "observed_context_version": 7}).encode())[0])
+        self.assertEqual(422, self.call("POST", "/api/v1/selection", headers,
+            json.dumps({"product_id": "x", "observed_context_version": -1}).encode())[0])
 
     def test_stream_reconnect(self):
         cookie, _ = self.session()

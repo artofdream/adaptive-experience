@@ -1,12 +1,17 @@
 from __future__ import annotations
 
 import json
+import uuid
 from datetime import datetime, timedelta, timezone
 from urllib.parse import parse_qs
 
 from .conversation import ConversationService, ConversationSessionNotFound, ConversationValidationError
 from .intent import (IntentAnalysisService, IntentSessionNotFound, IntentValidationError,
                      ReferenceIntentInterpreter, SharedUnderstandingService)
+from .inventory import (InventoryAvailabilityService, InventoryUnavailableError,
+                        InventoryValidationError)
+from .recommendation import RecommendationService
+from .state import StatePatch
 
 
 class InternalOrchestrationApp:
@@ -15,7 +20,8 @@ class InternalOrchestrationApp:
     def __init__(self, connection, token: str, interpreter=None):
         if not token:
             raise ValueError("internal token is required")
-        from .adapters import PsycopgExperienceStateStore
+        from .adapters import (PsycopgExperienceStateStore, PsycopgInventoryAvailabilityStore,
+                               PsycopgRecommendationStore)
         store = PsycopgExperienceStateStore(connection)
         self.store = store
         self.connection = connection
@@ -24,6 +30,9 @@ class InternalOrchestrationApp:
         self.shared = SharedUnderstandingService(store)
         self.interpreter = interpreter or ReferenceIntentInterpreter()
         self.intent = IntentAnalysisService(store, self.interpreter)
+        self.inventory = InventoryAvailabilityService(PsycopgInventoryAvailabilityStore(connection))
+        self.recommendation = RecommendationService(
+            PsycopgRecommendationStore(connection), self.inventory)
 
     async def __call__(self, scope, receive, send):
         headers = {key.decode().lower(): value.decode() for key, value in scope.get("headers", [])}
@@ -89,6 +98,12 @@ class InternalOrchestrationApp:
                 if loaded is None:
                     return await self._send(send, 404, {"code": "session_not_found"})
                 return await self._send(send, 200, self._workspace(session_id, loaded))
+            if resource == "selection" and method == "POST":
+                loaded = self.store.load(session_id)
+                if loaded is None:
+                    return await self._send(send, 404, {"code": "session_not_found"})
+                body = await self._body(receive)
+                return await self._select_product(send, session_id, subject, loaded, body)
             if resource == "stream" and method == "GET":
                 loaded = self.store.load(session_id)
                 if loaded is None:
@@ -123,19 +138,77 @@ class InternalOrchestrationApp:
         """
         conversation = self.conversation.projection(session_id=session_id)
         shared = self.shared.projection(session_id=session_id)
+        state = loaded.get("state") or {}
+        facets = {
+            "conversation": {"messages": conversation.get("messages", [])},
+            "shared_understanding": {
+                "structured_intent": shared.structured_intent,
+                "suggestions": list(shared.suggestions),
+            },
+            "recommendations": {"items": self.recommendation.preview(intent=shared.structured_intent)},
+        }
+        selection = (state.get("decisions") or {}).get("product")
+        if isinstance(selection, dict):
+            facets["selection"] = selection
         return {
             "context_version": int(loaded["context_version"]),
-            "facets": {
-                "conversation": {"messages": conversation.get("messages", [])},
-                "shared_understanding": {
-                    "structured_intent": shared.structured_intent,
-                    "suggestions": list(shared.suggestions),
-                },
-            },
+            "facets": facets,
             "ai_generated": True,
             "assistant_mode": getattr(self.interpreter, "last_mode", "reference"),
             "disclosure": "AI-generated interpretation; review and correct before ordering.",
         }
+
+    async def _select_product(self, send, session_id: str, subject: str,
+                              loaded: dict, body: dict):
+        product_id = body.get("product_id")
+        options = body.get("options") if body.get("options") is not None else {}
+        observed = body.get("observed_context_version")
+        correlation_id = body.get("correlation_id")
+        if (not isinstance(product_id, str) or not product_id.strip()
+                or not isinstance(options, dict)
+                or not isinstance(correlation_id, str) or not correlation_id.strip()):
+            return await self._send(send, 422, {"code": "validation_failed"})
+        try:
+            # Authoritative selection-time revalidation (publishes + audits); rejects
+            # unavailable or stale inventory (FR-011).
+            self.inventory.validate(
+                session_id=session_id, product_ids=[product_id.strip()],
+                observed_context_version=observed, correlation_id=correlation_id.strip(),
+                subject_reference=subject, purpose="selection")
+        except InventoryUnavailableError:
+            return await self._send(send, 409, {"code": "product_unavailable"})
+        except InventoryValidationError:
+            return await self._send(send, 422, {"code": "validation_failed"})
+        except RuntimeError:
+            self.connection.rollback()
+            return await self._send(send, 409, {"code": "stale_context"})
+        # Write the product decision and emit product.selected in one versioned
+        # transaction, so the event fires exactly once at the new context version.
+        message_id = str(uuid.uuid4())
+        envelope = {
+            "message_id": message_id, "topic": "product.selected", "message_type": "event",
+            "schema_version": "1.0.0", "session_id": session_id,
+            "correlation_id": correlation_id.strip(), "source": "orchestration",
+            "context_version": observed,
+            "publication_time": datetime.now(timezone.utc).isoformat(),
+            "security_context": {"classification": "confidential", "subject_reference": subject},
+            "payload": {"product_id": product_id.strip(), "options": options}, "outcome": {},
+        }
+        patch = StatePatch.create(
+            {"decisions": {"product": {"product_id": product_id.strip(), "options": options}}},
+            ["decisions.product"])
+        try:
+            new_version = self.store.apply_patch(
+                session_id, observed, int(loaded["state_schema_version"]), patch,
+                [{"message_id": message_id, "topic": "product.selected",
+                  "aggregate_key": session_id, "envelope": envelope}])
+        except Exception as error:
+            if getattr(error, "sqlstate", None) == "40001":
+                self.connection.rollback()
+                return await self._send(send, 409, {"code": "stale_context"})
+            raise
+        return await self._send(send, 202, {"code": "accepted",
+            "context_version": new_version, "message_id": message_id})
 
     @staticmethod
     def _query_after(scope) -> int | None:

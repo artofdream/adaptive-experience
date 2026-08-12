@@ -162,6 +162,38 @@ class RecommendationService:
             message_id, observed_context_version, eligible, ranking
         )
 
+    def preview(self, *, intent: dict) -> list[dict]:
+        """Read-only availability-aware ranking for the workspace recommendations facet.
+
+        Ranks the catalog against current intent and annotates each candidate with a
+        real-time Available badge from a non-authoritative availability read
+        (FR-011). Publishes nothing and writes no state: recommendations are a
+        derived projection that regenerates from intent, so the stream's
+        `recommendations` invalidation prompts the browser to refetch. Authoritative
+        availability validation happens at selection time.
+        """
+        facets = self._intent(intent)
+        if not facets:
+            return []
+        scored = self._rank(facets)
+        product_ids = [product.product_id for product, _score in scored]
+        availability = (self.inventory.availability(product_ids=product_ids)
+                        if product_ids else {})
+        items: list[dict] = []
+        for product, score in scored:
+            status = availability.get(product.product_id, {}).get("status", "unknown")
+            items.append({
+                "product_id": product.product_id,
+                "price": product.price,
+                "score": score,
+                "rank": len(items) + 1,
+                "available": status == "available",
+                "availability_status": status,
+            })
+            if len(items) >= self.limit:
+                break
+        return items
+
     def _rank(self, facets: dict) -> list[tuple[CatalogProduct, float]]:
         scored: list[tuple[CatalogProduct, float]] = []
         budget = facets.get("budget")

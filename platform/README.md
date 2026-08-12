@@ -68,6 +68,15 @@ plaintext production listeners are prohibited by ADR-012.
   `invalidation` deltas after `?after=`, sourced from `experience_invalidation`
   (the `projection_dependency`-derived trail written by `apply_experience_patch`).
   The generic browser `commands` envelope stays deferred (see `edge/README.md`).
+- Validated Recommendations wiring (#142, FR-007/FR-011): the `workspace`
+  `recommendations` facet is a derived read projection - `RecommendationService`
+  ranks the catalog against current intent and annotates each candidate with a
+  real-time Available badge from a non-authoritative
+  `InventoryAvailabilityService.availability` read (no event published, safe on a
+  GET). `POST .../selection` runs an authoritative `purpose="selection"` inventory
+  revalidation (published and audited; rejects unavailable or stale), writes the
+  `decisions.product` facet, and emits `product.selected` in one versioned
+  `apply_experience_patch` transaction (exactly once at the new context version).
 - `OpenAICompatibleIntentInterpreter` supplies a vendor-neutral Generative AI
   boundary using strict JSON output and a timeout capped at 2.5 seconds.
   `AvailableIntentInterpreter` fails over to the deterministic local interpreter

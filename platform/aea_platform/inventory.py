@@ -86,6 +86,18 @@ class InventoryAvailabilityService:
             raise InventoryUnavailableError(products[0])
         return AvailabilityValidation(message_id, observed_context_version, result)
 
+    def availability(self, *, product_ids: list[str]) -> dict[str, dict]:
+        """Freshness-aware availability read for the recommendations badge.
+
+        Non-authoritative: no experience-context lock and no governed event, so it
+        is safe on a projection read. Selection still calls `validate` (FR-011).
+        """
+        products = tuple(dict.fromkeys(self._product_id(item) for item in product_ids))
+        if not products or len(products) > 100:
+            raise InventoryValidationError("between 1 and 100 product IDs are required")
+        cutoff = self.now().astimezone(timezone.utc) - self.max_age
+        return self.store.read_availability(products, cutoff)
+
     @staticmethod
     def _product_id(value: str) -> str:
         if not isinstance(value, str) or not value.strip() or len(value.strip()) > 120:

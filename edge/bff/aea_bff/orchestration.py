@@ -4,7 +4,7 @@ import json
 import urllib.error
 import urllib.request
 
-from .ports import CommandResult, ConversationResult, CorrectionResult
+from .ports import CommandResult, ConversationResult, CorrectionResult, SelectionResult
 
 
 class OrchestrationUnavailable(RuntimeError):
@@ -88,6 +88,17 @@ class HttpOrchestration:
         # adopted until deliberately standardized. See #144 and
         # research/adr-candidates/edge-workspace-projection-contract.md.
         return CommandResult(False, "orchestration_unavailable")
+
+    def select_product(self, **kwargs):
+        data = self._call("POST", f"/internal/v1/sessions/{kwargs['session_id']}/selection",
+                          subject=kwargs["subject"], payload={
+                              "product_id": kwargs["product_id"],
+                              "options": kwargs["options"],
+                              "observed_context_version": kwargs["observed_context_version"],
+                              "correlation_id": kwargs["correlation_id"],
+                          })
+        return SelectionResult(data["status"] == 202, data.get("code", "rejected"),
+                               int(data.get("context_version", 0)), data.get("message_id"))
 
     def workspace_projection(self, **kwargs):
         return self._call("GET", f"/internal/v1/sessions/{kwargs['session_id']}/workspace",

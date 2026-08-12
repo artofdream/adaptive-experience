@@ -180,6 +180,42 @@ class BffApp:
                 "context_version": result.context_version,
             }, correlation_id)
 
+        if path == "/api/v1/selection" and method == "POST":
+            if headers.get("content-type", "").split(";", 1)[0].strip() != "application/json":
+                return await self._error(send, 415, "unsupported_media_type", correlation_id)
+            body = await self._body(receive, headers)
+            if isinstance(body, tuple):
+                return await self._error(send, body[0], body[1], correlation_id)
+            try:
+                selection = json.loads(body)
+            except (UnicodeDecodeError, json.JSONDecodeError):
+                return await self._error(send, 400, "invalid_json", correlation_id)
+            if (not isinstance(selection, dict)
+                    or set(selection) - {"product_id", "options", "observed_context_version"}
+                    or "product_id" not in selection
+                    or "observed_context_version" not in selection):
+                return await self._error(send, 422, "invalid_selection_shape", correlation_id)
+            product_id = selection["product_id"]
+            options = selection.get("options", {})
+            observed = selection["observed_context_version"]
+            if (not isinstance(product_id, str) or not product_id.strip()
+                    or len(product_id.strip()) > 120 or not isinstance(options, dict)
+                    or not isinstance(observed, int) or isinstance(observed, bool) or observed < 0):
+                return await self._error(send, 422, "invalid_selection_shape", correlation_id)
+            try:
+                result = self.orchestration.select_product(
+                    session_id=session.session_id, subject=subject, product_id=product_id.strip(),
+                    options=options, observed_context_version=observed, correlation_id=correlation_id)
+            except OrchestrationUnavailable:
+                return await self._error(send, 503, "orchestration_unavailable", correlation_id)
+            status = 202 if result.accepted else (
+                409 if result.code in {"stale_context", "product_unavailable"} else 422)
+            return await self._json(send, status, {
+                "accepted": result.accepted, "code": result.code,
+                "message_id": result.message_id, "correlation_id": correlation_id,
+                "context_version": result.context_version,
+            }, correlation_id)
+
         if path == "/api/v1/workspace" and method == "GET":
             try:
                 raw = self.orchestration.workspace_projection(
@@ -247,6 +283,21 @@ class BffApp:
             facets["shared_understanding"] = {
                 "structured_intent": shaped["structured_intent"],
                 "suggestions": shaped["suggestions"]}
+        if isinstance(facets_in.get("recommendations"), dict):
+            items = []
+            for item in facets_in["recommendations"].get("items") or []:
+                if isinstance(item, dict):
+                    items.append({key: item[key] for key in
+                                  ("product_id", "price", "score", "rank", "available",
+                                   "availability_status") if key in item})
+            facets["recommendations"] = {"items": items}
+        if isinstance(facets_in.get("selection"), dict):
+            selection = {}
+            if isinstance(facets_in["selection"].get("product_id"), str):
+                selection["product_id"] = facets_in["selection"]["product_id"]
+            if isinstance(facets_in["selection"].get("options"), dict):
+                selection["options"] = facets_in["selection"]["options"]
+            facets["selection"] = selection
         return {"context_version": int(raw.get("context_version", 0)),
                 "facets": facets,
                 "ai_generated": bool(raw.get("ai_generated", False)),
