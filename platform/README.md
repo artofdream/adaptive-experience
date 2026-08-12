@@ -50,6 +50,12 @@ plaintext production listeners are prohibited by ADR-012.
   deterministic local implementation without coupling orchestration to an AI
   vendor; product eligibility and ranking remain authoritative downstream
   concerns (FR-002 / ADR-003).
+- `SharedUnderstandingService` exposes a least-data review projection and accepts
+  partial customer corrections to those same six facets. Corrections preserve
+  untouched intent and completed decisions, refresh thought-completion prompts,
+  derive only affected projection invalidations, reject stale context versions,
+  and publish the resulting `experience.intent.updated` event in the same
+  transaction (FR-021).
 - Relay claims use `FOR UPDATE SKIP LOCKED`; a row becomes published only after
   the Kafka producer returns an `acks=all` delivery acknowledgement.
 - Message IDs remain stable across relay retries.
