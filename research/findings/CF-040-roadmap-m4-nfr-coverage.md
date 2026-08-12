@@ -2,13 +2,13 @@
 
 tags: #aea #coherence
 finding_id: CF-040
-status: in-mr
+status: regressed
 severity: medium
 source_assessment: research/assessments/2026-08-12-m4-nfr-coverage-intake.md
 supersedes:
-issue: "#145"
-branch: docs/cf-040-roadmap-m4-nfr
-merge_request:
+issue: "#145 (reverted); #147 (re-remediation)"
+branch: docs/cf-040-regression-m4-nfr
+merge_request: "!122 (reverted); !124"
 
 ## Claim
 
@@ -57,6 +57,8 @@ deliberately not part of this focused fix.
 |------|-------|-------------------|
 | 2026-08-12 | queued | M4 NFR coverage intake |
 | 2026-08-13 | in-mr | Issue #145; roadmap M4 NFR clause removed; systemic drift flagged for CF-041 |
+| 2026-08-13 | regressed | !122 fix reverted on `main` by the CF-041 branch merge (adjacent-row hunk 66bc26c kept the stale M4 line) |
+| 2026-08-13 | in-mr | Re-remediation: issue #147 / !124; M4 fix re-applied on current `main` |
 
 ## Completion
 

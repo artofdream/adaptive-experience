@@ -53,8 +53,8 @@ completed rows because the queue is also the audit trail.
 | 37 | CF-037 | Edge documents/routes commands, workspace, and stream while Internal orchestration only implements conversation + Shared Understanding | Medium | verified | 2026-08-12 | 2026-08-12 | #140 / !108 |
 | 38 | CF-038 | GitLab issue #137 (CF-035) remains open though CF-035 was closed via #138 / !106 | Low | verified | 2026-08-12 | 2026-08-12 | #137 closed (dup #138 / !106) |
 | 39 | CF-039 | Roadmap M4/M5 FR coverage disagrees with GitLab milestone assignments (FR-013/015/018; NFR-014) | Medium | verified | 2026-08-12 | 2026-08-12 | #141 / !110 |
-| 40 | CF-040 | Roadmap M4 coverage lists NFR-006 (M3, double-listed) and NFR-007 (M5, closed) though both are delivered in other milestones | Medium | in-mr | 2026-08-12 | 2026-08-13 | #145 / !122 |
-| 41 | CF-041 | Roadmap NFR coverage (M5/M6/M7/Future) disagrees with GitLab NFR milestone assignments; roadmap lists Future-scope NFRs in MVP milestones | Medium | in-mr | 2026-08-13 | 2026-08-13 | #146 / !123 |
+| 40 | CF-040 | Roadmap M4 coverage lists NFR-006 (M3, double-listed) and NFR-007 (M5, closed) though both are delivered in other milestones | Medium | regressed | 2026-08-12 | 2026-08-13 | #145 / !122 (reverted); #147 / !124 |
+| 41 | CF-041 | Roadmap NFR coverage (M5/M6/M7/Future) disagrees with GitLab NFR milestone assignments; roadmap lists Future-scope NFRs in MVP milestones | Medium | verified | 2026-08-13 | 2026-08-13 | #146 / !123 |
 
 Allowed statuses: `queued`, `investigating`, `ready`, `in-progress`, `in-mr`,
 `verified`, `regressed`, `duplicate`, `not-reproducible`, and `blocked`.
