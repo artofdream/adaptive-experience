@@ -39,6 +39,11 @@ plaintext production listeners are prohibited by ADR-012.
 - Message IDs remain stable across relay retries.
 - Consumers disable auto commit. A source offset advances only after the local
   idempotency transaction succeeds or a durable retry/DLQ transfer succeeds.
+- Async results are applied only when their context version exactly equals the
+  authoritative session version. The consumer locks that session row for the
+  duration of application, so a concurrent intent change cannot race the check;
+  mismatched results are recorded as `stale`, never passed to the handler, and
+  then acknowledged (FR-022 / ADR-005).
 - The reviewed registry is the source for canonical topics, partition keys,
   publishers, consumer groups, retry tiers, DLQs, and policy tests.
 - Every registry entry names an accountable owner and active semantic schema

@@ -14,7 +14,6 @@ class ConsumedRecord:
 
 class ConsumerTransaction(Protocol):
     def outcome(self, consumer_group: str, message_id: str) -> str | None: ...
-    def active_context_version(self, session_id: str) -> int | None: ...
     def apply(self, consumer_group: str, message: dict, handler: Callable[[dict], None]) -> str: ...
     def record_outcome(self, consumer_group: str, message: dict,
                        outcome: str, failure_code: str | None = None) -> None: ...
@@ -51,14 +50,10 @@ class GovernedConsumer:
             self.offsets.commit(record)
             return "duplicate"
 
-        session_id = envelope["session_id"]
-        active_version = self.transaction.active_context_version(session_id)
-        if active_version is not None and envelope["context_version"] < active_version:
-            outcome = self.transaction.apply(self.group, envelope, lambda _: None)
-            self.offsets.commit(record)
-            return "stale" if outcome == "stale" else outcome
-
         try:
+            # The transaction adapter performs the version check while holding
+            # the authoritative session lock. A preflight check here would race
+            # a concurrent intent change.
             outcome = self.transaction.apply(self.group, envelope, handler)
         except Exception as error:
             outcome = self.failures.route(self.group, record, error)

@@ -52,11 +52,8 @@ class FakeTransaction:
     def outcome(self, group, message_id):
         return self.prior
 
-    def active_context_version(self, session_id):
-        return self.version
-
     def apply(self, group, message, handler):
-        if message["context_version"] < self.version:
+        if message["context_version"] != self.version:
             return "stale"
         handler(message)
         self.applied.append(message["message_id"])
@@ -173,6 +170,24 @@ class FoundationTests(unittest.TestCase):
         record = ConsumedRecord("topic", 0, 10, {"message_id":"id", "session_id":"s", "context_version":2})
         self.assertEqual("stale", consumer.process(record, lambda _: self.fail("must not apply")))
         self.assertEqual([10], offsets.committed)
+
+    def test_future_context_is_rejected_then_offset_commits(self):
+        offsets = FakeOffsets()
+        transaction = FakeTransaction(version=3)
+        consumer = GovernedConsumer("workspace", transaction, offsets, FakeFailures(), FakePrivacy())
+        record = ConsumedRecord("topic", 0, 11, {"message_id":"id", "session_id":"s", "context_version":4})
+        self.assertEqual("stale", consumer.process(record, lambda _: self.fail("must not apply")))
+        self.assertEqual([], transaction.applied)
+        self.assertEqual([11], offsets.committed)
+
+    def test_missing_session_is_rejected_then_offset_commits(self):
+        offsets = FakeOffsets()
+        transaction = FakeTransaction(version=None)
+        consumer = GovernedConsumer("workspace", transaction, offsets, FakeFailures(), FakePrivacy())
+        record = ConsumedRecord("topic", 0, 12, {"message_id":"id", "session_id":"missing", "context_version":0})
+        self.assertEqual("stale", consumer.process(record, lambda _: self.fail("must not apply")))
+        self.assertEqual([], transaction.applied)
+        self.assertEqual([12], offsets.committed)
 
     def test_handler_failure_commits_only_after_durable_retry(self):
         offsets = FakeOffsets()
