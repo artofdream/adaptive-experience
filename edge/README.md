@@ -87,6 +87,11 @@ Internal Orchestration (#144; contract in
   no personally identifiable recipient data enters experience state or the
   governed `delivery.details.updated` event. The workspace `delivery` facet
   exposes only the timing and the reference.
+- `POST /api/v1/order` creates the FR-013 order once the product and delivery
+  decisions are assembled; it returns the `order_id` and `status`. Missing
+  decisions return 422 `order_incomplete`. Creation is idempotent per session, and
+  the workspace `order` facet surfaces `order_id` + `status`. Checkout, payment,
+  and confirmation are M5.
 - `GET /api/v1/stream` is the reconnectable SSE contract. A cold connection
   receives one `snapshot` event carrying the workspace; a reconnection with
   `Last-Event-ID` (or `?after=`) receives only the `invalidation` deltas it

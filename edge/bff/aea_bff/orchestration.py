@@ -5,7 +5,7 @@ import urllib.error
 import urllib.request
 
 from .ports import (CommandResult, ConversationResult, CorrectionResult, DeliveryResult,
-                    SelectionResult)
+                    OrderResult, SelectionResult)
 
 
 class OrchestrationUnavailable(RuntimeError):
@@ -110,6 +110,13 @@ class HttpOrchestration:
                           })
         return DeliveryResult(data["status"] == 202, data.get("code", "rejected"),
                               int(data.get("context_version", 0)), data.get("message_id"))
+
+    def create_order(self, **kwargs):
+        data = self._call("POST", f"/internal/v1/sessions/{kwargs['session_id']}/order",
+                          subject=kwargs["subject"],
+                          payload={"correlation_id": kwargs["correlation_id"]})
+        return OrderResult(data["status"] == 202, data.get("code", "rejected"),
+                           data.get("order_id"), data.get("status"))
 
     def workspace_projection(self, **kwargs):
         return self._call("GET", f"/internal/v1/sessions/{kwargs['session_id']}/workspace",

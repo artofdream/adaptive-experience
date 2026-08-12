@@ -224,6 +224,37 @@ class PsycopgRecommendationStore:
             )
 
 
+class PsycopgOrderStore:
+    """Customer order aggregate (FR-013). One order per experience session."""
+
+    def __init__(self, connection):
+        self.connection = connection
+
+    def create_or_get(self, *, session_id: str, order_id: str, context_version: int,
+                      product: dict, delivery: dict) -> dict:
+        with self.connection.transaction():
+            self.connection.execute(
+                "INSERT INTO orchestration.customer_order "
+                "(order_id,session_id,context_version,product,delivery) "
+                "VALUES (%s,%s,%s,%s::jsonb,%s::jsonb) ON CONFLICT (session_id) DO NOTHING",
+                (order_id, session_id, context_version, json.dumps(product), json.dumps(delivery)),
+            )
+            row = self.connection.execute(
+                "SELECT order_id::text,status,context_version FROM orchestration.customer_order "
+                "WHERE session_id=%s", (session_id,),
+            ).fetchone()
+        return {"order_id": row[0], "status": row[1], "context_version": row[2]}
+
+    def by_session(self, session_id: str) -> dict | None:
+        row = self.connection.execute(
+            "SELECT order_id::text,status FROM orchestration.customer_order WHERE session_id=%s",
+            (session_id,),
+        ).fetchone()
+        if row is None:
+            return None
+        return {"order_id": row[0], "status": row[1]}
+
+
 class PsycopgOutboxStore:
     def __init__(self, connection):
         self.connection = connection

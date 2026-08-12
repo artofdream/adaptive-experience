@@ -87,6 +87,11 @@ plaintext production listeners are prohibited by ADR-012.
   versioned transaction. Recipient details are reference-only - raw recipient
   name/address/contact are rejected - so no PII enters experience state or the
   event, consistent with `PayloadPrivacyGuard`.
+- Order creation (#32, FR-013): `POST .../order` assembles the completed
+  `decisions.product` and `decisions.delivery` into the `orchestration.customer_order`
+  aggregate (migration 008), one order per session (idempotent). It is a separate
+  authoritative aggregate, pre-checkout; the workspace `order` facet surfaces
+  `order_id` + `status`. Checkout, payment, and confirmation remain M5.
 - `OpenAICompatibleIntentInterpreter` supplies a vendor-neutral Generative AI
   boundary using strict JSON output and a timeout capped at 2.5 seconds.
   `AvailableIntentInterpreter` fails over to the deterministic local interpreter

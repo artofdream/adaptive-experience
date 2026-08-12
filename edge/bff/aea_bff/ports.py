@@ -45,6 +45,14 @@ class DeliveryResult:
     message_id: str | None = None
 
 
+@dataclass(frozen=True)
+class OrderResult:
+    accepted: bool
+    code: str
+    order_id: str | None = None
+    status: str | None = None
+
+
 class OrchestrationPort(Protocol):
     def ensure_session(self, *, session_id: str, subject: str) -> None: ...
     def accept_command(self, *, session_id: str, subject: str, command: dict,
@@ -54,6 +62,8 @@ class OrchestrationPort(Protocol):
                        correlation_id: str) -> SelectionResult: ...
     def update_delivery(self, *, session_id: str, subject: str, delivery: dict,
                         observed_context_version: int, correlation_id: str) -> DeliveryResult: ...
+    def create_order(self, *, session_id: str, subject: str,
+                     correlation_id: str) -> OrderResult: ...
     def workspace_projection(self, *, session_id: str, subject: str) -> dict: ...
     def stream_events(self, *, session_id: str, subject: str,
                       after_event_id: str | None) -> Iterable[dict]: ...
@@ -78,6 +88,9 @@ class UnavailableOrchestration:
 
     def update_delivery(self, **kwargs) -> DeliveryResult:
         return DeliveryResult(False, "orchestration_unavailable", 0)
+
+    def create_order(self, **kwargs) -> OrderResult:
+        return OrderResult(False, "orchestration_unavailable")
 
     def workspace_projection(self, **kwargs) -> dict:
         return {"context_version": 0, "tiles": []}
