@@ -103,7 +103,7 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         versions = [row[0] for row in self.connection.execute(
             "SELECT version FROM orchestration.schema_migration ORDER BY version"
         ).fetchall()]
-        self.assertEqual([1, 2, 3, 4, 5, 6, 7], versions)
+        self.assertEqual([1, 2, 3, 4, 5, 6, 7, 8], versions)
 
     def test_inventory_snapshots_are_monotonic_fresh_and_governed(self):
         from aea_platform.adapters import PsycopgInventoryAvailabilityStore
@@ -175,6 +175,55 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         self.assertEqual("invalidation", delta["events"][0]["kind"])
         self.assertIn("recommendations",
                       [p["projection_key"] for p in delta["events"][0]["invalidated_projections"]])
+
+    def test_order_creation_assembles_decisions_and_is_idempotent(self):
+        import asyncio
+        from aea_platform.adapters import PsycopgExperienceStateStore
+        from aea_platform.internal_api import InternalOrchestrationApp
+        from aea_platform.state import StatePatch
+
+        session_id = self.create_session()
+        app = InternalOrchestrationApp(self.connection, "internal-token")
+        order_body = json.dumps({"correlation_id": "ord"}).encode()
+
+        def drive(method, path, body=b""):
+            return asyncio.run(self._invoke_internal(app, method, path, body))
+
+        # No assembled decisions yet -> order is incomplete.
+        status, result = drive("POST", f"/internal/v1/sessions/{session_id}/order", order_body)
+        self.assertEqual(422, status)
+        self.assertEqual("order_incomplete", result["code"])
+
+        store = PsycopgExperienceStateStore(self.connection)
+        with self.connection.transaction():
+            store.apply_patch(str(session_id), 0, 1, StatePatch.create(
+                {"decisions": {"product": {"product_id": "classic-rose-dozen",
+                                           "options": {"size": "large"}}}},
+                ["decisions.product"]), [])
+        with self.connection.transaction():
+            store.apply_patch(str(session_id), 1, 1, StatePatch.create(
+                {"decisions": {"delivery": {"destination_reference": "addr-9",
+                                            "timing": {"date": "2026-09-01", "window": "morning"}}}},
+                ["decisions.delivery"]), [])
+
+        status2, created = drive("POST", f"/internal/v1/sessions/{session_id}/order", order_body)
+        self.assertEqual(202, status2)
+        self.assertEqual("created", created["status"])
+        order_id = created["order_id"]
+        self.assertEqual(1, self.connection.execute(
+            "SELECT count(*) FROM orchestration.customer_order WHERE session_id=%s",
+            (session_id,)).fetchone()[0])
+
+        _, workspace = drive("GET", f"/internal/v1/sessions/{session_id}/workspace")
+        self.assertEqual({"order_id": order_id, "status": "created"},
+                         workspace["facets"]["order"])
+
+        # Idempotent per session: a second create returns the same order.
+        _, again = drive("POST", f"/internal/v1/sessions/{session_id}/order", order_body)
+        self.assertEqual(order_id, again["order_id"])
+        self.assertEqual(1, self.connection.execute(
+            "SELECT count(*) FROM orchestration.customer_order WHERE session_id=%s",
+            (session_id,)).fetchone()[0])
 
     def test_delivery_details_write_facet_and_event_without_raw_pii(self):
         import asyncio

@@ -11,6 +11,7 @@ from .intent import (IntentAnalysisService, IntentSessionNotFound, IntentValidat
                      ReferenceIntentInterpreter, SharedUnderstandingService)
 from .inventory import (InventoryAvailabilityService, InventoryUnavailableError,
                         InventoryValidationError)
+from .order import OrderIncompleteError, OrderService
 from .recommendation import RecommendationService
 from .selection import SelectionValidationError, normalize_selection_options
 from .state import StatePatch
@@ -23,7 +24,7 @@ class InternalOrchestrationApp:
         if not token:
             raise ValueError("internal token is required")
         from .adapters import (PsycopgExperienceStateStore, PsycopgInventoryAvailabilityStore,
-                               PsycopgRecommendationStore)
+                               PsycopgOrderStore, PsycopgRecommendationStore)
         store = PsycopgExperienceStateStore(connection)
         self.store = store
         self.connection = connection
@@ -35,6 +36,7 @@ class InternalOrchestrationApp:
         self.inventory = InventoryAvailabilityService(PsycopgInventoryAvailabilityStore(connection))
         self.recommendation = RecommendationService(
             PsycopgRecommendationStore(connection), self.inventory)
+        self.order = OrderService(PsycopgOrderStore(connection))
 
     async def __call__(self, scope, receive, send):
         headers = {key.decode().lower(): value.decode() for key, value in scope.get("headers", [])}
@@ -112,6 +114,12 @@ class InternalOrchestrationApp:
                     return await self._send(send, 404, {"code": "session_not_found"})
                 body = await self._body(receive)
                 return await self._update_delivery(send, session_id, subject, loaded, body)
+            if resource == "order" and method == "POST":
+                loaded = self.store.load(session_id)
+                if loaded is None:
+                    return await self._send(send, 404, {"code": "session_not_found"})
+                body = await self._body(receive)
+                return await self._create_order(send, session_id, loaded, body)
             if resource == "stream" and method == "GET":
                 loaded = self.store.load(session_id)
                 if loaded is None:
@@ -162,6 +170,9 @@ class InternalOrchestrationApp:
         delivery = decisions.get("delivery")
         if isinstance(delivery, dict):
             facets["delivery"] = delivery
+        order = self.order.projection(session_id=session_id)
+        if order is not None:
+            facets["order"] = {"order_id": order["order_id"], "status": order["status"]}
         return {
             "context_version": int(loaded["context_version"]),
             "facets": facets,
@@ -225,6 +236,21 @@ class InternalOrchestrationApp:
             raise
         return await self._send(send, 202, {"code": "accepted",
             "context_version": new_version, "message_id": message_id})
+
+    async def _create_order(self, send, session_id: str, loaded: dict, body: dict):
+        correlation_id = body.get("correlation_id")
+        if not isinstance(correlation_id, str) or not correlation_id.strip():
+            return await self._send(send, 422, {"code": "validation_failed"})
+        decisions = (loaded.get("state") or {}).get("decisions") or {}
+        try:
+            # An order requires the assembled product (#142/#122) and delivery (#33)
+            # decisions; it is a separate authoritative aggregate (pre-checkout).
+            result = self.order.create(session_id=session_id, decisions=decisions,
+                                       context_version=int(loaded["context_version"]))
+        except OrderIncompleteError as error:
+            return await self._send(send, 422, {"code": "order_incomplete", "missing": error.missing})
+        return await self._send(send, 202, {"code": "accepted",
+            "order_id": result["order_id"], "status": result["status"]})
 
     async def _update_delivery(self, send, session_id: str, subject: str,
                                loaded: dict, body: dict):

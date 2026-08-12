@@ -5,7 +5,7 @@ import unittest
 
 from edge.bff.aea_bff.app import BffApp
 from edge.bff.aea_bff.ports import (CommandResult, ConversationResult, CorrectionResult,
-                                    DeliveryResult, SelectionResult)
+                                    DeliveryResult, OrderResult, SelectionResult)
 from edge.bff.aea_bff.security import FixedWindowRateLimiter, StaticTokenAuthenticator
 
 
@@ -27,6 +27,9 @@ class FakeOrchestration:
     def update_delivery(self, **kwargs):
         self.delivery = kwargs["delivery"]
         return DeliveryResult(True, "accepted", kwargs["observed_context_version"] + 1, "delivery-1")
+
+    def create_order(self, **kwargs):
+        return OrderResult(True, "accepted", "order-9", "created")
 
     def workspace_projection(self, **kwargs):
         return {"context_version": 7, "secret": "omit",
@@ -195,6 +198,22 @@ class PerimeterTests(unittest.TestCase):
         self.assertEqual({"destination_reference": "addr-ref",
                           "timing": {"date": "2026-09-01", "window": "morning"}},
                          shaped["facets"]["delivery"])
+
+    def test_order_creation_requires_csrf(self):
+        cookie, csrf = self.session()
+        json_headers = {**self.auth, "cookie": cookie, "content-type": "application/json"}
+        self.assertEqual(403, self.call("POST", "/api/v1/order", json_headers, b"{}")[0])
+        headers = {**json_headers, "x-csrf-token": csrf}
+        status, _, body = self.call("POST", "/api/v1/order", headers, b"{}")
+        self.assertEqual(202, status)
+        payload = json.loads(body)
+        self.assertEqual("order-9", payload["order_id"])
+        self.assertEqual("created", payload["status"])
+
+    def test_workspace_order_facet_is_least_data(self):
+        shaped = BffApp._least_data_workspace({"context_version": 4, "facets": {"order": {
+            "order_id": "o1", "status": "created", "secret": "omit"}}})
+        self.assertEqual({"order_id": "o1", "status": "created"}, shaped["facets"]["order"])
 
     def test_stream_reconnect(self):
         cookie, _ = self.session()
