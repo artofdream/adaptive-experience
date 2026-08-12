@@ -2,7 +2,7 @@
 
 tags: #aea #coherence
 finding_id: CF-040
-status: regressed
+status: verified
 severity: medium
 source_assessment: research/assessments/2026-08-12-m4-nfr-coverage-intake.md
 supersedes:
@@ -59,6 +59,7 @@ deliberately not part of this focused fix.
 | 2026-08-13 | in-mr | Issue #145; roadmap M4 NFR clause removed; systemic drift flagged for CF-041 |
 | 2026-08-13 | regressed | !122 fix reverted on `main` by the CF-041 branch merge (adjacent-row hunk 66bc26c kept the stale M4 line) |
 | 2026-08-13 | in-mr | Re-remediation: issue #147 / !124; M4 fix re-applied on current `main` |
+| 2026-08-13 | verified | !124 merged (main dc799a4); grep confirms M4 row = `FR-013, FR-014, FR-015`; CF-041 rows intact; `check_coherence.py` passes |
 
 ## Completion
 
