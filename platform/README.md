@@ -74,7 +74,13 @@ plaintext production listeners are prohibited by ADR-012.
   older-than-one-minute data as unknown, publish the closed
   `inventory.availability.validated` contract through the transactional outbox,
   and fail selection-time checks closed unless the product is currently
-  available (FR-011 / NFR-009). Recommendation ranking remains in #26.
+  available (FR-011 / NFR-009).
+- `RecommendationService` ranks a deterministic reference catalog against Shared
+  Understanding facets (occasion, budget, style, flower preference), asks
+  Inventory for freshness-aware availability, and publishes
+  `product.recommendations.ready` with eligible product IDs and ranking through
+  the transactional outbox (FR-007 / NFR-006). Catalog ownership remains outside
+  this boundary; the reference catalog is a local ranking fixture.
 - Relay claims use `FOR UPDATE SKIP LOCKED`; a row becomes published only after
   the Kafka producer returns an `acks=all` delivery acknowledgement.
 - Message IDs remain stable across relay retries.

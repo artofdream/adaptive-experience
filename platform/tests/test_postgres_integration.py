@@ -133,6 +133,47 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         self.assertEqual("inventory.availability.validated", event["topic"])
         self.assertEqual(result.availability, event["payload"]["availability"])
 
+    def test_recommendations_publish_ready_for_available_ranked_catalog(self):
+        from aea_platform.adapters import (
+            PsycopgInventoryAvailabilityStore,
+            PsycopgRecommendationStore,
+        )
+        from aea_platform.inventory import AvailabilitySnapshot, InventoryAvailabilityService
+        from aea_platform.recommendation import RecommendationService
+
+        session_id = self.create_session()
+        now = datetime(2026, 8, 12, 12, 0, tzinfo=timezone.utc)
+        inventory = InventoryAvailabilityService(
+            PsycopgInventoryAvailabilityStore(self.connection), now=lambda: now,
+            new_id=lambda: uuid.UUID("00000000-0000-0000-0000-000000000031"),
+        )
+        for product_id, qty in (("classic-rose-dozen", 5), ("lilac-bouquet", 2),
+                                ("budget-mixed-bunch", 0)):
+            inventory.record(AvailabilitySnapshot(product_id, qty, 1, now))
+        service = RecommendationService(
+            PsycopgRecommendationStore(self.connection), inventory, now=lambda: now,
+            new_id=lambda: uuid.UUID("00000000-0000-0000-0000-000000000026"),
+        )
+        result = service.generate(
+            session_id=str(session_id), observed_context_version=0,
+            correlation_id="rec-integration", subject_reference="subject",
+            intent={"occasion": "birthday", "budget": 100, "flower_preference": "roses"},
+        )
+        self.assertEqual(["classic-rose-dozen", "lilac-bouquet"], result.eligible_product_ids)
+        topics = [row[0] for row in self.connection.execute(
+            "SELECT topic FROM orchestration.outbox_message WHERE session_id=%s "
+            "ORDER BY topic", (session_id,),
+        ).fetchall()]
+        self.assertEqual(
+            ["inventory.availability.validated", "product.recommendations.ready"], topics
+        )
+        ready = self.connection.execute(
+            "SELECT envelope FROM orchestration.outbox_message WHERE message_id=%s",
+            (result.message_id,),
+        ).fetchone()[0]
+        self.assertEqual(result.eligible_product_ids, ready["payload"]["eligible_product_ids"])
+        self.assertEqual("recommendation", ready["source"])
+
     def test_intent_analysis_updates_shared_understanding_and_suggestions_atomically(self):
         from aea_platform.adapters import PsycopgExperienceStateStore
         from aea_platform.intent import IntentAnalysisService, ReferenceIntentInterpreter

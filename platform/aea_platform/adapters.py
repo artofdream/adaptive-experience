@@ -114,6 +114,67 @@ class PsycopgInventoryAvailabilityStore:
             return availability
 
 
+class PsycopgRecommendationStore:
+    """Recommendation authority publication for product.recommendations.ready."""
+
+    def __init__(self, connection):
+        self.connection = connection
+
+    def enqueue_ready(
+        self,
+        *,
+        session_id: str,
+        expected_context_version: int,
+        message_id: str,
+        correlation_id: str,
+        subject_reference: str,
+        published_at: datetime,
+        eligible_product_ids: list[str],
+        ranking: list[dict],
+    ) -> None:
+        with self.connection.transaction():
+            session = self.connection.execute(
+                "SELECT context_version FROM orchestration.experience_session "
+                "WHERE session_id=%s AND lifecycle_status='active' FOR UPDATE",
+                (session_id,),
+            ).fetchone()
+            if session is None or session[0] != expected_context_version:
+                raise RuntimeError("stale experience context")
+            payload = {
+                "eligible_product_ids": list(eligible_product_ids),
+                "ranking": list(ranking),
+            }
+            envelope = {
+                "message_id": message_id,
+                "topic": "product.recommendations.ready",
+                "message_type": "event",
+                "schema_version": "1.0.0",
+                "session_id": session_id,
+                "correlation_id": correlation_id,
+                "source": "recommendation",
+                "context_version": expected_context_version,
+                "publication_time": published_at.isoformat(),
+                "security_context": {
+                    "classification": "confidential",
+                    "subject_reference": subject_reference,
+                },
+                "payload": payload,
+                "outcome": {},
+            }
+            self.connection.execute(
+                "INSERT INTO orchestration.outbox_message "
+                "(message_id,session_id,context_version,topic,aggregate_key,envelope) "
+                "VALUES (%s,%s,%s,'product.recommendations.ready',%s,%s::jsonb)",
+                (
+                    message_id,
+                    session_id,
+                    expected_context_version,
+                    session_id,
+                    json.dumps(envelope),
+                ),
+            )
+
+
 class PsycopgOutboxStore:
     def __init__(self, connection):
         self.connection = connection
