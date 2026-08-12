@@ -10,13 +10,15 @@ Accepted ADRs (see `docs/06-adr/`):
 | ADR-004 | Customer support overlay (ASO MVP; T-09 Future) |
 | ADR-005 | Latest relevant intent wins |
 | ADR-006 | MVP customization boundary |
-| ADR-007 | Initial deployment topology (modular monolith + BFF; broker product deferred) |
+| ADR-007 | Initial deployment topology (modular monolith + BFF) |
 | ADR-008 | Contract-first messaging and transactional outbox |
 | ADR-009 | Experience-state ownership and persistence |
 | ADR-010 | Synchronous command and asynchronous event boundaries |
+| ADR-011 | PostgreSQL experience-state datastore |
+| ADR-012 | Apache Kafka external message broker |
 
-ADR-007 is Accepted on main. Broker **product** selection remains deferred
-(CF-016); the Kafka draft stays in `research/adr-candidates/`.
+ADR-011 and ADR-012 are Accepted. PostgreSQL is the selected experience-state
+datastore and Apache Kafka is the selected external message broker for the MVP.
 
 ## Canonical docs
 
