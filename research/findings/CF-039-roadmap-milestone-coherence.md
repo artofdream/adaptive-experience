@@ -56,7 +56,7 @@ tracker to the roadmap and correct the one roadmap error:
 | 2026-08-12 | queued | Pre-M4 hygiene reconciliation intake |
 | 2026-08-12 | investigating | Reproduced live: #32->M5, #34->M6, #37->M4; NFR-014 double-listed |
 | 2026-08-12 | in-mr | Issue #141; roadmap M5 NFR-014 removed; GitLab milestones reassigned |
-| 2026-08-12 | verified | !110 merged to `main` (6184c22); #141 closed; guards pass; consolidated duplicate intake stub note |
+| 2026-08-12 | verified | !110 merged to `main` (6184c22); live milestones confirm #32/#33/#34 -> M4, #37/#38/#55 -> M5, #56 -> Future Backlog; `check_coherence.py` passes |
 
 ## Assessment history
 
@@ -73,5 +73,5 @@ tracker to the roadmap and correct the one roadmap error:
 - [x] Focused fix committed and pushed
 - [x] Relevant checks passed
 - [x] MR includes `Closes #N`, summary, and test plan
-- [x] MR merged (!110 -> `main` 6184c22)
-- [x] Post-merge verification passed on `main` (check_coherence.py + check_topic_schemas.py)
+- [x] MR merged
+- [x] Post-merge verification passed on `main`
