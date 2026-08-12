@@ -48,7 +48,8 @@ completed rows because the queue is also the audit trail.
 | 32 | CF-031 | `CLAUDE.md` described the repository as docs-only despite executable `platform/` and `edge/` areas | Medium | verified | 2026-08-12 | 2026-08-12 | #133 / !100 |
 | 33 | CF-033 | `platform/README.md` said M2 behavior was not implemented despite merged M2 services | Medium | verified | 2026-08-12 | 2026-08-12 | #134 / !101 |
 | 34 | CF-032 | Root README repository navigation omitted `platform/` and `edge/` | Low | verified | 2026-08-12 | 2026-08-12 | #135 / !102 |
-| 35 | CF-035 | Repo wiki/architecture-decision-records.md still omits ADR-011/012 and retains broker-deferred wording after CF-030 live-wiki verify | Medium | in-mr | 2026-08-12 | 2026-08-12 | #138 / !106 |
+| 35 | CF-035 | Repo wiki/architecture-decision-records.md still omits ADR-011/012 and retains broker-deferred wording after CF-030 live-wiki verify | Medium | verified | 2026-08-12 | 2026-08-12 | #138 / !106 |
+| 36 | CF-036 | Roadmap Future Backlog lists FR-007 under CRM analytics while FR-007 is MVP Recommendations (M3) | Medium | in-mr | 2026-08-12 | 2026-08-12 | #139 / !107 |
 
 Allowed statuses: `queued`, `investigating`, `ready`, `in-progress`, `in-mr`,
 `verified`, `regressed`, `duplicate`, `not-reproducible`, and `blocked`.
