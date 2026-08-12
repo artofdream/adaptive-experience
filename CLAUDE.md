@@ -1,6 +1,9 @@
 # Claude — Adaptive Experience Architecture
 
-Docs-only GitLab repository (AEA / Lily's Florist reference).
+Architecture and executable reference-foundation repository for AEA, with
+Lily's Florist as the reference design. Canonical requirements and design live
+under `docs/` and `implementations/`; product-neutral runtime foundations live
+under `platform/` and `edge/`.
 
 ## Source of truth
 
