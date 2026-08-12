@@ -26,7 +26,7 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
 
     def setUp(self):
         with self.connection.transaction():
-            self.connection.execute("TRUNCATE orchestration.message_audit, orchestration.outbox_message, "
+            self.connection.execute("TRUNCATE inventory.product_availability, orchestration.message_audit, orchestration.outbox_message, "
                                     "orchestration.experience_invalidation, orchestration.consumed_message, "
                                     "orchestration.experience_session CASCADE")
 
@@ -103,7 +103,35 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         versions = [row[0] for row in self.connection.execute(
             "SELECT version FROM orchestration.schema_migration ORDER BY version"
         ).fetchall()]
-        self.assertEqual([1, 2, 3, 4, 5, 6], versions)
+        self.assertEqual([1, 2, 3, 4, 5, 6, 7], versions)
+
+    def test_inventory_snapshots_are_monotonic_fresh_and_governed(self):
+        from aea_platform.adapters import PsycopgInventoryAvailabilityStore
+        from aea_platform.inventory import AvailabilitySnapshot, InventoryAvailabilityService
+
+        session_id = self.create_session()
+        now = datetime(2026, 8, 12, 12, 0, tzinfo=timezone.utc)
+        store = PsycopgInventoryAvailabilityStore(self.connection)
+        service = InventoryAvailabilityService(store, now=lambda: now,
+            new_id=lambda: uuid.UUID("00000000-0000-0000-0000-000000000030"))
+        self.assertEqual("applied", service.record(AvailabilitySnapshot("rose-1", 3, 2, now)))
+        self.assertEqual("duplicate", service.record(AvailabilitySnapshot("rose-1", 3, 2, now)))
+        self.assertEqual("conflict", service.record(AvailabilitySnapshot("rose-1", 4, 2, now)))
+        self.assertEqual("stale", service.record(AvailabilitySnapshot("rose-1", 0, 1, now)))
+        self.assertEqual("applied", service.record(AvailabilitySnapshot(
+            "old-1", 2, 1, datetime(2026, 8, 12, 11, 58, tzinfo=timezone.utc))))
+        result = service.validate(session_id=str(session_id),
+            product_ids=["rose-1", "old-1", "missing"],
+            observed_context_version=0, correlation_id="inventory-test", subject_reference="subject")
+        self.assertEqual("available", result.availability["rose-1"]["status"])
+        self.assertEqual({"status": "unknown", "freshness": "stale", "source_version": 1},
+                         result.availability["old-1"])
+        self.assertEqual("unknown", result.availability["missing"]["status"])
+        event = self.connection.execute(
+            "SELECT envelope FROM orchestration.outbox_message WHERE message_id=%s", (result.message_id,)
+        ).fetchone()[0]
+        self.assertEqual("inventory.availability.validated", event["topic"])
+        self.assertEqual(result.availability, event["payload"]["availability"])
 
     def test_intent_analysis_updates_shared_understanding_and_suggestions_atomically(self):
         from aea_platform.adapters import PsycopgExperienceStateStore

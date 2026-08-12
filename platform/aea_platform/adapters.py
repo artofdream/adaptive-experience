@@ -37,6 +37,83 @@ class PsycopgExperienceStateStore:
         return {"state_schema_version": row[0], "context_version": row[1], "state": row[2]}
 
 
+class PsycopgInventoryAvailabilityStore:
+    """Monotonic inventory authority with atomic validation publication."""
+
+    def __init__(self, connection):
+        self.connection = connection
+
+    def record_snapshot(self, product_id: str, available_quantity: int,
+                        source_version: int, observed_at: datetime) -> str:
+        with self.connection.transaction():
+            current = self.connection.execute(
+                "SELECT available_quantity,source_version,observed_at FROM inventory.product_availability "
+                "WHERE product_id=%s FOR UPDATE", (product_id,),
+            ).fetchone()
+            if current is not None and source_version < current[1]:
+                return "stale"
+            if current is not None and source_version == current[1]:
+                return "duplicate" if (available_quantity, observed_at) == (current[0], current[2]) else "conflict"
+            self.connection.execute(
+                "INSERT INTO inventory.product_availability "
+                "(product_id,available_quantity,source_version,observed_at) VALUES (%s,%s,%s,%s) "
+                "ON CONFLICT (product_id) DO UPDATE SET available_quantity=EXCLUDED.available_quantity, "
+                "source_version=EXCLUDED.source_version,observed_at=EXCLUDED.observed_at,updated_at=clock_timestamp()",
+                (product_id, available_quantity, source_version, observed_at),
+            )
+            return "applied"
+
+    def validate_and_enqueue(self, *, session_id: str, expected_context_version: int,
+                             product_ids: tuple[str, ...], freshness_cutoff: datetime,
+                             message_id: str, correlation_id: str, subject_reference: str,
+                             published_at: datetime) -> dict[str, dict]:
+        with self.connection.transaction():
+            session = self.connection.execute(
+                "SELECT context_version FROM orchestration.experience_session "
+                "WHERE session_id=%s AND lifecycle_status='active' FOR UPDATE", (session_id,),
+            ).fetchone()
+            if session is None or session[0] != expected_context_version:
+                raise RuntimeError("stale experience context")
+            rows = self.connection.execute(
+                "SELECT product_id,available_quantity,source_version,observed_at "
+                "FROM inventory.product_availability WHERE product_id=ANY(%s)",
+                (list(product_ids),),
+            ).fetchall()
+            indexed = {row[0]: row for row in rows}
+            availability = {}
+            for product_id in product_ids:
+                row = indexed.get(product_id)
+                if row is None:
+                    availability[product_id] = {"status": "unknown", "freshness": "missing"}
+                elif row[3] < freshness_cutoff:
+                    availability[product_id] = {"status": "unknown", "freshness": "stale",
+                                                "source_version": row[2]}
+                else:
+                    availability[product_id] = {
+                        "status": "available" if row[1] > 0 else "unavailable",
+                        "freshness": "current", "available_quantity": row[1],
+                        "source_version": row[2], "observed_at": row[3].isoformat(),
+                    }
+            payload = {"product_ids": list(product_ids), "availability": availability}
+            envelope = {
+                "message_id": message_id, "topic": "inventory.availability.validated",
+                "message_type": "event", "schema_version": "1.0.0",
+                "session_id": session_id, "correlation_id": correlation_id,
+                "source": "inventory", "context_version": expected_context_version,
+                "publication_time": published_at.isoformat(),
+                "security_context": {"classification": "confidential",
+                                     "subject_reference": subject_reference},
+                "payload": payload, "outcome": {},
+            }
+            self.connection.execute(
+                "INSERT INTO orchestration.outbox_message "
+                "(message_id,session_id,context_version,topic,aggregate_key,envelope) "
+                "VALUES (%s,%s,%s,'inventory.availability.validated',%s,%s::jsonb)",
+                (message_id, session_id, expected_context_version, session_id, json.dumps(envelope)),
+            )
+            return availability
+
+
 class PsycopgOutboxStore:
     def __init__(self, connection):
         self.connection = connection
