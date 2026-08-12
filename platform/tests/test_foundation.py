@@ -13,6 +13,7 @@ from aea_platform.adapters import KafkaFailureRouter
 from aea_platform.consumer import ConsumedRecord, GovernedConsumer
 from aea_platform.outbox import OutboxRecord, OutboxRelay
 from aea_platform.policy import KafkaPolicy
+from aea_platform.state import StatePatch, merge_state
 
 
 class FakeOutbox:
@@ -232,6 +233,33 @@ class FoundationTests(unittest.TestCase):
         record = ConsumedRecord("customer.message.submitted", 0, 1, message)
         self.assertEqual("dead_letter", router.route("workspace", record, ValueError()))
         self.assertEqual("customer.message.submitted.dlq.workspace", publisher.messages[0][0])
+
+    def test_deep_patch_preserves_completed_and_unaffected_state(self):
+        current = {
+            "shared_understanding": {"occasion": "birthday", "budget": 60},
+            "decisions": {"product": {"id": "rose-1", "completed": True}},
+            "tiles": {"delivery": {"status": "complete"}},
+        }
+        result = merge_state(current, {"shared_understanding": {"budget": 75}})
+        self.assertEqual("birthday", result["shared_understanding"]["occasion"])
+        self.assertEqual(75, result["shared_understanding"]["budget"])
+        self.assertEqual(current["decisions"], result["decisions"])
+        self.assertEqual(current["tiles"], result["tiles"])
+        self.assertEqual(60, current["shared_understanding"]["budget"])
+
+    def test_state_patch_requires_explicit_changed_facets(self):
+        with self.assertRaises(ValueError):
+            StatePatch.create({"shared_understanding": {"budget": 75}}, [])
+        with self.assertRaises(ValueError):
+            StatePatch.create(
+                {"shared_understanding": {"budget": 75}},
+                ["shared_understanding.occasion"],
+            )
+        patch = StatePatch.create(
+            {"shared_understanding": {"budget": 75}},
+            ["shared_understanding.budget", "shared_understanding.budget"],
+        )
+        self.assertEqual(("shared_understanding.budget",), patch.changed_facets)
 
 
 if __name__ == "__main__":
