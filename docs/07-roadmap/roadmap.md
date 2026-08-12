@@ -37,7 +37,7 @@ The delivery pipeline is structured into 8 implementation milestones (M0–M7) p
 | **M5** | Checkout & Confirmation | Deliver T-06 Order Summary breakdown, T-07 Payment & Checkout integration, and Order Confirmation | FR-018, FR-019; NFR-013, NFR-014 |
 | **M6** | Tracking & Automated Support | Deliver approved product/policy answers, T-08 Order Tracking timeline, Contact Florist action, and Automated Support Overlay (ASO / FR-009) | FR-005, FR-009, FR-023; NFR-008 |
 | **M7** | MVP Hardening | End-to-end integration, availability and performance optimization, security audit, reference deployment validation, and final verification of the governance, auditability, and privacy controls introduced in M1 | NFR-003, NFR-010, NFR-011, NFR-012; final validation and hardening of NFR-015, NFR-016, NFR-017 |
-| **Future** | Future Backlog | Advanced compositional customization (FR-003), human support escalation (FR-006/T-09), CRM analytics (FR-007, FR-008, FR-016, FR-017), inventory forecasting (FR-012) | FR-003, FR-006, FR-007, FR-008, FR-010, FR-012, FR-016, FR-017; NFR-014 |
+| **Future** | Future Backlog | Advanced compositional customization (FR-003), human support escalation (FR-006/T-09), history-based recommendations (FR-008), CRM analytics (FR-016, FR-017), inventory forecasting (FR-012) | FR-003, FR-006, FR-008, FR-010, FR-012, FR-016, FR-017; NFR-014 |
 
 ## Notes
 - Secure Payment / Checkout (FR-019) and the itemized Order Summary (FR-018) are
