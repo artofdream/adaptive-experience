@@ -24,6 +24,12 @@ from aea_platform.intent import (
     ReferenceIntentInterpreter,
     SharedUnderstandingService,
 )
+from aea_platform.inventory import (
+    AvailabilitySnapshot,
+    InventoryAvailabilityService,
+    InventoryUnavailableError,
+    InventoryValidationError,
+)
 from aea_platform.consumer import ConsumedRecord, GovernedConsumer
 from aea_platform.outbox import OutboxRecord, OutboxRelay
 from aea_platform.policy import KafkaPolicy
@@ -112,7 +118,50 @@ class FakePrivacy:
         return None
 
 
+class FakeInventoryStore:
+    def __init__(self, availability=None):
+        self.availability = availability or {}
+        self.recorded = []
+        self.validations = []
+
+    def record_snapshot(self, *values):
+        self.recorded.append(values)
+        return "applied"
+
+    def validate_and_enqueue(self, **values):
+        self.validations.append(values)
+        return {product_id: self.availability.get(
+            product_id, {"status": "unknown", "freshness": "missing"})
+                for product_id in values["product_ids"]}
+
+
 class FoundationTests(unittest.TestCase):
+    def test_inventory_records_validated_snapshot_and_deduplicates_request(self):
+        now = datetime(2026, 8, 12, 12, 0, tzinfo=timezone.utc)
+        store = FakeInventoryStore({"rose-1": {"status": "available", "freshness": "current"}})
+        service = InventoryAvailabilityService(store, now=lambda: now)
+        self.assertEqual("applied", service.record(AvailabilitySnapshot("rose-1", 4, 7, now)))
+        result = service.validate(session_id="session", product_ids=["rose-1", "rose-1"],
+            observed_context_version=3, correlation_id="correlation", subject_reference="subject")
+        self.assertEqual(("rose-1",), store.validations[0]["product_ids"])
+        self.assertEqual("available", result.availability["rose-1"]["status"])
+
+    def test_inventory_selection_fails_closed_for_unknown_or_stale_product(self):
+        service = InventoryAvailabilityService(FakeInventoryStore())
+        with self.assertRaises(InventoryUnavailableError):
+            service.validate(session_id="session", product_ids=["missing"],
+                observed_context_version=0, correlation_id="correlation",
+                subject_reference="subject", purpose="selection")
+
+    def test_inventory_rejects_invalid_authority_inputs(self):
+        service = InventoryAvailabilityService(FakeInventoryStore())
+        now = datetime(2026, 8, 12, tzinfo=timezone.utc)
+        for snapshot in (AvailabilitySnapshot("", 1, 1, now),
+                         AvailabilitySnapshot("rose", -1, 1, now),
+                         AvailabilitySnapshot("rose", 1, -1, now)):
+            with self.assertRaises(InventoryValidationError):
+                service.record(snapshot)
+
     def test_reference_interpreter_extracts_supported_intent_and_prompts_for_gaps(self):
         result = ReferenceIntentInterpreter().interpret(
             "Bright roses for Mum's birthday tomorrow, budget €75", {}

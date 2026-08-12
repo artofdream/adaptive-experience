@@ -2,9 +2,10 @@
 
 This directory contains the executable, product-neutral platform foundation
 defined by ADR-008, ADR-011, and ADR-012. It implements the M1 PostgreSQL
-outbox/Kafka/governance baseline and the M2 Conversation, Intent, Shared
+outbox/Kafka/governance baseline, the M2 Conversation, Intent, Shared
 Understanding, context-version, state-preservation, correction, stale-result,
-and provider-neutral AI orchestration services. Florist presentation and domain
+and provider-neutral AI orchestration services, and the M3 authoritative,
+freshness-aware inventory availability boundary. Florist presentation and domain
 copy remain outside this boundary.
 
 ## Local startup
@@ -68,6 +69,12 @@ plaintext production listeners are prohibited by ADR-012.
   `/internal/v1/ai/health` reports primary/fallback mode without exposing secrets
   (FR-004). A concrete vendor remains a deployment choice, not an architecture
   dependency.
+- `InventoryAvailabilityService` records monotonic, versioned product snapshots
+  in the inventory-owned PostgreSQL schema. Validation reads treat missing or
+  older-than-one-minute data as unknown, publish the closed
+  `inventory.availability.validated` contract through the transactional outbox,
+  and fail selection-time checks closed unless the product is currently
+  available (FR-011 / NFR-009). Recommendation ranking remains in #26.
 - Relay claims use `FOR UPDATE SKIP LOCKED`; a row becomes published only after
   the Kafka producer returns an `acks=all` delivery acknowledgement.
 - Message IDs remain stable across relay retries.
