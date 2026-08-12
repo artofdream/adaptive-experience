@@ -23,7 +23,19 @@ TOPICS: list[tuple[str, str, dict, list[str]]] = [
     (
         "experience.intent.updated",
         "1.0.0",
-        {"structured_intent": {"type": "object"}},
+        {"structured_intent": {
+            "type": "object",
+            "properties": {
+                "occasion": {"type": "string", "minLength": 1, "maxLength": 120},
+                "budget": {"type": "number", "minimum": 1, "maximum": 10000},
+                "recipient": {"type": "string", "minLength": 1, "maxLength": 120},
+                "style": {"type": "string", "minLength": 1, "maxLength": 120},
+                "flower_preference": {"type": "string", "minLength": 1, "maxLength": 120},
+                "timing": {"type": "string", "minLength": 1, "maxLength": 120},
+            },
+            "minProperties": 1,
+            "additionalProperties": False,
+        }},
         ["structured_intent"],
     ),
     (

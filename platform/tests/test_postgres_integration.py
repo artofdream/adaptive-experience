@@ -103,7 +103,71 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         versions = [row[0] for row in self.connection.execute(
             "SELECT version FROM orchestration.schema_migration ORDER BY version"
         ).fetchall()]
-        self.assertEqual([1, 2, 3, 4, 5], versions)
+        self.assertEqual([1, 2, 3, 4, 5, 6], versions)
+
+    def test_intent_analysis_updates_shared_understanding_and_suggestions_atomically(self):
+        from aea_platform.adapters import PsycopgExperienceStateStore
+        from aea_platform.intent import IntentAnalysisService, ReferenceIntentInterpreter
+
+        session_id = self.create_session()
+        self.connection.execute(
+            "UPDATE orchestration.experience_session SET state=%s::jsonb WHERE session_id=%s",
+            (json.dumps({"decisions": {"product": {"id": "kept", "completed": True}}}),
+             session_id),
+        )
+        service = IntentAnalysisService(
+            PsycopgExperienceStateStore(self.connection), ReferenceIntentInterpreter(),
+            now=lambda: datetime(2026, 8, 12, tzinfo=timezone.utc),
+            new_id=lambda: uuid.UUID("00000000-0000-0000-0000-000000000021"),
+        )
+        result = service.analyze(
+            session_id=str(session_id),
+            message_text="Bright roses for Mum's birthday tomorrow, budget €75",
+            observed_context_version=0, correlation_id="intent-correlation",
+            subject_reference="subject-reference",
+        )
+        self.assertEqual(1, result.context_version)
+        restored = PsycopgExperienceStateStore(self.connection).load(str(session_id))
+        self.assertEqual("kept", restored["state"]["decisions"]["product"]["id"])
+        self.assertEqual("birthday", restored["state"]["shared_understanding"]["occasion"])
+        self.assertEqual(75.0, restored["state"]["shared_understanding"]["budget"])
+        self.assertEqual([], restored["state"]["thought_completion"]["suggestions"])
+        invalidated = {row[0] for row in self.connection.execute(
+            "SELECT projection_key FROM orchestration.experience_invalidation "
+            "WHERE session_id=%s AND context_version=1", (session_id,),
+        ).fetchall()}
+        self.assertEqual({"recommendations", "order_summary", "delivery", "conversation"},
+                         invalidated)
+        outbox = self.connection.execute(
+            "SELECT topic,context_version,envelope FROM orchestration.outbox_message "
+            "WHERE session_id=%s", (session_id,),
+        ).fetchone()
+        self.assertEqual("experience.intent.updated", outbox[0])
+        self.assertEqual(result.structured_intent, outbox[2]["payload"]["structured_intent"])
+
+    def test_intent_analysis_stale_writer_rolls_back_state_and_event(self):
+        from aea_platform.adapters import PsycopgExperienceStateStore
+        from aea_platform.intent import IntentAnalysisService, ReferenceIntentInterpreter
+
+        session_id = self.create_session()
+        service = IntentAnalysisService(
+            PsycopgExperienceStateStore(self.connection), ReferenceIntentInterpreter()
+        )
+        service.analyze(session_id=str(session_id), message_text="birthday",
+                        observed_context_version=0, correlation_id="first",
+                        subject_reference="subject")
+        with self.assertRaises(self.psycopg.errors.SerializationFailure):
+            service.analyze(session_id=str(session_id), message_text="budget €50",
+                            observed_context_version=0, correlation_id="stale",
+                            subject_reference="subject")
+        self.connection.rollback()
+        restored = PsycopgExperienceStateStore(self.connection).load(str(session_id))
+        self.assertEqual("birthday", restored["state"]["shared_understanding"]["occasion"])
+        self.assertNotIn("budget", restored["state"]["shared_understanding"])
+        self.assertEqual(1, self.connection.execute(
+            "SELECT count(*) FROM orchestration.outbox_message WHERE session_id=%s",
+            (session_id,),
+        ).fetchone()[0])
 
     def test_conversation_submission_commits_transcript_invalidation_and_outbox(self):
         from aea_platform.adapters import PsycopgExperienceStateStore

@@ -43,6 +43,13 @@ plaintext production listeners are prohibited by ADR-012.
   governed `customer.message.submitted` outbox event in the same optimistic
   transaction. The acknowledgement does not wait for or invent an AI result
   (FR-001 / ADR-010).
+- `IntentAnalysisService` applies provider-neutral `IntentInterpreter` output
+  only to the six Shared Understanding facets, refreshes up to three optional
+  thought-completion prompts, and publishes `experience.intent.updated` in the
+  same versioned transaction. `ReferenceIntentInterpreter` supplies a
+  deterministic local implementation without coupling orchestration to an AI
+  vendor; product eligibility and ranking remain authoritative downstream
+  concerns (FR-002 / ADR-003).
 - Relay claims use `FOR UPDATE SKIP LOCKED`; a row becomes published only after
   the Kafka producer returns an `acks=all` delivery acknowledgement.
 - Message IDs remain stable across relay retries.
