@@ -224,6 +224,44 @@ class BffApp:
                 "context_version": result.context_version,
             }, correlation_id)
 
+        if path == "/api/v1/delivery" and method == "POST":
+            if headers.get("content-type", "").split(";", 1)[0].strip() != "application/json":
+                return await self._error(send, 415, "unsupported_media_type", correlation_id)
+            body = await self._body(receive, headers)
+            if isinstance(body, tuple):
+                return await self._error(send, body[0], body[1], correlation_id)
+            try:
+                request = json.loads(body)
+            except (UnicodeDecodeError, json.JSONDecodeError):
+                return await self._error(send, 400, "invalid_json", correlation_id)
+            if (not isinstance(request, dict)
+                    or set(request) - {"delivery", "observed_context_version"}
+                    or "delivery" not in request or "observed_context_version" not in request):
+                return await self._error(send, 422, "invalid_delivery_shape", correlation_id)
+            delivery = request["delivery"]
+            observed = request["observed_context_version"]
+            # Reference-only recipient data (FR-014): reject raw PII keys at the edge
+            # by allowing only timing and destination_reference; Orchestration
+            # re-validates authoritatively.
+            if (not isinstance(delivery, dict)
+                    or set(delivery) - {"timing", "destination_reference"}
+                    or not isinstance(delivery.get("destination_reference"), str)
+                    or not isinstance(delivery.get("timing"), dict)
+                    or not isinstance(observed, int) or isinstance(observed, bool) or observed < 0):
+                return await self._error(send, 422, "invalid_delivery_shape", correlation_id)
+            try:
+                result = self.orchestration.update_delivery(
+                    session_id=session.session_id, subject=subject, delivery=delivery,
+                    observed_context_version=observed, correlation_id=correlation_id)
+            except OrchestrationUnavailable:
+                return await self._error(send, 503, "orchestration_unavailable", correlation_id)
+            status = 202 if result.accepted else (409 if result.code == "stale_context" else 422)
+            return await self._json(send, status, {
+                "accepted": result.accepted, "code": result.code,
+                "message_id": result.message_id, "correlation_id": correlation_id,
+                "context_version": result.context_version,
+            }, correlation_id)
+
         if path == "/api/v1/workspace" and method == "GET":
             try:
                 raw = self.orchestration.workspace_projection(
@@ -306,6 +344,15 @@ class BffApp:
             if isinstance(facets_in["selection"].get("options"), dict):
                 selection["options"] = facets_in["selection"]["options"]
             facets["selection"] = selection
+        if isinstance(facets_in.get("delivery"), dict):
+            delivery = {}
+            if isinstance(facets_in["delivery"].get("destination_reference"), str):
+                delivery["destination_reference"] = facets_in["delivery"]["destination_reference"]
+            if isinstance(facets_in["delivery"].get("timing"), dict):
+                timing = facets_in["delivery"]["timing"]
+                delivery["timing"] = {key: timing[key] for key in ("date", "window")
+                                      if key in timing}
+            facets["delivery"] = delivery
         return {"context_version": int(raw.get("context_version", 0)),
                 "facets": facets,
                 "ai_generated": bool(raw.get("ai_generated", False)),

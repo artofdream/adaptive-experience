@@ -1,10 +1,15 @@
 # Design note — M4 order and delivery domain contract (#33 / #32 / #34)
 
-status: candidate
+status: accepted (2026-08-12)
 for_issues: "#33 (FR-014 delivery), #32 (FR-013 order), #34 (FR-015 status)"
 affects: "M4; builds on #144 workspace substrate, #142 selection, #122 T-04 contract"
 author: claude
 date: 2026-08-12
+
+> **Decision:** endorsed 2026-08-12. Open question #1 resolved: M4 stops at a
+> created pre-checkout order aggregate; checkout, payment, and confirmation are
+> M5. Recipient PII is reference-only (`destination_reference`). Build order
+> #33 -> #32 -> #34.
 
 ## Decision to settle before code
 

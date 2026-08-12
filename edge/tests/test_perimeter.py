@@ -5,7 +5,7 @@ import unittest
 
 from edge.bff.aea_bff.app import BffApp
 from edge.bff.aea_bff.ports import (CommandResult, ConversationResult, CorrectionResult,
-                                    SelectionResult)
+                                    DeliveryResult, SelectionResult)
 from edge.bff.aea_bff.security import FixedWindowRateLimiter, StaticTokenAuthenticator
 
 
@@ -23,6 +23,10 @@ class FakeOrchestration:
     def select_product(self, **kwargs):
         self.selected = {"product_id": kwargs["product_id"], "options": kwargs["options"]}
         return SelectionResult(True, "accepted", kwargs["observed_context_version"] + 1, "selection-1")
+
+    def update_delivery(self, **kwargs):
+        self.delivery = kwargs["delivery"]
+        return DeliveryResult(True, "accepted", kwargs["observed_context_version"] + 1, "delivery-1")
 
     def workspace_projection(self, **kwargs):
         return {"context_version": 7, "secret": "omit",
@@ -165,6 +169,32 @@ class PerimeterTests(unittest.TestCase):
             self.assertEqual(422, self.call("POST", "/api/v1/selection", headers,
                 json.dumps({"product_id": "classic-rose-dozen", "options": control,
                             "observed_context_version": 7}).encode())[0])
+
+    def test_delivery_requires_csrf_and_rejects_raw_pii(self):
+        cookie, csrf = self.session()
+        json_headers = {**self.auth, "cookie": cookie, "content-type": "application/json"}
+        payload = json.dumps({"delivery": {"destination_reference": "addr-ref",
+                                           "timing": {"date": "2026-09-01", "window": "morning"}},
+                              "observed_context_version": 0}).encode()
+        self.assertEqual(403, self.call("POST", "/api/v1/delivery", json_headers, payload)[0])
+        headers = {**json_headers, "x-csrf-token": csrf}
+        status, _, body = self.call("POST", "/api/v1/delivery", headers, payload)
+        self.assertEqual(202, status)
+        self.assertEqual("delivery-1", json.loads(body)["message_id"])
+        # Reference-only: raw recipient PII and a missing timing are rejected at the edge.
+        for bad in ({"recipient_name": "Jane", "destination_reference": "r",
+                     "timing": {"date": "2026-09-01", "window": "morning"}},
+                    {"destination_reference": "r"}):
+            self.assertEqual(422, self.call("POST", "/api/v1/delivery", headers,
+                json.dumps({"delivery": bad, "observed_context_version": 0}).encode())[0])
+
+    def test_workspace_delivery_facet_is_least_data(self):
+        shaped = BffApp._least_data_workspace({"context_version": 3, "facets": {"delivery": {
+            "destination_reference": "addr-ref", "secret": "omit",
+            "timing": {"date": "2026-09-01", "window": "morning", "secret": "omit"}}}})
+        self.assertEqual({"destination_reference": "addr-ref",
+                          "timing": {"date": "2026-09-01", "window": "morning"}},
+                         shaped["facets"]["delivery"])
 
     def test_stream_reconnect(self):
         cookie, _ = self.session()
