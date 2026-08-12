@@ -22,6 +22,19 @@ understand” region, correction reassurance, keyboard focus treatment, semantic
 landmarks, and an optional three-step help dialog. These are the executable
 NFR-001 baseline; usability research remains the production validation method.
 
+The UI uses standards-based HTML, CSS, and JavaScript for current evergreen
+desktop, tablet, and mobile browsers. Its tested viewport contract is:
+
+- desktop above 960px: conversation and Shared Understanding remain side by side;
+- tablet from 641px to 960px: primary regions form one column and tiles form two;
+- mobile through 640px: one-column reading order, full-width primary action,
+  minimum 44px interactive targets, wrapping user content, and compact progress.
+
+Reduced-motion and forced-colour preferences are preserved. Release validation
+must cover the current two major versions of Chrome, Edge, Firefox, and Safari,
+plus Chrome on Android and Safari on iOS; automated structural assertions guard
+the responsive contract in every pipeline.
+
 The BFF container has no host port. Nginx is the only published backend entry
 point and strips internal identity headers before proxying. Browser assets,
 responses, and logs contain no PostgreSQL or Kafka connection details.

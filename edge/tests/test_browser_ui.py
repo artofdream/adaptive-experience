@@ -57,6 +57,22 @@ class BrowserUiTests(unittest.TestCase):
         self.assertIn("location /api/ {", nginx)
         self.assertIn('proxy_set_header X-Internal-Identity "";', nginx)
 
+    def test_layout_has_explicit_desktop_tablet_and_mobile_contracts(self):
+        self.assertIn("grid-template-columns: minmax(0, 1.7fr)", self.css)
+        self.assertIn("@media (max-width: 60rem)", self.css)
+        self.assertIn("@media (max-width: 40rem)", self.css)
+        self.assertIn("grid-template-columns: 1fr", self.css)
+
+    def test_mobile_controls_and_content_resist_clipping(self):
+        self.assertIn("min-height: 44px", self.css)
+        self.assertIn("overflow-wrap: anywhere", self.css)
+        self.assertIn("width: 100%", self.css)
+        self.assertIn('name="viewport"', self.html)
+
+    def test_platform_preferences_remain_usable(self):
+        self.assertIn("prefers-reduced-motion: reduce", self.css)
+        self.assertIn("forced-colors: active", self.css)
+
 
 if __name__ == "__main__":
     unittest.main()
