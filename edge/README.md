@@ -31,6 +31,10 @@ responses, and logs contain no PostgreSQL or Kafka connection details.
   AI processing continues asynchronously through `customer.message.submitted`.
 - `GET /api/v1/conversation` returns the authenticated session's least-data
   conversation projection (up to 50 visible messages).
+- `GET /api/v1/shared-understanding` returns only the six governed intent facets,
+  current context version, and up to three thought-completion suggestions.
+- `PATCH /api/v1/shared-understanding` delegates partial corrections with the
+  authenticated subject, correlation ID, and observed context version.
 - `GET /api/v1/workspace` returns a least-data workspace projection.
 - `GET /api/v1/stream` emits reconnectable server-sent events and honors
   `Last-Event-ID`.
@@ -40,5 +44,7 @@ The integration runner builds the containers, waits for both health checks,
 verifies the HTTPS gateway, and always tears the stack down. Run
 `python -m unittest discover -s edge/tests -v` for the same security and
 boundary suite used by GitLab CI. The BFF
-uses a product-neutral `OrchestrationPort`; later M2 behavior supplies its
-implementation without moving authority into the edge.
+uses an authenticated `HttpOrchestration` adapter. Runtime configuration
+requires `AEA_ORCHESTRATION_URL` and `AEA_ORCHESTRATION_TOKEN` and fails closed
+without them. The BFF holds no PostgreSQL or Kafka credentials; validation and
+mutation authority remain in the internal Orchestration service.

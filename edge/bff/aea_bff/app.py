@@ -6,6 +6,7 @@ from http.cookies import SimpleCookie
 from urllib.parse import parse_qs
 
 from .ports import OrchestrationPort
+from .orchestration import OrchestrationUnavailable
 from .security import FixedWindowRateLimiter, SessionStore, StaticTokenAuthenticator
 
 
@@ -52,6 +53,10 @@ class BffApp:
 
         if path == "/api/v1/session" and method == "POST":
             session = self.sessions.create(subject)
+            try:
+                self.orchestration.ensure_session(session_id=session.session_id, subject=subject)
+            except (OrchestrationUnavailable, RuntimeError):
+                return await self._error(send, 503, "orchestration_unavailable", correlation_id)
             cookie = (f"__Host-aea_session={session.session_id}; Path=/; Secure; HttpOnly; "
                       "SameSite=Lax")
             return await self._json(send, 201, {"csrf_token": session.csrf_token}, correlation_id,
@@ -110,13 +115,12 @@ class BffApp:
                 return await self._error(send, 422, "invalid_message_text", correlation_id)
             if not isinstance(observed, int) or isinstance(observed, bool) or observed < 0:
                 return await self._error(send, 422, "invalid_context_version", correlation_id)
-            result = self.orchestration.submit_conversation_message(
-                session_id=session.session_id,
-                subject=subject,
-                message_text=message_text,
-                observed_context_version=observed,
-                correlation_id=correlation_id,
-            )
+            try:
+                result = self.orchestration.submit_conversation_message(
+                    session_id=session.session_id, subject=subject, message_text=message_text,
+                    observed_context_version=observed, correlation_id=correlation_id)
+            except OrchestrationUnavailable:
+                return await self._error(send, 503, "orchestration_unavailable", correlation_id)
             status = 202 if result.accepted else (409 if result.code == "stale_context" else 422)
             return await self._json(send, status, {
                 "accepted": result.accepted,
@@ -127,10 +131,51 @@ class BffApp:
             }, correlation_id)
 
         if path == "/api/v1/conversation" and method == "GET":
-            raw = self.orchestration.conversation_projection(
-                session_id=session.session_id, subject=subject,
-            )
+            try:
+                raw = self.orchestration.conversation_projection(
+                    session_id=session.session_id, subject=subject)
+            except OrchestrationUnavailable:
+                return await self._error(send, 503, "orchestration_unavailable", correlation_id)
             return await self._json(send, 200, self._least_data_conversation(raw), correlation_id)
+
+        if path == "/api/v1/shared-understanding" and method == "GET":
+            try:
+                raw = self.orchestration.shared_understanding_projection(
+                    session_id=session.session_id, subject=subject)
+            except OrchestrationUnavailable:
+                return await self._error(send, 503, "orchestration_unavailable", correlation_id)
+            return await self._json(send, 200, self._least_data_shared_understanding(raw),
+                                    correlation_id)
+
+        if path == "/api/v1/shared-understanding" and method == "PATCH":
+            if headers.get("content-type", "").split(";", 1)[0].strip() != "application/json":
+                return await self._error(send, 415, "unsupported_media_type", correlation_id)
+            body = await self._body(receive, headers)
+            if isinstance(body, tuple):
+                return await self._error(send, body[0], body[1], correlation_id)
+            try:
+                correction = json.loads(body)
+            except (UnicodeDecodeError, json.JSONDecodeError):
+                return await self._error(send, 400, "invalid_json", correlation_id)
+            if set(correction) != {"corrections", "observed_context_version"}:
+                return await self._error(send, 422, "invalid_correction_shape", correlation_id)
+            observed = correction["observed_context_version"]
+            if (not isinstance(correction["corrections"], dict) or not correction["corrections"]
+                    or not isinstance(observed, int) or isinstance(observed, bool) or observed < 0):
+                return await self._error(send, 422, "invalid_correction_shape", correlation_id)
+            try:
+                result = self.orchestration.correct_shared_understanding(
+                    session_id=session.session_id, subject=subject,
+                    corrections=correction["corrections"], observed_context_version=observed,
+                    correlation_id=correlation_id)
+            except OrchestrationUnavailable:
+                return await self._error(send, 503, "orchestration_unavailable", correlation_id)
+            status = 202 if result.accepted else (409 if result.code == "stale_context" else 422)
+            return await self._json(send, status, {
+                "accepted": result.accepted, "code": result.code,
+                "message_id": result.message_id, "correlation_id": correlation_id,
+                "context_version": result.context_version,
+            }, correlation_id)
 
         if path == "/api/v1/workspace" and method == "GET":
             raw = self.orchestration.workspace_projection(session_id=session.session_id, subject=subject)
@@ -197,6 +242,17 @@ class BffApp:
                              ("message_id", "role", "text", "status", "submitted_at")
                              if key in item})
         return {"context_version": int(raw.get("context_version", 0)), "messages": messages}
+
+    @staticmethod
+    def _least_data_shared_understanding(raw: dict) -> dict:
+        allowed = {"occasion", "budget", "recipient", "style",
+                   "flower_preference", "timing"}
+        intent = raw.get("structured_intent") or {}
+        safe_intent = {key: intent[key] for key in allowed if key in intent}
+        suggestions = [item for item in (raw.get("suggestions") or [])[:3]
+                       if isinstance(item, str)]
+        return {"context_version": int(raw.get("context_version", 0)),
+                "structured_intent": safe_intent, "suggestions": suggestions}
 
     async def _error(self, send, status, code, correlation_id, extra_headers=None):
         await self._json(send, status, {"error": code, "correlation_id": correlation_id},

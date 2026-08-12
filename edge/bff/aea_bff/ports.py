@@ -18,7 +18,16 @@ class ConversationResult:
     message_id: str | None = None
 
 
+@dataclass(frozen=True)
+class CorrectionResult:
+    accepted: bool
+    code: str
+    context_version: int
+    message_id: str | None = None
+
+
 class OrchestrationPort(Protocol):
+    def ensure_session(self, *, session_id: str, subject: str) -> None: ...
     def accept_command(self, *, session_id: str, subject: str, command: dict,
                        observed_context_version: int, correlation_id: str) -> CommandResult: ...
     def workspace_projection(self, *, session_id: str, subject: str) -> dict: ...
@@ -28,6 +37,10 @@ class OrchestrationPort(Protocol):
                                     message_text: str, observed_context_version: int,
                                     correlation_id: str) -> ConversationResult: ...
     def conversation_projection(self, *, session_id: str, subject: str) -> dict: ...
+    def shared_understanding_projection(self, *, session_id: str, subject: str) -> dict: ...
+    def correct_shared_understanding(self, *, session_id: str, subject: str,
+                                     corrections: dict, observed_context_version: int,
+                                     correlation_id: str) -> CorrectionResult: ...
 
 
 class UnavailableOrchestration:
@@ -47,3 +60,11 @@ class UnavailableOrchestration:
 
     def conversation_projection(self, **kwargs) -> dict:
         return {"context_version": 0, "messages": []}
+
+    def shared_understanding_projection(self, **kwargs) -> dict:
+        return {"context_version": 0, "structured_intent": {}, "suggestions": []}
+
+    def correct_shared_understanding(self, **kwargs) -> CorrectionResult:
+        return CorrectionResult(False, "orchestration_unavailable", 0)
+    def ensure_session(self, **kwargs) -> None:
+        raise RuntimeError("orchestration unavailable")

@@ -4,13 +4,17 @@ import pathlib
 import unittest
 
 from edge.bff.aea_bff.app import BffApp
-from edge.bff.aea_bff.ports import CommandResult, ConversationResult
+from edge.bff.aea_bff.ports import CommandResult, ConversationResult, CorrectionResult
 from edge.bff.aea_bff.security import FixedWindowRateLimiter, StaticTokenAuthenticator
 
 
 class FakeOrchestration:
     def __init__(self):
         self.messages = []
+        self.intent = {"occasion": "birthday", "secret": "omit"}
+
+    def ensure_session(self, **kwargs):
+        self.session = kwargs
 
     def accept_command(self, **kwargs):
         return CommandResult(True, "accepted")
@@ -33,6 +37,15 @@ class FakeOrchestration:
 
     def conversation_projection(self, **kwargs):
         return {"context_version": len(self.messages), "messages": self.messages, "secret": "omit"}
+
+    def shared_understanding_projection(self, **kwargs):
+        return {"context_version": 1, "structured_intent": self.intent,
+                "suggestions": ["What budget?"], "secret": "omit"}
+
+    def correct_shared_understanding(self, **kwargs):
+        self.intent.update(kwargs["corrections"])
+        return CorrectionResult(True, "accepted", kwargs["observed_context_version"] + 1,
+                                "correction-1")
 
 
 async def invoke(app, method, path, headers=None, body=b"", query=b""):
@@ -129,6 +142,25 @@ class PerimeterTests(unittest.TestCase):
         self.assertEqual(200, self.call("GET", "/healthz")[0])
         self.assertEqual(200, self.call("GET", "/api/v1/workspace", {**self.auth, "cookie": cookie})[0])
         self.assertEqual(429, self.call("GET", "/api/v1/workspace", {**self.auth, "cookie": cookie})[0])
+
+    def test_shared_understanding_review_and_correction_are_least_data(self):
+        cookie, csrf = self.session()
+        status, _, body = self.call("GET", "/api/v1/shared-understanding",
+                                    {**self.auth, "cookie": cookie})
+        self.assertEqual(200, status)
+        self.assertEqual({"occasion": "birthday"},
+                         json.loads(body)["structured_intent"])
+        headers = {**self.auth, "cookie": cookie, "x-csrf-token": csrf,
+                   "content-type": "application/json", "x-correlation-id":
+                   "00000000-0000-0000-0000-000000000034"}
+        status, response_headers, body = self.call(
+            "PATCH", "/api/v1/shared-understanding", headers,
+            json.dumps({"corrections": {"budget": 75},
+                        "observed_context_version": 1}).encode())
+        self.assertEqual(202, status)
+        result = json.loads(body)
+        self.assertEqual(2, result["context_version"])
+        self.assertEqual(result["correlation_id"], response_headers["x-correlation-id"])
 
     def test_boundary_contains_no_domain_or_infrastructure_authority(self):
         root = pathlib.Path(__file__).resolve().parents[1]
