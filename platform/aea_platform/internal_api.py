@@ -4,13 +4,14 @@ import json
 from datetime import datetime, timedelta, timezone
 
 from .conversation import ConversationService, ConversationSessionNotFound, ConversationValidationError
-from .intent import IntentSessionNotFound, IntentValidationError, SharedUnderstandingService
+from .intent import (IntentAnalysisService, IntentSessionNotFound, IntentValidationError,
+                     ReferenceIntentInterpreter, SharedUnderstandingService)
 
 
 class InternalOrchestrationApp:
     """Authenticated internal HTTP surface; authority remains in platform services."""
 
-    def __init__(self, connection, token: str):
+    def __init__(self, connection, token: str, interpreter=None):
         if not token:
             raise ValueError("internal token is required")
         from .adapters import PsycopgExperienceStateStore
@@ -19,6 +20,8 @@ class InternalOrchestrationApp:
         self.token = token
         self.conversation = ConversationService(store)
         self.shared = SharedUnderstandingService(store)
+        self.interpreter = interpreter or ReferenceIntentInterpreter()
+        self.intent = IntentAnalysisService(store, self.interpreter)
 
     async def __call__(self, scope, receive, send):
         headers = {key.decode().lower(): value.decode() for key, value in scope.get("headers", [])}
@@ -28,6 +31,10 @@ class InternalOrchestrationApp:
         if not subject:
             return await self._send(send, 400, {"code": "subject_required"})
         parts = scope["path"].strip("/").split("/")
+        if scope["path"] == "/internal/v1/ai/health" and scope["method"] == "GET":
+            health = getattr(self.interpreter, "health", lambda: {
+                "available": True, "mode": "reference", "circuit": "closed"})()
+            return await self._send(send, 200, health)
         if len(parts) < 4 or parts[:3] != ["internal", "v1", "sessions"]:
             return await self._send(send, 404, {"code": "not_found"})
         session_id = parts[3]
@@ -51,8 +58,13 @@ class InternalOrchestrationApp:
                     message_text=body.get("message_text"),
                     observed_context_version=body.get("observed_context_version"),
                     correlation_id=body.get("correlation_id"))
+                analysis = self.intent.analyze(
+                    session_id=session_id, message_text=body.get("message_text"),
+                    observed_context_version=result.context_version,
+                    correlation_id=body.get("correlation_id"), subject_reference=subject)
                 return await self._send(send, 202, {"code": "accepted",
-                    "context_version": result.context_version, "message_id": result.message_id})
+                    "context_version": analysis.context_version, "message_id": result.message_id,
+                    "assistant_mode": getattr(self.interpreter, "last_mode", "reference")})
             if resource == "shared-understanding" and method == "GET":
                 value = self.shared.projection(session_id=session_id)
                 return await self._send(send, 200, {"context_version": value.context_version,

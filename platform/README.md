@@ -56,6 +56,15 @@ plaintext production listeners are prohibited by ADR-012.
   derive only affected projection invalidations, reject stale context versions,
   and publish the resulting `experience.intent.updated` event in the same
   transaction (FR-021).
+- `OpenAICompatibleIntentInterpreter` supplies a vendor-neutral Generative AI
+  boundary using strict JSON output and a timeout capped at 2.5 seconds.
+  `AvailableIntentInterpreter` fails over to the deterministic local interpreter
+  and opens a bounded circuit after repeated provider failures, so conversation
+  and thought completion remain available outside provider or business hours.
+  Configure `AEA_AI_ENDPOINT`, `AEA_AI_API_KEY`, and `AEA_AI_MODEL` together;
+  `/internal/v1/ai/health` reports primary/fallback mode without exposing secrets
+  (FR-004). A concrete vendor remains a deployment choice, not an architecture
+  dependency.
 - Relay claims use `FOR UPDATE SKIP LOCKED`; a row becomes published only after
   the Kafka producer returns an `acks=all` delivery acknowledgement.
 - Message IDs remain stable across relay retries.
