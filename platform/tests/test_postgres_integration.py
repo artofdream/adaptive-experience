@@ -311,6 +311,19 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         self.assertIn("order.checkout.requested", topics)
         self.assertIn("order.confirmed", topics)
 
+        # NFR-013: the actual emitted checkout events are broker-clean (payment-free,
+        # exact governed shape). The guard raises if any card/token/PII leaks.
+        from aea_platform.policy import KafkaPolicy
+        from aea_platform.privacy import PayloadPrivacyGuard
+        guard = PayloadPrivacyGuard(KafkaPolicy.load(ROOT / "config" / "kafka-policy.json"),
+                                    ROOT.parent / "docs" / "04-technical-architecture" / "schemas")
+        for topic, principal in (("order.checkout.requested", "orchestration"),
+                                 ("order.confirmed", "order")):
+            emitted = self.connection.execute(
+                "SELECT envelope FROM orchestration.outbox_message "
+                "WHERE session_id=%s AND topic=%s", (session_id, topic)).fetchone()[0]
+            guard.validate_publication(principal, topic, emitted)
+
         _, workspace = asyncio.run(self._invoke_internal(
             app, "GET", f"/internal/v1/sessions/{session_id}/workspace"))
         self.assertEqual("confirmed", workspace["facets"]["order"]["status"])

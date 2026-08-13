@@ -96,6 +96,25 @@ class PrivacyTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "unauthorized fields"):
             self.guard.validate_publication("orchestration", unauthorized_context["topic"], unauthorized_context)
 
+    def test_checkout_events_reject_raw_card_data(self):
+        # NFR-013: the M5 checkout events cannot carry card data at the broker.
+        requested = envelope("order.checkout.requested",
+                             {"draft_order_id": "d1", "total": 82.0, "card_number": "4111111111111111"})
+        with self.assertRaises(ValueError):
+            self.guard.validate_publication("orchestration", "order.checkout.requested", requested)
+        confirmed = envelope("order.confirmed",
+                            {"order_id": "o1", "confirmation_state": "confirmed", "cvv": "123"})
+        confirmed["source"] = "order"
+        with self.assertRaises(ValueError):
+            self.guard.validate_publication("order", "order.confirmed", confirmed)
+
+    def test_valid_checkout_events_are_authorized(self):
+        requested = envelope("order.checkout.requested", {"draft_order_id": "d1", "total": 82.0})
+        self.guard.validate_publication("orchestration", "order.checkout.requested", requested)
+        confirmed = envelope("order.confirmed", {"order_id": "o1", "confirmation_state": "confirmed"})
+        confirmed["source"] = "order"
+        self.guard.validate_publication("order", "order.confirmed", confirmed)
+
     def test_missing_minimum_field_and_unknown_schema_are_rejected(self):
         message = envelope()
         del message["payload"]["payment_token"]
