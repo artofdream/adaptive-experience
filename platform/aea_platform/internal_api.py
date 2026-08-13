@@ -16,6 +16,7 @@ from .order import (ORDER_STATUS_SEQUENCE, CheckoutService, CheckoutStateError,
                     OrderStatusError)
 from .payment import PaymentValidationError, ReferencePaymentAuthority
 from .pricing import PricingService
+from .support import SupportService, SupportValidationError
 from .recommendation import RecommendationService
 from .selection import SelectionValidationError, normalize_selection_options
 from .state import StatePatch
@@ -28,7 +29,7 @@ class InternalOrchestrationApp:
         if not token:
             raise ValueError("internal token is required")
         from .adapters import (PsycopgExperienceStateStore, PsycopgInventoryAvailabilityStore,
-                               PsycopgOrderStore, PsycopgRecommendationStore)
+                               PsycopgOrderStore, PsycopgRecommendationStore, PsycopgSupportStore)
         store = PsycopgExperienceStateStore(connection)
         self.store = store
         self.connection = connection
@@ -44,6 +45,7 @@ class InternalOrchestrationApp:
         self.order = OrderService(order_store)
         self.pricing = PricingService()
         self.checkout = CheckoutService(order_store, self.pricing, ReferencePaymentAuthority())
+        self.support = SupportService(PsycopgSupportStore(connection))
 
     async def __call__(self, scope, receive, send):
         headers = {key.decode().lower(): value.decode() for key, value in scope.get("headers", [])}
@@ -140,6 +142,12 @@ class InternalOrchestrationApp:
                     return await self._send(send, 404, {"code": "session_not_found"})
                 body = await self._body(receive)
                 return await self._checkout(send, session_id, subject, body)
+            if resource == "support" and method == "POST":
+                loaded = self.store.load(session_id)
+                if loaded is None:
+                    return await self._send(send, 404, {"code": "session_not_found"})
+                body = await self._body(receive)
+                return await self._answer_support(send, session_id, subject, loaded, body)
             if resource == "stream" and method == "GET":
                 loaded = self.store.load(session_id)
                 if loaded is None:
@@ -297,6 +305,22 @@ class InternalOrchestrationApp:
         return await self._send(send, 202, {"code": "accepted", "order_id": result["order_id"],
             "order_status": result["status"], "delayed": result["delayed"],
             "authoritative_status": result["authoritative_status"]})
+
+    async def _answer_support(self, send, session_id: str, subject: str,
+                              loaded: dict, body: dict):
+        correlation_id = body.get("correlation_id")
+        if not isinstance(correlation_id, str) or not correlation_id.strip():
+            return await self._send(send, 422, {"code": "validation_failed"})
+        try:
+            result = self.support.answer(
+                session_id=session_id, question=body.get("question"),
+                correlation_id=correlation_id.strip(), subject_reference=subject,
+                context_version=int(loaded["context_version"]))
+        except SupportValidationError:
+            return await self._send(send, 422, {"code": "validation_failed"})
+        return await self._send(send, 200, {"code": "answered", "answer": result["answer"],
+            "approved_source_references": result["approved_source_references"],
+            "matched": result["matched"]})
 
     async def _checkout(self, send, session_id: str, subject: str, body: dict):
         correlation_id = body.get("correlation_id")

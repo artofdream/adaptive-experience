@@ -5,7 +5,7 @@ import urllib.error
 import urllib.request
 
 from .ports import (CheckoutResult, CommandResult, ConversationResult, CorrectionResult,
-                    DeliveryResult, OrderResult, SelectionResult)
+                    DeliveryResult, OrderResult, SelectionResult, SupportResult)
 
 
 class OrchestrationUnavailable(RuntimeError):
@@ -128,6 +128,17 @@ class HttpOrchestration:
         return CheckoutResult(data["status"] == 202, data.get("code", "rejected"),
                               data.get("order_id"), data.get("order_status"),
                               data.get("decline_code"))
+
+    def ask_support(self, **kwargs):
+        data = self._call("POST", f"/internal/v1/sessions/{kwargs['session_id']}/support",
+                          subject=kwargs["subject"], payload={
+                              "question": kwargs["question"],
+                              "correlation_id": kwargs["correlation_id"],
+                          })
+        return SupportResult(data["status"] == 200, data.get("code", "rejected"),
+                             data.get("answer"),
+                             tuple(data.get("approved_source_references") or ()),
+                             bool(data.get("matched", False)))
 
     def workspace_projection(self, **kwargs):
         return self._call("GET", f"/internal/v1/sessions/{kwargs['session_id']}/workspace",

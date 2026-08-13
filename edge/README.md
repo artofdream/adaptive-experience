@@ -94,6 +94,11 @@ Internal Orchestration (#144; contract in
   decisions are assembled; it returns the `order_id` and `status`. Missing
   decisions return 422 `order_incomplete`. Creation is idempotent per session, and
   the workspace `order` facet surfaces `order_id` + `status`.
+- `POST /api/v1/support` answers a customer question (FR-009/FR-005). It accepts
+  only `{question}` and returns `{answer, approved_source_references, matched}`.
+  Answers come only from approved product/policy information; an unmatched question
+  returns a safe no-approved-information answer (never fabricated). Human
+  escalation is Future (FR-006).
 - `POST /api/v1/checkout` performs FR-019 payment and checkout. It accepts only a
   `payment_reference` (an opaque vault token) and the `observed_total`; raw card
   fields (`card_number`, `cvv`, ...) are rejected at the edge (NFR-013). On

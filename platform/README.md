@@ -99,6 +99,14 @@ plaintext production listeners are prohibited by ADR-012.
   recommendations projection. It is a reference pricing model, publishes nothing,
   and stores no state; the `order.summary.updated` event and authoritative pricing
   belong to the checkout flow (M5, #38).
+- Automated support answers (#28/#24, FR-009/FR-005): `POST .../support` answers a
+  customer question only from approved information. `SupportService` matches the
+  question against a reference approved-knowledge base (FAQ + product/policy
+  entries, each with `approved_source_references`), returns
+  `{answer, approved_source_references, matched}`, and publishes the governed
+  `support.faq.answered` event. An unmatched question returns a safe
+  no-approved-information answer with empty sources - it never fabricates content;
+  human escalation is Future (FR-006).
 - Checkout and payment (#38, FR-019): `POST .../checkout` price-checks the
   assembled order, authorizes against an opaque `payment_reference` behind the
   `PaymentAuthority` seam (`ReferencePaymentAuthority` for the MVP path), and, on

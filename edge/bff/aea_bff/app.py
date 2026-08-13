@@ -331,6 +331,36 @@ class BffApp:
                 "correlation_id": correlation_id,
             }, correlation_id)
 
+        if path == "/api/v1/support" and method == "POST":
+            if headers.get("content-type", "").split(";", 1)[0].strip() != "application/json":
+                return await self._error(send, 415, "unsupported_media_type", correlation_id)
+            body = await self._body(receive, headers)
+            if isinstance(body, tuple):
+                return await self._error(send, body[0], body[1], correlation_id)
+            try:
+                request = json.loads(body)
+            except (UnicodeDecodeError, json.JSONDecodeError):
+                return await self._error(send, 400, "invalid_json", correlation_id)
+            if (not isinstance(request, dict) or set(request) - {"question"}
+                    or "question" not in request):
+                return await self._error(send, 422, "invalid_support_shape", correlation_id)
+            question = request["question"]
+            if (not isinstance(question, str) or not question.strip()
+                    or len(question.strip()) > 500):
+                return await self._error(send, 422, "invalid_support_shape", correlation_id)
+            try:
+                result = self.orchestration.ask_support(
+                    session_id=session.session_id, subject=subject, question=question.strip(),
+                    correlation_id=correlation_id)
+            except OrchestrationUnavailable:
+                return await self._error(send, 503, "orchestration_unavailable", correlation_id)
+            status = 200 if result.answered else 422
+            return await self._json(send, status, {
+                "answered": result.answered, "code": result.code, "answer": result.answer,
+                "approved_source_references": list(result.approved_source_references),
+                "matched": result.matched, "correlation_id": correlation_id,
+            }, correlation_id)
+
         if path == "/api/v1/workspace" and method == "GET":
             try:
                 raw = self.orchestration.workspace_projection(
