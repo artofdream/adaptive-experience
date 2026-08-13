@@ -96,8 +96,15 @@ class BrowserUiTests(unittest.TestCase):
 
     def test_sample_layout_3_color_and_journey_steps(self):
         self.assertIn('data-visual="sample-layout-3"', self.html)
+        self.assertIn('data-journey-mode="steps"', self.html)
+        self.assertIn('id="journey-steps"', self.html)
+        self.assertIn('id="checkout"', self.html)
         for step in range(1, 8):
-            self.assertIn(f'data-journey-step="{step}"', self.html)
+            self.assertIn(f'data-step="{step}"', self.html)
+        self.assertIn('data-journey-steps="5,6"', self.html)
+        self.assertIn('data-journey-steps="6"', self.html)
+        self.assertIn("setJourneyStep", self.script)
+        self.assertIn("STEP_CAPTIONS", self.script)
         self.assertIn("--purple: #6344a9", self.css)
         self.assertIn("--green: #2f9e6b", self.css)
         self.assertIn("linear-gradient", self.css)
@@ -108,6 +115,18 @@ class BrowserUiTests(unittest.TestCase):
         self.assertIn("payment-card", self.html)
         self.assertIn("florist-status.svg", self.html)
         self.assertTrue((ROOT / "ui" / "assets" / "bouquet-hero.svg").exists())
+
+    def test_journey_activates_tiles_in_place_not_all_at_once(self):
+        self.assertIn("Journey stages", self.html)
+        self.assertIn("Continue to recommendations", self.html)
+        self.assertIn('data-journey-steps="3"', self.html)
+        self.assertIn('data-journey-steps="4"', self.html)
+        self.assertIn('data-journey-steps="5"', self.html)
+        self.assertIn('data-journey-steps="7"', self.html)
+        self.assertIn("node.hidden = !steps.includes(next)", self.script)
+        self.assertIn("T-01 · Persistent", self.html)
+        self.assertIn("T-02 · Persistent", self.html)
+        self.assertIn("ASO FAQ overlay", self.html)
 
     def test_shell_uses_edge_apis_without_data_plane_secrets(self):
         for path in ("/api/v1/session", "/api/v1/conversation/messages",
