@@ -5,7 +5,8 @@ import unittest
 
 from edge.bff.aea_bff.app import BffApp
 from edge.bff.aea_bff.ports import (CheckoutResult, CommandResult, ConversationResult,
-                                    CorrectionResult, DeliveryResult, OrderResult, SelectionResult)
+                                    CorrectionResult, DeliveryResult, OrderResult, SelectionResult,
+                                    SupportResult)
 from edge.bff.aea_bff.security import FixedWindowRateLimiter, StaticTokenAuthenticator
 
 
@@ -35,6 +36,10 @@ class FakeOrchestration:
         if kwargs["payment_reference"].startswith("decline"):
             return CheckoutResult(False, "payment_declined", "order-9", "submitted", "declined")
         return CheckoutResult(True, "confirmed", "order-9", "confirmed")
+
+    def ask_support(self, **kwargs):
+        return SupportResult(True, "answered", "We deliver same day before 2 PM.",
+                             ("policy:delivery",), True)
 
     def workspace_projection(self, **kwargs):
         return {"context_version": 7, "secret": "omit",
@@ -227,6 +232,23 @@ class PerimeterTests(unittest.TestCase):
         self.assertEqual({"order_id": "o1", "status": "dispatched",
                           "authoritative_status": "delayed", "delayed": True},
                          shaped["facets"]["order"])
+
+    def test_support_requires_csrf_and_returns_grounded_answer(self):
+        cookie, csrf = self.session()
+        json_headers = {**self.auth, "cookie": cookie, "content-type": "application/json"}
+        payload = json.dumps({"question": "When do you deliver?"}).encode()
+        self.assertEqual(403, self.call("POST", "/api/v1/support", json_headers, payload)[0])
+        headers = {**json_headers, "x-csrf-token": csrf}
+        status, _, body = self.call("POST", "/api/v1/support", headers, payload)
+        self.assertEqual(200, status)
+        answer = json.loads(body)
+        self.assertTrue(answer["answered"])
+        self.assertIn("policy:delivery", answer["approved_source_references"])
+        # Empty or extra fields are rejected.
+        self.assertEqual(422, self.call("POST", "/api/v1/support", headers,
+            json.dumps({"question": "", "extra": 1}).encode())[0])
+        self.assertEqual(422, self.call("POST", "/api/v1/support", headers,
+            json.dumps({"question": "  "}).encode())[0])
 
     def test_checkout_requires_csrf_and_rejects_raw_card_fields(self):
         cookie, csrf = self.session()

@@ -394,6 +394,35 @@ class PsycopgOrderStore:
                     "authoritative_status": authoritative_status}
 
 
+class PsycopgSupportStore:
+    """Publish approved support answers to support.faq.answered (FR-005/FR-009)."""
+
+    def __init__(self, connection):
+        self.connection = connection
+
+    def record_answer(self, *, session_id: str, answer: str,
+                      approved_source_references: list, message_id: str,
+                      correlation_id: str, subject_reference: str,
+                      published_at: datetime, context_version: int) -> None:
+        envelope = {
+            "message_id": message_id, "topic": "support.faq.answered",
+            "message_type": "event", "schema_version": "1.0.0", "session_id": session_id,
+            "correlation_id": correlation_id, "source": "ai-concierge",
+            "context_version": context_version, "publication_time": published_at.isoformat(),
+            "security_context": {"classification": "confidential",
+                                 "subject_reference": subject_reference},
+            "payload": {"answer": answer,
+                        "approved_source_references": list(approved_source_references)},
+            "outcome": {},
+        }
+        with self.connection.transaction():
+            self.connection.execute(
+                "INSERT INTO orchestration.outbox_message "
+                "(message_id,session_id,context_version,topic,aggregate_key,envelope) "
+                "VALUES (%s,%s,%s,'support.faq.answered',%s,%s::jsonb)",
+                (message_id, session_id, context_version, session_id, json.dumps(envelope)))
+
+
 class PsycopgOutboxStore:
     def __init__(self, connection):
         self.connection = connection

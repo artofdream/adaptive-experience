@@ -477,6 +477,38 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
                 "WHERE session_id=%s AND topic='order.status.updated'", (session_id,)).fetchall():
             guard.validate_publication("order", "order.status.updated", row[0])
 
+    def test_support_answers_from_approved_knowledge_and_publishes(self):
+        import asyncio
+        from aea_platform.internal_api import InternalOrchestrationApp
+        from aea_platform.policy import KafkaPolicy
+        from aea_platform.privacy import PayloadPrivacyGuard
+
+        session_id = self.create_session()
+        app = InternalOrchestrationApp(self.connection, "internal-token")
+        path = f"/internal/v1/sessions/{session_id}/support"
+
+        def ask(question):
+            return asyncio.run(self._invoke_internal(
+                app, "POST", path, json.dumps({"question": question, "correlation_id": "c"}).encode()))
+
+        status, answer = ask("When do you deliver?")
+        self.assertEqual(200, status)
+        self.assertTrue(answer["matched"])
+        self.assertIn("policy:delivery", answer["approved_source_references"])
+
+        _, miss = ask("random unrelated gibberish token")
+        self.assertFalse(miss["matched"])
+        self.assertEqual([], miss["approved_source_references"])
+
+        rows = self.connection.execute(
+            "SELECT envelope FROM orchestration.outbox_message "
+            "WHERE session_id=%s AND topic='support.faq.answered'", (session_id,)).fetchall()
+        self.assertEqual(2, len(rows))
+        guard = PayloadPrivacyGuard(KafkaPolicy.load(ROOT / "config" / "kafka-policy.json"),
+                                    ROOT.parent / "docs" / "04-technical-architecture" / "schemas")
+        for row in rows:
+            guard.validate_publication("ai-concierge", "support.faq.answered", row[0])
+
     def test_delivery_details_write_facet_and_event_without_raw_pii(self):
         import asyncio
         from aea_platform.adapters import PsycopgExperienceStateStore
