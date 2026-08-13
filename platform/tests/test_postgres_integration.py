@@ -54,9 +54,10 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         messages = [{"message_id": str(message_id), "topic": "experience.intent.updated",
                      "aggregate_key": str(session_id), "envelope": envelope}]
         return self.connection.execute(
-            "SELECT orchestration.apply_experience_mutation(%s,%s,1,%s::jsonb,%s::jsonb,%s::jsonb)",
-            (session_id, expected, json.dumps({"intent": "birthday"}),
-             json.dumps([{"projection_key": "recommendations", "reason": "intent_changed"}]),
+            "SELECT orchestration.apply_experience_patch(%s,%s,1,%s::jsonb,%s::jsonb,%s::jsonb)",
+            (session_id, expected,
+             json.dumps({"shared_understanding": {"occasion": "birthday"}}),
+             json.dumps(["shared_understanding.occasion"]),
              json.dumps(messages)),
         ).fetchone()[0]
 
@@ -103,7 +104,16 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         versions = [row[0] for row in self.connection.execute(
             "SELECT version FROM orchestration.schema_migration ORDER BY version"
         ).fetchall()]
-        self.assertEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], versions)
+        self.assertEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], versions)
+
+    def test_superseded_mutation_function_is_dropped(self):
+        signature = "(uuid,bigint,integer,jsonb,jsonb,jsonb)"
+        self.assertIsNone(self.connection.execute(
+            f"SELECT to_regprocedure('orchestration.apply_experience_mutation{signature}')"
+        ).fetchone()[0])
+        self.assertIsNotNone(self.connection.execute(
+            f"SELECT to_regprocedure('orchestration.apply_experience_patch{signature}')"
+        ).fetchone()[0])
 
     def test_inventory_snapshots_are_monotonic_fresh_and_governed(self):
         from aea_platform.adapters import PsycopgInventoryAvailabilityStore
