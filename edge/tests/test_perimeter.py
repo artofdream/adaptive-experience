@@ -215,6 +215,18 @@ class PerimeterTests(unittest.TestCase):
             "order_id": "o1", "status": "created", "secret": "omit"}}})
         self.assertEqual({"order_id": "o1", "status": "created"}, shaped["facets"]["order"])
 
+    def test_workspace_order_summary_facet_is_least_data(self):
+        shaped = BffApp._least_data_workspace({"context_version": 5, "facets": {"order_summary": {
+            "currency": "USD", "total": 82.0, "secret": "omit",
+            "itemized_charges": [
+                {"label": "product", "product_id": "classic-rose-dozen", "amount": 70.0, "secret": "omit"},
+                {"label": "delivery", "amount": 12.0}]}}})
+        self.assertEqual({
+            "itemized_charges": [
+                {"label": "product", "product_id": "classic-rose-dozen", "amount": 70.0},
+                {"label": "delivery", "amount": 12.0}],
+            "total": 82.0, "currency": "USD"}, shaped["facets"]["order_summary"])
+
     def test_stream_reconnect(self):
         cookie, _ = self.session()
         headers = {**self.auth, "cookie": cookie}

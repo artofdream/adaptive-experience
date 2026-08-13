@@ -384,6 +384,19 @@ class BffApp:
             if isinstance(facets_in["order"].get("status"), str):
                 order["status"] = facets_in["order"]["status"]
             facets["order"] = order
+        if isinstance(facets_in.get("order_summary"), dict):
+            summary_in = facets_in["order_summary"]
+            charges = []
+            for charge in summary_in.get("itemized_charges") or []:
+                if isinstance(charge, dict):
+                    charges.append({key: charge[key] for key in ("label", "product_id", "amount")
+                                    if key in charge})
+            order_summary = {"itemized_charges": charges}
+            if isinstance(summary_in.get("total"), (int, float)):
+                order_summary["total"] = summary_in["total"]
+            if isinstance(summary_in.get("currency"), str):
+                order_summary["currency"] = summary_in["currency"]
+            facets["order_summary"] = order_summary
         return {"context_version": int(raw.get("context_version", 0)),
                 "facets": facets,
                 "ai_generated": bool(raw.get("ai_generated", False)),

@@ -225,6 +225,43 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
             "SELECT count(*) FROM orchestration.customer_order WHERE session_id=%s",
             (session_id,)).fetchone()[0])
 
+    def test_order_summary_facet_reflects_and_recomputes_from_decisions(self):
+        import asyncio
+        from aea_platform.adapters import PsycopgExperienceStateStore
+        from aea_platform.internal_api import InternalOrchestrationApp
+        from aea_platform.pricing import REFERENCE_DELIVERY_FEE
+        from aea_platform.state import StatePatch
+
+        session_id = self.create_session()
+        store = PsycopgExperienceStateStore(self.connection)
+        app = InternalOrchestrationApp(self.connection, "internal-token")
+
+        def workspace():
+            _, ws = asyncio.run(self._invoke_internal(
+                app, "GET", f"/internal/v1/sessions/{session_id}/workspace"))
+            return ws
+
+        # No product decision yet -> no order summary.
+        self.assertNotIn("order_summary", workspace()["facets"])
+
+        with self.connection.transaction():
+            store.apply_patch(str(session_id), 0, 1, StatePatch.create(
+                {"decisions": {"product": {"product_id": "classic-rose-dozen"}}},
+                ["decisions.product"]), [])
+        summary = workspace()["facets"]["order_summary"]
+        self.assertEqual(70.0, summary["total"])
+        self.assertEqual("product", summary["itemized_charges"][0]["label"])
+
+        # Adding the delivery decision recomputes the summary (derived projection).
+        with self.connection.transaction():
+            store.apply_patch(str(session_id), 1, 1, StatePatch.create(
+                {"decisions": {"delivery": {"destination_reference": "addr-1",
+                                            "timing": {"date": "2026-09-01", "window": "morning"}}}},
+                ["decisions.delivery"]), [])
+        summary2 = workspace()["facets"]["order_summary"]
+        self.assertEqual(round(70.0 + REFERENCE_DELIVERY_FEE, 2), summary2["total"])
+        self.assertIn("delivery", [c["label"] for c in summary2["itemized_charges"]])
+
     def test_order_status_advances_forward_and_publishes(self):
         import asyncio
         from aea_platform.adapters import PsycopgExperienceStateStore

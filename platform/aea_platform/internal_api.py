@@ -13,6 +13,7 @@ from .inventory import (InventoryAvailabilityService, InventoryUnavailableError,
                         InventoryValidationError)
 from .order import (ORDER_STATUS_SEQUENCE, OrderIncompleteError, OrderNotFound, OrderService,
                     OrderStatusError)
+from .pricing import PricingService
 from .recommendation import RecommendationService
 from .selection import SelectionValidationError, normalize_selection_options
 from .state import StatePatch
@@ -38,6 +39,7 @@ class InternalOrchestrationApp:
         self.recommendation = RecommendationService(
             PsycopgRecommendationStore(connection), self.inventory)
         self.order = OrderService(PsycopgOrderStore(connection))
+        self.pricing = PricingService()
 
     async def __call__(self, scope, receive, send):
         headers = {key.decode().lower(): value.decode() for key, value in scope.get("headers", [])}
@@ -178,6 +180,9 @@ class InternalOrchestrationApp:
         delivery = decisions.get("delivery")
         if isinstance(delivery, dict):
             facets["delivery"] = delivery
+        order_summary = self.pricing.summarize(decisions)
+        if order_summary is not None:
+            facets["order_summary"] = order_summary
         order = self.order.projection(session_id=session_id)
         if order is not None:
             facets["order"] = {"order_id": order["order_id"], "status": order["status"]}
