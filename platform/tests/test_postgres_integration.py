@@ -103,7 +103,7 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         versions = [row[0] for row in self.connection.execute(
             "SELECT version FROM orchestration.schema_migration ORDER BY version"
         ).fetchall()]
-        self.assertEqual([1, 2, 3, 4, 5, 6, 7, 8, 9], versions)
+        self.assertEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], versions)
 
     def test_inventory_snapshots_are_monotonic_fresh_and_governed(self):
         from aea_platform.adapters import PsycopgInventoryAvailabilityStore
@@ -215,8 +215,8 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
             (session_id,)).fetchone()[0])
 
         _, workspace = drive("GET", f"/internal/v1/sessions/{session_id}/workspace")
-        self.assertEqual({"order_id": order_id, "status": "created"},
-                         workspace["facets"]["order"])
+        self.assertEqual({"order_id": order_id, "status": "created", "delayed": False,
+                          "authoritative_status": "created"}, workspace["facets"]["order"])
 
         # Idempotent per session: a second create returns the same order.
         _, again = drive("POST", f"/internal/v1/sessions/{session_id}/order", order_body)
@@ -414,6 +414,68 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
             json.dumps({"target_status": "preparing", "correlation_id": "st"}).encode())[0])
         self.assertEqual(422, drive("POST", status_path,
             json.dumps({"target_status": "teleported", "correlation_id": "st"}).encode())[0])
+
+    def test_order_delay_flag_and_completion_tracking(self):
+        import asyncio
+        from aea_platform.adapters import PsycopgExperienceStateStore
+        from aea_platform.internal_api import InternalOrchestrationApp
+        from aea_platform.state import StatePatch
+
+        session_id = self.create_session()
+        store = PsycopgExperienceStateStore(self.connection)
+        app = InternalOrchestrationApp(self.connection, "internal-token")
+
+        def drive(method, path, body=b""):
+            return asyncio.run(self._invoke_internal(app, method, path, body))
+
+        def order_facet():
+            _, ws = drive("GET", f"/internal/v1/sessions/{session_id}/workspace")
+            return ws["facets"]["order"]
+
+        with self.connection.transaction():
+            store.apply_patch(str(session_id), 0, 1, StatePatch.create(
+                {"decisions": {"product": {"product_id": "classic-rose-dozen"}}},
+                ["decisions.product"]), [])
+        with self.connection.transaction():
+            store.apply_patch(str(session_id), 1, 1, StatePatch.create(
+                {"decisions": {"delivery": {"destination_reference": "addr-1",
+                                            "timing": {"date": "2026-09-01", "window": "morning"}}}},
+                ["decisions.delivery"]), [])
+        drive("POST", f"/internal/v1/sessions/{session_id}/order",
+              json.dumps({"correlation_id": "ord"}).encode())
+        drive("POST", f"/internal/v1/sessions/{session_id}/order/status",
+              json.dumps({"target_status": "preparing", "correlation_id": "st"}).encode())
+
+        # Delay is displayed as the authoritative state and published.
+        status, delayed = drive("POST", f"/internal/v1/sessions/{session_id}/order/delay",
+            json.dumps({"delayed": True, "correlation_id": "dl"}).encode())
+        self.assertEqual(202, status)
+        self.assertEqual("delayed", delayed["authoritative_status"])
+        facet = order_facet()
+        self.assertTrue(facet["delayed"])
+        self.assertEqual("delayed", facet["authoritative_status"])
+        self.assertEqual("preparing", facet["status"])
+
+        # A forward move resolves the delay; completion is terminal.
+        drive("POST", f"/internal/v1/sessions/{session_id}/order/status",
+              json.dumps({"target_status": "dispatched", "correlation_id": "st"}).encode())
+        self.assertFalse(order_facet()["delayed"])
+        for target in ("delivered", "completed"):
+            drive("POST", f"/internal/v1/sessions/{session_id}/order/status",
+                  json.dumps({"target_status": target, "correlation_id": "st"}).encode())
+        final = order_facet()
+        self.assertEqual("completed", final["status"])
+        self.assertEqual("completed", final["authoritative_status"])
+
+        # Every emitted order-status event is a clean, governed payload.
+        from aea_platform.policy import KafkaPolicy
+        from aea_platform.privacy import PayloadPrivacyGuard
+        guard = PayloadPrivacyGuard(KafkaPolicy.load(ROOT / "config" / "kafka-policy.json"),
+                                    ROOT.parent / "docs" / "04-technical-architecture" / "schemas")
+        for row in self.connection.execute(
+                "SELECT envelope FROM orchestration.outbox_message "
+                "WHERE session_id=%s AND topic='order.status.updated'", (session_id,)).fetchall():
+            guard.validate_publication("order", "order.status.updated", row[0])
 
     def test_delivery_details_write_facet_and_event_without_raw_pii(self):
         import asyncio

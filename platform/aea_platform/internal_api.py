@@ -70,13 +70,14 @@ class InternalOrchestrationApp:
                     (session_id, datetime.now(timezone.utc) + timedelta(minutes=30)))
                 self.connection.commit()
                 return await self._send(send, 204, {})
-            if (len(parts) == 6 and parts[4] == "order" and parts[5] == "status"
+            if (len(parts) == 6 and parts[4] == "order" and parts[5] in ("status", "delay")
                     and method == "POST"):
-                loaded = self.store.load(session_id)
-                if loaded is None:
+                if self.store.load(session_id) is None:
                     return await self._send(send, 404, {"code": "session_not_found"})
                 body = await self._body(receive)
-                return await self._advance_order_status(send, session_id, subject, body)
+                if parts[5] == "status":
+                    return await self._advance_order_status(send, session_id, subject, body)
+                return await self._set_order_delay(send, session_id, subject, body)
             resource = parts[4] if len(parts) == 5 else ""
             if resource == "conversation" and method == "GET":
                 return await self._send(send, 200, self.conversation.projection(session_id=session_id))
@@ -194,7 +195,10 @@ class InternalOrchestrationApp:
             facets["order_summary"] = order_summary
         order = self.order.projection(session_id=session_id)
         if order is not None:
-            facets["order"] = {"order_id": order["order_id"], "status": order["status"]}
+            delayed = bool(order.get("delayed"))
+            facets["order"] = {"order_id": order["order_id"], "status": order["status"],
+                               "delayed": delayed,
+                               "authoritative_status": "delayed" if delayed else order["status"]}
         return {
             "context_version": int(loaded["context_version"]),
             "facets": facets,
@@ -277,6 +281,22 @@ class InternalOrchestrationApp:
             return await self._send(send, 409, {"code": "invalid_status_transition"})
         return await self._send(send, 202, {"code": "accepted",
             "order_id": result["order_id"], "status": result["status"]})
+
+    async def _set_order_delay(self, send, session_id: str, subject: str, body: dict):
+        delayed = body.get("delayed")
+        correlation_id = body.get("correlation_id")
+        if (not isinstance(delayed, bool)
+                or not isinstance(correlation_id, str) or not correlation_id.strip()):
+            return await self._send(send, 422, {"code": "validation_failed"})
+        try:
+            result = self.order.set_delay(
+                session_id=session_id, delayed=delayed, correlation_id=correlation_id.strip(),
+                subject_reference=subject)
+        except OrderNotFound:
+            return await self._send(send, 404, {"code": "order_not_found"})
+        return await self._send(send, 202, {"code": "accepted", "order_id": result["order_id"],
+            "order_status": result["status"], "delayed": result["delayed"],
+            "authoritative_status": result["authoritative_status"]})
 
     async def _checkout(self, send, session_id: str, subject: str, body: dict):
         correlation_id = body.get("correlation_id")

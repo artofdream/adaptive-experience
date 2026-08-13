@@ -220,6 +220,14 @@ class PerimeterTests(unittest.TestCase):
             "order_id": "o1", "status": "created", "secret": "omit"}}})
         self.assertEqual({"order_id": "o1", "status": "created"}, shaped["facets"]["order"])
 
+    def test_workspace_order_facet_carries_delay_and_authoritative_status(self):
+        shaped = BffApp._least_data_workspace({"context_version": 6, "facets": {"order": {
+            "order_id": "o1", "status": "dispatched", "delayed": True,
+            "authoritative_status": "delayed", "secret": "omit"}}})
+        self.assertEqual({"order_id": "o1", "status": "dispatched",
+                          "authoritative_status": "delayed", "delayed": True},
+                         shaped["facets"]["order"])
+
     def test_checkout_requires_csrf_and_rejects_raw_card_fields(self):
         cookie, csrf = self.session()
         json_headers = {**self.auth, "cookie": cookie, "content-type": "application/json"}
