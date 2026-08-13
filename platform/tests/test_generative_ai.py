@@ -59,6 +59,53 @@ class GenerativeAITests(unittest.TestCase):
         third = available.interpret("for Mum", {})
         self.assertEqual("mother", third.facets["recipient"])
 
+    def test_circuit_recovers_when_the_provider_returns(self):
+        clock = [0.0]
+
+        class Flaky:
+            def __init__(self):
+                self.up = False
+
+            def interpret(self, message_text, current_intent):
+                if not self.up:
+                    raise GenerativeAIUnavailable("down")
+                return ReferenceIntentInterpreter().interpret(message_text, current_intent)
+
+        primary = Flaky()
+        available = AvailableIntentInterpreter(
+            primary, ReferenceIntentInterpreter(), failure_threshold=1,
+            recovery_seconds=30, clock=lambda: clock[0])
+        available.interpret("birthday roses", {})
+        self.assertEqual("open", available.health()["circuit"])
+        # Within the recovery window the provider is skipped.
+        available.interpret("more", {})
+        self.assertEqual("fallback", available.health()["mode"])
+        # After the window, a recovered provider closes the circuit.
+        primary.up = True
+        clock[0] = 31
+        available.interpret("birthday roses for Mum", {})
+        self.assertEqual("primary", available.health()["mode"])
+        self.assertEqual("closed", available.health()["circuit"])
+
+    def test_assistant_availability_is_maintained_under_provider_failure(self):
+        class Down:
+            def interpret(self, *_):
+                raise GenerativeAIUnavailable("down")
+
+        available = AvailableIntentInterpreter(
+            Down(), ReferenceIntentInterpreter(), failure_threshold=3, recovery_seconds=0)
+        total, successes = 200, 0
+        for _ in range(total):
+            result = available.interpret("birthday roses for Mum", {})
+            if result is not None and result.facets is not None:
+                successes += 1
+        availability = successes / total
+        # The deterministic fallback keeps the assistant available on every request,
+        # well above the NFR-003 99.5% target.
+        self.assertGreaterEqual(availability, 0.995)
+        self.assertEqual(1.0, availability)
+        self.assertTrue(available.health()["available"])
+
     def test_configuration_rejects_unbounded_timeout(self):
         with self.assertRaises(ValueError):
             OpenAICompatibleIntentInterpreter("https://ai.example", "secret", "model",
