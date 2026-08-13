@@ -10,8 +10,9 @@ Workspace sections map to tiles:
 | Automated Support Overlay | ASO / FR-009 (MVP) |
 | Support Escalation | T-09 (Future) |
 
-Layout rules: frames + auto layout; preserve stable regions; grayscale for low
-fidelity wireframes.
+Layout rules: frames + auto layout; preserve stable regions; grayscale for
+low-fidelity wireframe SVGs. The runnable Adaptive Workspace is mid-fidelity
+color matching `archive/sample-layout-3.png`.
 
 ## Canonical docs
 

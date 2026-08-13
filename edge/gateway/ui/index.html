@@ -18,21 +18,24 @@
     </nav>
   </header>
 
-  <main class="workspace" data-name="adaptive-workspace-mvp">
-    <section id="conversation" class="panel conversation" aria-labelledby="conversation-title">
+  <main class="workspace" data-name="adaptive-workspace-mvp" data-visual="sample-layout-3">
+    <section id="conversation" class="panel conversation" aria-labelledby="conversation-title" data-journey-step="1">
       <header>
         <div>
-          <p class="eyebrow">T-01</p>
+          <p class="eyebrow">T-01 · Step 1–2</p>
           <h2 id="conversation-title">Conversation and Intent</h2>
           <p class="subtitle">Persistent AI Floral Concierge</p>
         </div>
         <span class="status">AI assistant</span>
       </header>
       <p class="welcome-card">
-        <strong>Welcome to Lily's Florist</strong>
-        <span>AI-assisted flower purchase</span>
+        <span class="welcome-copy">
+          <strong>Welcome to Lily's Florist</strong>
+          <span>Let's create something beautiful together</span>
+        </span>
+        <img class="welcome-art" src="/assets/bouquet-hero.svg" alt="">
       </p>
-      <div id="messages" class="messages" role="log" aria-live="polite" aria-relevant="additions">
+      <div id="messages" class="messages" role="log" aria-live="polite" aria-relevant="additions" data-journey-step="2">
         <p class="assistant-message">Hello! What occasion are you shopping for today?</p>
       </div>
       <p id="disclosure" class="disclosure">AI-generated interpretation; review and correct before ordering.</p>
@@ -48,8 +51,8 @@
     </section>
 
     <div class="workspace-main">
-      <aside class="panel understanding" aria-labelledby="understanding-title">
-        <p class="eyebrow">T-02</p>
+      <aside class="panel understanding" aria-labelledby="understanding-title" data-journey-step="2">
+        <p class="eyebrow">T-02 · Step 2</p>
         <h2 id="understanding-title">Intent Summary (Shared Understanding)</h2>
         <p id="understanding-empty">Your occasion, recipient, budget, style, flower preference, and timing will appear here.</p>
         <dl id="understanding-list" hidden></dl>
@@ -73,14 +76,15 @@
 
       <p class="workspace-label">Adaptive Workspace (T-03 … T-08)</p>
       <div class="tile-grid">
-        <section id="recommendations" class="panel tile" aria-labelledby="recommendations-title">
-          <p class="eyebrow">T-03</p>
+        <section id="recommendations" class="panel tile" aria-labelledby="recommendations-title" data-journey-step="3">
+          <p class="eyebrow">T-03 · Step 3</p>
           <h2 id="recommendations-title">Curated Recommendations</h2>
+          <p class="subtitle">Recommended for your occasion</p>
           <div id="recommendation-cards" class="cards"></div>
         </section>
 
-        <section id="selection" class="panel tile" aria-labelledby="selection-title">
-          <p class="eyebrow">T-04</p>
+        <section id="selection" class="panel tile" aria-labelledby="selection-title" data-journey-step="4">
+          <p class="eyebrow">T-04 · Step 4</p>
           <h2 id="selection-title">Product Selection and Customization</h2>
           <p id="selection-empty">Select a recommendation to customize it.</p>
           <form id="selection-form" hidden>
@@ -94,52 +98,67 @@
           </form>
         </section>
 
-        <section id="delivery" class="panel tile" aria-labelledby="delivery-title">
-          <p class="eyebrow">T-05</p>
+        <section id="delivery" class="panel tile" aria-labelledby="delivery-title" data-journey-step="5">
+          <p class="eyebrow">T-05 · Step 5</p>
           <h2 id="delivery-title">Delivery and Recipient</h2>
           <form id="delivery-form">
             <label for="delivery-date">Date</label>
             <input id="delivery-date" type="date" required>
             <fieldset>
               <legend>Window</legend>
-              <label><input type="radio" name="window" value="10:00-12:00" required> 10:00–12:00 · Available</label>
-              <label><input type="radio" name="window" value="12:00-14:00"> 12:00–14:00 · Available</label>
-              <label><input type="radio" name="window" value="14:00-16:00"> 14:00–16:00 · Available</label>
+              <label><input type="radio" name="window" value="10:00-12:00" required> 10:00–12:00 <span class="badge">Available</span></label>
+              <label><input type="radio" name="window" value="12:00-14:00"> 12:00–14:00 <span class="badge">Available</span></label>
+              <label><input type="radio" name="window" value="14:00-16:00"> 14:00–16:00 <span class="badge">Available</span></label>
             </fieldset>
-            <label for="destination-reference">Destination reference</label>
-            <input id="destination-reference" type="text" maxlength="120" required
-                   placeholder="Opaque destination reference (not a raw address)">
-            <p class="hint">Recipient details stay reference-only. Raw name, address, and contact are rejected.</p>
+            <div class="destination-card">
+              <p class="destination-label">Deliver to</p>
+              <label for="destination-reference">Destination reference</label>
+              <input id="destination-reference" type="text" maxlength="120" required
+                     placeholder="Opaque destination reference (not a raw address)">
+              <p class="hint">Recipient details stay reference-only. Raw name, address, and contact are rejected.</p>
+            </div>
             <button class="primary" type="submit">Confirm Delivery</button>
           </form>
         </section>
 
-        <section id="order-summary" class="panel tile" aria-labelledby="summary-title">
-          <p class="eyebrow">T-06 / T-07</p>
+        <section id="order-summary" class="panel tile" aria-labelledby="summary-title" data-journey-step="6">
+          <p class="eyebrow">T-06 / T-07 · Step 6</p>
           <h2 id="summary-title">Order Summary</h2>
           <div id="summary-lines"></div>
           <p id="summary-total"></p>
           <h3>Checkout</h3>
           <form id="checkout-form">
-            <label for="payment-reference">Payment reference</label>
-            <input id="payment-reference" type="text" maxlength="200" required
-                   placeholder="Vault token — not a card number">
+            <div class="payment-card">
+              <p class="destination-label">Payment method</p>
+              <label for="payment-reference">Payment reference</label>
+              <input id="payment-reference" type="text" maxlength="200" required
+                     placeholder="Vault token — not a card number">
+            </div>
             <button class="primary" type="button" id="create-order">Create order</button>
-            <button class="primary" type="submit">Place Order</button>
+            <button class="primary lock" type="submit">Place Order</button>
           </form>
         </section>
 
-        <section id="order-tracking" class="panel tile" aria-labelledby="tracking-title">
-          <p class="eyebrow">T-08</p>
+        <section id="order-tracking" class="panel tile" aria-labelledby="tracking-title" data-journey-step="7">
+          <p class="eyebrow">T-08 · Step 7</p>
           <h2 id="tracking-title">Order Tracking</h2>
+          <p id="order-confirmed" class="confirmed-banner" hidden>Order Confirmed! Thank you for shopping with Lily's Florist.</p>
           <p id="order-status">No order yet.</p>
-          <ol id="tracking-steps" class="timeline">
-            <li data-status="created">Order Received</li>
-            <li data-status="preparing">Preparing Bouquet</li>
-            <li data-status="dispatched">Out for Delivery</li>
-            <li data-status="delivered">Delivered</li>
-          </ol>
+          <div class="tracking-layout">
+            <ol id="tracking-steps" class="timeline">
+              <li data-status="created">Order Received</li>
+              <li data-status="preparing">Preparing Bouquet</li>
+              <li data-status="dispatched">Out for Delivery</li>
+              <li data-status="delivered">Delivered</li>
+            </ol>
+            <aside id="latest-status" class="latest-status">
+              <img src="/assets/florist-status.svg" alt="">
+              <p id="latest-status-text">Awaiting order</p>
+              <p id="latest-status-updated" class="hint"></p>
+            </aside>
+          </div>
           <div class="support-actions">
+            <button class="primary" type="button" id="chat-with-lily">Chat with Lily</button>
             <button class="secondary" type="button" id="contact-florist">Contact Florist</button>
             <button class="secondary future" type="button" disabled aria-disabled="true">Escalate (Future)</button>
           </div>

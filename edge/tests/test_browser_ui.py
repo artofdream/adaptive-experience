@@ -94,6 +94,21 @@ class BrowserUiTests(unittest.TestCase):
         for forbidden in ("flower_type", "flower type", "colour", "ribbon", "gift card"):
             self.assertNotIn(forbidden, self.html.lower())
 
+    def test_sample_layout_3_color_and_journey_steps(self):
+        self.assertIn('data-visual="sample-layout-3"', self.html)
+        for step in range(1, 8):
+            self.assertIn(f'data-journey-step="{step}"', self.html)
+        self.assertIn("--purple: #6344a9", self.css)
+        self.assertIn("--green: #2f9e6b", self.css)
+        self.assertIn("linear-gradient", self.css)
+        self.assertIn("bouquet-hero.svg", self.html)
+        self.assertIn("bouquet-pink.svg", self.script)
+        self.assertIn("Chat with Lily", self.html)
+        self.assertIn("confirmed-banner", self.html)
+        self.assertIn("payment-card", self.html)
+        self.assertIn("florist-status.svg", self.html)
+        self.assertTrue((ROOT / "ui" / "assets" / "bouquet-hero.svg").exists())
+
     def test_shell_uses_edge_apis_without_data_plane_secrets(self):
         for path in ("/api/v1/session", "/api/v1/conversation/messages",
                      "/api/v1/shared-understanding", "/api/v1/workspace",

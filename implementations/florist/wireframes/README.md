@@ -46,4 +46,5 @@ python scripts/generate_florist_wireframe_assets.py
 
 Wireframes stay **grayscale** per the UX layout rules. The annotated sample
 uses purple product chrome for presentation; that colour is not carried into
-these MVP wireframes.
+these MVP wireframe SVGs. The runnable Edge UI (`edge/gateway/ui/`) is the
+mid-fidelity color match of `archive/sample-layout-3.png`.

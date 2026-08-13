@@ -39,4 +39,9 @@ The design surfaces map to the canonical tile catalog (see
 - Conversation stacks vertically.
 - Avoid tabs and spaces for positioning.
 - Preserve stable regions during updates.
-- Use grayscale for low fidelity.
+- Use grayscale for low-fidelity wireframe SVGs.
+- The runnable Adaptive Workspace (`edge/gateway/ui/`) is mid-fidelity color
+  matching `archive/sample-layout-3.png` (purple primary, lavender surfaces,
+  green availability/success). Journey steps 1–7 are presentations of T-01…T-08,
+  not a separate wizard. ADR-006 still limits T-04 to Arrangement, Size, and
+  Card message.
