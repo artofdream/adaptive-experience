@@ -135,6 +135,24 @@ class PrivacyTests(unittest.TestCase):
         confirmed["source"] = "order"
         self.guard.validate_publication("order", "order.confirmed", confirmed)
 
+    def test_guard_is_fail_closed_for_every_governed_topic(self):
+        # NFR-017: no governed topic can carry raw payment/PII at publish or delivery.
+        for topic_name, topic in self.guard.policy.topics.items():
+            poisoned = envelope(topic_name, {"card_number": "4111111111111111"})
+            poisoned["source"] = topic.publisher
+            with self.assertRaises(ValueError):
+                self.guard.validate_publication(topic.publisher, topic_name, poisoned)
+            for subscriber in topic.subscribers:
+                with self.assertRaises(ValueError):
+                    self.guard.validate_delivery(subscriber, topic_name, poisoned)
+
+    def test_forbidden_field_set_covers_payment_and_pii_families(self):
+        forbidden = PayloadPrivacyGuard.RAW_SENSITIVE_FIELDS
+        for field in ("card_number", "cvv", "cardholder_name", "recipient_name",
+                      "recipient_address", "recipient_email", "email", "phone", "address",
+                      "access_token", "refresh_token", "api_key", "authorization", "password"):
+            self.assertIn(field, forbidden)
+
     def test_missing_minimum_field_and_unknown_schema_are_rejected(self):
         message = envelope()
         del message["payload"]["payment_token"]
