@@ -69,8 +69,10 @@ Internal Orchestration (#144; contract in
   current context version. Tiles are namespaced facets: `conversation`,
   `shared_understanding`, `recommendations` (T-03, availability-aware, each item
   carrying a real-time `available` badge from `InventoryAvailabilityService` -
-  FR-011/FR-007), and `selection` once a product is chosen. The browser renders
-  one coherent snapshot instead of racing per-tile fetches.
+  FR-011/FR-007), `selection` once a product is chosen, `delivery` once scheduled,
+  `order_summary` (T-06, the itemized FR-018 breakdown recomputed from the current
+  decisions), and `order` (order_id + status). The browser renders one coherent
+  snapshot instead of racing per-tile fetches.
 - `POST /api/v1/selection` selects a recommended product (`product_id`,
   `observed_context_version`, and optional `options` limited to an eligible
   `size` and a physical `card_message` per ADR-006 -

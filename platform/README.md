@@ -92,6 +92,13 @@ plaintext production listeners are prohibited by ADR-012.
   aggregate (migration 008), one order per session (idempotent). It is a separate
   authoritative aggregate, pre-checkout; the workspace `order` facet surfaces
   `order_id` + `status`. Checkout, payment, and confirmation remain M5.
+- Order summary (#37, FR-018): the workspace `order_summary` facet is a derived
+  read projection - `PricingService.summarize` recomputes an itemized breakdown
+  (product + optional delivery fee; the card message is included per ADR-006) and
+  total from the current `decisions.product`/`decisions.delivery`, mirroring the
+  recommendations projection. It is a reference pricing model, publishes nothing,
+  and stores no state; the `order.summary.updated` event and authoritative pricing
+  belong to the checkout flow (M5, #38).
 - Order status (#34, FR-015): `POST .../order/status` advances the order
   forward-only through `created -> submitted -> preparing -> dispatched ->
   delivered` (migration 009), updating the aggregate and publishing
