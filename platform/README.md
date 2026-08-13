@@ -34,6 +34,26 @@ can test delivery semantics without pretending to reproduce production TLS and
 SASL. Production must apply the rendered policy with authenticated principals;
 plaintext production listeners are prohibited by ADR-012.
 
+## Event backbone workers
+
+The async event backbone runs end to end (#149). Two reference workers wire the
+tested relay/consumer components to Kafka:
+
+- `python platform/scripts/run_relay.py [--loop]` publishes outbox messages to
+  Kafka through a `SourceGuardedPublisher`: each message is validated against the
+  privacy guard using its declared `source` as the publishing principal, so
+  publication is fail-closed (a payload that leaks a raw sensitive field is never
+  acknowledged - it is released for retry, not published).
+- `python platform/scripts/run_consumer.py <group> [--loop]` subscribes to the
+  topics a group consumes (per the Kafka policy) and processes each record through
+  the governed path: delivery guard, idempotency, version-checked apply, retry/DLQ
+  routing, and manual offset commit. The reference handler records consumption;
+  real subscribers supply domain handlers.
+
+The container integration path exercises emit -> relay -> Kafka -> governed
+consume end to end. Reactive push of order status to the browser and the async
+payment evolution (#148) build on these workers.
+
 ## Guarantees
 
 - `orchestration.experience_session`, invalidation records, and outbox rows are

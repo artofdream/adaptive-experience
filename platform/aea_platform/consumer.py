@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from typing import Callable, Protocol
 
@@ -64,3 +65,32 @@ class GovernedConsumer:
             )
         self.offsets.commit(record)
         return outcome
+
+
+class KafkaGovernedConsumerRunner:
+    """Poll a Kafka consumer and process each record through a GovernedConsumer.
+
+    This is the runnable wiring for the reference consumer services: it decodes
+    the broker record, applies the governed consume path (delivery guard,
+    idempotency, version-checked apply, retry/DLQ, manual offset commit), and
+    returns the per-record outcomes.
+    """
+
+    def __init__(self, consumer, governed: GovernedConsumer):
+        self.consumer = consumer
+        self.governed = governed
+
+    def run_once(self, handler: Callable[[dict], None], *, timeout: float = 1.0,
+                 max_messages: int = 100) -> list[str]:
+        outcomes: list[str] = []
+        for _ in range(max_messages):
+            message = self.consumer.poll(timeout)
+            if message is None:
+                break
+            if message.error() is not None:
+                raise RuntimeError(f"kafka consume failed: {message.error()}")
+            envelope = json.loads(message.value())
+            record = ConsumedRecord(message.topic(), message.partition(),
+                                    message.offset(), envelope)
+            outcomes.append(self.governed.process(record, handler))
+        return outcomes
