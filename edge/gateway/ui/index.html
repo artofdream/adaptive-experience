@@ -4,76 +4,165 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="A guided flower discovery and ordering experience.">
-  <title>Lily — guided flower ordering</title>
+  <title>Lily's Florist — Adaptive Workspace</title>
   <link rel="stylesheet" href="/assets/styles.css">
   <script src="/assets/app.js" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#conversation">Skip to conversation</a>
   <header class="site-header">
-    <a class="brand" href="/" aria-label="Lily home">Lily</a>
-    <p>Flowers, made simple</p>
-    <button class="help-button" type="button" aria-controls="help" aria-expanded="false">How it works</button>
+    <a class="brand" href="/" aria-label="Lily's Florist home">Lily's Florist</a>
+    <nav class="header-nav" aria-label="Workspace">
+      <a href="#order-tracking">Orders</a>
+      <button class="help-button" type="button" aria-controls="help" aria-expanded="false">Help</button>
+    </nav>
   </header>
 
-  <main>
-    <section class="welcome" aria-labelledby="page-title">
-      <p class="eyebrow">Your flower assistant</p>
-      <h1 id="page-title">Tell us who the flowers are for</h1>
-      <p>Write naturally. We’ll ask only what is needed, show what we understood, and let you correct it.</p>
-      <ol class="steps" aria-label="Ordering progress">
-        <li aria-current="step"><span>1</span> Share</li>
-        <li><span>2</span> Choose</li>
-        <li><span>3</span> Deliver</li>
-        <li><span>4</span> Review</li>
-      </ol>
+  <main class="workspace" data-name="adaptive-workspace-mvp">
+    <section id="conversation" class="panel conversation" aria-labelledby="conversation-title">
+      <header>
+        <div>
+          <p class="eyebrow">T-01</p>
+          <h2 id="conversation-title">Conversation and Intent</h2>
+          <p class="subtitle">Persistent AI Floral Concierge</p>
+        </div>
+        <span class="status">AI assistant</span>
+      </header>
+      <p class="welcome-card">
+        <strong>Welcome to Lily's Florist</strong>
+        <span>AI-assisted flower purchase</span>
+      </p>
+      <div id="messages" class="messages" role="log" aria-live="polite" aria-relevant="additions">
+        <p class="assistant-message">Hello! What occasion are you shopping for today?</p>
+      </div>
+      <p id="disclosure" class="disclosure">AI-generated interpretation; review and correct before ordering.</p>
+      <form id="message-form" aria-describedby="message-hint">
+        <label for="message">Your message</label>
+        <div class="composer">
+          <textarea id="message" name="message" rows="2" maxlength="2000" required
+                    placeholder="For example: Birthday roses for Mum, under €75"></textarea>
+          <button class="send" type="submit" aria-label="Send message">Send</button>
+        </div>
+        <p id="message-hint">Include anything you already know. You can change every detail later.</p>
+      </form>
     </section>
 
-    <div class="workspace">
-      <section id="conversation" class="panel conversation" aria-labelledby="conversation-title">
-        <header>
-          <div>
-            <p class="eyebrow">Step 1</p>
-            <h2 id="conversation-title">Start the conversation</h2>
-          </div>
-          <span class="status">AI assistant</span>
-        </header>
-        <div id="messages" class="messages" role="log" aria-live="polite" aria-relevant="additions">
-          <p class="assistant-message">Hi, I can help you find the right flowers. What’s the occasion?</p>
-        </div>
-        <form id="message-form" aria-describedby="message-hint">
-          <label for="message">Your message</label>
-          <textarea id="message" name="message" rows="3" maxlength="2000" required
-                    placeholder="For example: Birthday roses for Mum, under €75"></textarea>
-          <p id="message-hint">Include anything you already know. You can change every detail later.</p>
-          <button class="primary" type="submit">Continue</button>
-        </form>
-      </section>
-
+    <div class="workspace-main">
       <aside class="panel understanding" aria-labelledby="understanding-title">
-        <p class="eyebrow">Always visible</p>
-        <h2 id="understanding-title">What we understand</h2>
+        <p class="eyebrow">T-02</p>
+        <h2 id="understanding-title">Intent Summary (Shared Understanding)</h2>
         <p id="understanding-empty">Your occasion, recipient, budget, style, flower preference, and timing will appear here.</p>
         <dl id="understanding-list" hidden></dl>
         <p class="reassurance">Nothing is final until you review the order.</p>
+        <button class="secondary" type="button" id="correct-open">Correct</button>
+        <form id="correct-form" hidden>
+          <label for="correct-facet">Facet</label>
+          <select id="correct-facet">
+            <option value="occasion">Occasion</option>
+            <option value="recipient">Recipient</option>
+            <option value="budget">Budget</option>
+            <option value="style">Style</option>
+            <option value="flower_preference">Flower preference</option>
+            <option value="timing">Timing</option>
+          </select>
+          <label for="correct-value">Correction</label>
+          <input id="correct-value" type="text" maxlength="200">
+          <button class="primary" type="submit">Save correction</button>
+        </form>
       </aside>
-    </div>
 
-    <section class="next-steps" aria-labelledby="next-title">
-      <p class="eyebrow">Coming next</p>
-      <h2 id="next-title">Your order at a glance</h2>
+      <p class="workspace-label">Adaptive Workspace (T-03 … T-08)</p>
       <div class="tile-grid">
-        <article><span>2</span><h3>Recommendations</h3><p>Options matched to what you tell us.</p></article>
-        <article><span>3</span><h3>Customize</h3><p>Arrangement, size, and a physical message card.</p></article>
-        <article><span>4</span><h3>Delivery</h3><p>Recipient, date, time, and location.</p></article>
-        <article><span>5</span><h3>Review and pay</h3><p>A clear summary before confirmation.</p></article>
+        <section id="recommendations" class="panel tile" aria-labelledby="recommendations-title">
+          <p class="eyebrow">T-03</p>
+          <h2 id="recommendations-title">Curated Recommendations</h2>
+          <div id="recommendation-cards" class="cards"></div>
+        </section>
+
+        <section id="selection" class="panel tile" aria-labelledby="selection-title">
+          <p class="eyebrow">T-04</p>
+          <h2 id="selection-title">Product Selection and Customization</h2>
+          <p id="selection-empty">Select a recommendation to customize it.</p>
+          <form id="selection-form" hidden>
+            <label for="arrangement">Arrangement</label>
+            <input id="arrangement" type="text" readonly>
+            <label for="size">Size</label>
+            <input id="size" type="text" maxlength="40" placeholder="Standard">
+            <label for="card-message">Card message</label>
+            <textarea id="card-message" rows="2" maxlength="280" placeholder="A short message on the physical card"></textarea>
+            <button class="primary" type="submit">Update</button>
+          </form>
+        </section>
+
+        <section id="delivery" class="panel tile" aria-labelledby="delivery-title">
+          <p class="eyebrow">T-05</p>
+          <h2 id="delivery-title">Delivery and Recipient</h2>
+          <form id="delivery-form">
+            <label for="delivery-date">Date</label>
+            <input id="delivery-date" type="date" required>
+            <fieldset>
+              <legend>Window</legend>
+              <label><input type="radio" name="window" value="10:00-12:00" required> 10:00–12:00 · Available</label>
+              <label><input type="radio" name="window" value="12:00-14:00"> 12:00–14:00 · Available</label>
+              <label><input type="radio" name="window" value="14:00-16:00"> 14:00–16:00 · Available</label>
+            </fieldset>
+            <label for="destination-reference">Destination reference</label>
+            <input id="destination-reference" type="text" maxlength="120" required
+                   placeholder="Opaque destination reference (not a raw address)">
+            <p class="hint">Recipient details stay reference-only. Raw name, address, and contact are rejected.</p>
+            <button class="primary" type="submit">Confirm Delivery</button>
+          </form>
+        </section>
+
+        <section id="order-summary" class="panel tile" aria-labelledby="summary-title">
+          <p class="eyebrow">T-06 / T-07</p>
+          <h2 id="summary-title">Order Summary</h2>
+          <div id="summary-lines"></div>
+          <p id="summary-total"></p>
+          <h3>Checkout</h3>
+          <form id="checkout-form">
+            <label for="payment-reference">Payment reference</label>
+            <input id="payment-reference" type="text" maxlength="200" required
+                   placeholder="Vault token — not a card number">
+            <button class="primary" type="button" id="create-order">Create order</button>
+            <button class="primary" type="submit">Place Order</button>
+          </form>
+        </section>
+
+        <section id="order-tracking" class="panel tile" aria-labelledby="tracking-title">
+          <p class="eyebrow">T-08</p>
+          <h2 id="tracking-title">Order Tracking</h2>
+          <p id="order-status">No order yet.</p>
+          <ol id="tracking-steps" class="timeline">
+            <li data-status="created">Order Received</li>
+            <li data-status="preparing">Preparing Bouquet</li>
+            <li data-status="dispatched">Out for Delivery</li>
+            <li data-status="delivered">Delivered</li>
+          </ol>
+          <div class="support-actions">
+            <button class="secondary" type="button" id="contact-florist">Contact Florist</button>
+            <button class="secondary future" type="button" disabled aria-disabled="true">Escalate (Future)</button>
+          </div>
+        </section>
       </div>
-    </section>
+    </div>
   </main>
+
+  <button class="aso" type="button" aria-controls="help" aria-expanded="false" title="ASO FAQ overlay">?</button>
 
   <dialog id="help" aria-labelledby="help-title">
     <h2 id="help-title">How it works</h2>
-    <ol><li>Describe what you need in your own words.</li><li>Check and correct what the assistant understood.</li><li>Choose flowers, delivery, and review before paying.</li></ol>
+    <ol>
+      <li>Describe what you need in your own words.</li>
+      <li>Check and correct what the assistant understood.</li>
+      <li>Choose flowers, delivery, and review before paying.</li>
+    </ol>
+    <form id="support-form">
+      <label for="support-question">Ask from approved information</label>
+      <input id="support-question" type="text" maxlength="500" placeholder="For example: When will delivery arrive?">
+      <button class="primary" type="submit">Ask</button>
+    </form>
+    <p id="support-answer" hidden></p>
     <button type="button" data-close-help>Got it</button>
   </dialog>
   <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
