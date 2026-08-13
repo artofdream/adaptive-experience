@@ -424,10 +424,11 @@ class BffApp:
             facets["delivery"] = delivery
         if isinstance(facets_in.get("order"), dict):
             order = {}
-            if isinstance(facets_in["order"].get("order_id"), str):
-                order["order_id"] = facets_in["order"]["order_id"]
-            if isinstance(facets_in["order"].get("status"), str):
-                order["status"] = facets_in["order"]["status"]
+            for key in ("order_id", "status", "authoritative_status"):
+                if isinstance(facets_in["order"].get(key), str):
+                    order[key] = facets_in["order"][key]
+            if isinstance(facets_in["order"].get("delayed"), bool):
+                order["delayed"] = facets_in["order"]["delayed"]
             facets["order"] = order
         if isinstance(facets_in.get("order_summary"), dict):
             summary_in = facets_in["order_summary"]

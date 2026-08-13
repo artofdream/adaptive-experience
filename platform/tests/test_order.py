@@ -31,6 +31,14 @@ class FakeOrderStore:
             return {"order_id": "order-1", "status": self.current, "changed": False}
         return {"order_id": "order-1", "status": kwargs["target_status"], "changed": True}
 
+    def set_delay(self, **kwargs):
+        self.delayed = kwargs
+        if not self.exists:
+            return None
+        delayed = kwargs["delayed"]
+        return {"order_id": "order-1", "status": self.current, "delayed": delayed,
+                "authoritative_status": "delayed" if delayed else self.current}
+
 
 class OrderServiceTests(unittest.TestCase):
     def _service(self, store=None):
@@ -85,6 +93,27 @@ class OrderServiceTests(unittest.TestCase):
         with self.assertRaises(OrderNotFound):
             service.advance_status(session_id="s", target_status="preparing",
                                    correlation_id="c", subject_reference="subj")
+
+    def test_advance_status_allows_completion(self):
+        store = FakeOrderStore(current="delivered")
+        result = OrderService(store).advance_status(
+            session_id="s", target_status="completed", correlation_id="c",
+            subject_reference="subj")
+        self.assertEqual("completed", result["status"])
+
+    def test_set_delay_publishes_authoritative_state(self):
+        service = OrderService(FakeOrderStore(current="preparing"))
+        delayed = service.set_delay(session_id="s", delayed=True, correlation_id="c",
+                                    subject_reference="subj")
+        self.assertTrue(delayed["delayed"])
+        self.assertEqual("delayed", delayed["authoritative_status"])
+        cleared = service.set_delay(session_id="s", delayed=False, correlation_id="c",
+                                    subject_reference="subj")
+        self.assertFalse(cleared["delayed"])
+        self.assertEqual("preparing", cleared["authoritative_status"])
+        with self.assertRaises(OrderNotFound):
+            OrderService(FakeOrderStore(exists=False)).set_delay(
+                session_id="s", delayed=True, correlation_id="c", subject_reference="subj")
 
 
 if __name__ == "__main__":

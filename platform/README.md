@@ -108,14 +108,17 @@ plaintext production listeners are prohibited by ADR-012.
   rejected; the guard forbids card fields). A declined payment leaves the order
   `submitted`. Authorization is synchronous now behind the seam; the async payment
   service is a tracked future evolution (#148).
-- Order status (#34, FR-015): `POST .../order/status` advances the order
-  forward-only through `created -> submitted -> preparing -> dispatched ->
-  delivered` (migration 009), updating the aggregate and publishing
-  `order.status.updated` (`order_id`, `authoritative_status`) in one transaction.
-  This is the order/fulfillment authority, not a customer action; customers read
-  the current status through the workspace `order` facet. Backward transitions
-  return 409 and unknown statuses 422. Reactive push of status changes over the
-  browser SSE stream is a follow-on.
+- Order status and tracking (#34/#42, FR-015/FR-023): `POST .../order/status`
+  advances the order forward-only through `created -> submitted -> confirmed ->
+  preparing -> dispatched -> delivered -> completed` (migrations 009/010),
+  publishing `order.status.updated` (`order_id`, `authoritative_status`).
+  `POST .../order/delay` sets/clears an orthogonal `delayed` flag (FR-023): while
+  set, the published and displayed authoritative state is `delayed`; a forward
+  move resolves it. These are order/fulfillment authority actions, not customer
+  actions; customers read the latest authoritative state through the workspace
+  `order` facet (`status`, `delayed`, `authoritative_status`). FR-023 displays the
+  latest state, not a history. Reactive push over the browser SSE stream is
+  deferred to the M7 event backbone (#149).
 - `OpenAICompatibleIntentInterpreter` supplies a vendor-neutral Generative AI
   boundary using strict JSON output and a timeout capped at 2.5 seconds.
   `AvailableIntentInterpreter` fails over to the deterministic local interpreter

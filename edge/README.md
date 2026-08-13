@@ -71,7 +71,8 @@ Internal Orchestration (#144; contract in
   carrying a real-time `available` badge from `InventoryAvailabilityService` -
   FR-011/FR-007), `selection` once a product is chosen, `delivery` once scheduled,
   `order_summary` (T-06, the itemized FR-018 breakdown recomputed from the current
-  decisions), and `order` (order_id + status). The browser renders one coherent
+  decisions), and `order` (T-08 tracking: order_id, status, delayed, and the
+  latest `authoritative_status` per FR-023). The browser renders one coherent
   snapshot instead of racing per-tile fetches.
 - `POST /api/v1/selection` selects a recommended product (`product_id`,
   `observed_context_version`, and optional `options` limited to an eligible

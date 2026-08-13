@@ -5,9 +5,10 @@ from datetime import datetime, timezone
 from typing import Callable
 
 # Order status lifecycle: creation, checkout submission, payment confirmation
-# (M5), then FR-015 fulfillment. Status only moves forward along this sequence.
+# (M5), then FR-015/FR-023 fulfillment through completion. Status only moves
+# forward along this sequence; `delayed` is an orthogonal flag (FR-023).
 ORDER_STATUS_SEQUENCE = ("created", "submitted", "confirmed", "preparing",
-                         "dispatched", "delivered")
+                         "dispatched", "delivered", "completed")
 
 
 class OrderIncompleteError(RuntimeError):
@@ -83,6 +84,22 @@ class OrderService:
         if not result["changed"]:
             raise OrderStatusError(
                 f"cannot move from {result['status']} to {target_status}")
+        return result
+
+    def set_delay(self, *, session_id: str, delayed: bool, correlation_id: str,
+                  subject_reference: str) -> dict:
+        """Set or clear the delay flag and publish the authoritative state (FR-023).
+
+        Delay is orthogonal to the linear status: while set, the published and
+        displayed authoritative state is ``delayed``; clearing it republishes the
+        current linear status.
+        """
+        result = self.store.set_delay(
+            session_id=session_id, delayed=bool(delayed), message_id=str(self.new_id()),
+            correlation_id=correlation_id, subject_reference=subject_reference,
+            published_at=self.now().astimezone(timezone.utc))
+        if result is None:
+            raise OrderNotFound(session_id)
         return result
 
 
