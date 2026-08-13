@@ -96,6 +96,49 @@ class BackboneIntegrationTests(unittest.TestCase):
         finally:
             connection.close()
 
+    def test_relay_publishes_a_batch_in_one_pass(self):
+        import json
+
+        import psycopg
+
+        from aea_platform.adapters import KafkaAcknowledgedPublisher
+
+        sys.path.insert(0, str(ROOT / "scripts"))
+        from run_relay import build_relay
+
+        bootstrap = os.environ["AEA_KAFKA_BOOTSTRAP"]
+        connection = psycopg.connect(os.environ["AEA_POSTGRES_DSN"], autocommit=True)
+        try:
+            session_id, order_id = uuid.uuid4(), uuid.uuid4()
+            connection.execute(
+                "INSERT INTO orchestration.experience_session "
+                "(session_id,state_schema_version,expires_at) "
+                "VALUES (%s,1,clock_timestamp() + interval '1 day')", (session_id,))
+            batch = 50
+            for _ in range(batch):
+                message_id = uuid.uuid4()
+                connection.execute(
+                    "INSERT INTO orchestration.outbox_message "
+                    "(message_id,session_id,context_version,topic,aggregate_key,envelope) "
+                    "VALUES (%s,%s,0,'order.status.updated',%s,%s::jsonb)",
+                    (message_id, session_id, str(order_id),
+                     json.dumps(_order_status_envelope(session_id, message_id, order_id))))
+
+            relay = build_relay(connection, worker="relay-load",
+                                publisher=KafkaAcknowledgedPublisher(bootstrap, "relay-load"))
+            start = time.monotonic()
+            published, failed = relay.run_once(limit=200)
+            elapsed = time.monotonic() - start
+
+            # The whole batch is claimed and acknowledged in a single pass, nothing left pending.
+            self.assertEqual((batch, 0), (published, failed))
+            self.assertEqual(0, connection.execute(
+                "SELECT count(*) FROM orchestration.outbox_message "
+                "WHERE session_id=%s AND published_at IS NULL", (session_id,)).fetchone()[0])
+            self.assertLess(elapsed, 30, f"batch relay throughput too slow: {elapsed:.1f}s")
+        finally:
+            connection.close()
+
 
 @unittest.skipUnless(os.environ.get("AEA_INTEGRATION") == "1", "container integration test")
 class KafkaIntegrationTests(unittest.TestCase):

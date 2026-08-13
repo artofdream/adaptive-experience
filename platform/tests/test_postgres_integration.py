@@ -235,6 +235,50 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
             "SELECT count(*) FROM orchestration.customer_order WHERE session_id=%s",
             (session_id,)).fetchone()[0])
 
+    def test_workspace_projection_latency_under_repeated_load(self):
+        import asyncio
+        import time
+        from aea_platform.adapters import (PsycopgExperienceStateStore,
+                                           PsycopgInventoryAvailabilityStore)
+        from aea_platform.internal_api import InternalOrchestrationApp
+        from aea_platform.inventory import AvailabilitySnapshot, InventoryAvailabilityService
+        from aea_platform.state import StatePatch
+
+        session_id = self.create_session()
+        now = datetime.now(timezone.utc)
+        InventoryAvailabilityService(PsycopgInventoryAvailabilityStore(self.connection),
+            now=lambda: now).record(AvailabilitySnapshot("classic-rose-dozen", 5, 1, now))
+        store = PsycopgExperienceStateStore(self.connection)
+        for expected, patch, facet in (
+                (0, {"shared_understanding": {"occasion": "birthday"}}, "shared_understanding.occasion"),
+                (1, {"decisions": {"product": {"product_id": "classic-rose-dozen"}}}, "decisions.product"),
+                (2, {"decisions": {"delivery": {"destination_reference": "addr-1",
+                     "timing": {"date": "2026-09-01", "window": "morning"}}}}, "decisions.delivery")):
+            with self.connection.transaction():
+                store.apply_patch(str(session_id), expected, 1,
+                                  StatePatch.create(patch, [facet]), [])
+
+        app = InternalOrchestrationApp(self.connection, "internal-token")
+        asyncio.run(self._invoke_internal(
+            app, "POST", f"/internal/v1/sessions/{session_id}/order",
+            json.dumps({"correlation_id": "ord"}).encode()))
+
+        # The heaviest read path: aggregate every facet (conversation, intent,
+        # recommendations, order summary, order, delivery, selection) repeatedly.
+        latencies, facets, status = [], None, None
+        for _ in range(50):
+            start = time.monotonic()
+            status, workspace = asyncio.run(self._invoke_internal(
+                app, "GET", f"/internal/v1/sessions/{session_id}/workspace"))
+            latencies.append(time.monotonic() - start)
+            facets = workspace["facets"]
+        self.assertEqual(200, status)
+        for key in ("recommendations", "order_summary", "order", "delivery", "selection"):
+            self.assertIn(key, facets)
+        latencies.sort()
+        p95 = latencies[int(0.95 * len(latencies))]
+        self.assertLess(p95, 1.0, f"workspace projection p95 too slow: {p95:.3f}s")
+
     def test_order_summary_facet_reflects_and_recomputes_from_decisions(self):
         import asyncio
         from aea_platform.adapters import PsycopgExperienceStateStore
