@@ -154,3 +154,24 @@ class PrivacyEnforcingPublisher:
     def publish(self, topic: str, key: str, message: dict) -> None:
         self.guard.validate_publication(self.principal, topic, message)
         self.publisher.publish(topic, key, message)
+
+
+class SourceGuardedPublisher:
+    """Relay publisher that enforces the privacy guard per message.
+
+    The outbox relay carries messages from many publishers, so the publishing
+    principal is each message's declared `source`. The guard validates that the
+    source is the governed publisher for the topic and that the payload is clean
+    before the broker acknowledgement, keeping the relay fail-closed.
+    """
+
+    def __init__(self, guard: PayloadPrivacyGuard, publisher: Publisher):
+        self.guard = guard
+        self.publisher = publisher
+
+    def publish(self, topic: str, key: str, message: dict) -> None:
+        source = message.get("source") if isinstance(message, dict) else None
+        if not isinstance(source, str) or not source:
+            raise ValueError("envelope source is required for guarded publication")
+        self.guard.validate_publication(source, topic, message)
+        self.publisher.publish(topic, key, message)

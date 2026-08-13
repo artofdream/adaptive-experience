@@ -9,7 +9,8 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from aea_platform.policy import KafkaPolicy
-from aea_platform.privacy import PayloadPrivacyGuard, PrivacyEnforcingPublisher
+from aea_platform.privacy import (PayloadPrivacyGuard, PrivacyEnforcingPublisher,
+                                  SourceGuardedPublisher)
 
 
 class RecordingPublisher:
@@ -107,6 +108,25 @@ class PrivacyTests(unittest.TestCase):
         confirmed["source"] = "order"
         with self.assertRaises(ValueError):
             self.guard.validate_publication("order", "order.confirmed", confirmed)
+
+    def test_source_guarded_relay_publisher_is_fail_closed(self):
+        target = RecordingPublisher()
+        relay = SourceGuardedPublisher(self.guard, target)
+        # A clean, correctly-sourced event reaches the broker.
+        message = envelope()
+        relay.publish(message["topic"], "draft-1", message)
+        self.assertEqual(1, len(target.messages))
+        # A poisoned payload never reaches the broker.
+        poisoned = envelope()
+        poisoned["payload"]["card_number"] = "4111111111111111"
+        with self.assertRaises(ValueError):
+            relay.publish(poisoned["topic"], "draft-1", poisoned)
+        # A message whose source is not the topic's governed publisher is rejected.
+        wrong_source = envelope()
+        wrong_source["source"] = "workspace"
+        with self.assertRaises(PermissionError):
+            relay.publish(wrong_source["topic"], "draft-1", wrong_source)
+        self.assertEqual(1, len(target.messages))
 
     def test_valid_checkout_events_are_authorized(self):
         requested = envelope("order.checkout.requested", {"draft_order_id": "d1", "total": 82.0})
