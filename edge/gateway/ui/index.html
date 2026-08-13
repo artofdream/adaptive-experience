@@ -13,16 +13,28 @@
   <header class="site-header">
     <a class="brand" href="/" aria-label="Lily's Florist home">Lily's Florist</a>
     <nav class="header-nav" aria-label="Workspace">
-      <a href="#order-tracking">Orders</a>
+      <button type="button" class="text-link" data-goto-step="7">Orders</button>
       <button class="help-button" type="button" aria-controls="help" aria-expanded="false">Help</button>
     </nav>
   </header>
 
-  <main class="workspace" data-name="adaptive-workspace-mvp" data-visual="sample-layout-3">
-    <section id="conversation" class="panel conversation" aria-labelledby="conversation-title" data-journey-step="1">
+  <nav class="journey-nav" aria-label="Journey stages">
+    <ol class="steps" id="journey-steps">
+      <li><button type="button" data-step="1" aria-current="step"><span>1</span> Discover</button></li>
+      <li><button type="button" data-step="2"><span>2</span> Understand</button></li>
+      <li><button type="button" data-step="3"><span>3</span> Choose</button></li>
+      <li><button type="button" data-step="4"><span>4</span> Customize</button></li>
+      <li><button type="button" data-step="5"><span>5</span> Deliver</button></li>
+      <li><button type="button" data-step="6"><span>6</span> Review &amp; pay</button></li>
+      <li><button type="button" data-step="7"><span>7</span> Track</button></li>
+    </ol>
+  </nav>
+
+  <main class="workspace" data-name="adaptive-workspace-mvp" data-visual="sample-layout-3" data-journey-mode="steps">
+    <section id="conversation" class="panel conversation" aria-labelledby="conversation-title">
       <header>
         <div>
-          <p class="eyebrow">T-01 · Step 1–2</p>
+          <p class="eyebrow">T-01 · Persistent</p>
           <h2 id="conversation-title">Conversation and Intent</h2>
           <p class="subtitle">Persistent AI Floral Concierge</p>
         </div>
@@ -35,7 +47,7 @@
         </span>
         <img class="welcome-art" src="/assets/bouquet-hero.svg" alt="">
       </p>
-      <div id="messages" class="messages" role="log" aria-live="polite" aria-relevant="additions" data-journey-step="2">
+      <div id="messages" class="messages" role="log" aria-live="polite" aria-relevant="additions">
         <p class="assistant-message">Hello! What occasion are you shopping for today?</p>
       </div>
       <p id="disclosure" class="disclosure">AI-generated interpretation; review and correct before ordering.</p>
@@ -51,8 +63,8 @@
     </section>
 
     <div class="workspace-main">
-      <aside class="panel understanding" aria-labelledby="understanding-title" data-journey-step="2">
-        <p class="eyebrow">T-02 · Step 2</p>
+      <aside class="panel understanding" aria-labelledby="understanding-title">
+        <p class="eyebrow">T-02 · Persistent</p>
         <h2 id="understanding-title">Intent Summary (Shared Understanding)</h2>
         <p id="understanding-empty">Your occasion, recipient, budget, style, flower preference, and timing will appear here.</p>
         <dl id="understanding-list" hidden></dl>
@@ -74,95 +86,121 @@
         </form>
       </aside>
 
-      <p class="workspace-label">Adaptive Workspace (T-03 … T-08)</p>
-      <div class="tile-grid">
-        <section id="recommendations" class="panel tile" aria-labelledby="recommendations-title" data-journey-step="3">
-          <p class="eyebrow">T-03 · Step 3</p>
-          <h2 id="recommendations-title">Curated Recommendations</h2>
-          <p class="subtitle">Recommended for your occasion</p>
-          <div id="recommendation-cards" class="cards"></div>
-        </section>
+      <div class="adaptive-region" aria-live="polite">
+        <div class="adaptive-header">
+          <p class="workspace-label">Adaptive Workspace</p>
+          <p id="step-caption" class="step-caption">Step 1 · Enter / Discovery</p>
+        </div>
 
-        <section id="selection" class="panel tile" aria-labelledby="selection-title" data-journey-step="4">
-          <p class="eyebrow">T-04 · Step 4</p>
-          <h2 id="selection-title">Product Selection and Customization</h2>
-          <p id="selection-empty">Select a recommendation to customize it.</p>
-          <form id="selection-form" hidden>
-            <label for="arrangement">Arrangement</label>
-            <input id="arrangement" type="text" readonly>
-            <label for="size">Size</label>
-            <input id="size" type="text" maxlength="40" placeholder="Standard">
-            <label for="card-message">Card message</label>
-            <textarea id="card-message" rows="2" maxlength="280" placeholder="A short message on the physical card"></textarea>
-            <button class="primary" type="submit">Update</button>
-          </form>
-        </section>
+        <p id="step-guidance" class="panel step-guidance" data-journey-steps="1,2">
+          Describe the occasion in the conversation. Shared Understanding updates as we learn
+          what you need. When ready, continue to recommendations.
+          <button class="primary" type="button" data-goto-step="3">Continue to recommendations</button>
+        </p>
 
-        <section id="delivery" class="panel tile" aria-labelledby="delivery-title" data-journey-step="5">
-          <p class="eyebrow">T-05 · Step 5</p>
-          <h2 id="delivery-title">Delivery and Recipient</h2>
-          <form id="delivery-form">
-            <label for="delivery-date">Date</label>
-            <input id="delivery-date" type="date" required>
-            <fieldset>
-              <legend>Window</legend>
-              <label><input type="radio" name="window" value="10:00-12:00" required> 10:00–12:00 <span class="badge">Available</span></label>
-              <label><input type="radio" name="window" value="12:00-14:00"> 12:00–14:00 <span class="badge">Available</span></label>
-              <label><input type="radio" name="window" value="14:00-16:00"> 14:00–16:00 <span class="badge">Available</span></label>
-            </fieldset>
-            <div class="destination-card">
-              <p class="destination-label">Deliver to</p>
-              <label for="destination-reference">Destination reference</label>
-              <input id="destination-reference" type="text" maxlength="120" required
-                     placeholder="Opaque destination reference (not a raw address)">
-              <p class="hint">Recipient details stay reference-only. Raw name, address, and contact are rejected.</p>
+        <div class="tile-grid">
+          <section id="recommendations" class="panel tile" aria-labelledby="recommendations-title"
+                   data-journey-steps="3" hidden>
+            <p class="eyebrow">T-03 · Step 3</p>
+            <h2 id="recommendations-title">Curated Recommendations</h2>
+            <p class="subtitle">Recommended for your occasion</p>
+            <div id="recommendation-cards" class="cards"></div>
+            <button class="secondary" type="button" data-goto-step="4">Continue to customize</button>
+          </section>
+
+          <section id="selection" class="panel tile" aria-labelledby="selection-title"
+                   data-journey-steps="4" hidden>
+            <p class="eyebrow">T-04 · Step 4</p>
+            <h2 id="selection-title">Product Selection and Customization</h2>
+            <p id="selection-empty">Select a recommendation to customize it.</p>
+            <form id="selection-form" hidden>
+              <label for="arrangement">Arrangement</label>
+              <input id="arrangement" type="text" readonly>
+              <label for="size">Size</label>
+              <input id="size" type="text" maxlength="40" placeholder="Standard">
+              <label for="card-message">Card message</label>
+              <textarea id="card-message" rows="2" maxlength="280" placeholder="A short message on the physical card"></textarea>
+              <button class="primary" type="submit">Update</button>
+            </form>
+            <button class="secondary" type="button" data-goto-step="5">Continue to delivery</button>
+          </section>
+
+          <section id="delivery" class="panel tile" aria-labelledby="delivery-title"
+                   data-journey-steps="5" hidden>
+            <p class="eyebrow">T-05 · Step 5</p>
+            <h2 id="delivery-title">Delivery and Recipient</h2>
+            <form id="delivery-form">
+              <label for="delivery-date">Date</label>
+              <input id="delivery-date" type="date" required>
+              <fieldset>
+                <legend>Window</legend>
+                <label><input type="radio" name="window" value="10:00-12:00" required> 10:00–12:00 <span class="badge">Available</span></label>
+                <label><input type="radio" name="window" value="12:00-14:00"> 12:00–14:00 <span class="badge">Available</span></label>
+                <label><input type="radio" name="window" value="14:00-16:00"> 14:00–16:00 <span class="badge">Available</span></label>
+              </fieldset>
+              <div class="destination-card">
+                <p class="destination-label">Deliver to</p>
+                <label for="destination-reference">Destination reference</label>
+                <input id="destination-reference" type="text" maxlength="120" required
+                       placeholder="Opaque destination reference (not a raw address)">
+                <p class="hint">Recipient details stay reference-only. Raw name, address, and contact are rejected.</p>
+              </div>
+              <button class="primary" type="submit">Confirm Delivery</button>
+            </form>
+          </section>
+
+          <section id="order-summary" class="panel tile" aria-labelledby="summary-title"
+                   data-journey-steps="5,6" hidden>
+            <p class="eyebrow">T-06 · Steps 5–6</p>
+            <h2 id="summary-title">Order Summary</h2>
+            <div id="summary-lines"></div>
+            <p id="summary-total"></p>
+            <button class="secondary" type="button" data-goto-step="6" data-show-on-step="5">Continue to checkout</button>
+          </section>
+
+          <section id="checkout" class="panel tile" aria-labelledby="checkout-title"
+                   data-journey-steps="6" hidden>
+            <p class="eyebrow">T-07 · Step 6</p>
+            <h2 id="checkout-title">Checkout and Confirmation</h2>
+            <form id="checkout-form">
+              <div class="payment-card">
+                <p class="destination-label">Payment method</p>
+                <label for="payment-reference">Payment reference</label>
+                <input id="payment-reference" type="text" maxlength="200" required
+                       placeholder="Vault token — not a card number">
+              </div>
+              <button class="primary" type="button" id="create-order">Create order</button>
+              <button class="primary lock" type="submit">Place Order</button>
+            </form>
+            <button class="secondary" type="button" data-goto-step="7">View tracking</button>
+          </section>
+
+          <section id="order-tracking" class="panel tile" aria-labelledby="tracking-title"
+                   data-journey-steps="7" hidden>
+            <p class="eyebrow">T-08 · Step 7</p>
+            <h2 id="tracking-title">Order Tracking</h2>
+            <p id="order-confirmed" class="confirmed-banner" hidden>Order Confirmed! Thank you for shopping with Lily's Florist.</p>
+            <p id="order-status">No order yet.</p>
+            <div class="tracking-layout">
+              <ol id="tracking-steps" class="timeline">
+                <li data-status="created">Order Received</li>
+                <li data-status="preparing">Preparing Bouquet</li>
+                <li data-status="dispatched">Out for Delivery</li>
+                <li data-status="delivered">Delivered</li>
+              </ol>
+              <aside id="latest-status" class="latest-status">
+                <img src="/assets/florist-status.svg" alt="">
+                <p id="latest-status-text">Awaiting order</p>
+                <p id="latest-status-updated" class="hint"></p>
+              </aside>
             </div>
-            <button class="primary" type="submit">Confirm Delivery</button>
-          </form>
-        </section>
-
-        <section id="order-summary" class="panel tile" aria-labelledby="summary-title" data-journey-step="6">
-          <p class="eyebrow">T-06 / T-07 · Step 6</p>
-          <h2 id="summary-title">Order Summary</h2>
-          <div id="summary-lines"></div>
-          <p id="summary-total"></p>
-          <h3>Checkout</h3>
-          <form id="checkout-form">
-            <div class="payment-card">
-              <p class="destination-label">Payment method</p>
-              <label for="payment-reference">Payment reference</label>
-              <input id="payment-reference" type="text" maxlength="200" required
-                     placeholder="Vault token — not a card number">
+            <div class="support-actions">
+              <button class="primary" type="button" id="chat-with-lily">Chat with Lily</button>
+              <button class="secondary" type="button" id="contact-florist">Contact Florist</button>
+              <button class="secondary future" type="button" disabled aria-disabled="true">Escalate (Future)</button>
             </div>
-            <button class="primary" type="button" id="create-order">Create order</button>
-            <button class="primary lock" type="submit">Place Order</button>
-          </form>
-        </section>
-
-        <section id="order-tracking" class="panel tile" aria-labelledby="tracking-title" data-journey-step="7">
-          <p class="eyebrow">T-08 · Step 7</p>
-          <h2 id="tracking-title">Order Tracking</h2>
-          <p id="order-confirmed" class="confirmed-banner" hidden>Order Confirmed! Thank you for shopping with Lily's Florist.</p>
-          <p id="order-status">No order yet.</p>
-          <div class="tracking-layout">
-            <ol id="tracking-steps" class="timeline">
-              <li data-status="created">Order Received</li>
-              <li data-status="preparing">Preparing Bouquet</li>
-              <li data-status="dispatched">Out for Delivery</li>
-              <li data-status="delivered">Delivered</li>
-            </ol>
-            <aside id="latest-status" class="latest-status">
-              <img src="/assets/florist-status.svg" alt="">
-              <p id="latest-status-text">Awaiting order</p>
-              <p id="latest-status-updated" class="hint"></p>
-            </aside>
-          </div>
-          <div class="support-actions">
-            <button class="primary" type="button" id="chat-with-lily">Chat with Lily</button>
-            <button class="secondary" type="button" id="contact-florist">Contact Florist</button>
-            <button class="secondary future" type="button" disabled aria-disabled="true">Escalate (Future)</button>
-          </div>
-        </section>
+          </section>
+        </div>
       </div>
     </div>
   </main>

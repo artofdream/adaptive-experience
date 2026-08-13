@@ -20,15 +20,17 @@ declared in Compose; production authentication material must come from the
 deployment environment.
 
 The root URL serves the florist Adaptive Workspace from Figma Discovery v0.1
-(`adaptive-workspace-mvp`): persistent T-01 conversation, T-02 Shared
-Understanding, live T-03…T-08 tiles, and the ASO help overlay. Visual chrome
-matches `archive/sample-layout-3.png` (purple / lavender / green journey
-steps 1–7) while the layout stays a persistent workspace. The shell is
-driven by the Edge APIs (`/api/v1/session`, conversation, shared-understanding,
-workspace, stream, selection, delivery, order, checkout, support). NFR-001
-landmarks, correction reassurance, keyboard focus, and the help dialog remain;
-usability research remains the production validation method. T-04 exposes only
-Arrangement, Size, and Card message (ADR-006).
+(`adaptive-workspace-mvp`): permanent Discovery (T-01 conversation + T-02 Shared
+Understanding), a seven-stage journey navigator (ADR-002 /
+`customer-journey.md`), and in-place activation of Adaptive Workspace tiles
+T-03…T-08 (only the active stage’s tiles are shown). ASO remains a help overlay,
+not a journey step. Visual chrome matches `archive/sample-layout-3.png` (purple /
+lavender / green). The shell is driven by the Edge APIs (`/api/v1/session`,
+conversation, shared-understanding, workspace, stream, selection, delivery,
+order, checkout, support). NFR-001 landmarks, correction reassurance, keyboard
+focus, and the help dialog remain; usability research remains the production
+validation method. T-04 exposes only Arrangement, Size, and Card message
+(ADR-006). GitLab #155 tracks the seven-step navigation shell.
 
 The UI uses standards-based HTML, CSS, and JavaScript for current evergreen
 desktop, tablet, and mobile browsers. Its tested viewport contract is:

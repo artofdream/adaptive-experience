@@ -8,6 +8,15 @@ const INTENT_LABELS = {
   timing: "Timing",
 };
 const TRACK_ORDER = ["created", "submitted", "confirmed", "preparing", "dispatched", "delivered", "completed"];
+const STEP_CAPTIONS = {
+  1: "Step 1 · Enter / Discovery",
+  2: "Step 2 · Describe need / Shared Understanding",
+  3: "Step 3 · Review recommendations",
+  4: "Step 4 · Customize",
+  5: "Step 5 · Confirm delivery",
+  6: "Step 6 · Review, pay, and order",
+  7: "Step 7 · Track delivery",
+};
 
 const help = document.querySelector("#help");
 const helpButton = document.querySelector(".help-button");
@@ -18,12 +27,47 @@ const messages = document.querySelector("#messages");
 const notice = document.querySelector("#notice");
 const disclosure = document.querySelector("#disclosure");
 
-const state = { csrf: "", contextVersion: 0, workspace: null, lastEventId: "" };
+const state = { csrf: "", contextVersion: 0, workspace: null, lastEventId: "", step: 1 };
 
 function showNotice(text) {
   notice.textContent = text;
   notice.hidden = false;
   window.setTimeout(() => { notice.hidden = true; }, 5000);
+}
+
+function setJourneyStep(step, { focus = true } = {}) {
+  const next = Math.min(7, Math.max(1, Number(step) || 1));
+  state.step = next;
+  document.querySelector("#step-caption").textContent = STEP_CAPTIONS[next];
+  document.querySelectorAll("#journey-steps [data-step]").forEach((button) => {
+    if (Number(button.dataset.step) === next) button.setAttribute("aria-current", "step");
+    else button.removeAttribute("aria-current");
+  });
+  document.querySelectorAll("[data-journey-steps]").forEach((node) => {
+    const steps = String(node.dataset.journeySteps).split(",").map((value) => Number(value.trim()));
+    node.hidden = !steps.includes(next);
+  });
+  document.querySelectorAll("[data-show-on-step]").forEach((node) => {
+    node.hidden = Number(node.dataset.showOnStep) !== next;
+  });
+  if (window.location.hash !== `#step-${next}`) {
+    history.replaceState(null, "", `#step-${next}`);
+  }
+  if (focus) {
+    const target = document.querySelector(".tile-grid .tile:not([hidden]), #step-guidance:not([hidden])");
+    if (target) target.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }
+}
+
+function suggestedStep(facets) {
+  if (!facets) return 1;
+  if (facets.order && facets.order.order_id) return 7;
+  if (facets.delivery && facets.delivery.timing) return 6;
+  if (facets.selection && facets.selection.product_id) return 5;
+  if (facets.recommendations && facets.recommendations.length) return 3;
+  const intent = facets.shared_understanding || {};
+  if (Object.keys(intent).length) return 2;
+  return 1;
 }
 
 function headers(extra) {
@@ -255,6 +299,7 @@ async function selectProduct(productId) {
   state.contextVersion = result.context_version;
   await refreshWorkspace();
   await pullStream();
+  setJourneyStep(4);
   showNotice("Product selected. You can set size and a card message next.");
 }
 
@@ -298,6 +343,7 @@ form.addEventListener("submit", async (event) => {
     message.value = "";
     await refreshWorkspace();
     await pullStream();
+    if (state.step < 2) setJourneyStep(2);
     showNotice("Thanks — your message is ready for the assistant. You can change any detail later.");
   } catch (error) {
     showNotice(`Conversation could not be sent (${error.message}).`);
@@ -365,6 +411,7 @@ document.querySelector("#delivery-form").addEventListener("submit", async (event
     state.contextVersion = result.context_version;
     await refreshWorkspace();
     await pullStream();
+    setJourneyStep(5);
     showNotice("Delivery details saved.");
   } catch (error) {
     showNotice(`Delivery could not be saved (${error.message}).`);
@@ -395,6 +442,7 @@ document.querySelector("#checkout-form").addEventListener("submit", async (event
     });
     await refreshWorkspace();
     await pullStream();
+    if (result.confirmed) setJourneyStep(7);
     showNotice(result.confirmed ? "Order confirmed." : `Checkout did not confirm (${result.code}).`);
   } catch (error) {
     showNotice(`Checkout failed (${error.message}).`);
@@ -416,13 +464,27 @@ document.querySelector("#support-form").addEventListener("submit", async (event)
   }
 });
 
+document.querySelectorAll("#journey-steps [data-step]").forEach((button) => {
+  button.addEventListener("click", () => setJourneyStep(button.dataset.step));
+});
+document.querySelectorAll("[data-goto-step]").forEach((button) => {
+  button.addEventListener("click", () => setJourneyStep(button.dataset.gotoStep));
+});
+window.addEventListener("hashchange", () => {
+  const match = window.location.hash.match(/^#step-([1-7])$/);
+  if (match) setJourneyStep(match[1], { focus: false });
+});
+
 async function boot() {
   try {
     const session = await api("/api/v1/session", { method: "POST" });
     state.csrf = session.csrf_token;
     await refreshWorkspace();
     await pullStream();
+    const hashStep = Number((window.location.hash.match(/^#step-([1-7])$/) || [])[1]);
+    setJourneyStep(hashStep || suggestedStep(state.workspace && state.workspace.facets), { focus: false });
   } catch (error) {
+    setJourneyStep(1, { focus: false });
     showNotice(`Workspace could not start (${error.message}).`);
   }
 }
