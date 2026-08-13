@@ -92,8 +92,15 @@ Internal Orchestration (#144; contract in
 - `POST /api/v1/order` creates the FR-013 order once the product and delivery
   decisions are assembled; it returns the `order_id` and `status`. Missing
   decisions return 422 `order_incomplete`. Creation is idempotent per session, and
-  the workspace `order` facet surfaces `order_id` + `status`. Checkout, payment,
-  and confirmation are M5.
+  the workspace `order` facet surfaces `order_id` + `status`.
+- `POST /api/v1/checkout` performs FR-019 payment and checkout. It accepts only a
+  `payment_reference` (an opaque vault token) and the `observed_total`; raw card
+  fields (`card_number`, `cvv`, ...) are rejected at the edge (NFR-013). On
+  success the order is confirmed (202) and the workspace `order` facet shows
+  `confirmed`; a declined payment returns 402 with a decline code (no card data);
+  a stale `observed_total` or an already-confirmed order returns 409. Payment
+  authorization is synchronous for the MVP reference path (async payment service
+  is tracked as #148).
 - `GET /api/v1/stream` is the reconnectable SSE contract. A cold connection
   receives one `snapshot` event carrying the workspace; a reconnection with
   `Last-Event-ID` (or `?after=`) receives only the `invalidation` deltas it

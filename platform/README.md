@@ -99,6 +99,15 @@ plaintext production listeners are prohibited by ADR-012.
   recommendations projection. It is a reference pricing model, publishes nothing,
   and stores no state; the `order.summary.updated` event and authoritative pricing
   belong to the checkout flow (M5, #38).
+- Checkout and payment (#38, FR-019): `POST .../checkout` price-checks the
+  assembled order, authorizes against an opaque `payment_reference` behind the
+  `PaymentAuthority` seam (`ReferencePaymentAuthority` for the MVP path), and, on
+  success, confirms the order - emitting `order.checkout.requested` and
+  `order.confirmed` in versioned transactions and advancing status to `confirmed`.
+  Raw card data never reaches the platform (a card-number-shaped reference is
+  rejected; the guard forbids card fields). A declined payment leaves the order
+  `submitted`. Authorization is synchronous now behind the seam; the async payment
+  service is a tracked future evolution (#148).
 - Order status (#34, FR-015): `POST .../order/status` advances the order
   forward-only through `created -> submitted -> preparing -> dispatched ->
   delivered` (migration 009), updating the aggregate and publishing

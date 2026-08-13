@@ -4,8 +4,8 @@ import json
 import urllib.error
 import urllib.request
 
-from .ports import (CommandResult, ConversationResult, CorrectionResult, DeliveryResult,
-                    OrderResult, SelectionResult)
+from .ports import (CheckoutResult, CommandResult, ConversationResult, CorrectionResult,
+                    DeliveryResult, OrderResult, SelectionResult)
 
 
 class OrchestrationUnavailable(RuntimeError):
@@ -116,7 +116,18 @@ class HttpOrchestration:
                           subject=kwargs["subject"],
                           payload={"correlation_id": kwargs["correlation_id"]})
         return OrderResult(data["status"] == 202, data.get("code", "rejected"),
-                           data.get("order_id"), data.get("status"))
+                           data.get("order_id"), data.get("order_status"))
+
+    def checkout(self, **kwargs):
+        data = self._call("POST", f"/internal/v1/sessions/{kwargs['session_id']}/checkout",
+                          subject=kwargs["subject"], payload={
+                              "payment_reference": kwargs["payment_reference"],
+                              "observed_total": kwargs["observed_total"],
+                              "correlation_id": kwargs["correlation_id"],
+                          })
+        return CheckoutResult(data["status"] == 202, data.get("code", "rejected"),
+                              data.get("order_id"), data.get("order_status"),
+                              data.get("decline_code"))
 
     def workspace_projection(self, **kwargs):
         return self._call("GET", f"/internal/v1/sessions/{kwargs['session_id']}/workspace",

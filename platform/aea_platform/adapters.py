@@ -254,6 +254,76 @@ class PsycopgOrderStore:
             return None
         return {"order_id": row[0], "status": row[1]}
 
+    def checkout_view(self, session_id: str) -> dict | None:
+        row = self.connection.execute(
+            "SELECT order_id::text,status,product,delivery,context_version "
+            "FROM orchestration.customer_order WHERE session_id=%s", (session_id,),
+        ).fetchone()
+        if row is None:
+            return None
+        return {"order_id": row[0], "status": row[1], "product": row[2],
+                "delivery": row[3], "context_version": row[4]}
+
+    def _checkout_envelope(self, *, message_id, topic, source, session_id, order_id,
+                           context_version, correlation_id, subject_reference,
+                           published_at, payload) -> dict:
+        return {
+            "message_id": message_id, "topic": topic, "message_type": "event",
+            "schema_version": "1.0.0", "session_id": session_id,
+            "correlation_id": correlation_id, "source": source,
+            "context_version": context_version, "publication_time": published_at.isoformat(),
+            "security_context": {"classification": "confidential",
+                                 "subject_reference": subject_reference},
+            "payload": payload, "outcome": {},
+        }
+
+    def request_checkout(self, *, session_id, order_id, total, message_id, correlation_id,
+                         subject_reference, published_at, context_version) -> bool:
+        with self.connection.transaction():
+            row = self.connection.execute(
+                "SELECT status FROM orchestration.customer_order WHERE session_id=%s FOR UPDATE",
+                (session_id,)).fetchone()
+            if row is None or row[0] not in ("created", "submitted"):
+                return False
+            self.connection.execute(
+                "UPDATE orchestration.customer_order SET status='submitted', "
+                "updated_at=clock_timestamp() WHERE session_id=%s", (session_id,))
+            envelope = self._checkout_envelope(
+                message_id=message_id, topic="order.checkout.requested", source="orchestration",
+                session_id=session_id, order_id=order_id, context_version=context_version,
+                correlation_id=correlation_id, subject_reference=subject_reference,
+                published_at=published_at, payload={"draft_order_id": order_id, "total": total})
+            self.connection.execute(
+                "INSERT INTO orchestration.outbox_message "
+                "(message_id,session_id,context_version,topic,aggregate_key,envelope) "
+                "VALUES (%s,%s,%s,'order.checkout.requested',%s,%s::jsonb)",
+                (message_id, session_id, context_version, order_id, json.dumps(envelope)))
+            return True
+
+    def confirm(self, *, session_id, order_id, message_id, correlation_id,
+                subject_reference, published_at, context_version) -> bool:
+        with self.connection.transaction():
+            row = self.connection.execute(
+                "SELECT status FROM orchestration.customer_order WHERE session_id=%s FOR UPDATE",
+                (session_id,)).fetchone()
+            if row is None or row[0] != "submitted":
+                return False
+            self.connection.execute(
+                "UPDATE orchestration.customer_order SET status='confirmed', "
+                "updated_at=clock_timestamp() WHERE session_id=%s", (session_id,))
+            envelope = self._checkout_envelope(
+                message_id=message_id, topic="order.confirmed", source="order",
+                session_id=session_id, order_id=order_id, context_version=context_version,
+                correlation_id=correlation_id, subject_reference=subject_reference,
+                published_at=published_at,
+                payload={"order_id": order_id, "confirmation_state": "confirmed"})
+            self.connection.execute(
+                "INSERT INTO orchestration.outbox_message "
+                "(message_id,session_id,context_version,topic,aggregate_key,envelope) "
+                "VALUES (%s,%s,%s,'order.confirmed',%s,%s::jsonb)",
+                (message_id, session_id, context_version, order_id, json.dumps(envelope)))
+            return True
+
     def advance_status(self, *, session_id: str, target_status: str,
                        allowed_priors: tuple[str, ...], message_id: str,
                        correlation_id: str, subject_reference: str,

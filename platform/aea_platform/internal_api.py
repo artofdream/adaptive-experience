@@ -11,8 +11,10 @@ from .intent import (IntentAnalysisService, IntentSessionNotFound, IntentValidat
                      ReferenceIntentInterpreter, SharedUnderstandingService)
 from .inventory import (InventoryAvailabilityService, InventoryUnavailableError,
                         InventoryValidationError)
-from .order import (ORDER_STATUS_SEQUENCE, OrderIncompleteError, OrderNotFound, OrderService,
+from .order import (ORDER_STATUS_SEQUENCE, CheckoutService, CheckoutStateError,
+                    CheckoutTotalMismatch, OrderIncompleteError, OrderNotFound, OrderService,
                     OrderStatusError)
+from .payment import PaymentValidationError, ReferencePaymentAuthority
 from .pricing import PricingService
 from .recommendation import RecommendationService
 from .selection import SelectionValidationError, normalize_selection_options
@@ -38,8 +40,10 @@ class InternalOrchestrationApp:
         self.inventory = InventoryAvailabilityService(PsycopgInventoryAvailabilityStore(connection))
         self.recommendation = RecommendationService(
             PsycopgRecommendationStore(connection), self.inventory)
-        self.order = OrderService(PsycopgOrderStore(connection))
+        order_store = PsycopgOrderStore(connection)
+        self.order = OrderService(order_store)
         self.pricing = PricingService()
+        self.checkout = CheckoutService(order_store, self.pricing, ReferencePaymentAuthority())
 
     async def __call__(self, scope, receive, send):
         headers = {key.decode().lower(): value.decode() for key, value in scope.get("headers", [])}
@@ -130,6 +134,11 @@ class InternalOrchestrationApp:
                     return await self._send(send, 404, {"code": "session_not_found"})
                 body = await self._body(receive)
                 return await self._create_order(send, session_id, loaded, body)
+            if resource == "checkout" and method == "POST":
+                if self.store.load(session_id) is None:
+                    return await self._send(send, 404, {"code": "session_not_found"})
+                body = await self._body(receive)
+                return await self._checkout(send, session_id, subject, body)
             if resource == "stream" and method == "GET":
                 loaded = self.store.load(session_id)
                 if loaded is None:
@@ -269,6 +278,30 @@ class InternalOrchestrationApp:
         return await self._send(send, 202, {"code": "accepted",
             "order_id": result["order_id"], "status": result["status"]})
 
+    async def _checkout(self, send, session_id: str, subject: str, body: dict):
+        correlation_id = body.get("correlation_id")
+        if not isinstance(correlation_id, str) or not correlation_id.strip():
+            return await self._send(send, 422, {"code": "validation_failed"})
+        try:
+            result = self.checkout.checkout(
+                session_id=session_id, payment_reference=body.get("payment_reference"),
+                observed_total=body.get("observed_total"), correlation_id=correlation_id.strip(),
+                subject_reference=subject)
+        except OrderNotFound:
+            return await self._send(send, 404, {"code": "order_not_found"})
+        except CheckoutTotalMismatch:
+            return await self._send(send, 409, {"code": "total_mismatch"})
+        except CheckoutStateError:
+            return await self._send(send, 409, {"code": "checkout_conflict"})
+        except PaymentValidationError:
+            return await self._send(send, 422, {"code": "validation_failed"})
+        if not result["confirmed"]:
+            return await self._send(send, 402, {"code": "payment_declined",
+                "decline_code": result.get("decline_code"), "order_id": result["order_id"],
+                "order_status": result["status"]})
+        return await self._send(send, 202, {"code": "confirmed",
+            "order_id": result["order_id"], "order_status": result["status"]})
+
     async def _create_order(self, send, session_id: str, loaded: dict, body: dict):
         correlation_id = body.get("correlation_id")
         if not isinstance(correlation_id, str) or not correlation_id.strip():
@@ -282,7 +315,7 @@ class InternalOrchestrationApp:
         except OrderIncompleteError as error:
             return await self._send(send, 422, {"code": "order_incomplete", "missing": error.missing})
         return await self._send(send, 202, {"code": "accepted",
-            "order_id": result["order_id"], "status": result["status"]})
+            "order_id": result["order_id"], "order_status": result["status"]})
 
     async def _update_delivery(self, send, session_id: str, subject: str,
                                loaded: dict, body: dict):
