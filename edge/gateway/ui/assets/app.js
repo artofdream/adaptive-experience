@@ -59,6 +59,21 @@ function productLabel(productId) {
   return String(productId || "").replace(/-/g, " ");
 }
 
+function productArt(productId) {
+  const key = String(productId || "");
+  return key.length % 2 ? "/assets/bouquet-pink.svg" : "/assets/bouquet-mixed.svg";
+}
+
+const STATUS_COPY = {
+  created: "Order received",
+  submitted: "Order submitted",
+  confirmed: "Order confirmed",
+  preparing: "Preparing flowers...",
+  dispatched: "Out for delivery",
+  delivered: "Delivered",
+  completed: "Completed",
+};
+
 function renderMessages(items) {
   messages.replaceChildren();
   if (!items || !items.length) {
@@ -104,12 +119,14 @@ function renderRecommendations(items) {
   for (const item of items || []) {
     const card = document.createElement("article");
     card.className = "card";
-    const thumb = document.createElement("div");
+    const thumb = document.createElement("img");
     thumb.className = "thumb";
-    thumb.setAttribute("aria-hidden", "true");
+    thumb.alt = "";
+    thumb.src = productArt(item.product_id);
     const title = document.createElement("h3");
     title.textContent = productLabel(item.product_id);
     const price = document.createElement("p");
+    price.className = "price";
     price.textContent = item.price != null ? `$${Number(item.price).toFixed(2)}` : "";
     const badge = document.createElement("span");
     badge.className = item.available ? "badge" : "badge unavailable";
@@ -159,15 +176,24 @@ function renderSummary(summary) {
 
 function renderOrder(order) {
   const status = document.querySelector("#order-status");
+  const confirmed = document.querySelector("#order-confirmed");
+  const latest = document.querySelector("#latest-status-text");
+  const updated = document.querySelector("#latest-status-updated");
   const steps = document.querySelectorAll("#tracking-steps li");
   if (!order) {
     status.textContent = "No order yet.";
+    confirmed.hidden = true;
+    latest.textContent = "Awaiting order";
+    updated.textContent = "";
     steps.forEach((step) => step.classList.remove("done"));
     return;
   }
   const current = order.authoritative_status || order.status;
-  status.textContent = order.delayed ? "Delayed" : current.replace(/_/g, " ");
   const reached = TRACK_ORDER.indexOf(order.status);
+  status.textContent = order.delayed ? "Delayed" : current.replace(/_/g, " ");
+  confirmed.hidden = !(reached >= TRACK_ORDER.indexOf("confirmed"));
+  latest.textContent = STATUS_COPY[current] || current.replace(/_/g, " ");
+  updated.textContent = "Last updated from the order status stream";
   steps.forEach((step) => {
     const point = TRACK_ORDER.indexOf(step.dataset.status);
     step.classList.toggle("done", point !== -1 && point <= Math.max(reached, 0));
@@ -247,6 +273,7 @@ function closeHelp() {
 
 helpButton.addEventListener("click", openHelp);
 asoButton.addEventListener("click", openHelp);
+document.querySelector("#chat-with-lily").addEventListener("click", openHelp);
 document.querySelector("#contact-florist").addEventListener("click", openHelp);
 document.querySelector("[data-close-help]").addEventListener("click", closeHelp);
 help.addEventListener("close", () => {

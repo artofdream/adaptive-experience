@@ -21,7 +21,9 @@ deployment environment.
 
 The root URL serves the florist Adaptive Workspace from Figma Discovery v0.1
 (`adaptive-workspace-mvp`): persistent T-01 conversation, T-02 Shared
-Understanding, live T-03…T-08 tiles, and the ASO help overlay. The shell is
+Understanding, live T-03…T-08 tiles, and the ASO help overlay. Visual chrome
+matches `archive/sample-layout-3.png` (purple / lavender / green journey
+steps 1–7) while the layout stays a persistent workspace. The shell is
 driven by the Edge APIs (`/api/v1/session`, conversation, shared-understanding,
 workspace, stream, selection, delivery, order, checkout, support). NFR-001
 landmarks, correction reassurance, keyboard focus, and the help dialog remain;
