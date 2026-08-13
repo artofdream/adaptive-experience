@@ -7,7 +7,10 @@ context = ssl._create_unverified_context()
 with urllib.request.urlopen("https://localhost:8443/", context=context, timeout=5) as response:
     page = response.read().decode()
     if (response.status != 200 or 'id="message-form"' not in page
-            or 'id="understanding-title"' not in page):
+            or 'id="understanding-title"' not in page
+            or 'id="recommendations"' not in page
+            or 'id="order-tracking"' not in page
+            or "T-01" not in page):
         raise SystemExit("guided browser interface is unavailable")
 print("guided browser interface is available")
 

@@ -8,19 +8,25 @@ validation.
 ## Local startup
 
 ```sh
-python edge/scripts/run_integration_tests.py
+docker compose -f edge/docker-compose.yml up --build --wait
 ```
+
+The integration runner (`python edge/scripts/run_integration_tests.py`) also
+builds the stack, then tears it down.
 
 The local HTTPS endpoint is `https://localhost:8443`. Its certificate is
 ephemeral and self-signed. The local bearer token is a non-production fixture
 declared in Compose; production authentication material must come from the
 deployment environment.
 
-The root URL serves the MVP browser shell. It offers one plain-language
-conversation entry point, visible ordering progress, a persistent “What we
-understand” region, correction reassurance, keyboard focus treatment, semantic
-landmarks, and an optional three-step help dialog. These are the executable
-NFR-001 baseline; usability research remains the production validation method.
+The root URL serves the florist Adaptive Workspace from Figma Discovery v0.1
+(`adaptive-workspace-mvp`): persistent T-01 conversation, T-02 Shared
+Understanding, live T-03…T-08 tiles, and the ASO help overlay. The shell is
+driven by the Edge APIs (`/api/v1/session`, conversation, shared-understanding,
+workspace, stream, selection, delivery, order, checkout, support). NFR-001
+landmarks, correction reassurance, keyboard focus, and the help dialog remain;
+usability research remains the production validation method. T-04 exposes only
+Arrangement, Size, and Card message (ADR-006).
 
 The UI uses standards-based HTML, CSS, and JavaScript for current evergreen
 desktop, tablet, and mobile browsers. Its tested viewport contract is:

@@ -53,6 +53,7 @@ class BrowserUiTests(unittest.TestCase):
 
     def test_gateway_serves_ui_without_weakening_api_perimeter(self):
         nginx = (ROOT / "nginx.conf").read_text(encoding="utf-8")
+        self.assertIn("include /etc/nginx/mime.types;", nginx)
         self.assertIn("location = / {", nginx)
         self.assertIn("location /api/ {", nginx)
         self.assertIn('proxy_set_header X-Internal-Identity "";', nginx)
@@ -72,6 +73,35 @@ class BrowserUiTests(unittest.TestCase):
     def test_platform_preferences_remain_usable(self):
         self.assertIn("prefers-reduced-motion: reduce", self.css)
         self.assertIn("forced-colors: active", self.css)
+
+    def test_adaptive_workspace_regions_match_discovery_v01(self):
+        for region in ("conversation", "recommendations", "selection", "delivery",
+                       "order-summary", "order-tracking"):
+            self.assertIn(f'id="{region}"', self.html)
+        self.assertIn("T-01", self.html)
+        self.assertIn("T-02", self.html)
+        self.assertIn("T-03", self.html)
+        self.assertIn("T-04", self.html)
+        self.assertIn("T-05", self.html)
+        self.assertIn("T-08", self.html)
+        self.assertIn("ASO FAQ overlay", self.html)
+        self.assertIn("Lily's Florist", self.html)
+
+    def test_t04_exposes_only_adr006_mvp_fields(self):
+        self.assertIn('id="size"', self.html)
+        self.assertIn('id="card-message"', self.html)
+        self.assertIn("Arrangement", self.html)
+        for forbidden in ("flower_type", "flower type", "colour", "ribbon", "gift card"):
+            self.assertNotIn(forbidden, self.html.lower())
+
+    def test_shell_uses_edge_apis_without_data_plane_secrets(self):
+        for path in ("/api/v1/session", "/api/v1/conversation/messages",
+                     "/api/v1/shared-understanding", "/api/v1/workspace",
+                     "/api/v1/stream", "/api/v1/selection"):
+            self.assertIn(path, self.script)
+        self.assertNotIn("postgres", self.script.lower())
+        self.assertNotIn("kafka", self.script.lower())
+        self.assertNotIn("5432", self.html + self.script)
 
 
 if __name__ == "__main__":
