@@ -286,6 +286,51 @@ class BffApp:
                 "correlation_id": correlation_id,
             }, correlation_id)
 
+        if path == "/api/v1/checkout" and method == "POST":
+            if headers.get("content-type", "").split(";", 1)[0].strip() != "application/json":
+                return await self._error(send, 415, "unsupported_media_type", correlation_id)
+            body = await self._body(receive, headers)
+            if isinstance(body, tuple):
+                return await self._error(send, body[0], body[1], correlation_id)
+            try:
+                request = json.loads(body)
+            except (UnicodeDecodeError, json.JSONDecodeError):
+                return await self._error(send, 400, "invalid_json", correlation_id)
+            # Only a payment reference and the observed total are accepted; raw card
+            # fields (card_number, cvv, ...) are rejected at the edge (NFR-013).
+            if (not isinstance(request, dict)
+                    or set(request) - {"payment_reference", "observed_total"}
+                    or "payment_reference" not in request or "observed_total" not in request):
+                return await self._error(send, 422, "invalid_checkout_shape", correlation_id)
+            payment_reference = request["payment_reference"]
+            observed_total = request["observed_total"]
+            if (not isinstance(payment_reference, str) or not payment_reference.strip()
+                    or len(payment_reference.strip()) > 200 or isinstance(observed_total, bool)
+                    or not isinstance(observed_total, (int, float)) or observed_total <= 0):
+                return await self._error(send, 422, "invalid_checkout_shape", correlation_id)
+            try:
+                result = self.orchestration.checkout(
+                    session_id=session.session_id, subject=subject,
+                    payment_reference=payment_reference.strip(), observed_total=observed_total,
+                    correlation_id=correlation_id)
+            except OrchestrationUnavailable:
+                return await self._error(send, 503, "orchestration_unavailable", correlation_id)
+            if result.confirmed:
+                status = 202
+            elif result.code == "payment_declined":
+                status = 402
+            elif result.code in {"total_mismatch", "checkout_conflict"}:
+                status = 409
+            elif result.code == "order_not_found":
+                status = 404
+            else:
+                status = 422
+            return await self._json(send, status, {
+                "confirmed": result.confirmed, "code": result.code, "order_id": result.order_id,
+                "status": result.status, "decline_code": result.decline_code,
+                "correlation_id": correlation_id,
+            }, correlation_id)
+
         if path == "/api/v1/workspace" and method == "GET":
             try:
                 raw = self.orchestration.workspace_projection(

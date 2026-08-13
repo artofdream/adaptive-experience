@@ -4,8 +4,8 @@ import pathlib
 import unittest
 
 from edge.bff.aea_bff.app import BffApp
-from edge.bff.aea_bff.ports import (CommandResult, ConversationResult, CorrectionResult,
-                                    DeliveryResult, OrderResult, SelectionResult)
+from edge.bff.aea_bff.ports import (CheckoutResult, CommandResult, ConversationResult,
+                                    CorrectionResult, DeliveryResult, OrderResult, SelectionResult)
 from edge.bff.aea_bff.security import FixedWindowRateLimiter, StaticTokenAuthenticator
 
 
@@ -30,6 +30,11 @@ class FakeOrchestration:
 
     def create_order(self, **kwargs):
         return OrderResult(True, "accepted", "order-9", "created")
+
+    def checkout(self, **kwargs):
+        if kwargs["payment_reference"].startswith("decline"):
+            return CheckoutResult(False, "payment_declined", "order-9", "submitted", "declined")
+        return CheckoutResult(True, "confirmed", "order-9", "confirmed")
 
     def workspace_projection(self, **kwargs):
         return {"context_version": 7, "secret": "omit",
@@ -214,6 +219,27 @@ class PerimeterTests(unittest.TestCase):
         shaped = BffApp._least_data_workspace({"context_version": 4, "facets": {"order": {
             "order_id": "o1", "status": "created", "secret": "omit"}}})
         self.assertEqual({"order_id": "o1", "status": "created"}, shaped["facets"]["order"])
+
+    def test_checkout_requires_csrf_and_rejects_raw_card_fields(self):
+        cookie, csrf = self.session()
+        json_headers = {**self.auth, "cookie": cookie, "content-type": "application/json"}
+        payload = json.dumps({"payment_reference": "tok_1", "observed_total": 82.0}).encode()
+        self.assertEqual(403, self.call("POST", "/api/v1/checkout", json_headers, payload)[0])
+        headers = {**json_headers, "x-csrf-token": csrf}
+        status, _, body = self.call("POST", "/api/v1/checkout", headers, payload)
+        self.assertEqual(202, status)
+        self.assertTrue(json.loads(body)["confirmed"])
+        # Decline maps to 402 with a decline code (no card data).
+        declined = self.call("POST", "/api/v1/checkout", headers,
+            json.dumps({"payment_reference": "decline-1", "observed_total": 82.0}).encode())
+        self.assertEqual(402, declined[0])
+        self.assertEqual("declined", json.loads(declined[2])["decline_code"])
+        # Raw card fields and a missing total are rejected at the edge.
+        self.assertEqual(422, self.call("POST", "/api/v1/checkout", headers,
+            json.dumps({"payment_reference": "tok", "observed_total": 82.0,
+                        "card_number": "4111111111111111"}).encode())[0])
+        self.assertEqual(422, self.call("POST", "/api/v1/checkout", headers,
+            json.dumps({"payment_reference": "tok"}).encode())[0])
 
     def test_workspace_order_summary_facet_is_least_data(self):
         shaped = BffApp._least_data_workspace({"context_version": 5, "facets": {"order_summary": {

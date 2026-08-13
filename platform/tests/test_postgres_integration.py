@@ -208,7 +208,7 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
 
         status2, created = drive("POST", f"/internal/v1/sessions/{session_id}/order", order_body)
         self.assertEqual(202, status2)
-        self.assertEqual("created", created["status"])
+        self.assertEqual("created", created["order_status"])
         order_id = created["order_id"]
         self.assertEqual(1, self.connection.execute(
             "SELECT count(*) FROM orchestration.customer_order WHERE session_id=%s",
@@ -261,6 +261,90 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         summary2 = workspace()["facets"]["order_summary"]
         self.assertEqual(round(70.0 + REFERENCE_DELIVERY_FEE, 2), summary2["total"])
         self.assertIn("delivery", [c["label"] for c in summary2["itemized_charges"]])
+
+    def _order_ready_for_checkout(self, app):
+        import asyncio
+        from aea_platform.adapters import PsycopgExperienceStateStore
+        from aea_platform.state import StatePatch
+        session_id = self.create_session()
+        store = PsycopgExperienceStateStore(self.connection)
+        with self.connection.transaction():
+            store.apply_patch(str(session_id), 0, 1, StatePatch.create(
+                {"decisions": {"product": {"product_id": "classic-rose-dozen"}}},
+                ["decisions.product"]), [])
+        with self.connection.transaction():
+            store.apply_patch(str(session_id), 1, 1, StatePatch.create(
+                {"decisions": {"delivery": {"destination_reference": "addr-1",
+                                            "timing": {"date": "2026-09-01", "window": "morning"}}}},
+                ["decisions.delivery"]), [])
+        asyncio.run(self._invoke_internal(
+            app, "POST", f"/internal/v1/sessions/{session_id}/order",
+            json.dumps({"correlation_id": "ord"}).encode()))
+        return session_id
+
+    def test_checkout_confirms_order_and_publishes_events(self):
+        import asyncio
+        from aea_platform.internal_api import InternalOrchestrationApp
+        from aea_platform.pricing import REFERENCE_DELIVERY_FEE
+
+        app = InternalOrchestrationApp(self.connection, "internal-token")
+        session_id = self._order_ready_for_checkout(app)
+        total = round(70.0 + REFERENCE_DELIVERY_FEE, 2)
+        path = f"/internal/v1/sessions/{session_id}/checkout"
+
+        def post(payload):
+            return asyncio.run(self._invoke_internal(app, "POST", path, json.dumps(payload).encode()))
+
+        # Wrong total is rejected; a raw card reference is rejected.
+        self.assertEqual(409, post({"payment_reference": "tok", "observed_total": 1.0,
+                                    "correlation_id": "c"})[0])
+        self.assertEqual(422, post({"payment_reference": "4111111111111111",
+                                    "observed_total": total, "correlation_id": "c"})[0])
+
+        status, result = post({"payment_reference": "tok_1", "observed_total": total,
+                               "correlation_id": "c"})
+        self.assertEqual(202, status)
+        self.assertEqual("confirmed", result["order_status"])
+
+        topics = [row[0] for row in self.connection.execute(
+            "SELECT topic FROM orchestration.outbox_message WHERE session_id=%s", (session_id,)).fetchall()]
+        self.assertIn("order.checkout.requested", topics)
+        self.assertIn("order.confirmed", topics)
+
+        _, workspace = asyncio.run(self._invoke_internal(
+            app, "GET", f"/internal/v1/sessions/{session_id}/workspace"))
+        self.assertEqual("confirmed", workspace["facets"]["order"]["status"])
+
+        # Re-checkout on a confirmed order conflicts.
+        self.assertEqual(409, post({"payment_reference": "tok_1", "observed_total": total,
+                                    "correlation_id": "c2"})[0])
+
+    def test_checkout_decline_leaves_order_submitted(self):
+        import asyncio
+        from aea_platform.internal_api import InternalOrchestrationApp
+        from aea_platform.pricing import REFERENCE_DELIVERY_FEE
+
+        app = InternalOrchestrationApp(self.connection, "internal-token")
+        session_id = self._order_ready_for_checkout(app)
+        total = round(70.0 + REFERENCE_DELIVERY_FEE, 2)
+
+        status, result = asyncio.run(self._invoke_internal(
+            app, "POST", f"/internal/v1/sessions/{session_id}/checkout",
+            json.dumps({"payment_reference": "decline-1", "observed_total": total,
+                        "correlation_id": "c"}).encode()))
+        self.assertEqual(402, status)
+        self.assertEqual("submitted", result["order_status"])
+        self.assertEqual("declined", result["decline_code"])
+
+        counts = self.connection.execute(
+            "SELECT "
+            "count(*) FILTER (WHERE topic='order.checkout.requested'), "
+            "count(*) FILTER (WHERE topic='order.confirmed') "
+            "FROM orchestration.outbox_message WHERE session_id=%s", (session_id,)).fetchone()
+        self.assertEqual((1, 0), counts)
+        self.assertEqual("submitted", self.connection.execute(
+            "SELECT status FROM orchestration.customer_order WHERE session_id=%s",
+            (session_id,)).fetchone()[0])
 
     def test_order_status_advances_forward_and_publishes(self):
         import asyncio
