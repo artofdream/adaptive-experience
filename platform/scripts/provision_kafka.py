@@ -32,6 +32,9 @@ def main() -> None:
             config={"retention.ms": str(retention), "max.message.bytes": str(policy.defaults["max_message_bytes"]),
                     "cleanup.policy": "delete", "unclean.leader.election.enable": "false"},
         ))
+    if not topics:
+        print("provision_kafka: all topics already present, nothing to create")
+        return
     for name, future in admin.create_topics(topics).items():
         future.result()
         print(f"created {name}")
