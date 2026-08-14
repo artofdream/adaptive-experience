@@ -39,9 +39,9 @@ class PsycopgExperienceStateStore:
     def invalidations_after(self, session_id: str, after_context_version: int) -> list[dict]:
         """Per-context-version change trail for the workspace stream.
 
-        Groups `experience_invalidation` rows (written by `apply_experience_patch`)
-        into one event per context version, in monotonic order, so a resuming
-        client receives only the deltas it missed.
+        Groups `experience_invalidation` rows (written by `apply_experience_patch`
+        or `invalidate_projection`) into one event per context version, in
+        monotonic order, so a resuming client receives only the deltas it missed.
         """
         rows = self.connection.execute(
             "SELECT context_version,projection_key,reason FROM orchestration.experience_invalidation "
@@ -54,6 +54,33 @@ class PsycopgExperienceStateStore:
                 {"projection_key": projection_key, "reason": reason})
         return [{"context_version": version, "invalidated_projections": grouped[version]}
                 for version in sorted(grouped)]
+
+    def invalidate_projection(self, session_id: str, *, projection_key: str,
+                              reason: str) -> int | None:
+        """Bump context version and record a workspace projection invalidation.
+
+        Used when authoritative domain state changes outside experience-state
+        patches (e.g. order status for NFR-011 reactive tracking). Does not
+        mutate the experience-state JSON document.
+        """
+        row = self.connection.execute(
+            "UPDATE orchestration.experience_session "
+            "SET context_version = context_version + 1, updated_at = clock_timestamp() "
+            "WHERE session_id=%s AND lifecycle_status='active' "
+            "RETURNING context_version",
+            (session_id,),
+        ).fetchone()
+        if row is None:
+            return None
+        context_version = row[0]
+        self.connection.execute(
+            "INSERT INTO orchestration.experience_invalidation "
+            "(session_id, context_version, projection_key, reason) "
+            "VALUES (%s,%s,%s,%s) "
+            "ON CONFLICT (session_id, context_version, projection_key) DO NOTHING",
+            (session_id, context_version, projection_key, reason),
+        )
+        return context_version
 
 
 class PsycopgInventoryAvailabilityStore:
@@ -388,6 +415,8 @@ class PsycopgOrderStore:
                 "(message_id,session_id,context_version,topic,aggregate_key,envelope) "
                 "VALUES (%s,%s,%s,'order.confirmed',%s,%s::jsonb)",
                 (message_id, session_id, context_version, order_id, json.dumps(envelope)))
+            PsycopgExperienceStateStore(self.connection).invalidate_projection(
+                session_id, projection_key="order", reason="order_confirmed")
             return True
 
     def advance_status(self, *, session_id: str, target_status: str,
@@ -424,6 +453,8 @@ class PsycopgOrderStore:
                 "(message_id,session_id,context_version,topic,aggregate_key,envelope) "
                 "VALUES (%s,%s,%s,'order.status.updated',%s,%s::jsonb)",
                 (message_id, session_id, context_version, order_id, json.dumps(envelope)))
+            PsycopgExperienceStateStore(self.connection).invalidate_projection(
+                session_id, projection_key="order", reason="order_status_updated")
             return {"order_id": order_id, "status": target_status, "changed": True}
 
     def set_delay(self, *, session_id: str, delayed: bool, message_id: str,
@@ -456,6 +487,8 @@ class PsycopgOrderStore:
                 "(message_id,session_id,context_version,topic,aggregate_key,envelope) "
                 "VALUES (%s,%s,%s,'order.status.updated',%s,%s::jsonb)",
                 (message_id, session_id, context_version, order_id, json.dumps(envelope)))
+            PsycopgExperienceStateStore(self.connection).invalidate_projection(
+                session_id, projection_key="order", reason="order_status_updated")
             return {"order_id": order_id, "status": status, "delayed": delayed,
                     "authoritative_status": authoritative_status}
 

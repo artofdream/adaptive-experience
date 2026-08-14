@@ -161,6 +161,22 @@ function renderStepEmpty(step) {
   }
 }
 
+const STATUS_POLL_MS = 20000;
+let statusPollTimer = null;
+
+function syncStatusPolling() {
+  if (statusPollTimer) {
+    clearInterval(statusPollTimer);
+    statusPollTimer = null;
+  }
+  const order = facets().order;
+  if (state.step === 7 && order && order.order_id) {
+    statusPollTimer = setInterval(() => {
+      pullStream().catch(() => {});
+    }, STATUS_POLL_MS);
+  }
+}
+
 function setJourneyStep(step, { focus = true, force = false } = {}) {
   let next = Math.min(7, Math.max(1, Number(step) || 1));
   updateJourneyChrome();
@@ -189,6 +205,7 @@ function setJourneyStep(step, { focus = true, force = false } = {}) {
     });
   }
   updateJourneyChrome();
+  syncStatusPolling();
   if (window.location.hash !== `#step-${next}`) {
     history.replaceState(null, "", `#step-${next}`);
   }

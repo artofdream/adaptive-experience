@@ -124,7 +124,10 @@ Internal Orchestration (#144; contract in
   receives one `snapshot` event carrying the workspace; a reconnection with
   `Last-Event-ID` (or `?after=`) receives only the `invalidation` deltas it
   missed, each naming the projections that must regenerate (derived from the
-  `projection_dependency` registry). Event IDs are the monotonic context version.
+  `projection_dependency` registry, plus order-status invalidations for
+  NFR-011). Event IDs are the monotonic context version. The Adaptive Workspace
+  polls the stream about every 20 seconds while the customer is on T-08 tracking
+  so status updates appear within the one-minute NFR without a manual refresh.
 
 `POST /api/v1/commands` is intentionally deferred: selection and later actions
 use dedicated endpoints (e.g. `POST /api/v1/selection`, #142). The generic
