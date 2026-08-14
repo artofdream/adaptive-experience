@@ -104,7 +104,7 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         versions = [row[0] for row in self.connection.execute(
             "SELECT version FROM orchestration.schema_migration ORDER BY version"
         ).fetchall()]
-        self.assertEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], versions)
+        self.assertEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], versions)
 
     def test_superseded_mutation_function_is_dropped(self):
         signature = "(uuid,bigint,integer,jsonb,jsonb,jsonb)"
@@ -358,12 +358,18 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         status, result = post({"payment_reference": "tok_1", "observed_total": total,
                                "correlation_id": "c"})
         self.assertEqual(202, status)
+        self.assertEqual("accepted", result["code"])
+        self.assertTrue(result["pending"])
         self.assertEqual("confirmed", result["order_status"])
 
         topics = [row[0] for row in self.connection.execute(
             "SELECT topic FROM orchestration.outbox_message WHERE session_id=%s", (session_id,)).fetchall()]
         self.assertIn("order.checkout.requested", topics)
+        self.assertIn("payment.authorization.succeeded", topics)
         self.assertIn("order.confirmed", topics)
+        self.assertEqual(1, self.connection.execute(
+            "SELECT count(*) FROM orchestration.consumed_message "
+            "WHERE consumer_group='payment' AND outcome='applied'",).fetchone()[0])
 
         # NFR-013: the actual emitted checkout events are broker-clean (payment-free,
         # exact governed shape). The guard raises if any card/token/PII leaks.
@@ -372,6 +378,7 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         guard = PayloadPrivacyGuard(KafkaPolicy.load(ROOT / "config" / "kafka-policy.json"),
                                     ROOT.parent / "docs" / "04-technical-architecture" / "schemas")
         for topic, principal in (("order.checkout.requested", "orchestration"),
+                                 ("payment.authorization.succeeded", "payment"),
                                  ("order.confirmed", "order")):
             emitted = self.connection.execute(
                 "SELECT envelope FROM orchestration.outbox_message "
@@ -399,16 +406,19 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
             app, "POST", f"/internal/v1/sessions/{session_id}/checkout",
             json.dumps({"payment_reference": "decline-1", "observed_total": total,
                         "correlation_id": "c"}).encode()))
-        self.assertEqual(402, status)
+        self.assertEqual(202, status)
+        self.assertEqual("accepted", result["code"])
+        self.assertTrue(result["pending"])
         self.assertEqual("submitted", result["order_status"])
         self.assertEqual("declined", result["decline_code"])
 
         counts = self.connection.execute(
             "SELECT "
             "count(*) FILTER (WHERE topic='order.checkout.requested'), "
+            "count(*) FILTER (WHERE topic='payment.authorization.failed'), "
             "count(*) FILTER (WHERE topic='order.confirmed') "
             "FROM orchestration.outbox_message WHERE session_id=%s", (session_id,)).fetchone()
-        self.assertEqual((1, 0), counts)
+        self.assertEqual((1, 1, 0), counts)
         self.assertEqual("submitted", self.connection.execute(
             "SELECT status FROM orchestration.customer_order WHERE session_id=%s",
             (session_id,)).fetchone()[0])

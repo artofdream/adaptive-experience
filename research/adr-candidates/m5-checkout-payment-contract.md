@@ -89,24 +89,16 @@ largely rides on the reference-only design plus the existing guard and audit:
 
 ## Future evolution: async payment authorization
 
-Tracked follow-on (#148). The production-intended topology is asynchronous:
-orchestration emits `order.checkout.requested`, a **payment service** consumes it
-(existing `PsycopgConsumerTransaction` + relay + retry/DLQ), authorizes against
-the `payment_reference`, and the order service emits `order.confirmed`
-asynchronously; orchestration consumes that and pushes confirmation to the browser
-(shared with the #34 order-status SSE follow-on).
+Delivered by #148 / PaymentCheckoutHandler:
 
-Because #38 emits the same governed events in sync and hides authorization behind
-the `PaymentAuthority` seam, the migration is evolutionary, not a rewrite:
-
-- **Zero change:** event schemas/topics/policy, outbox/relay, order aggregate and
-  lifecycle, and the authorization logic itself (only its call site moves from the
-  request handler to the consumer).
-- **Low:** two consumers (`order.checkout.requested` -> payment;
-  `order.confirmed` -> orchestration/workspace), following the existing pattern.
-- **Moderate (the real cost):** the checkout HTTP contract changes from returning
-  the result inline to `202 accepted-pending` + observe `order.confirmed` via the
-  workspace/stream - isolated to the BFF/browser, and shared with the #34 push.
+- Checkout HTTP submits only: stores a private `checkout_intent`, emits
+  `order.checkout.requested`, returns `202 accepted` + `pending: true`.
+- The **payment** consumer authorizes against the private `payment_reference`
+  (never on the bus), emits `payment.authorization.succeeded|failed`, and on
+  success the order path emits `order.confirmed`.
+- The reference orchestration path dispatches that consumer in-process after
+  submit (same handler Kafka workers use). Browser observes confirmation via
+  workspace/stream refresh, not an inline confirm code on the HTTP response.
 
 ## Build order
 

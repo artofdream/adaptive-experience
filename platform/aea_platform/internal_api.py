@@ -15,11 +15,22 @@ from .order import (ORDER_STATUS_SEQUENCE, CheckoutService, CheckoutStateError,
                     CheckoutTotalMismatch, OrderIncompleteError, OrderNotFound, OrderService,
                     OrderStatusError)
 from .payment import PaymentValidationError, ReferencePaymentAuthority
+from .payment_checkout import PaymentCheckoutHandler
 from .pricing import PricingService
 from .support import SupportService, SupportValidationError
 from .recommendation import RecommendationService
 from .selection import SelectionValidationError, normalize_selection_options
 from .state import StatePatch
+
+
+class _InProcessOffsets:
+    def commit(self, record) -> None:
+        return None
+
+
+class _InProcessFailures:
+    def route(self, consumer_group, record, error):
+        raise error
 
 
 class InternalOrchestrationApp:
@@ -42,9 +53,11 @@ class InternalOrchestrationApp:
         self.recommendation = RecommendationService(
             PsycopgRecommendationStore(connection), self.inventory)
         order_store = PsycopgOrderStore(connection)
+        self.order_store = order_store
         self.order = OrderService(order_store)
         self.pricing = PricingService()
-        self.checkout = CheckoutService(order_store, self.pricing, ReferencePaymentAuthority())
+        self.checkout = CheckoutService(order_store, self.pricing)
+        self.payment_handler = PaymentCheckoutHandler(order_store, ReferencePaymentAuthority())
         self.support = SupportService(PsycopgSupportStore(connection))
 
     async def __call__(self, scope, receive, send):
@@ -328,7 +341,7 @@ class InternalOrchestrationApp:
         if not isinstance(correlation_id, str) or not correlation_id.strip():
             return await self._send(send, 422, {"code": "validation_failed"})
         try:
-            result = self.checkout.checkout(
+            submitted = self.checkout.submit(
                 session_id=session_id, payment_reference=body.get("payment_reference"),
                 observed_total=body.get("observed_total"), correlation_id=correlation_id.strip(),
                 subject_reference=subject)
@@ -340,12 +353,52 @@ class InternalOrchestrationApp:
             return await self._send(send, 409, {"code": "checkout_conflict"})
         except PaymentValidationError:
             return await self._send(send, 422, {"code": "validation_failed"})
-        if not result["confirmed"]:
-            return await self._send(send, 402, {"code": "payment_declined",
-                "decline_code": result.get("decline_code"), "order_id": result["order_id"],
-                "order_status": result["status"]})
-        return await self._send(send, 202, {"code": "confirmed",
-            "order_id": result["order_id"], "order_status": result["status"]})
+        envelope = {
+            "message_id": submitted["message_id"], "topic": "order.checkout.requested",
+            "message_type": "event", "schema_version": "1.0.0", "session_id": session_id,
+            "correlation_id": submitted["correlation_id"], "source": "orchestration",
+            "context_version": submitted["context_version"],
+            "publication_time": datetime.now(timezone.utc).isoformat(),
+            "security_context": {"classification": "confidential",
+                                 "subject_reference": submitted["subject_reference"]},
+            "payload": {"draft_order_id": submitted["order_id"], "total": submitted["total"]},
+            "outcome": {},
+        }
+        # Reference path: dispatch the payment consumer in-process after submit so
+        # authorization never runs inside CheckoutService (#148). Kafka workers use
+        # the same PaymentCheckoutHandler via GovernedConsumer.
+        try:
+            self._dispatch_payment_checkout(envelope)
+        except Exception:
+            # Submission already committed; leave pending for a payment consumer retry.
+            pass
+        order = self.order.projection(session_id=session_id) or {}
+        intent = self.order_store.load_checkout_intent(submitted["order_id"])
+        decline_code = intent.get("decline_code") if intent else None
+        return await self._send(send, 202, {
+            "code": "accepted", "pending": True,
+            "order_id": submitted["order_id"],
+            "order_status": order.get("status", "submitted"),
+            "decline_code": decline_code,
+        })
+
+    def _dispatch_payment_checkout(self, envelope: dict) -> None:
+        from pathlib import Path
+
+        from .adapters import PsycopgConsumerTransaction
+        from .consumer import ConsumedRecord, GovernedConsumer
+        from .policy import KafkaPolicy
+        from .privacy import PayloadPrivacyGuard
+
+        root = Path(__file__).resolve().parents[1]
+        policy = KafkaPolicy.load(root / "config" / "kafka-policy.json")
+        schemas = root.parent / "docs" / "04-technical-architecture" / "schemas"
+        governed = GovernedConsumer(
+            "payment", PsycopgConsumerTransaction(self.connection), _InProcessOffsets(),
+            _InProcessFailures(), PayloadPrivacyGuard(policy, schemas))
+        governed.process(
+            ConsumedRecord("order.checkout.requested", 0, 0, envelope),
+            self.payment_handler.handle_checkout_requested)
 
     async def _create_order(self, send, session_id: str, loaded: dict, body: dict):
         correlation_id = body.get("correlation_id")

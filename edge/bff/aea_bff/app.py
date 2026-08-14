@@ -318,10 +318,8 @@ class BffApp:
                     correlation_id=correlation_id)
             except OrchestrationUnavailable:
                 return await self._error(send, 503, "orchestration_unavailable", correlation_id)
-            if result.confirmed:
+            if result.accepted:
                 status = 202
-            elif result.code == "payment_declined":
-                status = 402
             elif result.code in {"total_mismatch", "checkout_conflict"}:
                 status = 409
             elif result.code == "order_not_found":
@@ -329,8 +327,13 @@ class BffApp:
             else:
                 status = 422
             return await self._json(send, status, {
-                "confirmed": result.confirmed, "code": result.code, "order_id": result.order_id,
-                "status": result.status, "decline_code": result.decline_code,
+                "accepted": result.accepted,
+                "pending": bool(result.accepted),
+                "confirmed": result.confirmed,
+                "code": result.code,
+                "order_id": result.order_id,
+                "status": result.status,
+                "decline_code": result.decline_code,
                 "correlation_id": correlation_id,
             }, correlation_id)
 

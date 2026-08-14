@@ -42,8 +42,8 @@ class ReferencePaymentAuthority:
 
     Not a real gateway. It authorizes any valid opaque `payment_reference` for a
     positive total; a reference beginning with ``decline-`` is declined so the
-    decline path is testable. This is the sync `PaymentAuthority` seam - moving to
-    an async payment-service consumer later only relocates the call site.
+    decline path is testable. Call site is the payment consumer
+    (``PaymentCheckoutHandler``), not the checkout HTTP path (#148).
     """
 
     def authorize(self, *, payment_reference: str, total: float) -> PaymentOutcome:

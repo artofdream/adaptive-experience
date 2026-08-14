@@ -614,8 +614,16 @@ document.querySelector("#checkout-form").addEventListener("submit", async (event
     });
     await refreshWorkspace();
     await pullStream();
-    if (result.confirmed) setJourneyStep(7);
-    showNotice(result.confirmed ? "Order confirmed." : `Checkout did not confirm (${result.code}).`);
+    const order = (state.workspace && state.workspace.facets || {}).order || {};
+    const confirmed = order.status === "confirmed" || result.confirmed;
+    if (confirmed) setJourneyStep(7);
+    if (result.decline_code) {
+      showNotice(`Payment declined (${result.decline_code}). Order stays submitted.`);
+    } else if (confirmed) {
+      showNotice("Order confirmed.");
+    } else {
+      showNotice("Checkout accepted. Waiting for payment confirmation…");
+    }
   } catch (error) {
     showNotice(`Checkout failed (${error.message}).`);
   }
