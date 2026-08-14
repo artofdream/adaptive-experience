@@ -191,9 +191,11 @@ def validate_inventory(
     payload_manifest: dict[tuple[str, str], tuple[dict[str, Any], list[str]]],
 ) -> list[str]:
     errors: list[str] = []
-    if len(contract_topics) != 21 or len(set(contract_topics)) != 21:
+    expected = len(payload_manifest)
+    if len(contract_topics) != expected or len(set(contract_topics)) != expected:
         errors.append(
-            f"topic-contracts.md must contain exactly 21 unique MVP topics; found {len(contract_topics)}"
+            f"topic-contracts.md must contain exactly {expected} unique governed topics; "
+            f"found {len(contract_topics)}"
         )
     if set(contract_topics) != set(payload_manifest):
         errors.append("topic-contracts.md and the generator payload manifest differ")
@@ -221,7 +223,7 @@ def validate_inventory(
             continue
         topic, version = match.group("topic"), match.group("version")
         if topic not in known_topics:
-            errors.append(f"{path.name}: topic is not in the 21-topic MVP registry")
+            errors.append(f"{path.name}: topic is not in the governed topic registry")
             continue
         data = load_schema(path, errors)
         if data is None:
@@ -255,7 +257,10 @@ def main() -> int:
         for error in errors:
             print(f"FAIL: {error}", file=sys.stderr)
         return 1
-    print("ok: 21 MVP payload schemas, envelope, identity, minimum payload, and compatibility rules pass")
+    print(
+        f"ok: {len(mvp_topics())} governed payload schemas, envelope, identity, "
+        "minimum payload, and compatibility rules pass"
+    )
     return 0
 
 

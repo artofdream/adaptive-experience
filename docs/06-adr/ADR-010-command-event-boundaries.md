@@ -44,6 +44,7 @@ infrastructure messaging.
 | Pricing / summary | Read current projected totals when available | `order.summary.updated` when pricing recomputes |
 | Checkout / payment | Validate draft; return accept/reject of the command | `order.checkout.requested`, payment auth topics, `order.confirmed` |
 | Tracking | Read authoritative status projection | `order.status.updated` |
+| Support escalation | Accept Contact Florist request; return acknowledgement | `support.escalation.requested` |
 
 ### Acknowledgement and timeouts
 

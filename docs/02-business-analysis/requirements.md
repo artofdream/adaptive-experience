@@ -90,5 +90,6 @@ surfaces. It does **not** replace:
   `order.status.updated`
 - domain Inventory / Delivery facts shown through validated tiles
 
-FR-006 / T-09 remains Future human escalation, separate from both FR-009 and
-FR-010.
+FR-006 / T-09 remains Future in the requirements source of truth and is
+delivered as a thin Contact Florist overlay, separate from both FR-009 and
+FR-010. Staff CRM and live chat remain out of scope (FR-016 / FR-017).

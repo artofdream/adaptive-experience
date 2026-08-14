@@ -7,16 +7,21 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from aea_platform.support import SupportService, SupportValidationError
+from aea_platform.support import (ESCALATION_ACKNOWLEDGEMENT, SupportService,
+                                  SupportValidationError)
 from aea_platform.retrieval import RetrievalHit
 
 
 class FakeSupportStore:
     def __init__(self):
         self.recorded = None
+        self.escalation = None
 
     def record_answer(self, **kwargs):
         self.recorded = kwargs
+
+    def record_escalation(self, **kwargs):
+        self.escalation = kwargs
 
 
 class SupportServiceTests(unittest.TestCase):
@@ -104,6 +109,41 @@ class SupportServiceTests(unittest.TestCase):
         self.assertFalse(result["matched"])
         self.assertEqual([], result["approved_source_references"])
         self.assertIn("do not have approved information", result["answer"])
+
+
+class SupportEscalationTests(unittest.TestCase):
+    def test_records_governed_escalation_with_session_reference(self):
+        store = FakeSupportStore()
+        result = SupportService(store, new_id=lambda: "esc-1").escalate(
+            session_id="s", reason="unresolved_request", correlation_id="c",
+            subject_reference="subj", context_version=4)
+        self.assertTrue(result["accepted"])
+        self.assertEqual("escalation_recorded", result["code"])
+        self.assertEqual("esc-1", result["message_id"])
+        self.assertEqual("unresolved_request", result["escalation_reason"])
+        self.assertEqual(ESCALATION_ACKNOWLEDGEMENT, result["acknowledgement"])
+        self.assertEqual("s", store.escalation["session_id"])
+        self.assertEqual("s", store.escalation["context_reference"])
+        self.assertEqual("unresolved_request", store.escalation["escalation_reason"])
+        self.assertEqual(4, store.escalation["context_version"])
+        self.assertNotIn("email", store.escalation)
+        self.assertNotIn("address", store.escalation)
+
+    def test_rejects_unknown_or_missing_reason(self):
+        service = SupportService(FakeSupportStore(), new_id=lambda: "esc-1")
+        for reason in ("", "call_me", None, "please call 555-0100", "email"):
+            with self.assertRaises(SupportValidationError):
+                service.escalate(
+                    session_id="s", reason=reason, correlation_id="c",
+                    subject_reference="subj", context_version=1)
+
+    def test_does_not_record_faq_answer_for_escalation(self):
+        store = FakeSupportStore()
+        SupportService(store, new_id=lambda: "esc-1").escalate(
+            session_id="s", reason="delivery_issue", correlation_id="c",
+            subject_reference="subj", context_version=1)
+        self.assertIsNone(store.recorded)
+        self.assertEqual("delivery_issue", store.escalation["escalation_reason"])
 
 
 if __name__ == "__main__":

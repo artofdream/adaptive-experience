@@ -252,6 +252,8 @@ fieldset label { font-weight: 500; display: flex; gap: .5rem; align-items: cente
 .tracking-layout { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; align-items: start; }
 .latest-status img { width: 100%; border-radius: .5rem; }
 .support-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .75rem; }
+#escalation-form .primary, #support-form .primary { margin-top: .75rem; }
+#escalation-ack { margin-top: .75rem; font-weight: 650; }
 #summary-lines { display: grid; gap: .35rem; }
 .charge { display: flex; justify-content: space-between; color: var(--muted); }
 #summary-total { font-weight: 800; color: var(--purple-deep); }

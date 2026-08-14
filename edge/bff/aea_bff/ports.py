@@ -75,6 +75,15 @@ class SupportResult:
     matched: bool = False
 
 
+@dataclass(frozen=True)
+class EscalationResult:
+    accepted: bool
+    code: str
+    message_id: str | None = None
+    acknowledgement: str | None = None
+    escalation_reason: str | None = None
+
+
 class OrchestrationPort(Protocol):
     def ensure_session(self, *, session_id: str, subject: str) -> None: ...
     def accept_command(self, *, session_id: str, subject: str, command: dict,
@@ -90,6 +99,8 @@ class OrchestrationPort(Protocol):
                  observed_total: float, correlation_id: str) -> CheckoutResult: ...
     def ask_support(self, *, session_id: str, subject: str, question: str,
                     correlation_id: str) -> SupportResult: ...
+    def request_escalation(self, *, session_id: str, subject: str, reason: str,
+                           correlation_id: str) -> EscalationResult: ...
     def workspace_projection(self, *, session_id: str, subject: str) -> dict: ...
     def stream_events(self, *, session_id: str, subject: str,
                       after_event_id: str | None) -> Iterable[dict]: ...
@@ -123,6 +134,9 @@ class UnavailableOrchestration:
 
     def ask_support(self, **kwargs) -> SupportResult:
         return SupportResult(False, "orchestration_unavailable")
+
+    def request_escalation(self, **kwargs) -> EscalationResult:
+        return EscalationResult(False, "orchestration_unavailable")
 
     def workspace_projection(self, **kwargs) -> dict:
         return {"context_version": 0, "tiles": []}

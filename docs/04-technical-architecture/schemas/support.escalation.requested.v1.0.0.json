@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gitlab.com/artof-group/adaptive-experience-architecture/-/blob/main/docs/04-technical-architecture/schemas/support.escalation.requested.v1.0.0.json",
+  "title": "support.escalation.requested",
+  "description": "Minimum payload contract for support.escalation.requested (NFR-015/017). Envelope fields live in the bus envelope, not this payload schema.",
+  "type": "object",
+  "properties": {
+    "escalation_reason": {
+      "type": "string",
+      "enum": [
+        "unresolved_request",
+        "order_issue",
+        "delivery_issue",
+        "product_question"
+      ]
+    },
+    "context_reference": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120
+    }
+  },
+  "required": [
+    "escalation_reason",
+    "context_reference"
+  ],
+  "additionalProperties": false
+}

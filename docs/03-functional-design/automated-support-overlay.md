@@ -11,8 +11,8 @@ inside the adaptive workspace (FR-009, backed by FR-005).
 
 ## Exit Conditions
 - Question answered from approved content, or
-- No approved answer is available (customer continues in-workspace; human
-  escalation via T-09 is Future scope only).
+- No approved answer is available (customer continues in-workspace; Contact
+  Florist / T-09 records a human escalation without leaving the workspace).
 
 ## Inputs
 - Customer question text
@@ -42,4 +42,5 @@ inside the adaptive workspace (FR-009, backed by FR-005).
 ## Success Criteria
 - Common FAQ answered without leaving the workspace
 - Overlay never blocks tile interaction
-- Distinct from Future T-09 / FR-006 human escalation (see ADR-004)
+- Distinct from T-09 / FR-006 human escalation (see ADR-004). ASO never
+  publishes `support.escalation.requested`.

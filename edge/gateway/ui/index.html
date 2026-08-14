@@ -262,8 +262,8 @@
             </div>
             <div class="support-actions">
               <button class="primary" type="button" id="chat-with-lily">Chat with Lily</button>
-              <button class="secondary" type="button" id="contact-florist">Contact Florist</button>
-              <button class="secondary future" type="button" disabled aria-disabled="true">Escalate (Future)</button>
+              <button class="secondary" type="button" id="contact-florist"
+                      aria-controls="escalation" aria-expanded="false">Contact Florist</button>
             </div>
           </section>
         </div>
@@ -287,6 +287,23 @@
     </form>
     <p id="support-answer" hidden></p>
     <button type="button" data-close-help>Got it</button>
+  </dialog>
+  <dialog id="escalation" aria-labelledby="escalation-title">
+    <p class="eyebrow">T-09 · Support Escalation</p>
+    <h2 id="escalation-title">Contact a florist</h2>
+    <p>A florist will follow up on this session. Automated FAQ answers stay in Help.</p>
+    <form id="escalation-form">
+      <label for="escalation-reason">Why do you need a florist?</label>
+      <select id="escalation-reason" required>
+        <option value="unresolved_request">My question is still unresolved</option>
+        <option value="order_issue">There is a problem with my order</option>
+        <option value="delivery_issue">I need help with delivery</option>
+        <option value="product_question">I have a product question</option>
+      </select>
+      <button class="primary" type="submit">Send to florist</button>
+    </form>
+    <p id="escalation-ack" hidden></p>
+    <button type="button" data-close-escalation>Close</button>
   </dialog>
   <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
 </body>

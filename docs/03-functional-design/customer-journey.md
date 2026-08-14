@@ -16,5 +16,6 @@ The **Automated Support Overlay (ASO)** for FR-009 is available across every
 MVP stage; it is a cross-cutting overlay, not a journey step (see
 `automated-support-overlay.md` and ADR-004).
 
-Support Escalation (T-09 / FR-006) and reorder / customer memory are Future
-capabilities outside the MVP journey.
+Support Escalation (T-09 / FR-006) is a separate overlay: Contact Florist
+records a governed human-escalation request. Reorder / customer memory remain
+Future capabilities outside the MVP journey.

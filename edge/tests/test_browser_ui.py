@@ -167,6 +167,22 @@ class BrowserUiTests(unittest.TestCase):
         self.assertNotIn("kafka", self.script.lower())
         self.assertNotIn("5432", self.html + self.script)
 
+    def test_contact_florist_is_t09_escalation_not_faq(self):
+        self.assertIn('id="escalation"', self.html)
+        self.assertIn('id="contact-florist"', self.html)
+        self.assertIn('id="escalation-reason"', self.html)
+        self.assertIn("T-09 · Support Escalation", self.html)
+        self.assertIn("/api/v1/support/escalation", self.script)
+        self.assertIn("openEscalation", self.script)
+        self.assertIn('contactFlorist.addEventListener("click", openEscalation)', self.script)
+        self.assertNotIn('querySelector("#contact-florist").addEventListener("click", openHelp)',
+                         self.script)
+        self.assertNotIn("Escalate (Future)", self.html)
+        self.assertIn("unresolved_request", self.html)
+        self.assertIn("order_issue", self.html)
+        self.assertIn("delivery_issue", self.html)
+        self.assertIn("product_question", self.html)
+
 
 if __name__ == "__main__":
     unittest.main()

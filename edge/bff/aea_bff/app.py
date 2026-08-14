@@ -367,6 +367,40 @@ class BffApp:
                 "matched": result.matched, "correlation_id": correlation_id,
             }, correlation_id)
 
+        if path == "/api/v1/support/escalation" and method == "POST":
+            if headers.get("content-type", "").split(";", 1)[0].strip() != "application/json":
+                return await self._error(send, 415, "unsupported_media_type", correlation_id)
+            body = await self._body(receive, headers)
+            if isinstance(body, tuple):
+                return await self._error(send, body[0], body[1], correlation_id)
+            try:
+                request = json.loads(body)
+            except (UnicodeDecodeError, json.JSONDecodeError):
+                return await self._error(send, 400, "invalid_json", correlation_id)
+            allowed_reasons = {
+                "unresolved_request", "order_issue", "delivery_issue", "product_question",
+            }
+            if (not isinstance(request, dict) or set(request) - {"reason"}
+                    or "reason" not in request):
+                return await self._error(send, 422, "invalid_escalation_shape", correlation_id)
+            reason = request["reason"]
+            if not isinstance(reason, str) or reason.strip() not in allowed_reasons:
+                return await self._error(send, 422, "invalid_escalation_shape", correlation_id)
+            try:
+                result = self.orchestration.request_escalation(
+                    session_id=session.session_id, subject=subject,
+                    reason=reason.strip(), correlation_id=correlation_id)
+            except OrchestrationUnavailable:
+                return await self._error(send, 503, "orchestration_unavailable", correlation_id)
+            status = 202 if result.accepted else 422
+            return await self._json(send, status, {
+                "accepted": result.accepted, "code": result.code,
+                "message_id": result.message_id,
+                "acknowledgement": result.acknowledgement,
+                "escalation_reason": result.escalation_reason,
+                "correlation_id": correlation_id,
+            }, correlation_id)
+
         if path == "/api/v1/workspace" and method == "GET":
             try:
                 raw = self.orchestration.workspace_projection(

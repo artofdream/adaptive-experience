@@ -93,6 +93,13 @@ class InternalOrchestrationApp:
                 if parts[5] == "status":
                     return await self._advance_order_status(send, session_id, subject, body)
                 return await self._set_order_delay(send, session_id, subject, body)
+            if (len(parts) == 6 and parts[4] == "support" and parts[5] == "escalation"
+                    and method == "POST"):
+                loaded = self.store.load(session_id)
+                if loaded is None:
+                    return await self._send(send, 404, {"code": "session_not_found"})
+                body = await self._body(receive)
+                return await self._escalate_support(send, session_id, subject, loaded, body)
             resource = parts[4] if len(parts) == 5 else ""
             if resource == "conversation" and method == "GET":
                 return await self._send(send, 200, self.conversation.projection(session_id=session_id))
@@ -335,6 +342,27 @@ class InternalOrchestrationApp:
         return await self._send(send, 200, {"code": "answered", "answer": result["answer"],
             "approved_source_references": result["approved_source_references"],
             "matched": result["matched"]})
+
+    async def _escalate_support(self, send, session_id: str, subject: str,
+                                loaded: dict, body: dict):
+        if not isinstance(body, dict) or set(body) - {"reason", "correlation_id"}:
+            return await self._send(send, 422, {"code": "validation_failed"})
+        correlation_id = body.get("correlation_id")
+        if not isinstance(correlation_id, str) or not correlation_id.strip():
+            return await self._send(send, 422, {"code": "validation_failed"})
+        try:
+            result = self.support.escalate(
+                session_id=session_id, reason=body.get("reason"),
+                correlation_id=correlation_id.strip(), subject_reference=subject,
+                context_version=int(loaded["context_version"]))
+        except SupportValidationError:
+            return await self._send(send, 422, {"code": "validation_failed"})
+        return await self._send(send, 202, {
+            "code": result["code"], "accepted": True,
+            "message_id": result["message_id"],
+            "acknowledgement": result["acknowledgement"],
+            "escalation_reason": result["escalation_reason"],
+        })
 
     async def _checkout(self, send, session_id: str, subject: str, body: dict):
         correlation_id = body.get("correlation_id")

@@ -5,8 +5,8 @@ import unittest
 
 from edge.bff.aea_bff.app import BffApp
 from edge.bff.aea_bff.ports import (CheckoutResult, CommandResult, ConversationResult,
-                                    CorrectionResult, DeliveryResult, OrderResult, SelectionResult,
-                                    SupportResult)
+                                    CorrectionResult, DeliveryResult, EscalationResult,
+                                    OrderResult, SelectionResult, SupportResult)
 from edge.bff.aea_bff.security import FixedWindowRateLimiter, StaticTokenAuthenticator
 
 
@@ -40,6 +40,12 @@ class FakeOrchestration:
     def ask_support(self, **kwargs):
         return SupportResult(True, "answered", "We deliver same day before 2 PM.",
                              ("policy:delivery",), True)
+
+    def request_escalation(self, **kwargs):
+        self.escalation = kwargs
+        return EscalationResult(True, "escalation_recorded", "esc-1",
+                                "A florist has received your request.",
+                                kwargs["reason"])
 
     def workspace_projection(self, **kwargs):
         return {"context_version": 7, "secret": "omit",
@@ -252,6 +258,29 @@ class PerimeterTests(unittest.TestCase):
             json.dumps({"question": "", "extra": 1}).encode())[0])
         self.assertEqual(422, self.call("POST", "/api/v1/support", headers,
             json.dumps({"question": "  "}).encode())[0])
+
+    def test_escalation_requires_csrf_and_rejects_pii_fields(self):
+        cookie, csrf = self.session()
+        json_headers = {**self.auth, "cookie": cookie, "content-type": "application/json"}
+        payload = json.dumps({"reason": "unresolved_request"}).encode()
+        self.assertEqual(403, self.call("POST", "/api/v1/support/escalation",
+                                        json_headers, payload)[0])
+        headers = {**json_headers, "x-csrf-token": csrf}
+        status, _, body = self.call("POST", "/api/v1/support/escalation", headers, payload)
+        self.assertEqual(202, status)
+        accepted = json.loads(body)
+        self.assertTrue(accepted["accepted"])
+        self.assertEqual("escalation_recorded", accepted["code"])
+        self.assertEqual("unresolved_request", accepted["escalation_reason"])
+        self.assertIn("florist", accepted["acknowledgement"].lower())
+        self.assertEqual(422, self.call("POST", "/api/v1/support/escalation", headers,
+            json.dumps({"reason": "call_me"}).encode())[0])
+        self.assertEqual(422, self.call("POST", "/api/v1/support/escalation", headers,
+            json.dumps({"reason": "unresolved_request",
+                        "email": "private@example.invalid"}).encode())[0])
+        self.assertEqual(422, self.call("POST", "/api/v1/support/escalation", headers,
+            json.dumps({"reason": "unresolved_request",
+                        "address": "1 Main St"}).encode())[0])
 
     def test_checkout_requires_csrf_and_rejects_raw_card_fields(self):
         cookie, csrf = self.session()

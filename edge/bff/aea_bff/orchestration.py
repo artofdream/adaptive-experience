@@ -5,7 +5,7 @@ import urllib.error
 import urllib.request
 
 from .ports import (CheckoutResult, CommandResult, ConversationResult, CorrectionResult,
-                    DeliveryResult, OrderResult, SelectionResult, SupportResult)
+                    DeliveryResult, EscalationResult, OrderResult, SelectionResult, SupportResult)
 
 
 class OrchestrationUnavailable(RuntimeError):
@@ -139,6 +139,17 @@ class HttpOrchestration:
                              data.get("answer"),
                              tuple(data.get("approved_source_references") or ()),
                              bool(data.get("matched", False)))
+
+    def request_escalation(self, **kwargs):
+        data = self._call("POST",
+                          f"/internal/v1/sessions/{kwargs['session_id']}/support/escalation",
+                          subject=kwargs["subject"], payload={
+                              "reason": kwargs["reason"],
+                              "correlation_id": kwargs["correlation_id"],
+                          })
+        return EscalationResult(data["status"] == 202, data.get("code", "rejected"),
+                                data.get("message_id"), data.get("acknowledgement"),
+                                data.get("escalation_reason"))
 
     def workspace_projection(self, **kwargs):
         return self._call("GET", f"/internal/v1/sessions/{kwargs['session_id']}/workspace",

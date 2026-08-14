@@ -33,6 +33,8 @@ const RIBBONS = ["none", "satin", "organza", "kraft"];
 const help = document.querySelector("#help");
 const helpButton = document.querySelector(".help-button");
 const asoButton = document.querySelector(".aso");
+const contactFlorist = document.querySelector("#contact-florist");
+const escalation = document.querySelector("#escalation");
 const form = document.querySelector("#message-form");
 const message = document.querySelector("#message");
 const messages = document.querySelector("#messages");
@@ -539,14 +541,29 @@ function closeHelp() {
   helpButton.focus();
 }
 
+function openEscalation() {
+  escalation.showModal();
+  contactFlorist.setAttribute("aria-expanded", "true");
+}
+
+function closeEscalation() {
+  escalation.close();
+  contactFlorist.setAttribute("aria-expanded", "false");
+  contactFlorist.focus();
+}
+
 helpButton.addEventListener("click", openHelp);
 asoButton.addEventListener("click", openHelp);
 document.querySelector("#chat-with-lily").addEventListener("click", openHelp);
-document.querySelector("#contact-florist").addEventListener("click", openHelp);
+contactFlorist.addEventListener("click", openEscalation);
 document.querySelector("[data-close-help]").addEventListener("click", closeHelp);
+document.querySelector("[data-close-escalation]").addEventListener("click", closeEscalation);
 help.addEventListener("close", () => {
   helpButton.setAttribute("aria-expanded", "false");
   asoButton.setAttribute("aria-expanded", "false");
+});
+escalation.addEventListener("close", () => {
+  contactFlorist.setAttribute("aria-expanded", "false");
 });
 
 document.querySelector("#correct-open").addEventListener("click", () => {
@@ -712,6 +729,21 @@ document.querySelector("#support-form").addEventListener("submit", async (event)
   } catch (error) {
     answer.hidden = false;
     answer.textContent = `Support is unavailable (${error.message}).`;
+  }
+});
+
+document.querySelector("#escalation-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const reason = document.querySelector("#escalation-reason").value;
+  const ack = document.querySelector("#escalation-ack");
+  try {
+    const result = await api("/api/v1/support/escalation", { method: "POST", body: { reason } });
+    ack.hidden = false;
+    ack.textContent = result.acknowledgement || "A florist has received your request.";
+    showNotice("Florist contact request sent.");
+  } catch (error) {
+    ack.hidden = false;
+    ack.textContent = `Could not reach a florist (${error.message}).`;
   }
 });
 

@@ -192,6 +192,23 @@ TOPICS: list[tuple[str, str, dict, list[str]]] = [
         ["answer"],
     ),
     (
+        "support.escalation.requested",
+        "1.0.0",
+        {
+            "escalation_reason": {
+                "type": "string",
+                "enum": [
+                    "unresolved_request",
+                    "order_issue",
+                    "delivery_issue",
+                    "product_question",
+                ],
+            },
+            "context_reference": {"type": "string", "minLength": 1, "maxLength": 120},
+        },
+        ["escalation_reason", "context_reference"],
+    ),
+    (
         "workspace.state.updated",
         "1.0.0",
         {

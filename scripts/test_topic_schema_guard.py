@@ -50,7 +50,7 @@ class TopicSchemaGuardTests(unittest.TestCase):
             lambda data: data.update({"title": "wrong.topic"}),
         )
         errors = self.validate()
-        self.assertTrue(any("not in the 21-topic MVP registry" in error for error in errors))
+        self.assertTrue(any("not in the governed topic registry" in error for error in errors))
         self.assertTrue(any("title must be" in error for error in errors))
 
     def test_minimum_payload_drift_fails(self) -> None:
