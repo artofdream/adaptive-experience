@@ -29,8 +29,9 @@ lavender / green). The shell is driven by the Edge APIs (`/api/v1/session`,
 conversation, shared-understanding, workspace, stream, selection, delivery,
 order, checkout, support). NFR-001 landmarks, correction reassurance, keyboard
 focus, and the help dialog remain; usability research remains the production
-validation method. T-04 exposes only Arrangement, Size, and Card message
-(ADR-006). GitLab #155 tracks the seven-step navigation shell.
+validation method. T-04 exposes Arrangement, Size, Card message, and thin
+FR-003 selects (flower type, colour, ribbon) per ADR-006 amended. GitLab #155
+tracks the seven-step navigation shell.
 
 The UI uses standards-based HTML, CSS, and JavaScript for current evergreen
 desktop, tablet, and mobile browsers. Its tested viewport contract is:
