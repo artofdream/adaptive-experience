@@ -381,12 +381,42 @@ class InternalOrchestrationApp:
             result = self.support.answer(
                 session_id=session_id, question=body.get("question"),
                 correlation_id=correlation_id.strip(), subject_reference=subject,
-                context_version=int(loaded["context_version"]))
+                context_version=int(loaded["context_version"]),
+                situation=self._support_situation(session_id, loaded))
         except SupportValidationError:
             return await self._send(send, 422, {"code": "validation_failed"})
         return await self._send(send, 200, {"code": "answered", "answer": result["answer"],
-            "approved_source_references": result["approved_source_references"],
-            "matched": result["matched"]})
+            "approved_source_references": result.get("approved_source_references", []),
+            "matched": result["matched"], "kind": result.get("kind", "faq"),
+            "fact_references": result.get("fact_references", [])})
+
+    def _support_situation(self, session_id: str, loaded: dict) -> dict:
+        """Least-data session facts for FR-010 situational answers."""
+        state = loaded.get("state") or {}
+        decisions = state.get("decisions") or {}
+        selection = decisions.get("product") if isinstance(decisions.get("product"), dict) else None
+        delivery = decisions.get("delivery") if isinstance(decisions.get("delivery"), dict) else None
+        order = self.order.projection(session_id=session_id)
+        order_facet = None
+        if order is not None:
+            delayed = bool(order.get("delayed"))
+            order_facet = {
+                "order_id": order["order_id"], "status": order["status"],
+                "delayed": delayed,
+                "authoritative_status": "delayed" if delayed else order["status"],
+            }
+        availability = {}
+        product_ids = []
+        if isinstance(selection, dict) and selection.get("product_id"):
+            product_ids.append(selection["product_id"])
+        from .recommendation import REFERENCE_CATALOG
+        product_ids.extend(product.product_id for product in REFERENCE_CATALOG)
+        try:
+            availability = self.inventory.availability(product_ids=product_ids)
+        except InventoryValidationError:
+            availability = {}
+        return {"order": order_facet, "delivery": delivery, "selection": selection,
+                "availability": availability}
 
     async def _escalate_support(self, send, session_id: str, subject: str,
                                 loaded: dict, body: dict):

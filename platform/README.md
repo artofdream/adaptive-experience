@@ -141,7 +141,10 @@ payment evolution (#148) build on these workers.
   `{answer, approved_source_references, matched}`, and publishes the governed
   `support.faq.answered` event. An unmatched question returns a safe
   no-approved-information answer with empty sources - it never fabricates content.
-  Human escalation is a separate thin path (FR-006 / T-09).
+  Situational questions about this session's order status, delivery details, or
+  product availability (FR-010) are answered from supplied facts and publish
+  `support.situation.answered`; they do not invent tracking or stock. Human
+  escalation is a separate thin path (FR-006 / T-09).
 - Human support escalation (#25, FR-006 / T-09): `POST .../support/escalation`
   records an allowlisted reason (`unresolved_request`, `order_issue`,
   `delivery_issue`, `product_question`) and an opaque session context reference,

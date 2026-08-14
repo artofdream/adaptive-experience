@@ -725,7 +725,8 @@ document.querySelector("#support-form").addEventListener("submit", async (event)
   try {
     const result = await api("/api/v1/support", { method: "POST", body: { question } });
     answer.hidden = false;
-    answer.textContent = result.answer || "No approved information matched.";
+    const prefix = result.kind === "situation" ? "From this session: " : "";
+    answer.textContent = prefix + (result.answer || "No approved information matched.");
   } catch (error) {
     answer.hidden = false;
     answer.textContent = `Support is unavailable (${error.message}).`;

@@ -16,12 +16,16 @@ class FakeSupportStore:
     def __init__(self):
         self.recorded = None
         self.escalation = None
+        self.situation = None
 
     def record_answer(self, **kwargs):
         self.recorded = kwargs
 
     def record_escalation(self, **kwargs):
         self.escalation = kwargs
+
+    def record_situation(self, **kwargs):
+        self.situation = kwargs
 
 
 class SupportServiceTests(unittest.TestCase):
@@ -151,6 +155,70 @@ class SupportEscalationTests(unittest.TestCase):
             subject_reference="subj", context_version=1)
         self.assertIsNone(store.recorded)
         self.assertEqual("delivery_issue", store.escalation["escalation_reason"])
+
+
+class SupportSituationTests(unittest.TestCase):
+    def test_order_status_uses_session_facts_not_faq(self):
+        store = FakeSupportStore()
+        result = SupportService(store, new_id=lambda: "sit-1").answer(
+            session_id="s", question="What is my order status?",
+            correlation_id="c", subject_reference="subj", context_version=2,
+            situation={"order": {"order_id": "o1", "status": "preparing",
+                                 "authoritative_status": "preparing"}})
+        self.assertEqual("situation", result["kind"])
+        self.assertEqual("order_status", result["situation_kind"])
+        self.assertIn("preparing", result["answer"])
+        self.assertEqual(["session:order"], result["fact_references"])
+        self.assertIsNotNone(store.situation)
+        self.assertIsNone(store.recorded)
+
+    def test_order_status_without_order_is_honest(self):
+        result = SupportService(FakeSupportStore(), new_id=lambda: "sit-1").answer(
+            session_id="s", question="Where is my order?",
+            correlation_id="c", subject_reference="subj", context_version=1,
+            situation={})
+        self.assertIn("does not have an order", result["answer"])
+        self.assertEqual([], result["fact_references"])
+
+    def test_session_delivery_beats_generic_faq_when_details_exist(self):
+        store = FakeSupportStore()
+        result = SupportService(store, new_id=lambda: "sit-1").answer(
+            session_id="s", question="When will my delivery arrive?",
+            correlation_id="c", subject_reference="subj", context_version=1,
+            situation={"delivery": {"destination_reference": "addr-9",
+                                    "timing": {"date": "2026-09-01", "window": "morning"}}})
+        self.assertEqual("delivery", result["situation_kind"])
+        self.assertIn("2026-09-01", result["answer"])
+        self.assertIn("morning", result["answer"])
+        self.assertNotIn("2 PM", result["answer"])
+        self.assertIsNone(store.recorded)
+
+    def test_generic_delivery_policy_still_answers_without_session_details(self):
+        store = FakeSupportStore()
+        result = SupportService(store, new_id=lambda: "m").answer(
+            session_id="s", question="When do you deliver?",
+            correlation_id="c", subject_reference="subj", context_version=1,
+            situation={})
+        self.assertEqual("faq", result["kind"])
+        self.assertIn("policy:delivery", result["approved_source_references"])
+        self.assertIsNone(store.situation)
+
+    def test_availability_uses_inventory_snapshot(self):
+        result = SupportService(FakeSupportStore(), new_id=lambda: "sit-1").answer(
+            session_id="s", question="Is classic-rose-dozen available?",
+            correlation_id="c", subject_reference="subj", context_version=1,
+            situation={"availability": {
+                "classic-rose-dozen": {"status": "available", "freshness": "current"}}})
+        self.assertEqual("availability", result["situation_kind"])
+        self.assertIn("available", result["answer"])
+        self.assertEqual(["inventory:availability"], result["fact_references"])
+
+    def test_availability_unknown_does_not_invent_stock(self):
+        result = SupportService(FakeSupportStore(), new_id=lambda: "sit-1").answer(
+            session_id="s", question="Is the orchid in stock?",
+            correlation_id="c", subject_reference="subj", context_version=1,
+            situation={"availability": {"premium-orchid": {"status": "unknown"}}})
+        self.assertIn("unknown", result["answer"])
 
 
 if __name__ == "__main__":

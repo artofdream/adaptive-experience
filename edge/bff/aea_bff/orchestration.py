@@ -138,7 +138,9 @@ class HttpOrchestration:
         return SupportResult(data["status"] == 200, data.get("code", "rejected"),
                              data.get("answer"),
                              tuple(data.get("approved_source_references") or ()),
-                             bool(data.get("matched", False)))
+                             bool(data.get("matched", False)),
+                             data.get("kind") or "faq",
+                             tuple(data.get("fact_references") or ()))
 
     def request_escalation(self, **kwargs):
         data = self._call("POST",

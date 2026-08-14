@@ -6,8 +6,9 @@ Naming: `{topic}.v{semver}.json` (for example,
 `support.faq.answered.v1.0.0.json`). Schema versions must match the
 **Schema version** column in [`../topic-contracts.md`](../topic-contracts.md).
 
-All **22 governed** topics have payload schemas in this directory (the original
-21 MVP topics plus `support.escalation.requested` for FR-006 / T-09). Owners refine
+All **23 governed** topics have payload schemas in this directory (the original
+21 MVP topics plus `support.escalation.requested` for FR-006 / T-09 and
+`support.situation.answered` for FR-010). Owners refine
 field inventories before a publisher ships. The shared bus envelope defined by
 ADR-008 is machine-readable in `message-envelope.v1.0.0.json`; envelope fields
 remain separate from the topic-specific payload files.

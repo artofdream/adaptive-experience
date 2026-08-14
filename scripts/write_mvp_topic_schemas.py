@@ -209,6 +209,22 @@ TOPICS: list[tuple[str, str, dict, list[str]]] = [
         ["escalation_reason", "context_reference"],
     ),
     (
+        "support.situation.answered",
+        "1.0.0",
+        {
+            "answer": {"type": "string"},
+            "situation_kind": {
+                "type": "string",
+                "enum": ["order_status", "delivery", "availability"],
+            },
+            "fact_references": {
+                "type": "array",
+                "items": {"type": "string"},
+            },
+        },
+        ["answer", "situation_kind", "fact_references"],
+    ),
+    (
         "workspace.state.updated",
         "1.0.0",
         {

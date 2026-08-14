@@ -36,6 +36,7 @@ corresponding MVP topics below.
 | order.status.updated | 1.0.0 | Order | Orchestration, Workspace | order ID, authoritative status |
 | support.faq.answered | 1.0.0 | AI Concierge | Workspace | answer, approved-source references |
 | support.escalation.requested | 1.0.0 | Support Service | Orchestration, Workspace | escalation reason, session / context reference |
+| support.situation.answered | 1.0.0 | Support Service | Orchestration, Workspace | answer, situation kind, fact references |
 | workspace.state.updated | 1.0.0 | Orchestration | Workspace | affected tiles, state version |
 
 ## Contract rules
@@ -51,6 +52,7 @@ corresponding MVP topics below.
 
 ## Future topics (not yet catalogued)
 
-Remaining Future-backlog capabilities (CRM analytics, staff workspace, FR-010
-automated status answers) do not yet have governed topics. FR-006 / T-09 thin
-human escalation uses the catalogued `support.escalation.requested` topic above.
+Remaining Future-backlog capabilities (CRM analytics, staff workspace) do not
+yet have governed topics. FR-006 / T-09 thin human escalation uses
+`support.escalation.requested`. FR-010 thin situational answers use
+`support.situation.answered` above.

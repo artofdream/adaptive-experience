@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gitlab.com/artof-group/adaptive-experience-architecture/-/blob/main/docs/04-technical-architecture/schemas/support.situation.answered.v1.0.0.json",
+  "title": "support.situation.answered",
+  "description": "Minimum payload contract for support.situation.answered (NFR-015/017). Envelope fields live in the bus envelope, not this payload schema.",
+  "type": "object",
+  "properties": {
+    "answer": {
+      "type": "string"
+    },
+    "situation_kind": {
+      "type": "string",
+      "enum": [
+        "order_status",
+        "delivery",
+        "availability"
+      ]
+    },
+    "fact_references": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "answer",
+    "situation_kind",
+    "fact_references"
+  ],
+  "additionalProperties": false
+}

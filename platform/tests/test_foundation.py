@@ -447,9 +447,11 @@ class FoundationTests(unittest.TestCase):
             if not path.name.startswith("message-envelope")
         }
         self.assertEqual(set(self.policy.topics), schemas)
-        self.assertEqual(22, len(self.policy.topics))
+        self.assertEqual(23, len(self.policy.topics))
         self.assertEqual("support-service",
                          self.policy.topics["support.escalation.requested"].publisher)
+        self.assertEqual("support-service",
+                         self.policy.topics["support.situation.answered"].publisher)
 
     def test_registry_enforces_publisher_and_consumer(self):
         self.policy.require_publish("orchestration", "customer.message.submitted")

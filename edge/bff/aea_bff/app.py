@@ -371,7 +371,9 @@ class BffApp:
             return await self._json(send, status, {
                 "answered": result.answered, "code": result.code, "answer": result.answer,
                 "approved_source_references": list(result.approved_source_references),
-                "matched": result.matched, "correlation_id": correlation_id,
+                "matched": result.matched, "kind": result.kind,
+                "fact_references": list(result.fact_references),
+                "correlation_id": correlation_id,
             }, correlation_id)
 
         if path == "/api/v1/support/escalation" and method == "POST":

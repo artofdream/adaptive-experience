@@ -34,6 +34,8 @@ inside the adaptive workspace (FR-009, backed by FR-005).
 ## Events Published
 - `support.faq.answered` (publisher: AI Floral Concierge / AI Concierge;
   informational; does not mutate order state)
+- `support.situation.answered` (publisher: Support Service; FR-010 situational
+  answers from session order, delivery, or inventory facts)
 
 ## Events Consumed
 - None required to open the overlay; may read current Shared Understanding for
