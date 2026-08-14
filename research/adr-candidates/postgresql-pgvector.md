@@ -3,7 +3,7 @@
 Status: Draft (research promotion candidate; not an Accepted ADR)
 
 Quarantined from a misnumbered `docs/06-adr/` stub (CF-014). Tentative future
-slot: ADR-011+.
+slot: **ADR-014+**.
 
 ## Intent
 
@@ -17,5 +17,10 @@ state, and payment state remain authoritative structured data.
 
 ## Notes
 
-Do not Accept until experience-state / datastore ownership ADRs from the M0
-gate (#107 area) are settled and a free ADR number is assigned.
+[ADR-011](../../docs/06-adr/ADR-011-experience-state-datastore.md) already
+Accepted PostgreSQL for **experience-state** and **explicitly deferred
+`pgvector`**. This Draft is only the vector-extension / retrieval-store
+decision — do not re-decide experience-state persistence.
+
+Promote before or with [`rag-hybrid-retrieval.md`](rag-hybrid-retrieval.md);
+keep experience-state independent of vector search.

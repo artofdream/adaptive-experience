@@ -3,7 +3,8 @@
 Status: Draft (research promotion candidate; not an Accepted ADR)
 
 Quarantined from a misnumbered `docs/06-adr/` stub (CF-014). Tentative future
-slot: ADR-011+. Depends on a datastore/pgvector decision.
+slot: **ADR-014+** after a pgvector (or equivalent) ADR. Depends on
+[`postgresql-pgvector.md`](postgresql-pgvector.md).
 
 ## Intent
 
@@ -17,5 +18,7 @@ executed.
 
 ## Notes
 
-Promote only after PostgreSQL/pgvector (or equivalent) is an Accepted ADR under
-a correct number.
+Do not promote until pgvector (or an equivalent retrieval store) is Accepted.
+Keep this Draft separate from the pgvector ADR (infrastructure vs retrieval
+pattern). MVP support FAQ ([design note](../design-notes/m6-support-answers-contract.md))
+uses approved reference answers — not this RAG path.
