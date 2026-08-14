@@ -183,6 +183,23 @@ class BrowserUiTests(unittest.TestCase):
         self.assertIn("delivery_issue", self.html)
         self.assertIn("product_question", self.html)
 
+    def test_florist_operator_console_is_separate_labeled_sample(self):
+        html = (ROOT / "ui" / "florist.html").read_text(encoding="utf-8")
+        script = (ROOT / "ui" / "assets" / "florist.js").read_text(encoding="utf-8")
+        nginx = (ROOT / "nginx.conf").read_text(encoding="utf-8")
+        self.assertIn("Local florist operator sample", html)
+        self.assertIn("Not live chat", html)
+        self.assertIn("FR-016", html)
+        self.assertIn('id="inbox"', html)
+        self.assertIn("/api/v1/operator/escalations", script)
+        self.assertIn("/api/v1/operator/sessions/", script)
+        self.assertNotIn("card_number", script)
+        self.assertNotIn("postgres", script.lower())
+        self.assertIn("location = /florist {", nginx)
+        self.assertIn("try_files /florist.html =404;", nginx)
+        self.assertIn("location /api/ {", nginx)
+        self.assertIn('proxy_set_header X-Internal-Identity "";', nginx)
+
 
 if __name__ == "__main__":
     unittest.main()

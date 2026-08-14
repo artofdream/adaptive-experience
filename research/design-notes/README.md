@@ -16,6 +16,7 @@ unambiguous.
 | [`m6-support-answers-contract.md`](m6-support-answers-contract.md) | M6 FAQ / approved answers | #28, #24 |
 | [`pgvector-rag-scaffold.md`](pgvector-rag-scaffold.md) | Thin pgvector hybrid retrieval | #166 |
 | [`adr-016-agentic-runtime.md`](adr-016-agentic-runtime.md) | Thin ADR-016 tool-calling runtime | #168 |
+| [`florist-operator-ui.md`](florist-operator-ui.md) | Local florist operator console (not CRM) | #170 |
 
 Canonical platform decisions remain in `docs/06-adr/`. ADR promotion Drafts
 remain in [`../adr-candidates/`](../adr-candidates/).

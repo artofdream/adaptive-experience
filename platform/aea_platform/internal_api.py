@@ -72,6 +72,21 @@ class InternalOrchestrationApp:
             health = getattr(self.interpreter, "health", lambda: {
                 "available": True, "mode": "reference", "circuit": "closed"})()
             return await self._send(send, 200, health)
+        if scope["path"] == "/internal/v1/operator/escalations" and scope["method"] == "GET":
+            return await self._send(send, 200, {"items": self._operator_escalations()})
+        if (len(parts) == 5 and parts[:4] == ["internal", "v1", "operator", "sessions"]
+                and scope["method"] == "GET"):
+            try:
+                session_id = str(uuid.UUID(parts[4]))
+            except ValueError:
+                return await self._send(send, 422, {"code": "invalid_session_reference"})
+            try:
+                loaded = self.store.load(session_id)
+                if loaded is None:
+                    return await self._send(send, 404, {"code": "session_not_found"})
+                return await self._send(send, 200, self._operator_summary(session_id, loaded))
+            except (ConversationSessionNotFound, IntentSessionNotFound):
+                return await self._send(send, 404, {"code": "session_not_found"})
         if len(parts) < 4 or parts[:3] != ["internal", "v1", "sessions"]:
             return await self._send(send, 404, {"code": "not_found"})
         session_id = parts[3]
@@ -233,6 +248,36 @@ class InternalOrchestrationApp:
             "ai_generated": True,
             "assistant_mode": getattr(self.interpreter, "last_mode", "reference"),
             "disclosure": "AI-generated interpretation; review and correct before ordering.",
+        }
+
+    def _operator_escalations(self, *, limit: int = 50) -> list[dict]:
+        """Least-data Contact Florist inbox (FR-006 / T-09). Not a CRM ticket."""
+        return self.support.store.list_escalations(limit=limit)
+
+    def _operator_summary(self, session_id: str, loaded: dict) -> dict:
+        """Read-only florist view of one opaque session. No payment or raw PII."""
+        workspace = self._workspace(session_id, loaded)
+        facets = workspace.get("facets") or {}
+        conversation = facets.get("conversation") or {}
+        shared = facets.get("shared_understanding") or {}
+        recommendations = facets.get("recommendations") or {}
+        availability = []
+        for item in recommendations.get("items") or []:
+            if not isinstance(item, dict):
+                continue
+            availability.append({key: item[key] for key in
+                                 ("product_id", "available", "availability_status")
+                                 if key in item})
+        return {
+            "session_id": session_id,
+            "context_version": workspace["context_version"],
+            "conversation": {"messages": list(conversation.get("messages") or [])},
+            "shared_understanding": {
+                "structured_intent": dict(shared.get("structured_intent") or {})},
+            "order": facets.get("order"),
+            "selection": facets.get("selection"),
+            "delivery": facets.get("delivery"),
+            "availability": availability,
         }
 
     async def _select_product(self, send, session_id: str, subject: str,

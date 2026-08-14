@@ -543,6 +543,32 @@ class PsycopgSupportStore:
                 "VALUES (%s,%s,%s,'support.escalation.requested',%s,%s::jsonb)",
                 (message_id, session_id, context_version, session_id, json.dumps(envelope)))
 
+    def list_escalations(self, *, limit: int = 50) -> list[dict]:
+        """Recent `support.escalation.requested` rows for a florist inbox.
+
+        Returns opaque session/context references and the allowlisted reason.
+        Envelope security_context (subject_reference) is not exposed.
+        """
+        capped = min(max(int(limit), 1), 50)
+        rows = self.connection.execute(
+            "SELECT message_id, session_id, created_at, envelope "
+            "FROM orchestration.outbox_message "
+            "WHERE topic = 'support.escalation.requested' "
+            "ORDER BY created_at DESC LIMIT %s",
+            (capped,)).fetchall()
+        items = []
+        for message_id, session_id, created_at, envelope in rows:
+            payload = (envelope or {}).get("payload") or {}
+            requested_at = created_at.isoformat() if hasattr(created_at, "isoformat") else str(created_at)
+            items.append({
+                "message_id": str(message_id),
+                "session_id": str(session_id),
+                "escalation_reason": payload.get("escalation_reason"),
+                "context_reference": payload.get("context_reference"),
+                "requested_at": requested_at,
+            })
+        return items
+
 
 class PsycopgRetrievalStore:
     """pgvector + FTS hybrid store for retrieval.knowledge_chunk (ADR-014/015)."""

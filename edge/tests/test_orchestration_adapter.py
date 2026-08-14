@@ -93,3 +93,19 @@ class HttpOrchestrationTests(unittest.TestCase):
         self.assertEqual("unresolved_request", calls[0][2]["reason"])
         self.assertEqual("c1", calls[0][2]["correlation_id"])
         self.assertEqual("user1", calls[0][3]["x-subject-reference"])
+
+    def test_operator_reads_use_internal_operator_paths(self):
+        calls = []
+        def transport(method, url, headers, payload, timeout):
+            calls.append((method, url, headers, payload))
+            if url.endswith("/operator/escalations"):
+                return 200, '{"items":[{"message_id":"esc-1","session_id":"s1"}]}'
+            return 200, '{"session_id":"s1","context_version":1,"conversation":{"messages":[]}}'
+        adapter = HttpOrchestration("http://orchestration:8081", "internal", transport=transport)
+        inbox = adapter.list_operator_escalations(subject="staff-1")
+        summary = adapter.operator_session_summary(session_id="s1", subject="staff-1")
+        self.assertEqual("esc-1", inbox["items"][0]["message_id"])
+        self.assertEqual("s1", summary["session_id"])
+        self.assertTrue(any(url.endswith("/operator/escalations") for _, url, _, _ in calls))
+        self.assertTrue(any(url.endswith("/operator/sessions/s1") for _, url, _, _ in calls))
+        self.assertTrue(all(headers["x-subject-reference"] == "staff-1" for _, _, headers, _ in calls))

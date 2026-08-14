@@ -47,6 +47,41 @@ class FakeOrchestration:
                                 "A florist has received your request.",
                                 kwargs["reason"])
 
+    def list_operator_escalations(self, **kwargs):
+        return {"status": 200, "items": [{
+            "message_id": "esc-1",
+            "session_id": "11111111-1111-4111-8111-111111111111",
+            "escalation_reason": "unresolved_request",
+            "context_reference": "11111111-1111-4111-8111-111111111111",
+            "requested_at": "2026-08-15T00:00:00+00:00",
+            "secret": "omit",
+            "email": "private@example.invalid",
+        }]}
+
+    def operator_session_summary(self, **kwargs):
+        if kwargs["session_id"] == "00000000-0000-0000-0000-000000000000":
+            return {"status": 404, "code": "session_not_found"}
+        return {
+            "status": 200,
+            "session_id": kwargs["session_id"],
+            "context_version": 3,
+            "conversation": {"messages": [{
+                "message_id": "m1", "role": "customer", "text": "roses for mum",
+                "status": "submitted", "submitted_at": "2026-08-15T00:00:00+00:00",
+                "private": "omit"}]},
+            "shared_understanding": {
+                "structured_intent": {"occasion": "birthday", "secret": "omit"}},
+            "order": {"order_id": "order-9", "status": "preparing",
+                      "delayed": False, "authoritative_status": "preparing"},
+            "selection": {"product_id": "classic-rose-dozen"},
+            "delivery": {"destination_reference": "dest-1",
+                         "timing": {"date": "2026-08-16", "window": "morning"}},
+            "availability": [{"product_id": "classic-rose-dozen",
+                              "availability_status": "available", "available": True,
+                              "secret": "omit"}],
+            "email": "omit@example.invalid",
+        }
+
     def workspace_projection(self, **kwargs):
         return {"context_version": 7, "secret": "omit",
                 "facets": {
@@ -400,6 +435,53 @@ class PerimeterTests(unittest.TestCase):
         result = json.loads(body)
         self.assertEqual(2, result["context_version"])
         self.assertEqual(result["correlation_id"], response_headers["x-correlation-id"])
+
+    def test_florist_operator_reads_fail_closed_unless_enabled(self):
+        cookie, _csrf = self.session()
+        headers = {**self.auth, "cookie": cookie}
+        self.assertEqual(404, self.call("GET", "/api/v1/operator/escalations", headers)[0])
+        self.assertEqual(404, self.call(
+            "GET", "/api/v1/operator/sessions/11111111-1111-4111-8111-111111111111",
+            headers)[0])
+        self.assertTrue(BffApp.florist_operator_enabled_for(environment="local", flag="1"))
+        self.assertFalse(BffApp.florist_operator_enabled_for(environment="production", flag="1"))
+        self.assertFalse(BffApp.florist_operator_enabled_for(environment="local", flag=None))
+
+    def test_florist_operator_inbox_and_session_are_least_data_when_enabled(self):
+        app = BffApp(FakeOrchestration(), StaticTokenAuthenticator("good"),
+                     allowed_origin="https://localhost:8443", florist_operator_enabled=True)
+        def call(*args, **kwargs):
+            return asyncio.run(invoke(app, *args, **kwargs))
+        status, headers, body = call("POST", "/api/v1/session", self.auth)
+        self.assertEqual(201, status)
+        cookie = headers["set-cookie"].split(";", 1)[0]
+        auth = {**self.auth, "cookie": cookie}
+        status, _, body = call("GET", "/api/v1/operator/escalations", auth)
+        self.assertEqual(200, status)
+        inbox = json.loads(body)
+        self.assertEqual([{
+            "message_id": "esc-1",
+            "session_id": "11111111-1111-4111-8111-111111111111",
+            "escalation_reason": "unresolved_request",
+            "context_reference": "11111111-1111-4111-8111-111111111111",
+            "requested_at": "2026-08-15T00:00:00+00:00",
+        }], inbox["items"])
+        self.assertNotIn(b"secret", body)
+        self.assertNotIn(b"email", body)
+        status, _, body = call(
+            "GET", "/api/v1/operator/sessions/11111111-1111-4111-8111-111111111111", auth)
+        self.assertEqual(200, status)
+        summary = json.loads(body)
+        self.assertEqual("roses for mum", summary["conversation"]["messages"][0]["text"])
+        self.assertEqual({"occasion": "birthday"}, summary["shared_understanding"]["structured_intent"])
+        self.assertEqual("preparing", summary["order"]["authoritative_status"])
+        self.assertEqual("available", summary["availability"][0]["availability_status"])
+        self.assertNotIn("email", summary)
+        self.assertNotIn(b"private", body)
+        self.assertEqual(422, call("GET", "/api/v1/operator/sessions/not-a-uuid", auth)[0])
+        self.assertEqual(404, call(
+            "GET", "/api/v1/operator/sessions/00000000-0000-0000-0000-000000000000",
+            auth)[0])
 
     def test_boundary_contains_no_domain_or_infrastructure_authority(self):
         root = pathlib.Path(__file__).resolve().parents[1]
