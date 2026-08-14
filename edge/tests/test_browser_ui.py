@@ -133,7 +133,16 @@ class BrowserUiTests(unittest.TestCase):
         self.assertIn("T-02 · Persistent", self.html)
         self.assertIn("ASO FAQ overlay", self.html)
 
-    def test_journey_gating_and_empty_states(self):
+    def test_checkout_is_confirmation_driven(self):
+        self.assertIn('id="checkout-confirm"', self.html)
+        self.assertIn('id="checkout-ack"', self.html)
+        self.assertIn("SESSION_PAYMENT_REFERENCE", self.script)
+        self.assertIn("renderCheckoutConfirmation", self.script)
+        self.assertIn("resolvePaymentReference", self.script)
+        self.assertIn("Confirm session payment reference", self.html)
+        self.assertIn("I confirm delivery, total, and payment", self.html)
+        self.assertIn("session_pay_ref", self.html)
+        self.assertIn(".confirm-panel", self.css)
         self.assertIn("unlockedThrough", self.script)
         self.assertIn("stepReady", self.script)
         self.assertIn("EMPTY_COPY", self.script)

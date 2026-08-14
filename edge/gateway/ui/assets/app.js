@@ -8,6 +8,8 @@ const INTENT_LABELS = {
   timing: "Timing",
 };
 const TRACK_ORDER = ["created", "submitted", "confirmed", "preparing", "dispatched", "delivered", "completed"];
+/** Session-scoped reference vault token for ADR-013 confirmation-driven checkout. */
+const SESSION_PAYMENT_REFERENCE = "session_pay_ref";
 const STEP_CAPTIONS = {
   1: "Step 1 · Enter / Discovery",
   2: "Step 2 · Describe need / Shared Understanding",
@@ -383,6 +385,43 @@ function renderSummary(summary) {
   total.textContent = summary && summary.total != null ? `Total $${Number(summary.total).toFixed(2)}` : "";
 }
 
+function syncPaymentMode() {
+  const other = document.querySelector("input[name='payment-mode']:checked")?.value === "other";
+  const input = document.querySelector("#payment-reference");
+  const label = document.querySelector("#payment-reference-label");
+  input.hidden = !other;
+  label.hidden = !other;
+  input.required = other;
+  if (!other) {
+    input.value = "";
+    document.querySelector("#confirm-payment").textContent =
+      `Session vault reference (${SESSION_PAYMENT_REFERENCE})`;
+  } else {
+    document.querySelector("#confirm-payment").textContent = input.value.trim() || "Enter a different vault reference";
+  }
+}
+
+function resolvePaymentReference() {
+  const mode = document.querySelector("input[name='payment-mode']:checked")?.value || "session";
+  if (mode === "session") return SESSION_PAYMENT_REFERENCE;
+  return document.querySelector("#payment-reference").value.trim();
+}
+
+function renderCheckoutConfirmation(workspace) {
+  const facets = (workspace && workspace.facets) || {};
+  const delivery = facets.delivery || {};
+  const summary = facets.order_summary || {};
+  const destination = document.querySelector("#confirm-destination");
+  const total = document.querySelector("#confirm-total");
+  const paymentRef = document.querySelector("#session-payment-ref");
+  destination.textContent = delivery.destination_reference || "Not set yet — complete delivery first";
+  total.textContent = summary.total != null
+    ? `$${Number(summary.total).toFixed(2)} ${summary.currency || "USD"}`
+    : "Not available — select a product and delivery";
+  if (paymentRef) paymentRef.textContent = SESSION_PAYMENT_REFERENCE;
+  syncPaymentMode();
+}
+
 function renderOrder(order) {
   const status = document.querySelector("#order-status");
   const confirmed = document.querySelector("#order-confirmed");
@@ -420,6 +459,7 @@ function renderWorkspace(workspace) {
   renderSelection(f.selection);
   renderSummary(f.order_summary);
   renderOrder(f.order);
+  renderCheckoutConfirmation(workspace);
   const delivery = f.delivery;
   if (delivery && delivery.destination_reference) {
     document.querySelector("#destination-reference").value = delivery.destination_reference;
@@ -604,11 +644,20 @@ document.querySelector("#create-order").addEventListener("click", async () => {
 document.querySelector("#checkout-form").addEventListener("submit", async (event) => {
   event.preventDefault();
   const summary = (state.workspace && state.workspace.facets || {}).order_summary || {};
+  const paymentReference = resolvePaymentReference();
+  if (!paymentReference) {
+    showNotice("Confirm the session payment reference or enter a different vault token.");
+    return;
+  }
+  if (!document.querySelector("#checkout-ack").checked) {
+    showNotice("Confirm delivery, total, and payment before placing the order.");
+    return;
+  }
   try {
     const result = await api("/api/v1/checkout", {
       method: "POST",
       body: {
-        payment_reference: document.querySelector("#payment-reference").value.trim(),
+        payment_reference: paymentReference,
         observed_total: Number(summary.total),
       },
     });
@@ -628,6 +677,11 @@ document.querySelector("#checkout-form").addEventListener("submit", async (event
     showNotice(`Checkout failed (${error.message}).`);
   }
 });
+
+document.querySelectorAll("input[name='payment-mode']").forEach((input) => {
+  input.addEventListener("change", syncPaymentMode);
+});
+document.querySelector("#payment-reference").addEventListener("input", syncPaymentMode);
 
 document.querySelector("#support-form").addEventListener("submit", async (event) => {
   event.preventDefault();
