@@ -115,11 +115,13 @@ payment evolution (#148) build on these workers.
   `order_id` + `status`. Checkout, payment, and confirmation remain M5.
 - Order summary (#37, FR-018): the workspace `order_summary` facet is a derived
   read projection - `PricingService.summarize` recomputes an itemized breakdown
-  (product + optional delivery fee; the card message is included per ADR-006) and
-  total from the current `decisions.product`/`decisions.delivery`, mirroring the
-  recommendations projection. It is a reference pricing model, publishes nothing,
-  and stores no state; the `order.summary.updated` event and authoritative pricing
-  belong to the checkout flow (M5, #38).
+  with the FR-018 categories (product, customization, delivery when a destination
+  exists, tax, discount, and total) from the current `decisions.product` /
+  `decisions.delivery`, mirroring the recommendations projection. Thin FR-003 /
+  card message customization is shown as a 0.00 customization line (ADR-006 /
+  T-04); reference tax and discount are 0.00 until a pricing authority supplies
+  rates. It publishes nothing and stores no state; the `order.summary.updated`
+  event and authoritative pricing belong to the checkout flow (M5, #38).
 - Automated support answers (#28/#24, FR-009/FR-005): `POST .../support` answers a
   customer question only from approved information. `SupportService` matches the
   question against a reference approved-knowledge base (FAQ + product/policy
