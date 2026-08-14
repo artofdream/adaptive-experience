@@ -69,4 +69,6 @@
 ## Scope summary
 
 - MVP stories: 30 · Future stories: 10 (across the 40 functional + non-functional stories).
-- FR-006 / T-09 Support Escalation is Future scope, a conditional overlay outside the initial MVP.
+- FR-006 / T-09 Support Escalation is Future in the source-of-truth scope
+  split; the thin Contact Florist overlay is now implemented. Staff CRM remains
+  Future.

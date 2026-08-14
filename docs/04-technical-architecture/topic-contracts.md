@@ -35,6 +35,7 @@ corresponding MVP topics below.
 | order.confirmed | 1.0.0 | Order | Orchestration, Workspace, Inventory, Delivery | order ID, confirmation state |
 | order.status.updated | 1.0.0 | Order | Orchestration, Workspace | order ID, authoritative status |
 | support.faq.answered | 1.0.0 | AI Concierge | Workspace | answer, approved-source references |
+| support.escalation.requested | 1.0.0 | Support Service | Orchestration, Workspace | escalation reason, session / context reference |
 | workspace.state.updated | 1.0.0 | Orchestration | Workspace | affected tiles, state version |
 
 ## Contract rules
@@ -48,8 +49,8 @@ corresponding MVP topics below.
 - The envelope and outcome are recorded for every publication (NFR-016).
 - Consumers must be idempotent by message ID and reject stale context versions.
 
-## Future topics (not MVP)
+## Future topics (not yet catalogued)
 
-| Topic | Schema version | Owner / publisher | Authorized subscribers | Minimum payload | Scope |
-|---|---|---|---|---|---|
-| support.escalation.requested | 1.0.0 | Support Service | Orchestration, Workspace | escalation reason, session / context reference | Future (FR-006 / T-09) |
+Remaining Future-backlog capabilities (CRM analytics, staff workspace, FR-010
+automated status answers) do not yet have governed topics. FR-006 / T-09 thin
+human escalation uses the catalogued `support.escalation.requested` topic above.

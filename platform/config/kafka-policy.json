@@ -29,6 +29,7 @@
     {"name":"order.confirmed","owner":"order","publisher":"order","subscribers":["orchestration","workspace","inventory","delivery"],"key":"order_id","schema_version":"1.0.0"},
     {"name":"order.status.updated","owner":"order","publisher":"order","subscribers":["orchestration","workspace"],"key":"order_id","schema_version":"1.0.0"},
     {"name":"support.faq.answered","owner":"ai-concierge","publisher":"ai-concierge","subscribers":["workspace"],"key":"session_id","schema_version":"1.0.0"},
+    {"name":"support.escalation.requested","owner":"support-service","publisher":"support-service","subscribers":["orchestration","workspace"],"key":"session_id","schema_version":"1.0.0"},
     {"name":"workspace.state.updated","owner":"orchestration","publisher":"orchestration","subscribers":["workspace"],"key":"session_id","schema_version":"1.0.0"}
   ]
 }

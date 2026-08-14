@@ -128,6 +128,16 @@ class PrivacyTests(unittest.TestCase):
             relay.publish(wrong_source["topic"], "draft-1", wrong_source)
         self.assertEqual(1, len(target.messages))
 
+    def test_valid_escalation_command_is_authorized(self):
+        message = envelope(
+            "support.escalation.requested",
+            {"escalation_reason": "unresolved_request", "context_reference": "session-1"},
+        )
+        message["source"] = "support-service"
+        message["message_type"] = "command"
+        self.guard.validate_publication(
+            "support-service", "support.escalation.requested", message)
+
     def test_valid_checkout_events_are_authorized(self):
         requested = envelope("order.checkout.requested", {"draft_order_id": "d1", "total": 82.0})
         self.guard.validate_publication("orchestration", "order.checkout.requested", requested)

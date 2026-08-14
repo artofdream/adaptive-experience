@@ -439,7 +439,7 @@ class FoundationTests(unittest.TestCase):
     def setUpClass(cls):
         cls.policy = KafkaPolicy.load(ROOT / "config" / "kafka-policy.json")
 
-    def test_registry_matches_all_21_schemas(self):
+    def test_registry_matches_all_governed_schemas(self):
         schema_dir = ROOT.parent / "docs" / "04-technical-architecture" / "schemas"
         schemas = {
             json.loads(path.read_text(encoding="utf-8"))["title"]
@@ -447,7 +447,9 @@ class FoundationTests(unittest.TestCase):
             if not path.name.startswith("message-envelope")
         }
         self.assertEqual(set(self.policy.topics), schemas)
-        self.assertEqual(21, len(self.policy.topics))
+        self.assertEqual(22, len(self.policy.topics))
+        self.assertEqual("support-service",
+                         self.policy.topics["support.escalation.requested"].publisher)
 
     def test_registry_enforces_publisher_and_consumer(self):
         self.policy.require_publish("orchestration", "customer.message.submitted")

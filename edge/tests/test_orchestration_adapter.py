@@ -72,3 +72,24 @@ class HttpOrchestrationTests(unittest.TestCase):
         self.assertTrue(any(url.endswith("/sessions/s1/workspace") for _, url, _ in calls))
         self.assertTrue(any(url.endswith("/sessions/s1/stream?after=3") for _, url, _ in calls))
         self.assertTrue(all(headers["x-subject-reference"] == "user1" for _, _, headers in calls))
+
+    def test_request_escalation_posts_to_internal_support_escalation(self):
+        from edge.bff.aea_bff.ports import EscalationResult
+        calls = []
+        def transport(method, url, headers, payload, timeout):
+            calls.append((method, url, payload, headers))
+            return 202, ('{"code":"escalation_recorded","accepted":true,'
+                         '"message_id":"esc-1","acknowledgement":"A florist will follow up.",'
+                         '"escalation_reason":"unresolved_request"}')
+        adapter = HttpOrchestration("http://orchestration:8081", "internal", transport=transport)
+        result = adapter.request_escalation(
+            session_id="s1", subject="user1", reason="unresolved_request",
+            correlation_id="c1")
+        self.assertEqual(EscalationResult(True, "escalation_recorded", "esc-1",
+                                          "A florist will follow up.", "unresolved_request"),
+                         result)
+        self.assertEqual("POST", calls[0][0])
+        self.assertTrue(calls[0][1].endswith("/sessions/s1/support/escalation"))
+        self.assertEqual("unresolved_request", calls[0][2]["reason"])
+        self.assertEqual("c1", calls[0][2]["correlation_id"])
+        self.assertEqual("user1", calls[0][3]["x-subject-reference"])

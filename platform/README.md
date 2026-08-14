@@ -140,8 +140,14 @@ payment evolution (#148) build on these workers.
   entries, each with `approved_source_references`), returns
   `{answer, approved_source_references, matched}`, and publishes the governed
   `support.faq.answered` event. An unmatched question returns a safe
-  no-approved-information answer with empty sources - it never fabricates content;
-  human escalation is Future (FR-006).
+  no-approved-information answer with empty sources - it never fabricates content.
+  Human escalation is a separate thin path (FR-006 / T-09).
+- Human support escalation (#25, FR-006 / T-09): `POST .../support/escalation`
+  records an allowlisted reason (`unresolved_request`, `order_issue`,
+  `delivery_issue`, `product_question`) and an opaque session context reference,
+  then publishes `support.escalation.requested` (publisher: Support Service).
+  Extra fields and raw PII are rejected. The response acknowledges the customer;
+  it is not a CRM ticket (FR-016 / FR-017).
 - Thin RAG scaffolding (#166, ADR-014/ADR-015): `RetrievalService` indexes the
   same approved FAQ/policy corpus into `retrieval.knowledge_chunk` (`pgvector` +
   FTS) and returns hybrid candidates. Similarity hits are never business truth.

@@ -55,15 +55,15 @@ MVP deployment follows [ADR-007](../06-adr/ADR-007-initial-deployment-topology.m
 | Order | Maintain draft order; create the confirmed order | Yes |
 | Payment | Initiate and confirm secure payment via external provider | Yes |
 
-Support Service (human escalation for FR-006 / T-09) and Customer Memory / CRM
-are **Future** (not part of the initial MVP). The Future human-escalation topic
-is `support.escalation.requested` (publisher: Support Service; outside MVP).
+Support Service publishes the thin FR-006 / T-09 human-escalation command
+`support.escalation.requested` (allowlisted reason plus an opaque session
+context reference). Customer Memory / CRM remain **Future** (FR-016 / FR-017).
 
 MVP automated FAQ (FR-009 / ASO) does **not** require Support Service. The
 **AI Floral Concierge** publishes `support.faq.answered` from approved product
 and policy information (FR-005). Concierge FAQ answers are interpretive
 assistance and remain non-authoritative for business facts (see authority
-boundary).
+boundary). Contact Florist is the T-09 escalation path; it is distinct from ASO.
 
 ## Message contract (versioned envelope)
 Each message on the bus carries: message ID, topic, type (event / command /
@@ -92,7 +92,7 @@ defined in [MVP Topic Contracts](topic-contracts.md).
 | Delivery | delivery.details.updated; delivery.slots.ready; delivery.slot.selected |
 | Order | order.summary.updated; order.checkout.requested; order.confirmed; order.status.updated |
 | Payment | payment.authorization.requested; payment.authorization.succeeded; payment.authorization.failed |
-| Support | support.faq.answered (publisher: AI Floral Concierge; ASO / FR-009) |
+| Support | support.faq.answered (publisher: AI Floral Concierge; ASO / FR-009); support.escalation.requested (publisher: Support Service; T-09 / FR-006) |
 | Workspace | workspace.state.updated |
 
 ## Supersession (Latest Relevant Intent Wins)

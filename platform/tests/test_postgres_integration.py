@@ -597,6 +597,50 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         for row in rows:
             guard.validate_publication("ai-concierge", "support.faq.answered", row[0])
 
+    def test_support_escalation_publishes_least_data_command(self):
+        import asyncio
+        from aea_platform.internal_api import InternalOrchestrationApp
+        from aea_platform.policy import KafkaPolicy
+        from aea_platform.privacy import PayloadPrivacyGuard
+
+        session_id = self.create_session()
+        app = InternalOrchestrationApp(self.connection, "internal-token")
+        path = f"/internal/v1/sessions/{session_id}/support/escalation"
+        status, body = asyncio.run(self._invoke_internal(
+            app, "POST", path, json.dumps({
+                "reason": "unresolved_request", "correlation_id": "c",
+            }).encode()))
+        self.assertEqual(202, status)
+        self.assertTrue(body["accepted"])
+        self.assertEqual("escalation_recorded", body["code"])
+        self.assertEqual("unresolved_request", body["escalation_reason"])
+        self.assertIn("florist", body["acknowledgement"].lower())
+
+        rejected = asyncio.run(self._invoke_internal(
+            app, "POST", path, json.dumps({
+                "reason": "call_me", "correlation_id": "c",
+            }).encode()))
+        self.assertEqual(422, rejected[0])
+        pii = asyncio.run(self._invoke_internal(
+            app, "POST", path, json.dumps({
+                "reason": "unresolved_request", "correlation_id": "c",
+                "email": "private@example.invalid",
+            }).encode()))
+        self.assertEqual(422, pii[0])
+
+        rows = self.connection.execute(
+            "SELECT envelope FROM orchestration.outbox_message "
+            "WHERE session_id=%s AND topic='support.escalation.requested'",
+            (session_id,)).fetchall()
+        self.assertEqual(1, len(rows))
+        envelope = rows[0][0]
+        self.assertEqual("support-service", envelope["source"])
+        self.assertEqual({"escalation_reason": "unresolved_request",
+                          "context_reference": str(session_id)}, envelope["payload"])
+        guard = PayloadPrivacyGuard(KafkaPolicy.load(ROOT / "config" / "kafka-policy.json"),
+                                    ROOT.parent / "docs" / "04-technical-architecture" / "schemas")
+        guard.validate_publication("support-service", "support.escalation.requested", envelope)
+
     def test_retrieval_indexes_approved_chunks_and_hybrid_query_filters_unapproved(self):
         from aea_platform.adapters import PsycopgRetrievalStore
         from aea_platform.retrieval import KnowledgeChunk, RetrievalService, chunks_from_approved

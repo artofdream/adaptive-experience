@@ -21,7 +21,7 @@ The design surfaces map to the canonical tile catalog (see
 | Checkout | T-07 Checkout and Confirmation |
 | Tracking | T-08 Order Tracking |
 | Automated Support Overlay (MVP) | ASO — FR-009 FAQ overlay (not a journey tile) |
-| Support Escalation (Future) | T-09 Support Escalation (FR-006) |
+| Support Escalation (T-09) | T-09 Support Escalation (FR-006) — Contact Florist |
 
 ## Typography
 - AEA / H1

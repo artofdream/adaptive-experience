@@ -9,6 +9,16 @@ QUESTION_MAX_LENGTH = 500
 NO_APPROVED_ANSWER = (
     "I do not have approved information for that question. A florist can help you further."
 )
+ESCALATION_REASONS = frozenset({
+    "unresolved_request",
+    "order_issue",
+    "delivery_issue",
+    "product_question",
+})
+ESCALATION_ACKNOWLEDGEMENT = (
+    "A florist has received your request and will follow up. "
+    "You can keep using this workspace in the meantime."
+)
 
 
 class SupportValidationError(ValueError):
@@ -44,13 +54,13 @@ REFERENCE_KNOWLEDGE: tuple[ApprovedAnswer, ...] = (
 
 
 class SupportService:
-    """Answer customer questions only from approved product/policy information.
+    """Approved FAQ answers (FR-005/FR-009) and thin human escalation (FR-006).
 
-    Satisfies FR-005 (approved product/policy answers, grounded in
-    `approved_source_references`) and FR-009 (automated FAQ). Answers are drawn
-    only from the approved knowledge base; an unmatched question returns a safe
-    no-information answer rather than a fabricated one. It publishes the governed
-    `support.faq.answered` event for audit and bus consumers.
+    FAQ answers are drawn only from the approved knowledge base; an unmatched
+    question returns a safe no-information answer rather than a fabricated one
+    and publishes `support.faq.answered`. Human escalation records a governed
+    `support.escalation.requested` command (T-09) with an opaque session
+    reference and an allowlisted reason — not a CRM ticket (FR-016/FR-017).
     """
 
     def __init__(self, store, *, knowledge=None, retriever=None,
@@ -81,6 +91,30 @@ class SupportService:
             subject_reference=subject_reference,
             published_at=self.now().astimezone(timezone.utc), context_version=context_version)
         return result
+
+    def escalate(self, *, session_id: str, reason, correlation_id: str,
+                 subject_reference: str, context_version: int) -> dict:
+        """Record a T-09 human-escalation request (FR-006).
+
+        Payload is least-data: allowlisted reason plus an opaque session
+        context reference. Raw contact, address, and payment fields are not
+        accepted (NFR-017).
+        """
+        escalation_reason = self._reason(reason)
+        message_id = str(self.new_id())
+        self.store.record_escalation(
+            session_id=session_id, escalation_reason=escalation_reason,
+            context_reference=session_id, message_id=message_id,
+            correlation_id=correlation_id, subject_reference=subject_reference,
+            published_at=self.now().astimezone(timezone.utc),
+            context_version=context_version)
+        return {
+            "accepted": True,
+            "code": "escalation_recorded",
+            "message_id": message_id,
+            "acknowledgement": ESCALATION_ACKNOWLEDGEMENT,
+            "escalation_reason": escalation_reason,
+        }
 
     def _match(self, text: str) -> ApprovedAnswer | None:
         tokens = set(text.lower().replace("?", " ").replace(".", " ").split())
@@ -123,3 +157,12 @@ class SupportService:
                 or any(ord(character) < 32 and character not in "\n\t" for character in text)):
             raise SupportValidationError("question is invalid")
         return text
+
+    @staticmethod
+    def _reason(value) -> str:
+        if not isinstance(value, str) or not value.strip():
+            raise SupportValidationError("escalation reason is required")
+        reason = value.strip()
+        if reason not in ESCALATION_REASONS:
+            raise SupportValidationError("escalation reason is invalid")
+        return reason

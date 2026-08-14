@@ -21,7 +21,7 @@
 | T-06 | Order Summary | Selections, fees, taxes, discounts, and total; continuously updated (FR-018). | MVP |
 | T-07 | Checkout and Confirmation | Initiates secure payment; confirmed order only after payment succeeds (FR-019). | MVP |
 | T-08 | Order Tracking | Latest authoritative preparation/dispatch/delay/delivery/completion status (FR-015, refined by FR-023). | MVP |
-| T-09 | Support Escalation | Conditional overlay for unresolved requests (FR-006). | Future |
+| T-09 | Support Escalation | Conditional overlay for unresolved requests (FR-006). Thin Contact Florist path records a governed escalation; CRM/staff workspace remains out of scope. | Future |
 
 ## MVP overlays
 
@@ -31,9 +31,9 @@ active stage without replacing the adaptive workspace.
 | Overlay | Role | Requirement | Scope |
 |---|---|---|---|
 | Automated Support Overlay (ASO) | Answers frequently asked questions from approved product and policy information without leaving the workspace. Never blocks tile interaction. | FR-009 (backed by FR-005) | MVP |
+| Support Escalation (T-09) | Customer requests human florist follow-up for an unresolved request. Records `support.escalation.requested`; does not open a staff CRM. | FR-006 | Future (thin path delivered) |
 
-ASO is distinct from Future tile **T-09 Support Escalation** (FR-006), which
-adds human handoff. See ADR-004 and
+ASO is distinct from tile **T-09 Support Escalation** (FR-006). See ADR-004 and
 `docs/03-functional-design/automated-support-overlay.md`.
 
 ## Interaction principles
@@ -56,4 +56,6 @@ adds human handoff. See ADR-004 and
 9. Checkout initiates secure payment; the order is confirmed only after payment succeeds (T-07).
 10. Workspace evolves into Order Tracking (T-08).
 11. Automated Support Overlay (ASO / FR-009) remains available across all stages in the MVP.
-12. Support Escalation (T-09 / FR-006) remains a Future overlay outside the MVP.
+12. Support Escalation (T-09 / FR-006) is the Contact Florist overlay: the customer
+    confirms an allowlisted reason and the system records a governed escalation.
+    Staff CRM, live chat, and ticketing remain Future (FR-016 / FR-017).
