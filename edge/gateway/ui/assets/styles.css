@@ -80,7 +80,7 @@ button { cursor: pointer; }
   text-align: left;
   font: inherit;
 }
-.journey-nav .steps span {
+.journey-nav .steps .step-num {
   display: grid;
   place-items: center;
   width: 1.55rem;
@@ -97,11 +97,24 @@ button { cursor: pointer; }
   border-color: var(--purple);
   font-weight: 700;
 }
-.journey-nav .steps [aria-current="step"] span {
+.journey-nav .steps [aria-current="step"] .step-num {
   color: #fff;
   background: var(--purple);
 }
-
+.journey-nav .steps button.is-locked {
+  opacity: .45;
+  cursor: not-allowed;
+}
+.journey-nav .steps .step-label { white-space: nowrap; }
+.step-empty {
+  display: grid;
+  gap: .75rem;
+  background: var(--lavender-soft);
+  border-style: dashed;
+}
+.step-empty .primary { justify-self: start; }
+.empty-hint { margin: .75rem 0 0; color: var(--muted); font-size: .9rem; }
+.tile-grid .tile[hidden], .step-guidance[hidden], .step-empty[hidden] { display: none !important; }
 .adaptive-header {
   display: flex;
   justify-content: space-between;
@@ -116,7 +129,6 @@ button { cursor: pointer; }
   background: var(--lavender-soft);
 }
 .step-guidance .primary { justify-self: start; }
-.tile-grid .tile[hidden], .step-guidance[hidden] { display: none !important; }
 .tile .secondary[data-goto-step] { margin-top: .75rem; }
 
 main.workspace {
@@ -264,9 +276,11 @@ dialog::backdrop { background: rgba(42, 36, 56, .45); }
 @media (max-width: 40rem) {
   .site-header { min-height: 4rem; padding-inline: 1rem; }
   .help-button, .primary, .send, .secondary, .aso { min-height: 44px; }
-  .journey-nav { width: min(100% - 1rem, 1440px); }
-  .journey-nav .steps li { min-width: 4.75rem; }
-  .journey-nav .steps button { flex-direction: column; align-items: flex-start; font-size: .75rem; }
+  .journey-nav { width: min(100% - 1rem, 1440px); position: sticky; top: 0; z-index: 4; background: var(--page); padding-bottom: .35rem; }
+  .journey-nav .steps li { min-width: 3.25rem; flex: 0 0 auto; }
+  .journey-nav .steps button { flex-direction: column; align-items: center; font-size: .7rem; padding-top: .45rem; }
+  .journey-nav .steps .step-label { font-size: 0; }
+  .journey-nav .steps .step-label::after { content: attr(data-short); font-size: .68rem; }
   main.workspace { width: min(100% - 1rem, 1440px); }
   .panel { padding: 1rem; border-radius: .75rem; }
   .welcome-card { grid-template-columns: 1fr; }

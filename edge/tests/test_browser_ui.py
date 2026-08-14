@@ -128,6 +128,19 @@ class BrowserUiTests(unittest.TestCase):
         self.assertIn("T-02 · Persistent", self.html)
         self.assertIn("ASO FAQ overlay", self.html)
 
+    def test_journey_gating_and_empty_states(self):
+        self.assertIn("unlockedThrough", self.script)
+        self.assertIn("stepReady", self.script)
+        self.assertIn("EMPTY_COPY", self.script)
+        self.assertIn('id="step-empty"', self.html)
+        self.assertIn('id="step-empty-cta"', self.html)
+        self.assertIn("is-locked", self.css)
+        self.assertIn("data-short", self.html)
+        self.assertIn("data-requires-unlock", self.html)
+        self.assertIn("Complete earlier steps to unlock", self.script)
+        # Product selection suggests Customize (4), not Delivery (5).
+        self.assertIn("if (f.selection && f.selection.product_id) return 4;", self.script)
+
     def test_shell_uses_edge_apis_without_data_plane_secrets(self):
         for path in ("/api/v1/session", "/api/v1/conversation/messages",
                      "/api/v1/shared-understanding", "/api/v1/workspace",
