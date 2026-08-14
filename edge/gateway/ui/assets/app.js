@@ -27,7 +27,40 @@ const messages = document.querySelector("#messages");
 const notice = document.querySelector("#notice");
 const disclosure = document.querySelector("#disclosure");
 
-const state = { csrf: "", contextVersion: 0, workspace: null, lastEventId: "", step: 1 };
+const state = { csrf: "", contextVersion: 0, workspace: null, lastEventId: "", step: 1, unlockedThrough: 2 };
+
+const EMPTY_COPY = {
+  3: {
+    title: "Recommendations need a little more context",
+    body: "Share the occasion (and budget if you know it) in the conversation, then return here.",
+    cta: "Back to conversation",
+    goto: 1,
+  },
+  4: {
+    title: "Nothing to customize yet",
+    body: "Choose a recommended arrangement first, then set size and a card message.",
+    cta: "View recommendations",
+    goto: 3,
+  },
+  5: {
+    title: "Delivery needs a selected product",
+    body: "Pick and customize flowers before choosing a delivery window.",
+    cta: "Back to customize",
+    goto: 4,
+  },
+  6: {
+    title: "Checkout needs delivery details",
+    body: "Confirm date, window, and destination reference before paying.",
+    cta: "Back to delivery",
+    goto: 5,
+  },
+  7: {
+    title: "No order to track yet",
+    body: "Create and confirm an order at checkout to open tracking.",
+    cta: "Back to checkout",
+    goto: 6,
+  },
+};
 
 function showNotice(text) {
   notice.textContent = text;
@@ -35,38 +68,134 @@ function showNotice(text) {
   window.setTimeout(() => { notice.hidden = true; }, 5000);
 }
 
-function setJourneyStep(step, { focus = true } = {}) {
-  const next = Math.min(7, Math.max(1, Number(step) || 1));
-  state.step = next;
-  document.querySelector("#step-caption").textContent = STEP_CAPTIONS[next];
+function facets() {
+  return (state.workspace && state.workspace.facets) || {};
+}
+
+function intentKeys(f) {
+  const intent = (f.shared_understanding && f.shared_understanding.structured_intent)
+    || f.shared_understanding || {};
+  return Object.keys(intent).filter((key) => intent[key] != null && String(intent[key]).trim() !== "");
+}
+
+function recommendationItems(f) {
+  const block = f.recommendations || {};
+  return block.items || block || [];
+}
+
+function unlockedThrough(f) {
+  let max = 2;
+  if (intentKeys(f).length) max = Math.max(max, 3);
+  const items = recommendationItems(f);
+  if (Array.isArray(items) && items.length) max = Math.max(max, 4);
+  if (f.selection && f.selection.product_id) max = Math.max(max, 5);
+  if (f.delivery && f.delivery.timing) max = Math.max(max, 6);
+  if (f.order && f.order.order_id) max = Math.max(max, 7);
+  return max;
+}
+
+function stepReady(step, f) {
+  if (step <= 2) return true;
+  if (step === 3) return intentKeys(f).length > 0 || (Array.isArray(recommendationItems(f)) && recommendationItems(f).length > 0);
+  if (step === 4) return Boolean(f.selection && f.selection.product_id);
+  if (step === 5) return Boolean(f.selection && f.selection.product_id);
+  if (step === 6) return Boolean(f.delivery && f.delivery.timing);
+  if (step === 7) return Boolean(f.order && f.order.order_id);
+  return false;
+}
+
+function updateJourneyChrome() {
+  const f = facets();
+  state.unlockedThrough = unlockedThrough(f);
   document.querySelectorAll("#journey-steps [data-step]").forEach((button) => {
-    if (Number(button.dataset.step) === next) button.setAttribute("aria-current", "step");
+    const step = Number(button.dataset.step);
+    const unlocked = step <= state.unlockedThrough;
+    button.disabled = !unlocked;
+    button.setAttribute("aria-disabled", unlocked ? "false" : "true");
+    button.classList.toggle("is-locked", !unlocked);
+    button.title = unlocked ? "" : "Complete earlier steps to unlock";
+    if (step === state.step) button.setAttribute("aria-current", "step");
     else button.removeAttribute("aria-current");
   });
+  document.querySelectorAll("[data-requires-unlock]").forEach((button) => {
+    const need = Number(button.dataset.requiresUnlock);
+    const ok = need <= state.unlockedThrough;
+    button.disabled = !ok;
+    button.setAttribute("aria-disabled", ok ? "false" : "true");
+  });
+  const current = document.querySelector(`#journey-steps [data-step="${state.step}"]`);
+  if (current) current.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
+}
+
+function renderStepEmpty(step) {
+  const empty = document.querySelector("#step-empty");
+  const guidance = document.querySelector("#step-guidance");
+  const ready = stepReady(step, facets());
+  const showEmpty = step >= 3 && !ready;
+  empty.hidden = !showEmpty;
+  if (guidance && state.step <= 2) {
+    /* guidance visibility still driven by data-journey-steps */
+  }
+  if (showEmpty) {
+    const copy = EMPTY_COPY[step];
+    document.querySelector("#step-empty-title").textContent = copy.title;
+    document.querySelector("#step-empty-body").textContent = copy.body;
+    const cta = document.querySelector("#step-empty-cta");
+    cta.textContent = copy.cta;
+    cta.dataset.gotoStep = String(copy.goto);
+    document.querySelectorAll(".tile-grid .tile").forEach((tile) => {
+      tile.hidden = true;
+    });
+  }
+}
+
+function setJourneyStep(step, { focus = true, force = false } = {}) {
+  let next = Math.min(7, Math.max(1, Number(step) || 1));
+  updateJourneyChrome();
+  if (!force && next > state.unlockedThrough) {
+    showNotice(`Step ${next} unlocks after you finish earlier stages.`);
+    next = Math.min(state.step, state.unlockedThrough) || 1;
+  }
+  state.step = next;
+  document.querySelector("#step-caption").textContent = STEP_CAPTIONS[next];
   document.querySelectorAll("[data-journey-steps]").forEach((node) => {
+    if (node.id === "step-empty") return;
     const steps = String(node.dataset.journeySteps).split(",").map((value) => Number(value.trim()));
     node.hidden = !steps.includes(next);
   });
   document.querySelectorAll("[data-show-on-step]").forEach((node) => {
     node.hidden = Number(node.dataset.showOnStep) !== next;
   });
+  renderStepEmpty(next);
+  if (!document.querySelector("#step-empty").hidden) {
+    document.querySelectorAll("[data-journey-steps]").forEach((node) => {
+      if (node.id === "step-guidance" || node.id === "step-empty") return;
+      if (node.classList.contains("tile") || node.classList.contains("step-guidance")) {
+        const steps = String(node.dataset.journeySteps || "").split(",").map((value) => Number(value.trim()));
+        if (steps.includes(next)) node.hidden = true;
+      }
+    });
+  }
+  updateJourneyChrome();
   if (window.location.hash !== `#step-${next}`) {
     history.replaceState(null, "", `#step-${next}`);
   }
   if (focus) {
-    const target = document.querySelector(".tile-grid .tile:not([hidden]), #step-guidance:not([hidden])");
+    const target = document.querySelector(
+      "#step-empty:not([hidden]), .tile-grid .tile:not([hidden]), #step-guidance:not([hidden])",
+    );
     if (target) target.scrollIntoView({ block: "nearest", behavior: "smooth" });
   }
 }
 
-function suggestedStep(facets) {
-  if (!facets) return 1;
-  if (facets.order && facets.order.order_id) return 7;
-  if (facets.delivery && facets.delivery.timing) return 6;
-  if (facets.selection && facets.selection.product_id) return 5;
-  if (facets.recommendations && facets.recommendations.length) return 3;
-  const intent = facets.shared_understanding || {};
-  if (Object.keys(intent).length) return 2;
+function suggestedStep(f) {
+  if (!f) return 1;
+  if (f.order && f.order.order_id) return 7;
+  if (f.delivery && f.delivery.timing) return 6;
+  if (f.selection && f.selection.product_id) return 4;
+  const items = recommendationItems(f);
+  if (Array.isArray(items) && items.length) return 3;
+  if (intentKeys(f).length) return 2;
   return 1;
 }
 
@@ -159,8 +288,11 @@ function renderUnderstanding(intent) {
 
 function renderRecommendations(items) {
   const cards = document.querySelector("#recommendation-cards");
+  const empty = document.querySelector("#recommendations-empty");
   cards.replaceChildren();
-  for (const item of items || []) {
+  const list = items || [];
+  if (empty) empty.hidden = list.length > 0;
+  for (const item of list) {
     const card = document.createElement("article");
     card.className = "card";
     const thumb = document.createElement("img");
@@ -248,14 +380,14 @@ function renderWorkspace(workspace) {
   state.workspace = workspace;
   state.contextVersion = workspace.context_version || 0;
   if (workspace.disclosure) disclosure.textContent = workspace.disclosure;
-  const facets = workspace.facets || {};
-  renderMessages((facets.conversation || {}).messages);
-  renderUnderstanding((facets.shared_understanding || {}).structured_intent);
-  renderRecommendations((facets.recommendations || {}).items);
-  renderSelection(facets.selection);
-  renderSummary(facets.order_summary);
-  renderOrder(facets.order);
-  const delivery = facets.delivery;
+  const f = workspace.facets || {};
+  renderMessages((f.conversation || {}).messages);
+  renderUnderstanding((f.shared_understanding || {}).structured_intent || f.shared_understanding);
+  renderRecommendations((f.recommendations || {}).items || f.recommendations);
+  renderSelection(f.selection);
+  renderSummary(f.order_summary);
+  renderOrder(f.order);
+  const delivery = f.delivery;
   if (delivery && delivery.destination_reference) {
     document.querySelector("#destination-reference").value = delivery.destination_reference;
     if (delivery.timing && delivery.timing.date) {
@@ -266,6 +398,7 @@ function renderWorkspace(workspace) {
       if (match) match.checked = true;
     }
   }
+  setJourneyStep(state.step, { focus: false, force: true });
 }
 
 async function refreshWorkspace() {
@@ -465,10 +598,19 @@ document.querySelector("#support-form").addEventListener("submit", async (event)
 });
 
 document.querySelectorAll("#journey-steps [data-step]").forEach((button) => {
-  button.addEventListener("click", () => setJourneyStep(button.dataset.step));
+  button.addEventListener("click", () => {
+    if (button.disabled) {
+      showNotice("Complete earlier steps to unlock this stage.");
+      return;
+    }
+    setJourneyStep(button.dataset.step);
+  });
 });
 document.querySelectorAll("[data-goto-step]").forEach((button) => {
   button.addEventListener("click", () => setJourneyStep(button.dataset.gotoStep));
+});
+document.querySelector("#step-empty-cta").addEventListener("click", (event) => {
+  setJourneyStep(event.currentTarget.dataset.gotoStep);
 });
 window.addEventListener("hashchange", () => {
   const match = window.location.hash.match(/^#step-([1-7])$/);
@@ -482,9 +624,10 @@ async function boot() {
     await refreshWorkspace();
     await pullStream();
     const hashStep = Number((window.location.hash.match(/^#step-([1-7])$/) || [])[1]);
-    setJourneyStep(hashStep || suggestedStep(state.workspace && state.workspace.facets), { focus: false });
+    const suggest = suggestedStep(facets());
+    setJourneyStep(hashStep || suggest, { focus: false });
   } catch (error) {
-    setJourneyStep(1, { focus: false });
+    setJourneyStep(1, { focus: false, force: true });
     showNotice(`Workspace could not start (${error.message}).`);
   }
 }
