@@ -3,7 +3,7 @@
 Status: Draft (research promotion candidate; not an Accepted ADR)
 
 Quarantined from a misnumbered `docs/06-adr/` stub (CF-014). Tentative future
-slot: **ADR-014+** (after ADR-013 merges).
+slot: **ADR-014+**.
 
 ## Intent
 
