@@ -87,7 +87,7 @@ class HttpOrchestration:
         # Deferred by design: selection and later actions use dedicated endpoints
         # (POST /api/v1/selection, #142). The generic command envelope is not
         # adopted until deliberately standardized. See #144 and
-        # research/adr-candidates/edge-workspace-projection-contract.md.
+        # research/design-notes/edge-workspace-projection-contract.md.
         return CommandResult(False, "orchestration_unavailable")
 
     def select_product(self, **kwargs):

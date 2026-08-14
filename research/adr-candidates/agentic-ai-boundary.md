@@ -3,7 +3,7 @@
 Status: Draft (research promotion candidate; not an Accepted ADR)
 
 Quarantined from a misnumbered `docs/06-adr/` stub (CF-014). Tentative future
-slot: ADR-011+.
+slot: **ADR-014+** (after ADR-013 merges).
 
 ## Intent
 
@@ -17,5 +17,6 @@ approval where appropriate.
 
 ## Notes
 
-Aligns directionally with the technical architecture authority boundary.
-Promote only with a free ADR number after M0 gate ADRs land.
+Complements ADR-001 (intent confirmation), ADR-009 (AI non-authoritative for
+experience state), and ADR-013 (confirmation-driven execution). No Accepted ADR
+yet owns this boundary as a first-class decision — keep as a dedicated Draft.
