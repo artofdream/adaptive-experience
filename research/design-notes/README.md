@@ -15,6 +15,7 @@ unambiguous.
 | [`m6-order-tracking-contract.md`](m6-order-tracking-contract.md) | M6 tracking completed / delayed | #42 |
 | [`m6-support-answers-contract.md`](m6-support-answers-contract.md) | M6 FAQ / approved answers | #28, #24 |
 | [`pgvector-rag-scaffold.md`](pgvector-rag-scaffold.md) | Thin pgvector hybrid retrieval | #166 |
+| [`local-inventory-seed.md`](local-inventory-seed.md) | Local inventory seeder + open-data alternatives | #169 |
 | [`adr-016-agentic-runtime.md`](adr-016-agentic-runtime.md) | Thin ADR-016 tool-calling runtime | #168 |
 
 Canonical platform decisions remain in `docs/06-adr/`. ADR promotion Drafts

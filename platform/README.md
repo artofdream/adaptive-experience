@@ -198,7 +198,11 @@ payment evolution (#148) build on these workers.
   older-than-one-minute data as unknown, publish the closed
   `inventory.availability.validated` contract through the transactional outbox,
   and fail selection-time checks closed unless the product is currently
-  available (FR-011 / NFR-009).
+  available (FR-011 / NFR-009). The edge compose stack runs a local-only
+  `inventory-seeder` sidecar (`AEA_SEED_INVENTORY=1`) so T-03 Select can be
+  exercised against the reference catalog; production must not run this seeder
+  and remains fail-closed without a real inventory feed. See `edge/README.md`
+  and `research/design-notes/local-inventory-seed.md`.
 - `RecommendationService` ranks a deterministic reference catalog against Shared
   Understanding facets (occasion, budget, style, flower preference), asks
   Inventory for freshness-aware availability, and publishes

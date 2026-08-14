@@ -1,5 +1,6 @@
 import json
 import ssl
+import urllib.error
 import urllib.request
 
 
@@ -65,3 +66,28 @@ with urllib.request.urlopen(projection_request, context=context, timeout=5) as r
     } or not projection["suggestions"] or projection.get("ai_generated") is not True:
         raise SystemExit("assistant intent/fallback projection is unexpected")
 print("24/7 assistant analysis and fallback path is healthy")
+
+workspace_request = urllib.request.Request(
+    "https://localhost:8443/api/v1/workspace",
+    headers={**base_headers, "Cookie": cookie})
+with urllib.request.urlopen(workspace_request, context=context, timeout=5) as response:
+    workspace = json.load(response)
+    items = workspace.get("facets", {}).get("recommendations", {}).get("items", [])
+    available = next((item for item in items if item.get("available")), None)
+    if available is None:
+        raise SystemExit("T-03 recommendations have no available product")
+
+selection_request = urllib.request.Request(
+    "https://localhost:8443/api/v1/selection", method="POST",
+    data=json.dumps({"product_id": available["product_id"],
+                     "observed_context_version": workspace["context_version"]}).encode(),
+    headers={**base_headers, "Cookie": cookie, "X-CSRF-Token": session["csrf_token"],
+             "Content-Type": "application/json"})
+try:
+    with urllib.request.urlopen(selection_request, context=context, timeout=5) as response:
+        selected = json.load(response)
+        if response.status != 202 or selected.get("accepted") is not True:
+            raise SystemExit("T-03 Select did not succeed against seeded inventory")
+except urllib.error.HTTPError as exc:
+    raise SystemExit(f"T-03 Select failed: {exc.code} {exc.read().decode()}") from exc
+print("T-03 Select against seeded inventory is healthy")
