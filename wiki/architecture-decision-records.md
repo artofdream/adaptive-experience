@@ -16,9 +16,12 @@ Accepted ADRs (see `docs/06-adr/`):
 | ADR-010 | Synchronous command and asynchronous event boundaries |
 | ADR-011 | PostgreSQL experience-state datastore |
 | ADR-012 | Apache Kafka external message broker |
+| ADR-013 | Confirmation-driven experience |
 
-ADR-011 and ADR-012 are Accepted. PostgreSQL is the selected experience-state
+ADR-011 through ADR-013 are Accepted. PostgreSQL is the selected experience-state
 datastore and Apache Kafka is the selected external message broker for the MVP.
+ADR-013 extends Thought Before Form into transaction execution (confirm known
+recipient, delivery, payment, and preference context; ask only for gaps).
 
 ## Canonical docs
 

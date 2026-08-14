@@ -1,20 +1,10 @@
-# Draft — Confirmation-driven experience
+# Promoted — Confirmation-driven experience
 
-Status: Draft (research promotion candidate; not an Accepted ADR)
+Status: Promoted to [ADR-013](../../docs/06-adr/ADR-013-confirmation-driven-experience.md)
+(2026-08-14)
 
-Quarantined from a misnumbered `docs/06-adr/` stub (CF-014). Tentative future
-slot: ADR-011+.
-
-## Intent
-
-Prefer confirmation over repetitive data gathering. When trusted services or
-prior approved context can supply recipient, address, delivery, payment, or
-preference information, present that information for customer validation and
-ask only for missing, ambiguous, or consequential decisions.
-
-This extends the Thought Before Form principle into transaction execution.
-
-## Notes
-
-Call out MVP vs Future CRM/memory scope when promoting so this does not silently
-pull Future engagement features into MVP.
+Formerly quarantined here after CF-014 (misnumbered Accepted stub). Intent is
+unchanged; the Accepted ADR adds Context / Alternatives / Decision / Rationale /
+Consequences, distinguishes intent-time Thought Before Form (ADR-001 / ADR-003)
+from transaction execution (T-05…T-07), and records MVP session-scoped vs Future
+CRM/memory (FR-008 / FR-016 / FR-017) sources of confirmable context.

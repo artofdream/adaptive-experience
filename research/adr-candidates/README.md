@@ -7,11 +7,11 @@ Those gate ADRs are now **Accepted** on `main`.
 
 | Candidate file | Topic | Future slot (tentative) |
 |---|---|---|
-| `postgresql-pgvector.md` | PostgreSQL + pgvector | ADR-011+ |
-| `kafka-event-backbone.md` | Kafka event backbone | ADR-011+ (after broker product ADR; CF-016 keeps Draft) |
-| `agentic-ai-boundary.md` | Agentic AI boundary | ADR-011+ |
-| `confirmation-driven-experience.md` | Confirmation-driven experience | ADR-011+ |
-| `rag-hybrid-retrieval.md` | RAG hybrid retrieval | ADR-011+ |
+| `postgresql-pgvector.md` | PostgreSQL + pgvector | ADR-014+ |
+| `kafka-event-backbone.md` | Kafka event backbone | **Kafka remains the Accepted choice** via [ADR-012](../../docs/06-adr/ADR-012-external-message-broker.md). This Draft is historical only — do not re-promote as a second broker ADR. |
+| `agentic-ai-boundary.md` | Agentic AI boundary | ADR-014+ |
+| `confirmation-driven-experience.md` | Confirmation-driven experience | **Promoted → [ADR-013](../../docs/06-adr/ADR-013-confirmation-driven-experience.md)** |
+| `rag-hybrid-retrieval.md` | RAG hybrid retrieval | ADR-014+ |
 
-Status of each file: **Draft** (research only). Promote into `docs/06-adr/` only
-via a dedicated ADR MR with the next free number (**ADR-011+**).
+Remaining candidates stay **Draft** (research only). Promote into `docs/06-adr/`
+only via a dedicated ADR MR with the next free number (**ADR-014+**).
