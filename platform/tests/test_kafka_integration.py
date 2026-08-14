@@ -37,7 +37,7 @@ class BackboneIntegrationTests(unittest.TestCase):
         from aea_platform.adapters import KafkaAcknowledgedPublisher
 
         sys.path.insert(0, str(ROOT / "scripts"))
-        from run_consumer import build_consumer_runner
+        from run_consumer import build_consumer_runner, domain_handler
         from run_relay import build_relay
 
         bootstrap = os.environ["AEA_KAFKA_BOOTSTRAP"]
@@ -69,16 +69,22 @@ class BackboneIntegrationTests(unittest.TestCase):
                                 publisher=KafkaAcknowledgedPublisher(bootstrap, "relay-e2e"))
             self.assertEqual((1, 0), relay.run_once())
 
-            # The governed consumer decodes, guards delivery, applies, and commits.
+            # The governed consumer decodes, guards delivery, applies workspace
+            # order invalidation (NFR-011), and commits.
             runner = build_consumer_runner(connection, consumer, group="workspace")
+            handler = domain_handler(connection, "workspace")
             outcomes: list = []
             deadline = time.monotonic() + 60
             while time.monotonic() < deadline and "applied" not in outcomes:
-                outcomes += runner.run_once(lambda envelope: None, timeout=1.0)
+                outcomes += runner.run_once(handler, timeout=1.0)
             self.assertIn("applied", outcomes)
             self.assertEqual("applied", connection.execute(
                 "SELECT outcome FROM orchestration.consumed_message "
                 "WHERE consumer_group='workspace' AND message_id=%s", (message_id,)).fetchone()[0])
+            self.assertEqual(1, connection.execute(
+                "SELECT count(*) FROM orchestration.experience_invalidation "
+                "WHERE session_id=%s AND projection_key='order' "
+                "AND reason='order_status_updated'", (session_id,)).fetchone()[0])
             consumer.close()
 
             # Fail-closed: a poisoned outbox message is never published to the broker.

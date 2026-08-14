@@ -19,10 +19,12 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from aea_platform.adapters import (KafkaAcknowledgedPublisher, KafkaFailureRouter,  # noqa: E402
-                                   KafkaManualOffsets, PsycopgConsumerTransaction)
+                                   KafkaManualOffsets, PsycopgConsumerTransaction,
+                                   PsycopgExperienceStateStore)
 from aea_platform.consumer import GovernedConsumer, KafkaGovernedConsumerRunner  # noqa: E402
 from aea_platform.policy import KafkaPolicy  # noqa: E402
 from aea_platform.privacy import PayloadPrivacyGuard  # noqa: E402
+from aea_platform.workspace_handlers import WorkspaceOrderInvalidationHandler  # noqa: E402
 
 DSN = os.environ.get(
     "AEA_POSTGRES_DSN",
@@ -47,6 +49,13 @@ def build_consumer_runner(connection, kafka_consumer, *, group: str,
     return KafkaGovernedConsumerRunner(kafka_consumer, governed)
 
 
+def domain_handler(connection, group: str):
+    """Return the domain apply handler for a subscriber group."""
+    if group == "workspace":
+        return WorkspaceOrderInvalidationHandler(PsycopgExperienceStateStore(connection))
+    return lambda envelope: None
+
+
 def main() -> None:
     from confluent_kafka import Consumer
     group = sys.argv[1] if len(sys.argv) > 1 and not sys.argv[1].startswith("-") else "workspace"
@@ -58,9 +67,10 @@ def main() -> None:
     consumer.subscribe(topics)
     with psycopg.connect(DSN, autocommit=True) as connection:
         runner = build_consumer_runner(connection, consumer, group=group)
+        handler = domain_handler(connection, group)
         try:
             while True:
-                outcomes = runner.run_once(lambda envelope: None)
+                outcomes = runner.run_once(handler)
                 if outcomes:
                     print(f"consumer {group} outcomes={outcomes}")
                 if not loop:

@@ -12,10 +12,11 @@ date: 2026-08-13
 >    linear status, so the forward-only advance rule (#34) is preserved; the
 >    published/displayed authoritative state is `delayed` while the flag is set,
 >    otherwise the linear status.
-> 2. Display via the existing workspace `order` facet (poll/refetch). Reactive SSE
->    push of order-status changes is deferred to the M7 event backbone (#149),
->    where a running consumer reflects `order.status.updated` into the stream - it
->    does not belong half-built in #42.
+> 2. Display via the existing workspace `order` facet. Reactive SSE push of
+>    order-status changes is delivered by NFR-011 depth: status writes and the
+>    workspace Kafka consumer invalidate the `order` projection into
+>    `GET .../stream`, and the T-08 UI polls the stream while on the tracking
+>    step (within the one-minute NFR).
 > 3. "Contact Florist" (human contact) is FR-006/T-09 Future, not FR-023; out of
 >    scope.
 
@@ -50,7 +51,8 @@ date: 2026-08-13
 ## Not changing
 
 - No status-history table (FR-023 is latest-state). No new browser route (tracking
-  is the workspace facet). No reactive push here (M7 / #149).
+  is the workspace facet). Reactive stream invalidation for status is owned by
+  NFR-011 (not the original #42 scope).
 
 ## Build order within M6
 

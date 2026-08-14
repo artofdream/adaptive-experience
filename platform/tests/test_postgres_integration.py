@@ -477,6 +477,21 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
             "WHERE session_id=%s AND topic='order.status.updated' "
             "AND envelope->'payload'->>'authoritative_status'='delivered'",
             (session_id,)).fetchone()[0])
+        # NFR-011: status writes also invalidate the workspace `order` facet so
+        # SSE clients can refresh without a user-triggered pull.
+        self.assertEqual(3, self.connection.execute(
+            "SELECT count(*) FROM orchestration.experience_invalidation "
+            "WHERE session_id=%s AND projection_key='order' "
+            "AND reason='order_status_updated'", (session_id,)).fetchone()[0])
+        _, stream = asyncio.run(self._invoke_internal(
+            app, "GET", f"/internal/v1/sessions/{session_id}/stream", b"", b"after=2"))
+        order_events = [
+            event for event in stream["events"]
+            if event["kind"] == "invalidation"
+            and any(p["projection_key"] == "order"
+                    for p in event["invalidated_projections"])
+        ]
+        self.assertEqual(3, len(order_events))
 
         # Backward and unknown transitions are rejected.
         self.assertEqual(409, drive("POST", status_path,

@@ -54,8 +54,9 @@ tested relay/consumer components to Kafka:
 - `python platform/scripts/run_consumer.py <group> [--loop]` subscribes to the
   topics a group consumes (per the Kafka policy) and processes each record through
   the governed path: delivery guard, idempotency, version-checked apply, retry/DLQ
-  routing, and manual offset commit. The reference handler records consumption;
-  real subscribers supply domain handlers.
+  routing, and manual offset commit. The `workspace` group applies
+  `WorkspaceOrderInvalidationHandler` for `order.status.updated` /
+  `order.confirmed` so the browser stream can refresh T-08 (NFR-011).
 
 The container integration path exercises emit -> relay -> Kafka -> governed
 consume end to end. Reactive push of order status to the browser and the async
@@ -153,8 +154,12 @@ payment evolution (#148) build on these workers.
   move resolves it. These are order/fulfillment authority actions, not customer
   actions; customers read the latest authoritative state through the workspace
   `order` facet (`status`, `delayed`, `authoritative_status`). FR-023 displays the
-  latest state, not a history. Reactive push over the browser SSE stream is
-  deferred to the M7 event backbone (#149).
+  latest state, not a history. Status / confirm / delay writes also bump the
+  experience `context_version` and record an `order` invalidation so
+  `GET .../stream` can push T-08 refreshes (NFR-011). The workspace Kafka
+  consumer mirrors the same invalidation when it receives `order.status.updated`
+  or `order.confirmed` from the bus (#149). The Adaptive Workspace polls the
+  stream every 20s while the customer is on the tracking step.
 - `OpenAICompatibleIntentInterpreter` supplies a vendor-neutral Generative AI
   boundary using strict JSON output and a timeout capped at 2.5 seconds.
   `AvailableIntentInterpreter` fails over to the deterministic local interpreter
