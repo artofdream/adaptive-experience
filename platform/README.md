@@ -149,6 +149,13 @@ payment evolution (#148) build on these workers.
   deterministic keyword matcher misses, and only accepts hits that have a
   keyword/FTS rank and map to approved knowledge. Live `POST .../support` does
   not wire a retriever — replacing MVP FAQ with RAG remains out of scope.
+- Thin agentic runtime (#168, ADR-016): `AgentRuntime` invokes only an explicit
+  tool allowlist and fails closed on unknown tools, unknown arguments, and
+  write/filesystem/network/SQL names. The reference Support/Concierge tool
+  `lookup_approved_knowledge` reads approved FAQ/policy text (and may consult
+  `RetrievalService` after a keyword miss) without persisting or publishing.
+  Live `POST .../support` is unchanged. Production model vendors, multi-agent
+  orchestration, and consequential writes remain out of scope.
 - Checkout and payment (#38 / #148, FR-019): `POST .../checkout` price-checks the
   assembled order, stores a private checkout intent, and emits
   `order.checkout.requested` only — returning `202 accepted` / `pending`. The
