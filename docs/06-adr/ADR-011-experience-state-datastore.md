@@ -270,7 +270,8 @@ security or availability boundary is required; when session state must span
 regions with conflicting writes; or when event replay becomes a product or
 regulatory requirement.
 
-Evaluate `pgvector` separately only when semantic retrieval requirements and
-benchmarks justify it. A cache may be added only as a disposable acceleration
-layer; PostgreSQL remains authoritative unless a later ADR replaces this
-decision.
+Evaluate `pgvector` under [ADR-014](ADR-014-postgresql-pgvector.md): semantic
+retrieval may use the extension, but experience-state persistence must remain
+independent of vector search. A cache may be added only as a disposable
+acceleration layer; PostgreSQL remains authoritative for experience state unless
+a later ADR replaces this decision.
