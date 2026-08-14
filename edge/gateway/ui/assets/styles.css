@@ -284,7 +284,7 @@ dialog::backdrop { background: rgba(42, 36, 56, .45); }
 
 @media (max-width: 40rem) {
   .site-header { min-height: 4rem; padding-inline: 1rem; }
-  .help-button, .primary, .send, .secondary, .aso { min-height: 44px; }
+  .help-button, .primary, .send, .secondary, .aso, .operator .text-link { min-height: 44px; }
   .journey-nav { width: min(100% - 1rem, 1440px); position: sticky; top: 0; z-index: 4; background: var(--page); padding-bottom: .35rem; }
   .journey-nav .steps li { min-width: 3.25rem; flex: 0 0 auto; }
   .journey-nav .steps button { flex-direction: column; align-items: center; font-size: .7rem; padding-top: .45rem; }
@@ -308,4 +308,46 @@ dialog::backdrop { background: rgba(42, 36, 56, .45); }
 
 @media (forced-colors: active) {
   .status, .primary, .send, .aso, .badge, .welcome-card { border: 1px solid ButtonText; }
+}
+
+body.operator { background: var(--page); }
+.operator-shell {
+  width: min(1440px, calc(100% - 2rem));
+  margin: 1rem auto 2rem;
+  display: grid;
+  gap: 1rem;
+}
+.operator-banner {
+  margin: 0;
+  padding: .85rem 1rem;
+  border: 1px dashed var(--purple);
+  border-radius: .75rem;
+  background: var(--lavender-soft);
+  color: var(--ink);
+}
+.operator-mode { margin: 0; color: var(--muted); font-size: .9rem; }
+.operator-layout {
+  display: grid;
+  grid-template-columns: minmax(16rem, 0.9fr) minmax(0, 1.4fr);
+  gap: 1rem;
+  align-items: start;
+}
+.operator-table { width: 100%; border-collapse: collapse; }
+.operator-table th, .operator-table td {
+  text-align: left;
+  padding: .55rem .35rem;
+  border-bottom: 1px solid var(--line);
+  overflow-wrap: anywhere;
+}
+.operator-split { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.operator-facts { margin: 0; display: grid; grid-template-columns: 8rem 1fr; gap: .35rem .75rem; }
+.operator-facts dt { color: var(--muted); font-size: .8rem; }
+.operator-facts dd { margin: 0; font-weight: 650; overflow-wrap: anywhere; }
+.operator-list { margin: 0; padding-left: 1.1rem; }
+.operator-transcript { min-height: 8rem; }
+.operator h1, .operator h2, .operator h3 { color: var(--purple-deep); }
+.operator .hint { color: var(--muted); font-size: .85rem; }
+
+@media (max-width: 60rem) {
+  .operator-layout, .operator-split, .operator-facts { grid-template-columns: 1fr; }
 }

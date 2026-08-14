@@ -641,6 +641,29 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
                                     ROOT.parent / "docs" / "04-technical-architecture" / "schemas")
         guard.validate_publication("support-service", "support.escalation.requested", envelope)
 
+        inbox_status, inbox = asyncio.run(self._invoke_internal(
+            app, "GET", "/internal/v1/operator/escalations"))
+        self.assertEqual(200, inbox_status)
+        self.assertEqual(1, len(inbox["items"]))
+        item = inbox["items"][0]
+        self.assertEqual(str(session_id), item["session_id"])
+        self.assertEqual("unresolved_request", item["escalation_reason"])
+        self.assertEqual(str(session_id), item["context_reference"])
+        self.assertNotIn("subject_reference", item)
+        self.assertNotIn("email", item)
+        self.assertNotIn("security_context", item)
+
+        summary_status, summary = asyncio.run(self._invoke_internal(
+            app, "GET", f"/internal/v1/operator/sessions/{session_id}"))
+        self.assertEqual(200, summary_status)
+        self.assertEqual(str(session_id), summary["session_id"])
+        self.assertIn("messages", summary["conversation"])
+        self.assertNotIn("email", summary)
+        self.assertNotIn("payment_reference", summary)
+        missing = asyncio.run(self._invoke_internal(
+            app, "GET", "/internal/v1/operator/sessions/00000000-0000-0000-0000-000000000000"))
+        self.assertEqual(404, missing[0])
+
     def test_retrieval_indexes_approved_chunks_and_hybrid_query_filters_unapproved(self):
         from aea_platform.adapters import PsycopgRetrievalStore
         from aea_platform.retrieval import KnowledgeChunk, RetrievalService, chunks_from_approved

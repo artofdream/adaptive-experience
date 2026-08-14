@@ -25,13 +25,20 @@ class BffApp:
     def __init__(self, orchestration: OrchestrationPort, authenticator: StaticTokenAuthenticator,
                  *, allowed_origin: str, max_request_bytes: int = 65536,
                  sessions: SessionStore | None = None,
-                 rate_limiter: FixedWindowRateLimiter | None = None):
+                 rate_limiter: FixedWindowRateLimiter | None = None,
+                 florist_operator_enabled: bool = False):
         self.orchestration = orchestration
         self.authenticator = authenticator
         self.allowed_origin = allowed_origin
         self.max_request_bytes = max_request_bytes
         self.sessions = sessions or SessionStore()
         self.rate_limiter = rate_limiter or FixedWindowRateLimiter()
+        self.florist_operator_enabled = florist_operator_enabled
+
+    @staticmethod
+    def florist_operator_enabled_for(*, environment: str, flag: str | None) -> bool:
+        """Local-only staff reads. Production always fails closed."""
+        return flag == "1" and environment != "production"
 
     async def __call__(self, scope, receive, send):
         if scope["type"] != "http":
@@ -401,6 +408,40 @@ class BffApp:
                 "correlation_id": correlation_id,
             }, correlation_id)
 
+        if path == "/api/v1/operator/escalations" and method == "GET":
+            if not self.florist_operator_enabled:
+                return await self._error(send, 404, "not_found", correlation_id)
+            try:
+                raw = self.orchestration.list_operator_escalations(subject=subject)
+            except OrchestrationUnavailable:
+                return await self._error(send, 503, "orchestration_unavailable", correlation_id)
+            if int(raw.get("status") or 200) >= 500:
+                return await self._error(send, 503, "orchestration_unavailable", correlation_id)
+            return await self._json(send, 200, self._least_data_operator_escalations(raw),
+                                    correlation_id)
+
+        operator_prefix = "/api/v1/operator/sessions/"
+        if path.startswith(operator_prefix) and method == "GET":
+            if not self.florist_operator_enabled:
+                return await self._error(send, 404, "not_found", correlation_id)
+            session_id = path[len(operator_prefix):]
+            try:
+                session_id = str(uuid.UUID(session_id))
+            except ValueError:
+                return await self._error(send, 422, "invalid_session_reference", correlation_id)
+            try:
+                raw = self.orchestration.operator_session_summary(
+                    session_id=session_id, subject=subject)
+            except OrchestrationUnavailable:
+                return await self._error(send, 503, "orchestration_unavailable", correlation_id)
+            status = int(raw.get("status") or 200)
+            if status == 404 or raw.get("code") == "session_not_found":
+                return await self._error(send, 404, "session_not_found", correlation_id)
+            if status >= 500:
+                return await self._error(send, 503, "orchestration_unavailable", correlation_id)
+            return await self._json(send, 200, self._least_data_operator_summary(raw),
+                                    correlation_id)
+
         if path == "/api/v1/workspace" and method == "GET":
             try:
                 raw = self.orchestration.workspace_projection(
@@ -559,6 +600,58 @@ class BffApp:
                 "ai_generated": bool(raw.get("ai_generated", False)),
                 "assistant_mode": raw.get("assistant_mode"),
                 "disclosure": raw.get("disclosure")}
+
+    @staticmethod
+    def _least_data_operator_escalations(raw: dict) -> dict:
+        items = []
+        for item in (raw.get("items") or [])[:50]:
+            if not isinstance(item, dict):
+                continue
+            shaped = {key: item[key] for key in
+                      ("message_id", "session_id", "escalation_reason",
+                       "context_reference", "requested_at") if key in item}
+            if shaped:
+                items.append(shaped)
+        return {"items": items}
+
+    @staticmethod
+    def _least_data_operator_summary(raw: dict) -> dict:
+        conversation = raw.get("conversation") if isinstance(raw.get("conversation"), dict) else {}
+        shared = raw.get("shared_understanding") if isinstance(raw.get("shared_understanding"), dict) else {}
+        availability = []
+        for item in raw.get("availability") or []:
+            if isinstance(item, dict):
+                availability.append({key: item[key] for key in
+                                     ("product_id", "available", "availability_status")
+                                     if key in item})
+        order = None
+        if isinstance(raw.get("order"), dict):
+            order = {key: raw["order"][key] for key in
+                     ("order_id", "status", "authoritative_status", "delayed")
+                     if key in raw["order"]}
+        selection = None
+        if isinstance(raw.get("selection"), dict) and isinstance(raw["selection"].get("product_id"), str):
+            selection = {"product_id": raw["selection"]["product_id"]}
+        delivery = None
+        if isinstance(raw.get("delivery"), dict):
+            delivery = {}
+            if isinstance(raw["delivery"].get("destination_reference"), str):
+                delivery["destination_reference"] = raw["delivery"]["destination_reference"]
+            if isinstance(raw["delivery"].get("timing"), dict):
+                timing = raw["delivery"]["timing"]
+                delivery["timing"] = {key: timing[key] for key in ("date", "window")
+                                      if key in timing}
+        return {
+            "session_id": raw.get("session_id"),
+            "context_version": int(raw.get("context_version", 0)),
+            "conversation": BffApp._least_data_conversation(conversation),
+            "shared_understanding": {
+                "structured_intent": BffApp._least_data_shared_understanding(shared)["structured_intent"]},
+            "order": order,
+            "selection": selection,
+            "delivery": delivery or None,
+            "availability": availability,
+        }
 
     async def _error(self, send, status, code, correlation_id, extra_headers=None):
         await self._json(send, status, {"error": code, "correlation_id": correlation_id},

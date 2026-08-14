@@ -45,7 +45,9 @@ The delivery pipeline is structured into 8 implementation milestones (M0–M7) p
 - Human support escalation (FR-006 / T-09) is a thin Contact Florist overlay:
   the customer confirms an allowlisted reason and the system records
   `support.escalation.requested`. Automated FAQ remains ASO / FR-009. Staff
-  CRM, live chat, and ticketing remain Future (FR-016 / FR-017).
+  CRM, live chat, and ticketing remain Future (FR-016 / FR-017). A local
+  florist operator console is defined as a fail-closed read surface for T-09
+  requests; it does not implement FR-016 / FR-017.
 - T-04 is MVP for product/arrangement selection, eligible catalog size, the
   physical card message, and thin FR-003 option keys (flower type, colour,
   ribbon). Free-form bouquet composition and compositional inventory/pricing

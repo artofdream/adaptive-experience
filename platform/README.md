@@ -148,6 +148,10 @@ payment evolution (#148) build on these workers.
   then publishes `support.escalation.requested` (publisher: Support Service).
   Extra fields and raw PII are rejected. The response acknowledges the customer;
   it is not a CRM ticket (FR-016 / FR-017).
+- Florist operator reads (#170): `GET /internal/v1/operator/escalations` lists
+  recent `support.escalation.requested` commands (reason + opaque session
+  reference). `GET /internal/v1/operator/sessions/{id}` returns a least-data
+  summary (conversation, order status, availability). Not FR-016 / FR-017 CRM.
 - Thin RAG scaffolding (#166, ADR-014/ADR-015): `RetrievalService` indexes the
   same approved FAQ/policy corpus into `retrieval.knowledge_chunk` (`pgvector` +
   FTS) and returns hybrid candidates. Similarity hits are never business truth.

@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Local florist operator console sample. Not the customer journey and not FR-016/017 CRM.">
+  <title>Florist operator — Lily's Florist (local sample)</title>
+  <link rel="stylesheet" href="/assets/styles.css">
+  <script src="/assets/florist.js" defer></script>
+</head>
+<body class="operator">
+  <a class="skip-link" href="#inbox">Skip to inbox</a>
+  <header class="site-header">
+    <a class="brand" href="/florist" aria-label="Florist operator home">Lily's Florist · Operator</a>
+    <nav class="header-nav" aria-label="Operator">
+      <a href="/">Customer workspace</a>
+    </nav>
+  </header>
+
+  <main class="operator-shell">
+    <p class="operator-banner" role="note">
+      <strong>Local florist operator sample.</strong>
+      Separate from the customer Adaptive Workspace. Not live chat, not billing CRM,
+      and not FR-016 / FR-017 engagement. Reads fail closed unless
+      <code>AEA_FLORIST_OPERATOR=1</code> and <code>AEA_ENVIRONMENT</code> is not
+      <code>production</code>. Opaque session references only (NFR-017).
+    </p>
+    <p id="operator-mode" class="operator-mode" aria-live="polite"></p>
+
+    <div class="operator-layout">
+      <section id="inbox" class="panel" aria-labelledby="inbox-title">
+        <header>
+          <div>
+            <p class="eyebrow">T-09 · FR-006</p>
+            <h1 id="inbox-title">Contact Florist inbox</h1>
+            <p class="subtitle">Recent <code>support.escalation.requested</code> commands</p>
+          </div>
+        </header>
+        <table class="operator-table">
+          <thead>
+            <tr>
+              <th scope="col">Requested</th>
+              <th scope="col">Reason</th>
+              <th scope="col">Session</th>
+            </tr>
+          </thead>
+          <tbody id="inbox-rows"></tbody>
+        </table>
+      </section>
+
+      <section id="session" class="panel" aria-labelledby="session-title">
+        <header>
+          <div>
+            <p class="eyebrow">Session summary</p>
+            <h2 id="session-title">Conversation, order, availability</h2>
+            <p class="subtitle" id="session-ref">Select an inbox row</p>
+          </div>
+        </header>
+        <div class="operator-split">
+          <div>
+            <h3>Inbound conversation</h3>
+            <p class="hint">Least-data transcript (role, text, time). No contact dump.</p>
+            <div id="transcript" class="messages operator-transcript" role="log"></div>
+          </div>
+          <div>
+            <h3>Order / status</h3>
+            <dl id="order-facts" class="operator-facts"></dl>
+            <p class="hint">Fulfillment <code>POST .../order/status</code> and delay exist internally; this slice is read-only.</p>
+            <h3>Inventory / availability</h3>
+            <p class="hint">Why Select can fail locally: unknown vs available (FR-011).</p>
+            <ul id="availability" class="operator-list"></ul>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <section id="support-split" class="panel" aria-labelledby="split-title">
+      <p class="eyebrow">ADR-004</p>
+      <h2 id="split-title">FAQ versus human escalation</h2>
+      <div class="operator-split">
+        <div>
+          <h3>Chat with Lily / Help (ASO)</h3>
+          <p>FR-009 / FR-005. Approved product and policy answers. Stays in the customer overlay. Never a florist ticket.</p>
+        </div>
+        <div>
+          <h3>Contact Florist (T-09)</h3>
+          <p>FR-006. Allowlisted reason plus opaque session reference. This inbox is the staff read surface for those commands.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="out-title">
+      <h2 id="out-title">Out of scope in this slice</h2>
+      <ul>
+        <li>Live chat and ticketing</li>
+        <li>FR-016 / FR-017 CRM reminders and engagement analytics (#35 / #36)</li>
+        <li>Billing CRM, payment fields, raw addresses</li>
+        <li>Inventory seeding, PSP, agentic runtime, customer T-03 Select</li>
+      </ul>
+    </section>
+  </main>
+</body>
+</html>

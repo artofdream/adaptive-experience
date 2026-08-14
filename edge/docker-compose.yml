@@ -57,6 +57,7 @@ services:
       dockerfile: bff/Dockerfile
     environment:
       AEA_ENVIRONMENT: local
+      AEA_FLORIST_OPERATOR: "1"
       AEA_ALLOWED_ORIGIN: https://localhost:8443
       AEA_LOCAL_BEARER_TOKEN: local-browser-token
       AEA_ORCHESTRATION_URL: http://orchestration:8081

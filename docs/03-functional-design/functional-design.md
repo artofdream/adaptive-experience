@@ -59,3 +59,5 @@ ASO is distinct from tile **T-09 Support Escalation** (FR-006). See ADR-004 and
 12. Support Escalation (T-09 / FR-006) is the Contact Florist overlay: the customer
     confirms an allowlisted reason and the system records a governed escalation.
     Staff CRM, live chat, and ticketing remain Future (FR-016 / FR-017).
+    A local florist operator console (`/florist`) is a defined read-only
+    possibility for those escalations; it is not FR-016 / FR-017 CRM.

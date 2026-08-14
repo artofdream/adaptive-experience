@@ -39,6 +39,8 @@ remain deferred.
   Concierge and `support.escalation.requested` to Support Service.
 - Payloads stay least-data (NFR-017): allowlisted reason and opaque
   references; raw contact, address, and payment fields are rejected.
+- A local florist operator console may read those least-data escalations
+  (`/florist`, fail-closed). It is not live chat or FR-016 / FR-017 CRM.
 - **FR-010** (Future automated responses about order status, delivery, and
   availability) stays outside ASO and T-09. It does not replace FR-009 FAQ
   answers or authoritative tracking via FR-015 / FR-023 / T-08.
