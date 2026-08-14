@@ -304,7 +304,10 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
                 ["decisions.product"]), [])
         summary = workspace()["facets"]["order_summary"]
         self.assertEqual(70.0, summary["total"])
-        self.assertEqual("product", summary["itemized_charges"][0]["label"])
+        labels = [c["label"] for c in summary["itemized_charges"]]
+        self.assertEqual("product", labels[0])
+        for required in ("product", "customization", "tax", "discount"):
+            self.assertIn(required, labels)
 
         # Adding the delivery decision recomputes the summary (derived projection).
         with self.connection.transaction():
@@ -314,7 +317,9 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
                 ["decisions.delivery"]), [])
         summary2 = workspace()["facets"]["order_summary"]
         self.assertEqual(round(70.0 + REFERENCE_DELIVERY_FEE, 2), summary2["total"])
-        self.assertIn("delivery", [c["label"] for c in summary2["itemized_charges"]])
+        labels2 = [c["label"] for c in summary2["itemized_charges"]]
+        for required in ("product", "customization", "delivery", "tax", "discount"):
+            self.assertIn(required, labels2)
 
     def _order_ready_for_checkout(self, app):
         import asyncio

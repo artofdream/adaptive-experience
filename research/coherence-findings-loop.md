@@ -56,6 +56,10 @@ completed rows because the queue is also the audit trail.
 | 40 | CF-040 | Roadmap M4 coverage lists NFR-006 (M3, double-listed) and NFR-007 (M5, closed) though both are delivered in other milestones | Medium | verified | 2026-08-12 | 2026-08-13 | #145 / !122 (reverted); #147 / !124 |
 | 41 | CF-041 | Roadmap NFR coverage (M5/M6/M7/Future) disagrees with GitLab NFR milestone assignments; roadmap lists Future-scope NFRs in MVP milestones | Medium | verified | 2026-08-13 | 2026-08-13 | #146 / !123 |
 | 42 | CF-042 | Post–!142 thin FR-003 promotion: closed #22 / figma README / ADR-006 Decision / edge README still say type·colour·ribbon are Future | Low | verified | 2026-08-14 | 2026-08-14 | #157 / !143 |
+| 43 | CF-043 | `research/adr-candidates/` mixed issue design notes with ADR Drafts (CF-014 confusion risk) | Low | queued | 2026-08-14 | 2026-08-14 | !146 merged ADR-013 only; consolidation commit 4caa69f not on main |
+| 44 | CF-044 | FR-018 requires taxes/discounts/customization charges; PricingService is product + flat delivery only | Medium | in-mr | 2026-08-14 | 2026-08-14 | #159 |
+| 45 | CF-045 | NFR-007/NFR-012 encryption-at-rest claimed in ADRs without evidenced platform implementation | Medium | queued | 2026-08-14 | 2026-08-14 | — |
+| 46 | CF-046 | ADR-013 confirmation UX Accepted while T-07 still blank payment_reference re-entry | Low | queued | 2026-08-14 | 2026-08-14 | ADR-013 on main via !146 |
 
 Allowed statuses: `queued`, `investigating`, `ready`, `in-progress`, `in-mr`,
 `verified`, `regressed`, `duplicate`, `not-reproducible`, and `blocked`.
