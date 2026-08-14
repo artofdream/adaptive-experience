@@ -4,7 +4,7 @@ Status: Accepted
 
 Date: 2026-08-11
 
-Related requirements: FR-003 (Future), FR-013 (MVP), FR-018 (MVP), FR-020 (MVP)
+Related requirements: FR-003 (MVP thin options), FR-013 (MVP), FR-018 (MVP), FR-020 (MVP)
 
 Related design element: T-04 — Product Selection and Customization
 
@@ -136,7 +136,8 @@ becoming an accidental source of scope.
 - Contract and persistence reviews find no MVP fields that authorize FR-003
   customization.
 - Any retained Future control is visibly labelled and cannot receive input.
-- Requirements traceability continues to report FR-003 as Future.
+- Requirements traceability reports FR-003 as MVP for the thin option keys;
+  free-form composition remains Future.
 
 ## Revisit conditions
 Revisit this decision when FR-003 is formally promoted into a dated delivery
@@ -145,3 +146,26 @@ different customization model. Promotion requires coordinated updates to the
 canonical requirements, catalog and inventory models, pricing and fulfillment
 rules, design artifacts, contracts, and acceptance tests before controls become
 functional.
+
+## Amendment — Thin FR-003 options (2026-08-14)
+
+FR-003 is promoted into MVP as a **thin** compositional options slice on T-04.
+
+Accepted option keys in addition to size and card message:
+
+- `flower_type` — must match a flower tag on the selected product in the
+  reference catalog;
+- `colour` — fixed reference vocabulary;
+- `ribbon` — fixed reference vocabulary.
+
+Still out of scope (unchanged exclusions):
+
+- free-form bouquet composition builder;
+- stored-value gift-card products;
+- component-level inventory reservation;
+- compositional price lines / surcharges.
+
+Production UI may expose interactive selects for the thin keys. Contracts,
+BFF allowlists, persistence, and acceptance tests accept these keys and continue
+to reject unknown keys and gift-card value fields.
+

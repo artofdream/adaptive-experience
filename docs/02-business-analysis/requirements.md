@@ -11,12 +11,12 @@
 |---|---|---|---|---|
 | FR-001 | US-001 | Discovery and Intent | MVP | The system shall allow customers to search and browse flower arrangements using conversational AI assistance. |
 | FR-002 | US-002 | Discovery and Intent | MVP | The system shall analyze customer inputs such as occasion, budget, and preferences to suggest flower arrangements. |
-| FR-003 | US-003 | Customization | Future | The system shall allow customers to customize flower type, color, size, and personal messages. |
+| FR-003 | US-003 | Customization | MVP | The system shall allow customers to customize flower type, color, size, and personal messages. |
 
-> **Interpretation (ADR-006):** MVP T-04 already includes catalog **size** and a
-> physical **card message**. FR-003’s Future scope is advanced *compositional*
-> customization (flower type, colour, ribbon, and related free-form composition),
-> not those MVP fields. Do not renumber FR-003.
+> **Interpretation (ADR-006 amended):** T-04 includes catalog **size**, a physical
+> **card message**, and thin compositional option keys (**flower_type**,
+> **colour**, **ribbon**). Free-form bouquet composition, gift-card products, and
+> compositional inventory/pricing remain out of scope. Do not renumber FR-003.
 | FR-004 | US-004 | Discovery and Intent | MVP | The system shall provide a Generative AI chatbot available 24/7. |
 | FR-005 | US-005 | Discovery and Intent | MVP | The AI assistant shall answer questions using approved florist product and policy information. |
 | FR-006 | US-006 | Support Automation | Future | The system shall escalate unresolved customer requests to a human representative. |

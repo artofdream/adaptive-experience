@@ -17,6 +17,16 @@ const STEP_CAPTIONS = {
   6: "Step 6 · Review, pay, and order",
   7: "Step 7 · Track delivery",
 };
+// Mirrored from platform REFERENCE_CATALOG flower tags for thin FR-003 selects.
+const PRODUCT_FLOWERS = {
+  "pink-flower-vase": ["roses", "mixed"],
+  "lilac-bouquet": ["lilac", "mixed"],
+  "classic-rose-dozen": ["roses"],
+  "budget-mixed-bunch": ["mixed", "carnations"],
+  "premium-orchid": ["orchid"],
+};
+const COLOURS = ["red", "pink", "white", "yellow", "purple", "mixed"];
+const RIBBONS = ["none", "satin", "organza", "kraft"];
 
 const help = document.querySelector("#help");
 const helpButton = document.querySelector(".help-button");
@@ -186,6 +196,21 @@ function renderRecommendations(items) {
   }
 }
 
+function fillSelect(select, values, selected) {
+  select.replaceChildren();
+  const blank = document.createElement("option");
+  blank.value = "";
+  blank.textContent = select.id === "flower-type" ? "Any eligible" : "Any";
+  select.append(blank);
+  for (const value of values) {
+    const option = document.createElement("option");
+    option.value = value;
+    option.textContent = value.charAt(0).toUpperCase() + value.slice(1);
+    select.append(option);
+  }
+  select.value = selected && values.includes(selected) ? selected : "";
+}
+
 function renderSelection(selection) {
   const empty = document.querySelector("#selection-empty");
   const formEl = document.querySelector("#selection-form");
@@ -196,9 +221,17 @@ function renderSelection(selection) {
   }
   empty.hidden = true;
   formEl.hidden = false;
+  const options = selection.options || {};
   document.querySelector("#arrangement").value = productLabel(selection.product_id);
-  document.querySelector("#size").value = (selection.options || {}).size || "";
-  document.querySelector("#card-message").value = (selection.options || {}).card_message || "";
+  document.querySelector("#size").value = options.size || "";
+  fillSelect(
+    document.querySelector("#flower-type"),
+    PRODUCT_FLOWERS[selection.product_id] || [],
+    options.flower_type || "",
+  );
+  fillSelect(document.querySelector("#colour"), COLOURS, options.colour || "");
+  fillSelect(document.querySelector("#ribbon"), RIBBONS, options.ribbon || "");
+  document.querySelector("#card-message").value = options.card_message || "";
 }
 
 function renderSummary(summary) {
@@ -300,7 +333,7 @@ async function selectProduct(productId) {
   await refreshWorkspace();
   await pullStream();
   setJourneyStep(4);
-  showNotice("Product selected. You can set size and a card message next.");
+  showNotice("Product selected. You can set size, flower type, colour, ribbon, and a card message next.");
 }
 
 function openHelp() {
@@ -377,8 +410,14 @@ document.querySelector("#selection-form").addEventListener("submit", async (even
   if (!selection.product_id) return;
   const options = {};
   const size = document.querySelector("#size").value.trim();
+  const flowerType = document.querySelector("#flower-type").value.trim();
+  const colour = document.querySelector("#colour").value.trim();
+  const ribbon = document.querySelector("#ribbon").value.trim();
   const card = document.querySelector("#card-message").value.trim();
   if (size) options.size = size;
+  if (flowerType) options.flower_type = flowerType;
+  if (colour) options.colour = colour;
+  if (ribbon) options.ribbon = ribbon;
   if (card) options.card_message = card;
   try {
     const result = await api("/api/v1/selection", {

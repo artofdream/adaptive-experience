@@ -97,10 +97,11 @@ payment evolution (#148) build on these workers.
   revalidation (published and audited; rejects unavailable or stale), writes the
   `decisions.product` facet, and emits `product.selected` in one versioned
   `apply_experience_patch` transaction (exactly once at the new context version).
-  Selection `options` are the explicit MVP T-04 fields only - an eligible `size`
-  and a normalized physical `card_message` (ADR-006 /
-  `docs/04-technical-architecture/t04-card-message-contract.md`); FR-003 controls
-  are rejected, so Future customization cannot enter the MVP contract.
+  Selection `options` are the explicit T-04 fields - eligible `size`, physical
+  `card_message`, and thin FR-003 keys `flower_type`, `colour`, and `ribbon`
+  (ADR-006 amended /
+  `docs/04-technical-architecture/t04-card-message-contract.md`); unknown keys
+  and gift-card value fields are rejected.
 - Delivery scheduling (#33, FR-014): `POST .../delivery` validates a `timing`
   (date + window) and an opaque `destination_reference`, writes the
   `decisions.delivery` facet, and emits `delivery.details.updated` in one

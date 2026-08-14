@@ -22,7 +22,7 @@
 |---|---|---|---|
 | US-001 | EP-001 | MVP | As a customer, I want AI assistance while searching for flowers, so that I can quickly find suitable arrangements. |
 | US-002 | EP-001 | MVP | As a customer, I want to describe my occasion and preferences, so that AI can suggest suitable flowers. |
-| US-003 | EP-001 | Future | As a customer, I want to customize a bouquet, so that I can create a personalized gift. |
+| US-003 | EP-001 | MVP | As a customer, I want to customize a bouquet, so that I can create a personalized gift. |
 | US-004 | EP-002 | MVP | As a customer, I want to communicate with an AI assistant anytime, so that I can receive support outside business hours. |
 | US-005 | EP-002 | MVP | As a customer, I want answers about flowers, pricing, and policies, so that I can make informed decisions. |
 | US-006 | EP-002 | Future | As a customer, I want complex questions transferred to staff, so that my issues can still be resolved. |

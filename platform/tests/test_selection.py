@@ -35,19 +35,39 @@ class CardMessageContractTests(unittest.TestCase):
         with self.assertRaises(SelectionValidationError):
             normalize_size("x" * 41)
 
-    def test_options_keep_only_size_and_card_message(self):
+    def test_options_keep_size_card_message_and_thin_fr003(self):
         self.assertEqual({}, normalize_selection_options(None))
         self.assertEqual({}, normalize_selection_options({}))
         self.assertEqual({"size": "large", "card_message": "hi"},
                          normalize_selection_options({"size": "large", "card_message": "hi"}))
         # Blank fields are dropped, not stored empty.
         self.assertEqual({}, normalize_selection_options({"card_message": "  ", "size": ""}))
+        self.assertEqual(
+            {"flower_type": "roses", "colour": "red", "ribbon": "satin"},
+            normalize_selection_options(
+                {"flower_type": "Roses", "colour": "Red", "ribbon": "Satin"},
+                product_id="classic-rose-dozen",
+            ),
+        )
 
-    def test_options_reject_fr003_controls(self):
-        for control in ({"colour": "red"}, {"ribbon": "gold"}, {"flower_type": "rose"},
-                        {"gift_card_value": "50"}, {"size": "large", "colour": "red"}):
-            with self.assertRaises(SelectionValidationError):
-                normalize_selection_options(control)
+    def test_options_accept_thin_fr003_and_reject_gift_card(self):
+        self.assertEqual(
+            {"colour": "red"},
+            normalize_selection_options({"colour": "red"}, product_id="classic-rose-dozen"),
+        )
+        self.assertEqual(
+            {"ribbon": "kraft"},
+            normalize_selection_options({"ribbon": "kraft"}, product_id="classic-rose-dozen"),
+        )
+        with self.assertRaises(SelectionValidationError):
+            normalize_selection_options({"ribbon": "gold"})
+        with self.assertRaises(SelectionValidationError):
+            normalize_selection_options({"gift_card_value": "50"})
+        with self.assertRaises(SelectionValidationError):
+            normalize_selection_options(
+                {"flower_type": "tulips"}, product_id="classic-rose-dozen")
+        with self.assertRaises(SelectionValidationError):
+            normalize_selection_options({"flower_type": "roses"})
         with self.assertRaises(SelectionValidationError):
             normalize_selection_options("not-a-dict")
 

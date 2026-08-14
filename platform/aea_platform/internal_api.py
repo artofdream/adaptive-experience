@@ -224,9 +224,10 @@ class InternalOrchestrationApp:
                 or not isinstance(correlation_id, str) or not correlation_id.strip()):
             return await self._send(send, 422, {"code": "validation_failed"})
         try:
-            # Explicit MVP T-04 options only (ADR-006): normalized size and card
-            # message; any FR-003 control is rejected here.
-            options = normalize_selection_options(body.get("options"))
+            # T-04 options (ADR-006 amended): size, card message, and thin FR-003
+            # keys (flower_type, colour, ribbon). Unknown keys still rejected.
+            options = normalize_selection_options(
+                body.get("options"), product_id=product_id.strip())
         except SelectionValidationError:
             return await self._send(send, 422, {"code": "validation_failed"})
         try:

@@ -87,12 +87,17 @@ class BrowserUiTests(unittest.TestCase):
         self.assertIn("ASO FAQ overlay", self.html)
         self.assertIn("Lily's Florist", self.html)
 
-    def test_t04_exposes_only_adr006_mvp_fields(self):
+    def test_t04_exposes_thin_fr003_fields(self):
         self.assertIn('id="size"', self.html)
         self.assertIn('id="card-message"', self.html)
+        self.assertIn('id="flower-type"', self.html)
+        self.assertIn('id="colour"', self.html)
+        self.assertIn('id="ribbon"', self.html)
         self.assertIn("Arrangement", self.html)
-        for forbidden in ("flower_type", "flower type", "colour", "ribbon", "gift card"):
-            self.assertNotIn(forbidden, self.html.lower())
+        self.assertIn("Flower type", self.html)
+        self.assertIn("PRODUCT_FLOWERS", self.script)
+        self.assertNotIn("gift card", self.html.lower())
+        self.assertNotIn("gift_card", self.script.lower())
 
     def test_sample_layout_3_color_and_journey_steps(self):
         self.assertIn('data-visual="sample-layout-3"', self.html)
