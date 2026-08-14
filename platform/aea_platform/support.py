@@ -53,10 +53,11 @@ class SupportService:
     `support.faq.answered` event for audit and bus consumers.
     """
 
-    def __init__(self, store, *, knowledge=None,
+    def __init__(self, store, *, knowledge=None, retriever=None,
                  new_id: Callable[[], uuid.UUID] | None = None, now=None):
         self.store = store
         self.knowledge = tuple(knowledge if knowledge is not None else REFERENCE_KNOWLEDGE)
+        self.retriever = retriever
         self.new_id = new_id or uuid.uuid4
         self.now = now or (lambda: datetime.now(timezone.utc))
 
@@ -64,6 +65,8 @@ class SupportService:
                subject_reference: str, context_version: int) -> dict:
         text = self._question(question)
         match = self._match(text)
+        if match is None and self.retriever is not None:
+            match = self._from_retrieval(text)
         if match is None:
             result = {"answer": NO_APPROVED_ANSWER, "approved_source_references": [],
                       "matched": False}
@@ -87,6 +90,29 @@ class SupportService:
             if score > best_score:
                 best, best_score = entry, score
         return best if best_score > 0 else None
+
+    def _from_retrieval(self, text: str) -> ApprovedAnswer | None:
+        """Optional candidate source. Never replaces approved answer text.
+
+        Vector-only nearest neighbors cannot become answers (ADR-015): a hit
+        must also have a keyword/FTS rank and map to this service's approved
+        knowledge. Live InternalOrchestrationApp does not wire a retriever.
+        """
+        allowed = []
+        by_ref: dict[str, ApprovedAnswer] = {}
+        for entry in self.knowledge:
+            for reference in entry.source_references:
+                by_ref[reference] = entry
+                if reference not in allowed:
+                    allowed.append(reference)
+        hits = self.retriever.retrieve(text, allowed_source_references=tuple(allowed))
+        for hit in hits:
+            if getattr(hit, "keyword_rank", None) is None:
+                continue
+            entry = by_ref.get(getattr(hit, "source_reference", None))
+            if entry is not None:
+                return entry
+        return None
 
     @staticmethod
     def _question(value) -> str:

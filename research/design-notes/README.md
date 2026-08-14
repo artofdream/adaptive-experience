@@ -14,6 +14,7 @@ unambiguous.
 | [`m5-checkout-payment-contract.md`](m5-checkout-payment-contract.md) | M5 checkout / payment / confirmed | #38, #55 |
 | [`m6-order-tracking-contract.md`](m6-order-tracking-contract.md) | M6 tracking completed / delayed | #42 |
 | [`m6-support-answers-contract.md`](m6-support-answers-contract.md) | M6 FAQ / approved answers | #28, #24 |
+| [`pgvector-rag-scaffold.md`](pgvector-rag-scaffold.md) | Thin pgvector hybrid retrieval | #166 |
 
 Canonical platform decisions remain in `docs/06-adr/`. ADR promotion Drafts
 remain in [`../adr-candidates/`](../adr-candidates/).

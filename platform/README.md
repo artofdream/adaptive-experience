@@ -19,6 +19,10 @@ python platform/scripts/provision_kafka.py
 python platform/scripts/diagnose.py
 ```
 
+Local Postgres is `pgvector/pgvector:pg16` so migration 013 can `CREATE EXTENSION vector`
+(ADR-014). Recreate the Compose volume if it was created from `postgres:16-alpine`.
+Experience-state migrations still do not depend on the extension.
+
 Install the optional runtime adapters before running the Python commands:
 
 ```sh
@@ -138,6 +142,13 @@ payment evolution (#148) build on these workers.
   `support.faq.answered` event. An unmatched question returns a safe
   no-approved-information answer with empty sources - it never fabricates content;
   human escalation is Future (FR-006).
+- Thin RAG scaffolding (#166, ADR-014/ADR-015): `RetrievalService` indexes the
+  same approved FAQ/policy corpus into `retrieval.knowledge_chunk` (`pgvector` +
+  FTS) and returns hybrid candidates. Similarity hits are never business truth.
+  `SupportService` may take an optional retriever as a candidate source after the
+  deterministic keyword matcher misses, and only accepts hits that have a
+  keyword/FTS rank and map to approved knowledge. Live `POST .../support` does
+  not wire a retriever — replacing MVP FAQ with RAG remains out of scope.
 - Checkout and payment (#38 / #148, FR-019): `POST .../checkout` price-checks the
   assembled order, stores a private checkout intent, and emits
   `order.checkout.requested` only — returning `202 accepted` / `pending`. The
