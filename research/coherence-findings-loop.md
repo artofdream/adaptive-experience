@@ -55,7 +55,7 @@ completed rows because the queue is also the audit trail.
 | 39 | CF-039 | Roadmap M4/M5 FR coverage disagrees with GitLab milestone assignments (FR-013/015/018; NFR-014) | Medium | verified | 2026-08-12 | 2026-08-12 | #141 / !110 |
 | 40 | CF-040 | Roadmap M4 coverage lists NFR-006 (M3, double-listed) and NFR-007 (M5, closed) though both are delivered in other milestones | Medium | verified | 2026-08-12 | 2026-08-13 | #145 / !122 (reverted); #147 / !124 |
 | 41 | CF-041 | Roadmap NFR coverage (M5/M6/M7/Future) disagrees with GitLab NFR milestone assignments; roadmap lists Future-scope NFRs in MVP milestones | Medium | verified | 2026-08-13 | 2026-08-13 | #146 / !123 |
-| 42 | CF-042 | Post–!142 thin FR-003 promotion: closed #22 / figma README / ADR-006 Decision / edge README still say type·colour·ribbon are Future | Low | in-progress | 2026-08-14 | 2026-08-14 | #157 |
+| 42 | CF-042 | Post–!142 thin FR-003 promotion: closed #22 / figma README / ADR-006 Decision / edge README still say type·colour·ribbon are Future | Low | in-mr | 2026-08-14 | 2026-08-14 | #157 |
 
 Allowed statuses: `queued`, `investigating`, `ready`, `in-progress`, `in-mr`,
 `verified`, `regressed`, `duplicate`, `not-reproducible`, and `blocked`.
