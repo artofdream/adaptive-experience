@@ -29,10 +29,10 @@ assessed_by: cursor-agent
 
 | Finding ID | Decision | Queue status | Reason |
 |------------|----------|--------------|--------|
-| CF-043 | new | in-progress | Consolidation moved design notes; verify after merge |
-| CF-044 | new | queued | Docs vs pricing depth gap; not covered by prior CFs |
-| CF-045 | new | queued | Encryption claim vs code; distinct from privacy least-data CFs |
-| CF-046 | new | queued | Activate after ADR-013 merges to `main`; else docs-only on branch |
+| CF-043 | new | verified | Consolidation on main @ 5eec495; design notes relocated |
+| CF-044 | new | verified | #159 / !147 merged |
+| CF-045 | new | queued | Encryption claim vs code |
+| CF-046 | new | queued | ADR-013 UX ahead of T-07 |
 
 ## Assessment conclusion
 
