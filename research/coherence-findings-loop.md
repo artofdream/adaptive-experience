@@ -59,7 +59,7 @@ completed rows because the queue is also the audit trail.
 | 43 | CF-043 | `research/adr-candidates/` mixed issue design notes with ADR Drafts (CF-014 confusion risk) | Low | verified | 2026-08-14 | 2026-08-14 | 4caa69f / !146 follow-up on main @ 5eec495 |
 | 44 | CF-044 | FR-018 requires taxes/discounts/customization charges; PricingService is product + flat delivery only | Medium | verified | 2026-08-14 | 2026-08-14 | #159 / !147 |
 | 45 | CF-045 | NFR-007/NFR-012 encryption-at-rest claimed in ADRs without evidenced platform implementation | Medium | verified | 2026-08-14 | 2026-08-14 | #160 / !149 |
-| 46 | CF-046 | ADR-013 confirmation UX Accepted while T-07 still blank payment_reference re-entry | Low | in-mr | 2026-08-14 | 2026-08-14 | #161 |
+| 46 | CF-046 | ADR-013 confirmation UX Accepted while T-07 still blank payment_reference re-entry | Low | verified | 2026-08-14 | 2026-08-14 | #161 / !150 |
 
 Allowed statuses: `queued`, `investigating`, `ready`, `in-progress`, `in-mr`,
 `verified`, `regressed`, `duplicate`, `not-reproducible`, and `blocked`.
