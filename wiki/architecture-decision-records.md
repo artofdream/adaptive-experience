@@ -17,11 +17,13 @@ Accepted ADRs (see `docs/06-adr/`):
 | ADR-011 | PostgreSQL experience-state datastore |
 | ADR-012 | Apache Kafka external message broker |
 | ADR-013 | Confirmation-driven experience |
+| ADR-014 | PostgreSQL pgvector for semantic retrieval |
+| ADR-015 | RAG and hybrid retrieval |
 
-ADR-011 through ADR-013 are Accepted. PostgreSQL is the selected experience-state
-datastore and Apache Kafka is the selected external message broker for the MVP.
-ADR-013 extends Thought Before Form into transaction execution (confirm known
-recipient, delivery, payment, and preference context; ask only for gaps).
+ADR-011 through ADR-015 are Accepted (014–015 land via dedicated MRs). PostgreSQL
+is the experience-state datastore; Kafka is the MVP broker; `pgvector` is the
+semantic retrieval store; hybrid RAG requires post-retrieval domain validation.
+ADR-013 extends Thought Before Form into transaction execution.
 
 ## Canonical docs
 
