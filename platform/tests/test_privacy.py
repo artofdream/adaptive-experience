@@ -138,6 +138,17 @@ class PrivacyTests(unittest.TestCase):
         self.guard.validate_publication(
             "support-service", "support.escalation.requested", message)
 
+    def test_valid_situation_answer_is_authorized(self):
+        message = envelope(
+            "support.situation.answered",
+            {"answer": "Your order is currently preparing.",
+             "situation_kind": "order_status",
+             "fact_references": ["session:order"]},
+        )
+        message["source"] = "support-service"
+        self.guard.validate_publication(
+            "support-service", "support.situation.answered", message)
+
     def test_valid_checkout_events_are_authorized(self):
         requested = envelope("order.checkout.requested", {"draft_order_id": "d1", "total": 82.0})
         self.guard.validate_publication("orchestration", "order.checkout.requested", requested)

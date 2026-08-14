@@ -32,6 +32,7 @@ active stage without replacing the adaptive workspace.
 |---|---|---|---|
 | Automated Support Overlay (ASO) | Answers frequently asked questions from approved product and policy information without leaving the workspace. Never blocks tile interaction. | FR-009 (backed by FR-005) | MVP |
 | Support Escalation (T-09) | Customer requests human florist follow-up for an unresolved request. Records `support.escalation.requested`; does not open a staff CRM. | FR-006 | Future (thin path delivered) |
+| Situational support (ASO) | Automates answers about this session's order status, delivery details, and product availability from authoritative facts. | FR-010 | Future (thin path delivered) |
 
 ASO is distinct from tile **T-09 Support Escalation** (FR-006). See ADR-004 and
 `docs/03-functional-design/automated-support-overlay.md`.

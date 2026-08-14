@@ -73,6 +73,8 @@ class SupportResult:
     answer: str | None = None
     approved_source_references: tuple = ()
     matched: bool = False
+    kind: str = "faq"
+    fact_references: tuple = ()
 
 
 @dataclass(frozen=True)

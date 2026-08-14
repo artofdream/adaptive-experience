@@ -597,6 +597,30 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         for row in rows:
             guard.validate_publication("ai-concierge", "support.faq.answered", row[0])
 
+    def test_support_situation_answers_from_session_facts(self):
+        import asyncio
+        from aea_platform.internal_api import InternalOrchestrationApp
+        from aea_platform.policy import KafkaPolicy
+        from aea_platform.privacy import PayloadPrivacyGuard
+
+        session_id = self.create_session()
+        app = InternalOrchestrationApp(self.connection, "internal-token")
+        status, body = asyncio.run(self._invoke_internal(
+            app, "POST", f"/internal/v1/sessions/{session_id}/support",
+            json.dumps({"question": "What is my order status?",
+                        "correlation_id": "sit"}).encode()))
+        self.assertEqual(200, status)
+        self.assertEqual("situation", body["kind"])
+        self.assertIn("does not have an order", body["answer"])
+        envelope = self.connection.execute(
+            "SELECT envelope FROM orchestration.outbox_message "
+            "WHERE session_id=%s AND topic='support.situation.answered'",
+            (session_id,)).fetchone()[0]
+        guard = PayloadPrivacyGuard(KafkaPolicy.load(ROOT / "config" / "kafka-policy.json"),
+                                    ROOT.parent / "docs" / "04-technical-architecture" / "schemas")
+        guard.validate_publication("support-service", "support.situation.answered", envelope)
+        self.assertEqual("order_status", envelope["payload"]["situation_kind"])
+
     def test_support_escalation_publishes_least_data_command(self):
         import asyncio
         from aea_platform.internal_api import InternalOrchestrationApp

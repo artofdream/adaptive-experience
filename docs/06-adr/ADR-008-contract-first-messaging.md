@@ -100,5 +100,6 @@ remains outside this ADR (see ADR-007 / CF-016).
 - CI gains contract checks; advisory markdown lint remains separate (CF-005).
 - This ADR does not invent requirement IDs or change MVP topic membership.
   `support.escalation.requested` was later added to the governed catalog for
-  the thin FR-006 / T-09 path (22 topics total) without reclassifying FR-006
-  as MVP in the requirements source of truth.
+  the thin FR-006 / T-09 path, and `support.situation.answered` for the thin
+  FR-010 path (23 topics total), without reclassifying those FRs as MVP in
+  the requirements source of truth.

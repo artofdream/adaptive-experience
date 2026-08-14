@@ -131,10 +131,13 @@ Internal Orchestration (#144; contract in
   decisions are assembled; it returns the `order_id` and `status`. Missing
   decisions return 422 `order_incomplete`. Creation is idempotent per session, and
   the workspace `order` facet surfaces `order_id` + `status`.
-- `POST /api/v1/support` answers a customer question (FR-009/FR-005). It accepts
-  only `{question}` and returns `{answer, approved_source_references, matched}`.
-  Answers come only from approved product/policy information; an unmatched question
-  returns a safe no-approved-information answer (never fabricated).
+- `POST /api/v1/support` answers a customer question (FR-009/FR-005 and thin
+  FR-010). It accepts only `{question}` and returns `{answer,
+  approved_source_references, matched, kind, fact_references}`. Situational
+  questions about this session's order, delivery, or availability are answered
+  from authoritative facts (`kind=situation`). Other questions use approved
+  product/policy information; an unmatched question returns a safe
+  no-approved-information answer (never fabricated).
 - `POST /api/v1/support/escalation` records a T-09 / FR-006 Contact Florist
   request. It accepts only `{reason}` from an allowlist and returns an
   acknowledgement plus `escalation_reason`. Extra fields (email, address, card

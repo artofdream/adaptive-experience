@@ -18,6 +18,7 @@ unambiguous.
 | [`local-inventory-seed.md`](local-inventory-seed.md) | Local inventory seeder + open-data alternatives | #169 |
 | [`adr-016-agentic-runtime.md`](adr-016-agentic-runtime.md) | Thin ADR-016 tool-calling runtime | #168 |
 | [`florist-operator-ui.md`](florist-operator-ui.md) | Local florist operator console (not CRM) | #170 |
+| [`fr-010-situation-answers.md`](fr-010-situation-answers.md) | Thin FR-010 situational ASO answers | #29 |
 
 Canonical platform decisions remain in `docs/06-adr/`. ADR promotion Drafts
 remain in [`../adr-candidates/`](../adr-candidates/).

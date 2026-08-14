@@ -173,6 +173,8 @@ class BrowserUiTests(unittest.TestCase):
         self.assertIn('id="escalation-reason"', self.html)
         self.assertIn("T-09 · Support Escalation", self.html)
         self.assertIn("/api/v1/support/escalation", self.script)
+        self.assertIn("From this session:", self.script)
+        self.assertIn('result.kind === "situation"', self.script)
         self.assertIn("openEscalation", self.script)
         self.assertIn('contactFlorist.addEventListener("click", openEscalation)', self.script)
         self.assertNotIn('querySelector("#contact-florist").addEventListener("click", openHelp)',
