@@ -85,10 +85,11 @@ Internal Orchestration (#144; contract in
   latest `authoritative_status` per FR-023). The browser renders one coherent
   snapshot instead of racing per-tile fetches.
 - `POST /api/v1/selection` selects a recommended product (`product_id`,
-  `observed_context_version`, and optional `options` limited to an eligible
-  `size` and a physical `card_message` per ADR-006 -
-  `docs/04-technical-architecture/t04-card-message-contract.md`). FR-003 controls
-  (flower type, colour, ribbon, gift-card value) are rejected at the edge.
+  `observed_context_version`, and optional `options` for eligible `size`,
+  physical `card_message`, and thin FR-003 keys `flower_type` / `colour` /
+  `ribbon` per ADR-006 amended -
+  `docs/04-technical-architecture/t04-card-message-contract.md`). Unknown keys
+  and gift-card value fields are rejected at the edge.
   Orchestration revalidates availability authoritatively at selection time,
   records `decisions.product`, and emits the governed `product.selected` event
   exactly once at the new context version. Unavailable/stale inventory returns

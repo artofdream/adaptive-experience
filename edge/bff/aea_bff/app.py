@@ -202,13 +202,16 @@ class BffApp:
                     or len(product_id.strip()) > 120 or not isinstance(options, dict)
                     or not isinstance(observed, int) or isinstance(observed, bool) or observed < 0):
                 return await self._error(send, 422, "invalid_selection_shape", correlation_id)
-            # Only MVP T-04 options (ADR-006): an eligible size and a physical card
-            # message. Reject FR-003 controls (flower type, colour, ribbon, ...) at
-            # the edge; Orchestration re-validates and normalizes authoritatively.
-            if (set(options) - {"size", "card_message"}
+            # T-04 options (ADR-006 amended): size, card message, and thin FR-003
+            # keys. Orchestration re-validates tokens and flower_type eligibility.
+            allowed = {"size", "card_message", "flower_type", "colour", "ribbon"}
+            if (set(options) - allowed
                     or any(not isinstance(value, str) for value in options.values())
                     or len(options.get("card_message", "")) > 280
-                    or len(options.get("size", "")) > 40):
+                    or len(options.get("size", "")) > 40
+                    or len(options.get("flower_type", "")) > 40
+                    or len(options.get("colour", "")) > 40
+                    or len(options.get("ribbon", "")) > 40):
                 return await self._error(send, 422, "invalid_selection_shape", correlation_id)
             try:
                 result = self.orchestration.select_product(

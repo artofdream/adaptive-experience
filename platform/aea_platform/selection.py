@@ -1,15 +1,21 @@
 from __future__ import annotations
 
-# T-04 MVP customization boundary (ADR-006). Only an eligible size and a physical
-# card message are MVP options; flower type, colour, ribbon, free-form
-# composition, and stored-value gift cards remain Future (FR-003).
+# T-04 selection options (ADR-006 amended for thin FR-003). Size and card message
+# remain MVP basics; flower_type, colour, and ribbon are accepted thin
+# compositional keys. Free-form bouquet composition and stored-value gift cards
+# remain out of scope.
+from .recommendation import REFERENCE_CATALOG
+
 CARD_MESSAGE_MAX_LENGTH = 280
 SIZE_MAX_LENGTH = 40
-ALLOWED_OPTION_KEYS = ("size", "card_message")
+OPTION_TOKEN_MAX_LENGTH = 40
+ALLOWED_OPTION_KEYS = ("size", "card_message", "flower_type", "colour", "ribbon")
+ALLOWED_COLOURS = frozenset({"red", "pink", "white", "yellow", "purple", "mixed"})
+ALLOWED_RIBBONS = frozenset({"none", "satin", "organza", "kraft"})
 
 
 class SelectionValidationError(ValueError):
-    """A T-04 selection option violates the ADR-006 MVP contract."""
+    """A T-04 selection option violates the selection contract."""
 
 
 def normalize_card_message(value):
@@ -54,13 +60,36 @@ def normalize_size(value):
     return text
 
 
-def normalize_selection_options(options) -> dict:
-    """Return the explicit MVP option fields, rejecting FR-003 controls.
+def normalize_option_token(value, *, field: str):
+    """Normalize an optional bounded option token (flower_type, colour, ribbon)."""
+    if value is None:
+        return None
+    if not isinstance(value, str):
+        raise SelectionValidationError(f"{field} must be text")
+    text = value.strip().lower()
+    if not text:
+        return None
+    if len(text) > OPTION_TOKEN_MAX_LENGTH or any(ord(character) < 32 for character in text):
+        raise SelectionValidationError(f"{field} is invalid")
+    return text
 
-    Only ``size`` and ``card_message`` are MVP T-04 options (ADR-006). Any other
-    key (flower type, colour, ribbon, gift-card value, free-form composition) is
-    rejected so Future customization cannot enter the MVP contract. Omitted or
-    blank fields are dropped rather than stored as empty values.
+
+def flowers_for_product(product_id: str) -> frozenset[str]:
+    """Return reference-catalog flower tags for a product id."""
+    for product in REFERENCE_CATALOG:
+        if product.product_id == product_id:
+            return product.flowers
+    raise SelectionValidationError("unknown product for flower type")
+
+
+def normalize_selection_options(options, product_id: str | None = None) -> dict:
+    """Return explicit T-04 option fields, including thin FR-003 keys.
+
+    Accepts ``size``, ``card_message``, ``flower_type``, ``colour``, and
+    ``ribbon``. ``flower_type`` must match the selected product's reference
+    catalog flower tags when provided. ``colour`` and ``ribbon`` use fixed
+    reference vocabularies until a Catalog SoT exists. Stored-value gift cards
+    and other unknown keys are rejected. Omitted or blank fields are dropped.
     """
     if options is None:
         options = {}
@@ -76,4 +105,26 @@ def normalize_selection_options(options) -> dict:
     card_message = normalize_card_message(options.get("card_message"))
     if card_message is not None:
         normalized["card_message"] = card_message
+
+    flower_type = normalize_option_token(options.get("flower_type"), field="flower_type")
+    if flower_type is not None:
+        if not isinstance(product_id, str) or not product_id.strip():
+            raise SelectionValidationError("flower type requires a product")
+        allowed = flowers_for_product(product_id.strip())
+        if flower_type not in allowed:
+            raise SelectionValidationError("flower type is not eligible for product")
+        normalized["flower_type"] = flower_type
+
+    colour = normalize_option_token(options.get("colour"), field="colour")
+    if colour is not None:
+        if colour not in ALLOWED_COLOURS:
+            raise SelectionValidationError("colour is not allowed")
+        normalized["colour"] = colour
+
+    ribbon = normalize_option_token(options.get("ribbon"), field="ribbon")
+    if ribbon is not None:
+        if ribbon not in ALLOWED_RIBBONS:
+            raise SelectionValidationError("ribbon is not allowed")
+        normalized["ribbon"] = ribbon
+
     return normalized

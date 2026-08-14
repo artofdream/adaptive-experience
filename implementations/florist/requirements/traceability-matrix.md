@@ -9,7 +9,7 @@
 |---|---|---|---|---|
 | BG-001 | EP-001 | US-001 | FR-001 | MVP |
 | BG-001 | EP-001 | US-002 | FR-002 | MVP |
-| BG-001 | EP-001 | US-003 | FR-003 | Future |
+| BG-001 | EP-001 | US-003 | FR-003 | MVP |
 | BG-002 | EP-002 | US-004 | FR-004 | MVP |
 | BG-002 | EP-002 | US-005 | FR-005 | MVP |
 | BG-002 | EP-002 | US-006 | FR-006 | Future |

@@ -701,21 +701,25 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         def drive(method, path, body=b""):
             return asyncio.run(self._invoke_internal(app, method, path, body))
 
-        # Selection carries only the normalized MVP options (ADR-006).
+        # Selection carries normalized T-04 options including thin FR-003 keys.
         body = json.dumps({"product_id": "classic-rose-dozen",
-                           "options": {"size": "large", "card_message": "  Happy birthday  "},
+                           "options": {"size": "large", "card_message": "  Happy birthday  ",
+                                       "flower_type": "roses", "colour": "red",
+                                       "ribbon": "satin"},
                            "observed_context_version": 0, "correlation_id": "sel"}).encode()
         status, result = drive("POST", f"/internal/v1/sessions/{session_id}/selection", body)
         self.assertEqual(202, status)
         envelope = self.connection.execute(
             "SELECT envelope FROM orchestration.outbox_message "
             "WHERE session_id=%s AND topic='product.selected'", (session_id,)).fetchone()[0]
-        self.assertEqual({"size": "large", "card_message": "Happy birthday"},
+        self.assertEqual({"size": "large", "card_message": "Happy birthday",
+                          "flower_type": "roses", "colour": "red", "ribbon": "satin"},
                          envelope["payload"]["options"])
         self.assertEqual("classic-rose-dozen", envelope["payload"]["product_id"])
 
-        # An FR-003 control is rejected before any state mutation.
-        bad = json.dumps({"product_id": "classic-rose-dozen", "options": {"colour": "red"},
+        # Gift-card value is rejected before any state mutation.
+        bad = json.dumps({"product_id": "classic-rose-dozen",
+                          "options": {"gift_card_value": "50"},
                           "observed_context_version": result["context_version"],
                           "correlation_id": "sel2"}).encode()
         self.assertEqual(422, drive("POST", f"/internal/v1/sessions/{session_id}/selection", bad)[0])
@@ -731,7 +735,8 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
                                   ["shared_understanding.occasion"]), [])
         _, workspace = drive("GET", f"/internal/v1/sessions/{session_id}/workspace")
         self.assertEqual("classic-rose-dozen", workspace["facets"]["selection"]["product_id"])
-        self.assertEqual({"size": "large", "card_message": "Happy birthday"},
+        self.assertEqual({"size": "large", "card_message": "Happy birthday",
+                          "flower_type": "roses", "colour": "red", "ribbon": "satin"},
                          workspace["facets"]["selection"]["options"])
 
     def test_recommendations_publish_ready_for_available_ranked_catalog(self):

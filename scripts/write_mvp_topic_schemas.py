@@ -63,6 +63,9 @@ TOPICS: list[tuple[str, str, dict, list[str]]] = [
                 "properties": {
                     "size": {"type": "string", "minLength": 1, "maxLength": 40},
                     "card_message": {"type": "string", "minLength": 1, "maxLength": 280},
+                    "flower_type": {"type": "string", "minLength": 1, "maxLength": 40},
+                    "colour": {"type": "string", "minLength": 1, "maxLength": 40},
+                    "ribbon": {"type": "string", "minLength": 1, "maxLength": 40},
                 },
                 "additionalProperties": False,
             },

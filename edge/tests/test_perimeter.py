@@ -173,12 +173,15 @@ class PerimeterTests(unittest.TestCase):
             json.dumps({"product_id": "", "observed_context_version": 7}).encode())[0])
         self.assertEqual(422, self.call("POST", "/api/v1/selection", headers,
             json.dumps({"product_id": "x", "observed_context_version": -1}).encode())[0])
-        # MVP options only (ADR-006): size + card message accepted; FR-003 controls rejected.
+        # T-04 options (ADR-006 amended): size + card message + thin FR-003 keys.
         self.assertEqual(202, self.call("POST", "/api/v1/selection", headers,
             json.dumps({"product_id": "classic-rose-dozen",
-                        "options": {"size": "large", "card_message": "hi"},
+                        "options": {"size": "large", "card_message": "hi",
+                                    "flower_type": "roses", "colour": "red",
+                                    "ribbon": "satin"},
                         "observed_context_version": 7}).encode())[0])
-        for control in ({"colour": "red"}, {"ribbon": "gold"}, {"flower_type": "rose"}):
+        # Gift-card value and unknown keys remain rejected at the edge.
+        for control in ({"gift_card_value": "50"}, {"composition": "free-form"}):
             self.assertEqual(422, self.call("POST", "/api/v1/selection", headers,
                 json.dumps({"product_id": "classic-rose-dozen", "options": control,
                             "observed_context_version": 7}).encode())[0])
