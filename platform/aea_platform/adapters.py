@@ -277,8 +277,8 @@ class PsycopgOrderStore:
             "payload": payload, "outcome": {},
         }
 
-    def request_checkout(self, *, session_id, order_id, total, message_id, correlation_id,
-                         subject_reference, published_at, context_version) -> bool:
+    def request_checkout(self, *, session_id, order_id, total, payment_reference, message_id,
+                         correlation_id, subject_reference, published_at, context_version) -> bool:
         with self.connection.transaction():
             row = self.connection.execute(
                 "SELECT status FROM orchestration.customer_order WHERE session_id=%s FOR UPDATE",
@@ -288,6 +288,19 @@ class PsycopgOrderStore:
             self.connection.execute(
                 "UPDATE orchestration.customer_order SET status='submitted', "
                 "updated_at=clock_timestamp() WHERE session_id=%s", (session_id,))
+            self.connection.execute(
+                "INSERT INTO orchestration.checkout_intent "
+                "(order_id,session_id,payment_reference,total,correlation_id,"
+                "subject_reference,context_version) "
+                "VALUES (%s,%s,%s,%s,%s,%s,%s) "
+                "ON CONFLICT (order_id) DO UPDATE SET "
+                "payment_reference=EXCLUDED.payment_reference, total=EXCLUDED.total, "
+                "correlation_id=EXCLUDED.correlation_id, "
+                "subject_reference=EXCLUDED.subject_reference, "
+                "context_version=EXCLUDED.context_version, decline_code=NULL, "
+                "updated_at=clock_timestamp()",
+                (order_id, session_id, payment_reference, total, correlation_id,
+                 subject_reference, context_version))
             envelope = self._checkout_envelope(
                 message_id=message_id, topic="order.checkout.requested", source="orchestration",
                 session_id=session_id, order_id=order_id, context_version=context_version,
@@ -299,6 +312,59 @@ class PsycopgOrderStore:
                 "VALUES (%s,%s,%s,'order.checkout.requested',%s,%s::jsonb)",
                 (message_id, session_id, context_version, order_id, json.dumps(envelope)))
             return True
+
+    def load_checkout_intent(self, order_id: str) -> dict | None:
+        row = self.connection.execute(
+            "SELECT order_id::text,session_id::text,payment_reference,total,correlation_id,"
+            "subject_reference,context_version,decline_code "
+            "FROM orchestration.checkout_intent WHERE order_id=%s", (order_id,),
+        ).fetchone()
+        if row is None:
+            return None
+        return {
+            "order_id": row[0], "session_id": row[1], "payment_reference": row[2],
+            "total": float(row[3]), "correlation_id": row[4], "subject_reference": row[5],
+            "context_version": row[6], "decline_code": row[7],
+        }
+
+    def clear_checkout_intent(self, order_id: str) -> None:
+        self.connection.execute(
+            "DELETE FROM orchestration.checkout_intent WHERE order_id=%s", (order_id,))
+
+    def record_authorization_succeeded(self, *, session_id, order_id, message_id,
+                                       correlation_id, subject_reference, published_at,
+                                       context_version) -> None:
+        envelope = self._checkout_envelope(
+            message_id=message_id, topic="payment.authorization.succeeded", source="payment",
+            session_id=session_id, order_id=order_id, context_version=context_version,
+            correlation_id=correlation_id, subject_reference=subject_reference,
+            published_at=published_at,
+            payload={"authorization_id": message_id, "draft_order_id": order_id})
+        self.connection.execute(
+            "INSERT INTO orchestration.outbox_message "
+            "(message_id,session_id,context_version,topic,aggregate_key,envelope) "
+            "VALUES (%s,%s,%s,'payment.authorization.succeeded',%s,%s::jsonb)",
+            (message_id, session_id, context_version, order_id, json.dumps(envelope)))
+
+    def record_authorization_failed(self, *, session_id, order_id, decline_code, message_id,
+                                    correlation_id, subject_reference, published_at,
+                                    context_version) -> None:
+        self.connection.execute(
+            "UPDATE orchestration.checkout_intent SET decline_code=%s, "
+            "updated_at=clock_timestamp() WHERE order_id=%s",
+            (decline_code, order_id))
+        envelope = self._checkout_envelope(
+            message_id=message_id, topic="payment.authorization.failed", source="payment",
+            session_id=session_id, order_id=order_id, context_version=context_version,
+            correlation_id=correlation_id, subject_reference=subject_reference,
+            published_at=published_at,
+            payload={"draft_order_id": order_id,
+                     "recoverable_error": {"code": decline_code}})
+        self.connection.execute(
+            "INSERT INTO orchestration.outbox_message "
+            "(message_id,session_id,context_version,topic,aggregate_key,envelope) "
+            "VALUES (%s,%s,%s,'payment.authorization.failed',%s,%s::jsonb)",
+            (message_id, session_id, context_version, order_id, json.dumps(envelope)))
 
     def confirm(self, *, session_id, order_id, message_id, correlation_id,
                 subject_reference, published_at, context_version) -> bool:

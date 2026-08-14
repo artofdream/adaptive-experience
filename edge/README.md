@@ -113,12 +113,10 @@ Internal Orchestration (#144; contract in
   escalation is Future (FR-006).
 - `POST /api/v1/checkout` performs FR-019 payment and checkout. It accepts only a
   `payment_reference` (an opaque vault token) and the `observed_total`; raw card
-  fields (`card_number`, `cvv`, ...) are rejected at the edge (NFR-013). On
-  success the order is confirmed (202) and the workspace `order` facet shows
-  `confirmed`; a declined payment returns 402 with a decline code (no card data);
-  a stale `observed_total` or an already-confirmed order returns 409. Payment
-  authorization is synchronous for the MVP reference path (async payment service
-  is tracked as #148).
+  fields (`card_number`, `cvv`, ...) are rejected at the edge (NFR-013). Checkout
+  returns `202 accepted` with `pending: true`; authorization runs in the payment
+  consumer (#148). Observe `order.confirmed` (or a decline) via workspace/stream.
+  A stale `observed_total` or an already-confirmed order returns 409.
 - `GET /api/v1/stream` is the reconnectable SSE contract. A cold connection
   receives one `snapshot` event carrying the workspace; a reconnection with
   `Last-Event-ID` (or `?after=`) receives only the `invalidation` deltas it

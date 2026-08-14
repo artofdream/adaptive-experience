@@ -34,8 +34,8 @@ class FakeOrchestration:
 
     def checkout(self, **kwargs):
         if kwargs["payment_reference"].startswith("decline"):
-            return CheckoutResult(False, "payment_declined", "order-9", "submitted", "declined")
-        return CheckoutResult(True, "confirmed", "order-9", "confirmed")
+            return CheckoutResult(True, "accepted", "order-9", "submitted", "declined")
+        return CheckoutResult(True, "accepted", "order-9", "confirmed")
 
     def ask_support(self, **kwargs):
         return SupportResult(True, "answered", "We deliver same day before 2 PM.",
@@ -261,12 +261,19 @@ class PerimeterTests(unittest.TestCase):
         headers = {**json_headers, "x-csrf-token": csrf}
         status, _, body = self.call("POST", "/api/v1/checkout", headers, payload)
         self.assertEqual(202, status)
-        self.assertTrue(json.loads(body)["confirmed"])
-        # Decline maps to 402 with a decline code (no card data).
+        accepted = json.loads(body)
+        self.assertTrue(accepted["accepted"])
+        self.assertTrue(accepted["pending"])
+        self.assertTrue(accepted["confirmed"])
+        # Decline still returns 202 accepted-pending; decline_code is observational.
         declined = self.call("POST", "/api/v1/checkout", headers,
             json.dumps({"payment_reference": "decline-1", "observed_total": 82.0}).encode())
-        self.assertEqual(402, declined[0])
-        self.assertEqual("declined", json.loads(declined[2])["decline_code"])
+        self.assertEqual(202, declined[0])
+        declined_body = json.loads(declined[2])
+        self.assertTrue(declined_body["accepted"])
+        self.assertEqual("declined", declined_body["decline_code"])
+        self.assertEqual("submitted", declined_body["status"])
+        self.assertFalse(declined_body["confirmed"])
         # Raw card fields and a missing total are rejected at the edge.
         self.assertEqual(422, self.call("POST", "/api/v1/checkout", headers,
             json.dumps({"payment_reference": "tok", "observed_total": 82.0,

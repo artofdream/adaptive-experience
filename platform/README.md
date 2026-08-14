@@ -128,15 +128,13 @@ payment evolution (#148) build on these workers.
   `support.faq.answered` event. An unmatched question returns a safe
   no-approved-information answer with empty sources - it never fabricates content;
   human escalation is Future (FR-006).
-- Checkout and payment (#38, FR-019): `POST .../checkout` price-checks the
-  assembled order, authorizes against an opaque `payment_reference` behind the
-  `PaymentAuthority` seam (`ReferencePaymentAuthority` for the MVP path), and, on
-  success, confirms the order - emitting `order.checkout.requested` and
-  `order.confirmed` in versioned transactions and advancing status to `confirmed`.
-  Raw card data never reaches the platform (a card-number-shaped reference is
-  rejected; the guard forbids card fields). A declined payment leaves the order
-  `submitted`. Authorization is synchronous now behind the seam; the async payment
-  service is a tracked future evolution (#148).
+- Checkout and payment (#38 / #148, FR-019): `POST .../checkout` price-checks the
+  assembled order, stores a private checkout intent, and emits
+  `order.checkout.requested` only — returning `202 accepted` / `pending`. The
+  payment consumer (`PaymentCheckoutHandler`) authorizes via `PaymentAuthority`,
+  emits `payment.authorization.succeeded|failed`, and on success confirms the
+  order (`order.confirmed`). Raw card data never reaches the platform. A declined
+  payment leaves the order `submitted` with an observational decline code.
 - Order status and tracking (#34/#42, FR-015/FR-023): `POST .../order/status`
   advances the order forward-only through `created -> submitted -> confirmed ->
   preparing -> dispatched -> delivered -> completed` (migrations 009/010),

@@ -55,11 +55,15 @@ class OrderResult:
 
 @dataclass(frozen=True)
 class CheckoutResult:
-    confirmed: bool
+    accepted: bool
     code: str
     order_id: str | None = None
     status: str | None = None
     decline_code: str | None = None
+
+    @property
+    def confirmed(self) -> bool:
+        return self.status == "confirmed"
 
 
 @dataclass(frozen=True)

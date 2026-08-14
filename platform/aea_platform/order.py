@@ -104,25 +104,24 @@ class OrderService:
 
 
 class CheckoutService:
-    """Synchronous checkout and payment confirmation (FR-019).
+    """Async-ready checkout submission (FR-019 / #148).
 
-    Price-checks the assembled order, authorizes against an opaque
-    `payment_reference` behind the `PaymentAuthority` seam, and confirms the order.
-    Emits `order.checkout.requested` (submission) and, on success,
-    `order.confirmed`. Authorization is synchronous now; moving to an async payment
-    consumer later only relocates the `authorize` call (#148).
+    Price-checks the assembled order, stores a private payment intent, and emits
+    ``order.checkout.requested``. Authorization runs in the payment consumer
+    (``PaymentCheckoutHandler``), not on this request path.
     """
 
-    def __init__(self, store, pricing, payment, *,
+    def __init__(self, store, pricing, *,
                  new_id: Callable[[], uuid.UUID] | None = None, now=None):
         self.store = store
         self.pricing = pricing
-        self.payment = payment
         self.new_id = new_id or uuid.uuid4
         self.now = now or (lambda: datetime.now(timezone.utc))
 
-    def checkout(self, *, session_id: str, payment_reference: str, observed_total,
-                 correlation_id: str, subject_reference: str) -> dict:
+    def submit(self, *, session_id: str, payment_reference: str, observed_total,
+               correlation_id: str, subject_reference: str) -> dict:
+        from .payment import normalize_payment_reference
+        reference = normalize_payment_reference(payment_reference)
         view = self.store.checkout_view(session_id)
         if view is None:
             raise OrderNotFound(session_id)
@@ -136,23 +135,25 @@ class CheckoutService:
                 or round(float(observed_total), 2) != total):
             raise CheckoutTotalMismatch()
         published_at = self.now().astimezone(timezone.utc)
-        # 1. Mark submitted and emit order.checkout.requested.
+        message_id = str(self.new_id())
         if not self.store.request_checkout(
                 session_id=session_id, order_id=view["order_id"], total=total,
-                message_id=str(self.new_id()), correlation_id=correlation_id,
-                subject_reference=subject_reference, published_at=published_at,
-                context_version=view["context_version"]):
+                payment_reference=reference, message_id=message_id,
+                correlation_id=correlation_id, subject_reference=subject_reference,
+                published_at=published_at, context_version=view["context_version"]):
             raise CheckoutStateError("not_submittable")
-        # 2. Authorize against the opaque payment token (sync PaymentAuthority seam).
-        outcome = self.payment.authorize(payment_reference=payment_reference, total=total)
-        if not outcome.authorized:
-            return {"confirmed": False, "order_id": view["order_id"], "status": "submitted",
-                    "decline_code": outcome.decline_code}
-        # 3. Confirm and emit order.confirmed.
-        if not self.store.confirm(
-                session_id=session_id, order_id=view["order_id"],
-                message_id=str(self.new_id()), correlation_id=correlation_id,
-                subject_reference=subject_reference, published_at=published_at,
-                context_version=view["context_version"]):
-            raise CheckoutStateError("not_confirmable")
-        return {"confirmed": True, "order_id": view["order_id"], "status": "confirmed"}
+        return {
+            "accepted": True,
+            "pending": True,
+            "order_id": view["order_id"],
+            "status": "submitted",
+            "message_id": message_id,
+            "context_version": view["context_version"],
+            "total": total,
+            "correlation_id": correlation_id,
+            "subject_reference": subject_reference,
+        }
+
+    # Back-compat alias used by older call sites during the #148 cutover.
+    def checkout(self, **kwargs):
+        return self.submit(**kwargs)
