@@ -10,17 +10,18 @@ Related design element: T-04 — Product Selection and Customization
 
 ## Context
 The canonical functional design defines MVP tile T-04 as product selection,
-basic arrangement and size options, and a card message. It explicitly places
-advanced customization under FR-003 in the Future scope.
+basic arrangement and size options, and a card message. FR-003 originally
+covered advanced customization in Future scope; a later thin promotion brings
+discrete flower-type, colour, and ribbon option keys into MVP without
+authorizing free-form bouquet composition.
 
 Some supporting design artifacts describe or display T-04 controls for Flower
 Type, Colour, Size, Ribbon, and Gift Card. Without a firm implementation
-boundary, those controls can be mistaken for committed MVP behavior, widening
-scope and making requirements, design, implementation, and acceptance tests
-disagree.
+boundary, those controls can be mistaken for free-form composition or
+gift-card products, widening scope and making requirements, design,
+implementation, and acceptance tests disagree.
 
-This ADR resolves that discrepancy without changing the canonical scope of
-FR-003.
+This ADR resolves that discrepancy and records the thin FR-003 amendment.
 
 ## Decision drivers
 - Preserve the canonical MVP and Future requirement scopes.
@@ -59,23 +60,29 @@ treated as incomplete MVP work.
 MVP T-04 supports:
 
 - selection of an eligible product or arrangement;
-- selection of a basic size option when the selected product offers one; and
-- entry of a personal card message.
+- selection of a basic size option when the selected product offers one;
+- entry of a personal card message; and
+- thin FR-003 compositional option keys (`flower_type`, `colour`, `ribbon`) as
+  accepted and persisted selection options (see Amendment — Thin FR-003 options).
 
-Flower type, colour, ribbon, and other advanced composition choices remain
-Future functionality governed by FR-003. They must not be implemented as
-functional MVP controls.
+Free-form bouquet composition, stored-value gift-card products, component-level
+inventory reservation, and compositional price lines remain out of scope.
 
 The wireframe label **Gift Card** is interpreted for MVP purposes as a physical
 message card delivered with the ordered product. The customer supplies its
 personal message through T-04. It does not authorize a stored-value gift-card
 product, balance, purchase, or redemption capability.
 
-Production MVP interfaces omit Future controls. Exploratory design artifacts
-may retain them only when each control is visibly marked **Future** or
-**Non-functional preview** and is non-interactive. Acceptance criteria and
-implementation decisions follow the canonical requirements and this ADR, not
-incidental visual fidelity to a reference artifact.
+Production MVP interfaces may expose interactive controls for the thin FR-003
+keys. Exploratory design artifacts that show free-form composition or gift-card
+products must mark those controls **Future** or **Non-functional preview** and
+keep them non-interactive. Acceptance criteria and implementation decisions
+follow the canonical requirements and this ADR (including the thin-FR-003
+amendment), not incidental visual fidelity to a reference artifact.
+
+> **Historical note:** The 2026-08-11 Decision deferred flower type, colour, and
+> ribbon entirely to Future FR-003. The 2026-08-14 amendment promotes those three
+> keys as a thin MVP slice without authorizing free-form composition.
 
 ## Rationale
 The selected boundary preserves traceability while delivering the smallest
@@ -90,30 +97,35 @@ becoming an accidental source of scope.
 ## Consequences
 
 ### Positive
-- MVP scope remains aligned with the canonical functional design and roadmap.
+- MVP scope remains aligned with the canonical functional design and roadmap,
+  including the thin FR-003 option keys.
 - Catalog, inventory, pricing, and fulfillment contracts need only support
-  product eligibility and basic size variants for the MVP.
-- Acceptance tests can distinguish committed behavior from roadmap previews.
-- T-04 remains extensible when FR-003 is promoted in a future release.
+  product eligibility, basic size variants, and reference vocabularies for the
+  thin option keys — not free-form composition SKUs.
+- Acceptance tests can distinguish thin option keys from free-form composition
+  previews.
+- T-04 remains extensible when free-form composition is promoted later.
 
 ### Negative
-- The production MVP will not reproduce every control in the current wireframe.
+- The production MVP will not reproduce every control in older free-form
+  wireframes (gift-card products, open composition builders).
 - Supporting Figma inventories, wireframes, and their documentation require
-  clarification or revision before they can be used as implementation guides.
-- Customers cannot compose a bouquet by flower type, colour, or ribbon in the
-  MVP.
+  clarification or revision when they still depict Future-only controls.
+- Customers cannot free-form compose a bouquet; thin option keys are discrete
+  selects, not a compositional builder.
 
 ### Risks
-- A Future control may be reintroduced as functional behavior through design or
-  implementation drift.
+- Free-form composition may be reintroduced as functional behavior through
+  design or implementation drift.
 - “Arrangement” may be misread as free-form composition rather than selection
   of an eligible catalog product or predefined arrangement.
 - “Gift Card” may be misread as a stored-value product rather than the physical
   message card delivered with the order.
 
 ## Implementation constraints
-- T-04 must not accept, persist, price, reserve, or publish flower-type, colour,
-  ribbon, or other FR-003 customization selections in the MVP.
+- T-04 may accept and persist thin FR-003 option keys (`flower_type`, `colour`,
+  `ribbon`) per the amendment; it must not accept free-form composition controls,
+  gift-card value fields, or other unknown option keys.
 - Arrangement selection must reference an authoritative eligible catalog item;
   it is not a free-form bouquet composition command.
 - Available sizes must come from authoritative catalog and inventory data and
@@ -121,31 +133,32 @@ becoming an accidental source of scope.
 - The physical message card and its personal message must be represented as
   order content fulfilled with the selected product, not payment data or a
   stored-value gift-card product.
-- Future preview controls, where retained outside the production interface,
-  must be non-interactive and explicitly labelled.
-- Schemas, APIs, persistence models, analytics events, and tests must not imply
-  that Future customization is part of the MVP contract.
+- Free-form composition previews, where retained outside the production
+  interface, must be non-interactive and explicitly labelled Future.
+- Thin FR-003 keys introduce no compositional inventory reservation or
+  compositional price lines in this boundary.
 
 ## Verification
 - T-04 MVP acceptance tests cover product or arrangement selection, eligible
-  size selection, and a personal card message.
+  size selection, a personal card message, and thin FR-003 option keys.
 - Tests confirm that changing size recalculates the authoritative order summary
   when price is affected.
-- Production UI inspection finds no functional flower-type, colour, or ribbon
-  controls.
-- Contract and persistence reviews find no MVP fields that authorize FR-003
-  customization.
-- Any retained Future control is visibly labelled and cannot receive input.
+- Production UI inspection finds interactive flower-type, colour, and ribbon
+  selects for the thin slice, and finds no free-form composition builder or
+  gift-card product controls.
+- Contract and persistence reviews authorize only the explicit option keys
+  (size, card_message, flower_type, colour, ribbon).
+- Any retained free-form Future control is visibly labelled and cannot receive
+  input.
 - Requirements traceability reports FR-003 as MVP for the thin option keys;
   free-form composition remains Future.
 
 ## Revisit conditions
-Revisit this decision when FR-003 is formally promoted into a dated delivery
-scope, or when validated customer and operational evidence justifies a
-different customization model. Promotion requires coordinated updates to the
-canonical requirements, catalog and inventory models, pricing and fulfillment
-rules, design artifacts, contracts, and acceptance tests before controls become
-functional.
+Revisit this decision when free-form bouquet composition (beyond the thin option
+keys) is promoted into a dated delivery scope, or when validated customer and
+operational evidence justifies compositional inventory/pricing. Further
+promotion requires coordinated updates to catalog and inventory models, pricing
+and fulfillment rules, design artifacts, contracts, and acceptance tests.
 
 ## Amendment — Thin FR-003 options (2026-08-14)
 
