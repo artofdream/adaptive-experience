@@ -10,7 +10,8 @@ but are not yet promoted into `docs/`.
 | [`claude-obsidian-loop.md`](claude-obsidian-loop.md) | Claude ↔ Obsidian knowledge loop SOP |
 | [`coherence-findings-loop.md`](coherence-findings-loop.md) | Ordered, one-finding-per-iteration remediation queue |
 | [`inbox/`](inbox/) | Fleeting Obsidian captures awaiting triage |
-| [`adr-candidates/`](adr-candidates/) | Draft tech ADRs quarantined from misnumbered `docs/06-adr/` stubs (CF-014) |
+| [`adr-candidates/`](adr-candidates/) | ADR promotion Drafts and historical CF-014 stubs (not design notes) |
+| [`design-notes/`](design-notes/) | Issue-endorsed implementation contracts (not ADRs) |
 | [`templates/`](templates/) | Inbox, promotion, finding, and assessment templates |
 | `assessments/` | Dated coherence assessments after their first intake pass |
 | `findings/` | Per-CF reproduction notes |

@@ -74,7 +74,7 @@ Orchestration (M2 Conversation and Shared Understanding):
 
 Reactive workspace substrate, wired end-to-end through `HttpOrchestration` to
 Internal Orchestration (#144; contract in
-`research/adr-candidates/edge-workspace-projection-contract.md`):
+`research/design-notes/edge-workspace-projection-contract.md`):
 
 - `GET /api/v1/workspace` returns one least-data aggregate projection at the
   current context version. Tiles are namespaced facets: `conversation`,
