@@ -30,6 +30,27 @@ services:
       timeout: 3s
       retries: 20
 
+  inventory-seeder:
+    build:
+      context: ..
+      dockerfile: platform/Dockerfile.orchestration
+    environment:
+      AEA_POSTGRES_DSN: postgresql://aea_migration:local-migration-only@postgres:5432/adaptive_experience
+      AEA_ENVIRONMENT: local
+      AEA_SEED_INVENTORY: "1"
+      AEA_SEED_INVENTORY_INTERVAL_SECONDS: "30"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      orchestration:
+        condition: service_healthy
+    command: ["python", "platform/scripts/seed_local_inventory.py", "--loop"]
+    healthcheck:
+      test: ["CMD", "python", "platform/scripts/seed_local_inventory.py", "--check"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
   bff:
     build:
       context: .
@@ -56,6 +77,8 @@ services:
       context: gateway
     depends_on:
       bff:
+        condition: service_healthy
+      inventory-seeder:
         condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "wget -q --no-check-certificate -O- https://127.0.0.1:8443/healthz >/dev/null"]

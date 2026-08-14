@@ -785,6 +785,28 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
             "SELECT context_version FROM orchestration.experience_session "
             "WHERE session_id=%s", (session_id,)).fetchone()[0])
 
+    def test_local_inventory_seeder_writes_fresh_reference_catalog(self):
+        from aea_platform.adapters import PsycopgInventoryAvailabilityStore
+        from aea_platform.inventory import InventoryAvailabilityService
+        from aea_platform.local_inventory_seed import (
+            next_source_version, reference_product_ids, seed_once, snapshots_are_fresh,
+        )
+
+        now = datetime.now(timezone.utc)
+        service = InventoryAvailabilityService(
+            PsycopgInventoryAvailabilityStore(self.connection), now=lambda: now)
+        self.assertEqual(1, next_source_version(self.connection))
+        results = seed_once(service, self.connection, observed_at=now)
+        self.assertEqual(set(reference_product_ids()), set(results))
+        self.assertTrue(all(status == "applied" for status in results.values()))
+        self.assertTrue(snapshots_are_fresh(self.connection))
+        availability = service.availability(product_ids=list(reference_product_ids()))
+        for product_id in reference_product_ids():
+            self.assertEqual("available", availability[product_id]["status"])
+        second = seed_once(service, self.connection)
+        self.assertTrue(all(status == "applied" for status in second.values()))
+        self.assertEqual(3, next_source_version(self.connection))
+
     def test_selection_options_contract_and_fr020_preservation(self):
         import asyncio
         from aea_platform.adapters import (PsycopgExperienceStateStore,

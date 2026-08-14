@@ -19,6 +19,31 @@ ephemeral and self-signed. The local bearer token is a non-production fixture
 declared in Compose; production authentication material must come from the
 deployment environment.
 
+## Local inventory seeder
+
+Postgres starts empty. `InventoryAvailabilityService` treats missing snapshots
+and snapshots older than one minute as unknown, and `POST /api/v1/selection`
+fails closed with 409 `product_unavailable` (FR-011 / NFR-009). Without a local
+feed, T-03 cards show `availability_status: unknown` and Select stays disabled.
+
+Edge compose therefore starts an `inventory-seeder` sidecar when
+`AEA_SEED_INVENTORY=1` (the compose default). It writes monotonic, versioned
+snapshots for the reference catalog product IDs (`classic-rose-dozen`,
+`lilac-bouquet`, `budget-mixed-bunch`, `pink-flower-vase`, `premium-orchid`)
+with `available_quantity > 0`, then refreshes `observed_at` about every 30
+seconds. Production must omit this sidecar; it does not replace inventory
+authority.
+
+To confirm Select on a running stack: send a Discovery message such as
+"birthday roses", open T-03, and choose an Available card — or rely on
+`python edge/scripts/diagnose.py`, which now posts `POST /api/v1/selection`
+against a seeded product.
+
+Open sources such as [Our World in Data](https://ourworldindata.org/) are **not**
+a florist SKU catalog. They may later inform optional supply-signal research;
+they must not be used as a drop-in seed. See
+`research/design-notes/local-inventory-seed.md`.
+
 The root URL serves the florist Adaptive Workspace from Figma Discovery v0.1
 (`adaptive-workspace-mvp`): permanent Discovery (T-01 conversation + T-02 Shared
 Understanding), a seven-stage journey navigator (ADR-002 /
