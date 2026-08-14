@@ -19,10 +19,12 @@ Accepted ADRs (see `docs/06-adr/`):
 | ADR-013 | Confirmation-driven experience |
 | ADR-014 | PostgreSQL pgvector for semantic retrieval |
 | ADR-015 | RAG and hybrid retrieval |
+| ADR-016 | Agentic AI boundary |
 
-ADR-011 through ADR-015 are Accepted (014–015 land via dedicated MRs). PostgreSQL
-is the experience-state datastore; Kafka is the MVP broker; `pgvector` is the
-semantic retrieval store; hybrid RAG requires post-retrieval domain validation.
+ADR-011 through ADR-016 are Accepted when their promotion MRs have merged.
+PostgreSQL is the experience-state datastore; Kafka is the MVP broker;
+`pgvector` is the semantic retrieval store; hybrid RAG requires post-retrieval
+validation; the agent prepares plans while domain services mutate state.
 ADR-013 extends Thought Before Form into transaction execution.
 
 ## Canonical docs

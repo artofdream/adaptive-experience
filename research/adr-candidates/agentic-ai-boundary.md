@@ -1,22 +1,7 @@
-# Draft — Agentic AI boundary
+# Promoted — Agentic AI boundary
 
-Status: Draft (research promotion candidate; not an Accepted ADR)
+Status: Promoted to [ADR-016](../../docs/06-adr/ADR-016-agentic-ai-boundary.md)
+(2026-08-14)
 
-Quarantined from a misnumbered `docs/06-adr/` stub (CF-014). Tentative future
-slot: **ADR-014+**.
-
-## Intent
-
-Use the LLM/agent layer to understand intent, retrieve grounded context, reason,
-recommend, invoke approved tools, and prepare execution plans. The agent shall
-not directly mutate authoritative transactional tables.
-
-Business services validate rules, perform transactions, persist state, and
-publish resulting events. Consequential actions require explicit customer
-approval where appropriate.
-
-## Notes
-
-Complements ADR-001 (intent confirmation), ADR-009 (AI non-authoritative for
-experience state), and ADR-013 (confirmation-driven execution). No Accepted ADR
-yet owns this boundary as a first-class decision — keep as a dedicated Draft.
+Complements ADR-001, ADR-009, ADR-013, and ADR-015. Agent prepares; services
+mutate; consequential acts need customer approval.
