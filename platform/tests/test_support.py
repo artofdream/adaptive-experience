@@ -47,6 +47,13 @@ class SupportServiceTests(unittest.TestCase):
         self.assertEqual([], result["approved_source_references"])
         self.assertIn("do not have approved information", result["answer"])
 
+    def test_lookup_is_read_only_and_does_not_persist(self):
+        store = FakeSupportStore()
+        result = SupportService(store, new_id=lambda: "m").lookup("When do you deliver?")
+        self.assertTrue(result["matched"])
+        self.assertIn("policy:delivery", result["approved_source_references"])
+        self.assertIsNone(store.recorded)
+
     def test_records_governed_answer_at_context_version(self):
         store = FakeSupportStore()
         SupportService(store, new_id=lambda: "m").answer(

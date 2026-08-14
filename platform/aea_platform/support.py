@@ -71,19 +71,22 @@ class SupportService:
         self.new_id = new_id or uuid.uuid4
         self.now = now or (lambda: datetime.now(timezone.utc))
 
-    def answer(self, *, session_id: str, question, correlation_id: str,
-               subject_reference: str, context_version: int) -> dict:
+    def lookup(self, question) -> dict:
+        """Read-only approved-knowledge match. Does not persist or publish."""
         text = self._question(question)
         match = self._match(text)
         if match is None and self.retriever is not None:
             match = self._from_retrieval(text)
         if match is None:
-            result = {"answer": NO_APPROVED_ANSWER, "approved_source_references": [],
-                      "matched": False}
-        else:
-            result = {"answer": match.answer,
-                      "approved_source_references": list(match.source_references),
-                      "matched": True}
+            return {"answer": NO_APPROVED_ANSWER, "approved_source_references": [],
+                    "matched": False}
+        return {"answer": match.answer,
+                "approved_source_references": list(match.source_references),
+                "matched": True}
+
+    def answer(self, *, session_id: str, question, correlation_id: str,
+               subject_reference: str, context_version: int) -> dict:
+        result = self.lookup(question)
         self.store.record_answer(
             session_id=session_id, answer=result["answer"],
             approved_source_references=result["approved_source_references"],

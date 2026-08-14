@@ -39,4 +39,4 @@ Unit tests use `InMemoryRetrievalStore` and do not need Docker.
 - Wiring a retriever into `InternalOrchestrationApp` / live FAQ
 - Production embedding models or vendor APIs
 - Recommendation/catalog RAG, FR-008, FR-010
-- Agent tool-calling (ADR-016)
+- Agent tool-calling (ADR-016) — see [`adr-016-agentic-runtime.md`](adr-016-agentic-runtime.md)
