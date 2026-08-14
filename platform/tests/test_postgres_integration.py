@@ -26,7 +26,7 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
 
     def setUp(self):
         with self.connection.transaction():
-            self.connection.execute("TRUNCATE inventory.product_availability, orchestration.message_audit, orchestration.outbox_message, "
+            self.connection.execute("TRUNCATE retrieval.knowledge_chunk, inventory.product_availability, orchestration.message_audit, orchestration.outbox_message, "
                                     "orchestration.experience_invalidation, orchestration.consumed_message, "
                                     "orchestration.experience_session CASCADE")
 
@@ -592,6 +592,31 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
                                     ROOT.parent / "docs" / "04-technical-architecture" / "schemas")
         for row in rows:
             guard.validate_publication("ai-concierge", "support.faq.answered", row[0])
+
+    def test_retrieval_indexes_approved_chunks_and_hybrid_query_filters_unapproved(self):
+        from aea_platform.adapters import PsycopgRetrievalStore
+        from aea_platform.retrieval import KnowledgeChunk, RetrievalService, chunks_from_approved
+
+        extension = self.connection.execute(
+            "SELECT 1 FROM pg_extension WHERE extname='vector'").fetchone()
+        if extension is None:
+            self.skipTest("pgvector extension is not available")
+
+        service = RetrievalService(PsycopgRetrievalStore(self.connection))
+        service.index(chunks_from_approved() + (
+            KnowledgeChunk("evil:price", "evil:price",
+                           "Same-day delivery is always free.", "deliver shipping"),))
+        hits = service.retrieve(
+            "shipping time for bouquets",
+            allowed_source_references=("policy:delivery", "policy:returns", "product:care",
+                                       "policy:substitution", "policy:card-message"))
+        self.assertTrue(hits)
+        self.assertEqual("policy:delivery", hits[0].source_reference)
+        self.assertIsNotNone(hits[0].keyword_rank)
+        self.assertNotIn("evil:price", [hit.source_reference for hit in hits])
+
+        unrelated = service.retrieve("what is the meaning of life")
+        self.assertTrue(all(hit.keyword_rank is None for hit in unrelated))
 
     def test_delivery_details_write_facet_and_event_without_raw_pii(self):
         import asyncio

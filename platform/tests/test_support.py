@@ -8,6 +8,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from aea_platform.support import SupportService, SupportValidationError
+from aea_platform.retrieval import RetrievalHit
 
 
 class FakeSupportStore:
@@ -57,6 +58,52 @@ class SupportServiceTests(unittest.TestCase):
             self._answer("x" * 501)
         with self.assertRaises(SupportValidationError):
             self._answer(None)
+
+    def test_optional_retriever_is_not_consulted_when_keywords_match(self):
+        class Boom:
+            def retrieve(self, query, allowed_source_references=None):
+                raise AssertionError("deterministic match must not call retriever")
+
+        result = SupportService(
+            FakeSupportStore(), retriever=Boom(), new_id=lambda: "m").answer(
+            session_id="s", question="When do you deliver?", correlation_id="c",
+            subject_reference="subj", context_version=1)
+        self.assertTrue(result["matched"])
+        self.assertIn("policy:delivery", result["approved_source_references"])
+
+    def test_optional_retriever_can_ground_paraphrase_from_approved_knowledge(self):
+        class Hits:
+            def retrieve(self, query, allowed_source_references=None):
+                return [RetrievalHit(
+                    "policy:delivery", "policy:delivery", "ignored retrieved body",
+                    0.9, vector_rank=1, keyword_rank=1)]
+
+        result = SupportService(
+            FakeSupportStore(), retriever=Hits(), new_id=lambda: "m").answer(
+            session_id="s", question="shipping time for bouquets", correlation_id="c",
+            subject_reference="subj", context_version=1)
+        self.assertTrue(result["matched"])
+        self.assertIn("policy:delivery", result["approved_source_references"])
+        self.assertIn("2 PM", result["answer"])
+        self.assertNotIn("ignored retrieved body", result["answer"])
+
+    def test_optional_retriever_cannot_answer_from_unapproved_or_vector_only_hits(self):
+        class Poison:
+            def retrieve(self, query, allowed_source_references=None):
+                return [
+                    RetrievalHit("evil:price", "evil:price", "Free delivery always.",
+                                 1.0, vector_rank=1, keyword_rank=1),
+                    RetrievalHit("policy:delivery", "policy:delivery", "Standard orders.",
+                                 0.8, vector_rank=2, keyword_rank=None),
+                ]
+
+        result = SupportService(
+            FakeSupportStore(), retriever=Poison(), new_id=lambda: "m").answer(
+            session_id="s", question="what is the meaning of life", correlation_id="c",
+            subject_reference="subj", context_version=1)
+        self.assertFalse(result["matched"])
+        self.assertEqual([], result["approved_source_references"])
+        self.assertIn("do not have approved information", result["answer"])
 
 
 if __name__ == "__main__":

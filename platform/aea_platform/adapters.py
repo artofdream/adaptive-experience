@@ -522,6 +522,72 @@ class PsycopgSupportStore:
                 (message_id, session_id, context_version, session_id, json.dumps(envelope)))
 
 
+class PsycopgRetrievalStore:
+    """pgvector + FTS hybrid store for retrieval.knowledge_chunk (ADR-014/015)."""
+
+    def __init__(self, connection):
+        self.connection = connection
+
+    def upsert(self, rows: list[dict]) -> None:
+        from .retrieval import vector_literal
+        with self.connection.transaction():
+            for row in rows:
+                self.connection.execute(
+                    "INSERT INTO retrieval.knowledge_chunk "
+                    "(chunk_id,source_reference,body,terms,embedding) "
+                    "VALUES (%s,%s,%s,%s,%s::vector) "
+                    "ON CONFLICT (chunk_id) DO UPDATE SET "
+                    "source_reference=EXCLUDED.source_reference, body=EXCLUDED.body, "
+                    "terms=EXCLUDED.terms, embedding=EXCLUDED.embedding, "
+                    "updated_at=clock_timestamp()",
+                    (row["chunk_id"], row["source_reference"], row["body"], row["terms"],
+                     vector_literal(row["embedding"])))
+
+    def vector_search(self, embedding, *, allowed, limit) -> list[dict]:
+        from .retrieval import vector_literal
+        literal = vector_literal(embedding)
+        if allowed is None:
+            rows = self.connection.execute(
+                "SELECT chunk_id,source_reference,body FROM retrieval.knowledge_chunk "
+                "ORDER BY embedding <=> %s::vector LIMIT %s", (literal, limit)).fetchall()
+        elif not allowed:
+            return []
+        else:
+            rows = self.connection.execute(
+                "SELECT chunk_id,source_reference,body FROM retrieval.knowledge_chunk "
+                "WHERE source_reference = ANY(%s) "
+                "ORDER BY embedding <=> %s::vector LIMIT %s",
+                (list(allowed), literal, limit)).fetchall()
+        return [{"chunk_id": row[0], "source_reference": row[1], "body": row[2],
+                 "vector_rank": index, "keyword_rank": None}
+                for index, row in enumerate(rows, start=1)]
+
+    def keyword_search(self, query: str, *, allowed, limit) -> list[dict]:
+        from .retrieval import fts_or_query
+        tsquery = fts_or_query(query)
+        if not tsquery:
+            return []
+        if allowed is None:
+            rows = self.connection.execute(
+                "SELECT chunk_id,source_reference,body FROM retrieval.knowledge_chunk, "
+                "to_tsquery('english', %s) AS query "
+                "WHERE search_tsv @@ query "
+                "ORDER BY ts_rank(search_tsv, query) DESC LIMIT %s",
+                (tsquery, limit)).fetchall()
+        elif not allowed:
+            return []
+        else:
+            rows = self.connection.execute(
+                "SELECT chunk_id,source_reference,body FROM retrieval.knowledge_chunk, "
+                "to_tsquery('english', %s) AS query "
+                "WHERE source_reference = ANY(%s) AND search_tsv @@ query "
+                "ORDER BY ts_rank(search_tsv, query) DESC LIMIT %s",
+                (tsquery, list(allowed), limit)).fetchall()
+        return [{"chunk_id": row[0], "source_reference": row[1], "body": row[2],
+                 "vector_rank": None, "keyword_rank": index}
+                for index, row in enumerate(rows, start=1)]
+
+
 class PsycopgOutboxStore:
     def __init__(self, connection):
         self.connection = connection
