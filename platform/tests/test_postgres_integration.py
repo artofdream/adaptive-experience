@@ -104,7 +104,11 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         versions = [row[0] for row in self.connection.execute(
             "SELECT version FROM orchestration.schema_migration ORDER BY version"
         ).fetchall()]
-        self.assertEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], versions)
+        expected = [
+            int(path.name[:3])
+            for path in sorted((ROOT / "migrations").glob("[0-9][0-9][0-9]_*.sql"))
+        ]
+        self.assertEqual(expected, versions)
 
     def test_superseded_mutation_function_is_dropped(self):
         signature = "(uuid,bigint,integer,jsonb,jsonb,jsonb)"
