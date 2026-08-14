@@ -193,13 +193,48 @@
                    data-journey-steps="6" hidden>
             <p class="eyebrow">T-07 · Step 6</p>
             <h2 id="checkout-title">Checkout and Confirmation</h2>
+            <p class="hint">Confirm the values already captured in this session. Change only what is missing or different.</p>
             <form id="checkout-form">
-              <div class="payment-card">
-                <p class="destination-label">Payment method</p>
-                <label for="payment-reference">Payment reference</label>
-                <input id="payment-reference" type="text" maxlength="200" required
-                       placeholder="Vault token — not a card number">
+              <div id="checkout-confirm" class="confirm-panel" aria-live="polite">
+                <p class="destination-label">Confirm before paying</p>
+                <dl class="confirm-facts">
+                  <div>
+                    <dt>Deliver to</dt>
+                    <dd id="confirm-destination">Not set yet</dd>
+                  </div>
+                  <div>
+                    <dt>Order total</dt>
+                    <dd id="confirm-total">Not available</dd>
+                  </div>
+                  <div>
+                    <dt>Payment method</dt>
+                    <dd id="confirm-payment">Session vault reference</dd>
+                  </div>
+                </dl>
               </div>
+              <div class="payment-card">
+                <fieldset>
+                  <legend class="destination-label">Payment reference</legend>
+                  <label class="choice">
+                    <input type="radio" name="payment-mode" value="session" checked>
+                    Confirm session payment reference
+                    (<code id="session-payment-ref">session_pay_ref</code>
+                  </label>
+                  <label class="choice">
+                    <input type="radio" name="payment-mode" value="other">
+                    Use a different payment reference
+                  </label>
+                </fieldset>
+                <label for="payment-reference" id="payment-reference-label" hidden>Different payment reference</label>
+                <input id="payment-reference" type="text" maxlength="200" hidden
+                       placeholder="Vault token — not a card number"
+                       autocomplete="off">
+                <p class="hint">Opaque vault token only. Raw card numbers are rejected (NFR-013 / NFR-017).</p>
+              </div>
+              <label class="choice confirm-ack">
+                <input id="checkout-ack" type="checkbox" required>
+                I confirm delivery, total, and payment for this order
+              </label>
               <button class="primary" type="button" id="create-order">Create order</button>
               <button class="primary lock" type="submit">Place Order</button>
             </form>

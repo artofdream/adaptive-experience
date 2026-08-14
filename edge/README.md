@@ -116,7 +116,10 @@ Internal Orchestration (#144; contract in
   fields (`card_number`, `cvv`, ...) are rejected at the edge (NFR-013). Checkout
   returns `202 accepted` with `pending: true`; authorization runs in the payment
   consumer (#148). Observe `order.confirmed` (or a decline) via workspace/stream.
-  A stale `observed_total` or an already-confirmed order returns 409.
+  A stale `observed_total` or an already-confirmed order returns 409. The Adaptive
+  Workspace T-07 UI follows ADR-013: it confirms session delivery, order total,
+  and a session payment reference (`session_pay_ref`) rather than blank re-entry;
+  a different vault token is optional when the customer chooses to change it.
 - `GET /api/v1/stream` is the reconnectable SSE contract. A cold connection
   receives one `snapshot` event carrying the workspace; a reconnection with
   `Last-Event-ID` (or `?after=`) receives only the `invalidation` deltas it
