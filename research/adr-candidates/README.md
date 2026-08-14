@@ -3,11 +3,7 @@
 Quarantined CF-014 stubs and related promotion Drafts. **Do not** put issue
 design notes or Accepted ADR copies here.
 
-Gate ADRs **ADR-006…012** are Accepted on `main`. **ADR-013** (confirmation-
-driven experience) is Accepted on branch
-`docs/adr-013-confirmation-driven-experience` pending merge.
-
-Next free Accepted number after ADR-013 merges: **ADR-014+**.
+Gate ADRs **ADR-006…013** are Accepted on `main`. Next free number: **ADR-014+**.
 
 ## Active Drafts (promote via dedicated ADR MR)
 
