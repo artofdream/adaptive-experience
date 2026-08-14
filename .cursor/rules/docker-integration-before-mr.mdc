@@ -1,0 +1,32 @@
+---
+description: Before push/MR, run local Docker integration tests for impacted components
+alwaysApply: true
+---
+
+# Docker integration before push and MR
+
+Before `git push` and opening or updating a merge request, run the **local
+Docker integration tests for every component the change actually impacts**.
+Do not treat unit tests as a substitute.
+
+## Recipes (do not invent a stack)
+
+Use this repo’s existing Compose files, runners, and `AEA_INTEGRATION=1`
+gates — the same path as CI `platform-foundation-integration` and the edge
+README runner.
+
+| Impact | Local recipe |
+|---|---|
+| Platform DB / migrations / Postgres (including pgvector when that is the Compose or CI image) | `python platform/scripts/run_integration_tests.py` |
+| Kafka / outbox / relay / consumer / backbone | Same platform runner (`AEA_INTEGRATION=1` discovers Kafka/backbone tests) |
+| Edge / BFF / gateway / UI / HTTPS perimeter | `python edge/scripts/run_integration_tests.py` |
+
+Docs-only, Cursor-rule, or research-note changes: no Docker integration.
+
+## Scope and failures
+
+- Scope to impacted components. Do not run the full matrix “just in case”.
+- If Docker is unavailable, **do not push as if integrations passed**. Say
+  they were skipped and wait, or use CI only if the user explicitly accepts
+  that.
+- On failure: fix on the same branch, re-run the impacted suite, then push.

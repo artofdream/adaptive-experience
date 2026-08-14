@@ -27,4 +27,7 @@ Full SOP: `research/claude-obsidian-loop.md`
 
 - Match existing markdown tone; keep diffs focused.
 - Run `python scripts/check_coherence.py` when ID inventories or counts move.
+- Before `git push` and opening or updating an MR, run local Docker
+  integration tests for every impacted component
+  (`.cursor/rules/docker-integration-before-mr.mdc`).
 - Do not commit `.obsidian/` or secrets.
