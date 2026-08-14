@@ -71,7 +71,10 @@ data protection).
   HSTS, nosniff, frame-ancestors none). Production TLS/SASL for the broker is
   applied in #150.
 - **Data protection:** reference-only payment/PII, fail-closed guard, payload-free
-  audit, and least-data projections as above.
+  audit, and least-data projections as above. Preference and delivery encryption
+  posture (minimize stored sensitive fields; TLS in transit; production storage
+  encryption at rest) is recorded in
+  [nfr-007-012-encryption.md](nfr-007-012-encryption.md).
 
 ## Verification evidence
 
@@ -82,6 +85,7 @@ data protection).
 | Guard fail-closed for every topic, publish + consume | NFR-017 | test_guard_is_fail_closed_for_every_governed_topic |
 | Forbidden field families complete | NFR-017 | test_forbidden_field_set_covers_payment_and_pii_families |
 | Reference-only payment / PII | NFR-013/017 | test_checkout, test_delivery, nfr-013-data-protection.md |
+| Preference / delivery encryption posture | NFR-007/012 | nfr-007-012-encryption.md; TLS edge; production disk encryption required |
 | BFF imports no infra; boundary | NFR-017 | test_boundary_contains_no_domain_or_infrastructure_authority |
 
 ## Outcome

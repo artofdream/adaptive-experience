@@ -28,6 +28,13 @@ python -m pip install -r platform/requirements.txt
 No production secret is stored here. Local credentials are intentionally
 non-production values and are isolated to the Compose network.
 
+Local Compose PostgreSQL volumes are **not** encrypted at rest. Production
+deployments must enable storage encryption for preference and delivery data
+satisfying NFR-007 / NFR-012; see
+`docs/04-technical-architecture/nfr-007-012-encryption.md`. Application code
+stores sensitive customer material as opaque references where possible and does
+not implement field-level ciphers.
+
 `render_kafka_acls.py` renders the reviewed least-privilege ACL plan for the
 deployment automation. Local Compose uses an isolated plaintext listener so it
 can test delivery semantics without pretending to reproduce production TLS and

@@ -53,6 +53,12 @@ services own business facts and feed orchestration via governed topics
   refresh and reconnect restore Shared Understanding.
 - Sensitive customer, recipient, and payment material is stored as references or
   tokens where possible (NFR-007, NFR-012, NFR-017).
+- **Encryption posture** for preference and delivery data (NFR-007 / NFR-012) is
+  defined in
+  [nfr-007-012-encryption.md](../04-technical-architecture/nfr-007-012-encryption.md):
+  minimize stored sensitive fields; TLS in transit; production PostgreSQL
+  storage encryption at rest. The MVP does not implement application-level
+  field ciphers.
 - Retention follows session and order lifecycle policy; abandoned sessions expire
   without retaining unnecessary PII.
 

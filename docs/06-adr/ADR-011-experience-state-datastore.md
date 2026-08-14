@@ -146,6 +146,12 @@ selection remain typed and indexed columns.
 - Database roles grant the application and migration processes only the
   privileges they require. Production access uses encrypted transport and
   secrets supplied outside the repository.
+- Production PostgreSQL data volumes (or equivalent provider disk / TDE) **must
+  be encrypted at rest** to satisfy NFR-007 and NFR-012 storage requirements.
+  Local Compose and CI volumes may be unencrypted for developer ergonomics and
+  are not production evidence. See
+  [nfr-007-012-encryption.md](../04-technical-architecture/nfr-007-012-encryption.md).
+  Application-level column encryption is out of MVP scope.
 
 ### Migration, backup, and recovery
 
