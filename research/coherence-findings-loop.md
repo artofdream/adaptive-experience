@@ -121,10 +121,13 @@ queue but does not start remediation in the same iteration.
 - Do not overwrite a dirty worktree. Use an isolated worktree for finding
   branches.
 - Do not merge casually. Default remains: do not merge. **Exception:**
-  `@aea-mr-coordinator` may merge via `glab mr merge` when scope, boundary,
-  and validation path are all satisfied (see
-  `.cursor/skills/aea-mr-coordinator/SKILL.md`). Uncertainty → ask the user.
-  Remediation loop ticks still must not merge unless that skill was invoked.
+  `@aea-mr-coordinator` may merge via `glab mr merge` (immediate **or**
+  GitLab auto-merge / MWPS: `glab mr merge <n> --yes --auto-merge`) when
+  scope, boundary, and validation path are all satisfied (see
+  `.cursor/skills/aea-mr-coordinator/SKILL.md`). Prefer MWPS when the
+  pipeline is still running. Uncertainty → ask the user; do not merge
+  and do not set auto-merge. Remediation loop ticks still must not merge
+  unless that skill was invoked.
 - Stop on authentication, permission, unresolved conflict, failed required CI,
   or evidence that changes the intended scope.
 - Never process two findings in one branch or MR, even when they touch the same

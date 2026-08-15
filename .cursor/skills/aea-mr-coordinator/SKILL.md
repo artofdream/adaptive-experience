@@ -25,11 +25,32 @@ do-not-merge SOP. Remediation loop ticks, hourly `/loop`, and sibling
 stakeholder skills must **not** merge unless `@aea-mr-coordinator` was
 invoked.
 
+## Auto-merge authority
+
+This skill **has authority** to enable and use GitLab auto-merge after
+scope, boundary, and validation gates pass:
+
+- **Project capability:** keep `only_allow_merge_if_pipeline_succeeds`
+  (merge only when the pipeline succeeds). That is a merge check, not
+  blanket auto-merge of every MR.
+- **Per-MR MWPS:** set auto-merge on a **named** MR
+  (`merge_when_pipeline_succeeds`) so GitLab merges that MR when CI is
+  green. Do not set auto-merge on every open MR.
+
+Prefer auto-merge-when-pipeline-succeeds over merging immediately if the
+pipeline is still running. Do not pass `--auto-merge=false` to skip
+waiting on a running pipeline.
+
+`glab` 1.112+ flag is `--auto-merge` (replaces `--when-pipeline-succeeds`).
+`--yes` skips the interactive confirmation prompt only; it does **not**
+skip GitLab merge checks.
+
 ## Hard constraints
 
 - **Default remains: do not merge casually.**
-- Merge **only** via `glab mr merge` when **all** gates below are true.
-- Uncertainty → **ask the user**; do not merge.
+- Merge **only** via `glab mr merge` (immediate **or** auto-merge / MWPS)
+  when **all** gates below are true.
+- Uncertainty → **ask the user**; do not merge and do not set auto-merge.
 - Never force-push `main` / `master`. Not a merge of `main` into itself.
 - Never `terraform apply` or cloud-apply as part of merge.
 - Do not invent BG/US/FR/NFR IDs. Do not commit secrets or
@@ -46,16 +67,18 @@ If neither is true, stop and ask.
 
 1. **Scope:** One finding / one issue / one MR. Title and body state what is in and out. No drive-by refactors. `Closes #N` when applicable.
 2. **Boundary:** Does not invent FR/NFR IDs; no secrets/tfvars; no force-push to main/master; not a merge of main itself; docs-only vs code correctly classified; Docker-integration-before-MR ran for impacted components (or explicitly docs-only).
-3. **Validation path:** MR has a test plan; required GitLab CI is green (or user already accepted CI-only); local integration recorded when the SOP requires it; no failed required jobs.
+3. **Validation path:** MR has a test plan; required GitLab CI is green, **or** still running (then auto-merge / MWPS, not immediate merge), **or** the user already accepted CI-only; local integration recorded when the SOP requires it; no failed required jobs.
 
 Checklist detail: [gates.md](gates.md).
 
-## Must reach out (do not merge) when
+## Must reach out (do not merge, do not set auto-merge) when
 
 - Scope is mixed or unclear
 - Validation is missing, skipped, or “CI only” without user acceptance
 - Conflicts, rebase uncertainty, force-with-lease onto a shared branch you did not author
 - Security/privacy/cloud apply (`terraform apply`)
+- Secrets, `.env`, vault credentials, or `infra/aws/terraform.tfvars`
+- Force-push to `main` / `master`
 - Disagreement between MR description and diff
 - User has not been the one who asked for this merge in-session **unless** they invoked `@aea-mr-coordinator` to process a named MR
 
@@ -73,7 +96,7 @@ MR coordinator:
 - [ ] glab mr view + diff vs description
 - [ ] Scope / boundary / validation ALL true?
 - [ ] No reach-out condition?
-- [ ] Merge with glab mr merge  OR  stop and ask
+- [ ] Merge: prefer glab mr merge --yes --auto-merge  OR  stop and ask
 ```
 
 1. `glab mr view <n>` and `glab mr diff <n>`. Confirm target is `main` (unless
@@ -81,16 +104,19 @@ MR coordinator:
 2. Walk [gates.md](gates.md). Record pass/fail for scope, boundary,
    validation.
 3. `glab ci status` / pipeline on the MR HEAD. Advisory lint
-   (`markdownlint`, `linkcheck`) may fail; **required** jobs must be green.
+   (`markdownlint`, `linkcheck`) may fail; **required** jobs must be green
+   (or still running — then use auto-merge / MWPS, do not merge immediately).
 4. If any gate fails or you are unsure → canvas + ask. **Stop.**
-5. If all gates pass:
+5. If all gates pass, prefer auto-merge while the pipeline is running:
 
 ```bash
-glab mr merge <n>
+glab mr merge <n> --yes --auto-merge
 ```
 
-Do not add `--yes` to skip GitLab’s merge checks. Do not squash unless the
-project setting already requires it. Do not merge if GitLab reports conflicts.
+`--yes` skips the confirmation prompt, not GitLab merge checks. Do not
+squash unless the project setting already requires it. Do not merge if
+GitLab reports conflicts. If the pipeline is already green, the same
+command merges now.
 
 After merge, report the MR URL and merged SHA. Do not start the next finding’s
 branch in the same turn unless the user asked.
