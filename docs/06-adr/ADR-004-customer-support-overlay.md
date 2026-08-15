@@ -40,7 +40,9 @@ remain deferred.
 - Payloads stay least-data (NFR-017): allowlisted reason and opaque
   references; raw contact, address, and payment fields are rejected.
 - A local florist operator console may read those least-data escalations
-  (`/florist`, fail-closed). It is not live chat or FR-016 / FR-017 CRM.
+  (`/florist`, fail-closed). The same session read may include prior ASO
+  answers (FAQ and situational) so staff do not repeat or contradict Lily.
+  It is not live chat or FR-016 / FR-017 CRM.
 - **FR-010** (Future automated responses about order status, delivery, and
   availability) is delivered as a thin situational path on the same ASO
   question form. Session/inventory facts answer first when the question is

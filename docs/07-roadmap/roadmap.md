@@ -47,7 +47,8 @@ The delivery pipeline is structured into 8 implementation milestones (M0–M7) p
   `support.escalation.requested`. Automated FAQ remains ASO / FR-009. Staff
   CRM, live chat, and ticketing remain Future (FR-016 / FR-017). A local
   florist operator console is defined as a fail-closed read surface for T-09
-  requests; it does not implement FR-016 / FR-017.
+  requests and may show prior ASO answers for the same opaque session; it
+  does not implement FR-016 / FR-017.
 - Thin FR-010 situational answers (order status, session delivery, inventory
   availability) are delivered on ASO via `support.situation.answered`. They do
   not replace T-08 tracking or FR-009 policy FAQ.

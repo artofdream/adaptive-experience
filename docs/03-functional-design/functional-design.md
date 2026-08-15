@@ -64,4 +64,5 @@ workspace.
     confirms an allowlisted reason and the system records a governed escalation.
     Staff CRM, live chat, and ticketing remain Future (FR-016 / FR-017).
     A local florist operator console (`/florist`) is a defined read-only
-    possibility for those escalations; it is not FR-016 / FR-017 CRM.
+    possibility for those escalations and may show prior ASO answers for
+    the same opaque session; it is not FR-016 / FR-017 CRM.

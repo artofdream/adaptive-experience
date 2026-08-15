@@ -649,6 +649,44 @@ class PsycopgSupportStore:
             })
         return items
 
+    def list_session_answers(self, *, session_id: str, limit: int = 20) -> list[dict]:
+        """Prior ASO answers for florist follow-up. Least-data; no subject_reference."""
+        capped = min(max(int(limit), 1), 20)
+        rows = self.connection.execute(
+            "SELECT message_id, created_at, topic, envelope "
+            "FROM orchestration.outbox_message "
+            "WHERE session_id = %s AND topic IN "
+            "('support.faq.answered', 'support.situation.answered') "
+            "ORDER BY created_at ASC LIMIT %s",
+            (session_id, capped)).fetchall()
+        items = []
+        for message_id, created_at, topic, envelope in rows:
+            payload = (envelope or {}).get("payload") or {}
+            answered_at = (
+                created_at.isoformat() if hasattr(created_at, "isoformat") else str(created_at))
+            kind = "situation" if topic == "support.situation.answered" else "faq"
+            item = {
+                "message_id": str(message_id),
+                "kind": kind,
+                "answer": payload.get("answer"),
+                "answered_at": answered_at,
+            }
+            if kind == "faq":
+                refs = payload.get("approved_source_references") or []
+                if isinstance(refs, list):
+                    item["approved_source_references"] = [
+                        str(ref) for ref in refs if isinstance(ref, str)][:8]
+            else:
+                if isinstance(payload.get("situation_kind"), str):
+                    item["situation_kind"] = payload["situation_kind"]
+                refs = payload.get("fact_references") or []
+                if isinstance(refs, list):
+                    item["fact_references"] = [
+                        str(ref) for ref in refs if isinstance(ref, str)][:8]
+            if isinstance(item.get("answer"), str) and item["answer"]:
+                items.append(item)
+        return items
+
 
 class PsycopgRetrievalStore:
     """pgvector + FTS hybrid store for retrieval.knowledge_chunk (ADR-014/015)."""
