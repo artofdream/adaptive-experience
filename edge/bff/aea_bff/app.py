@@ -177,7 +177,7 @@ class BffApp:
                     or not isinstance(observed, int) or isinstance(observed, bool) or observed < 0):
                 return await self._error(send, 422, "invalid_correction_shape", correlation_id)
             try:
-                result = self.orchestration.correct_shared_understanding(
+                result = self._correct_shared_understanding(
                     session_id=session.session_id, subject=subject,
                     corrections=correction["corrections"], observed_context_version=observed,
                     correlation_id=correlation_id)
@@ -707,6 +707,31 @@ class BffApp:
             "availability": availability,
             "support_answers": answers,
         }
+
+    def _correct_shared_understanding(self, *, session_id: str, subject: str,
+                                      corrections: dict, observed_context_version: int,
+                                      correlation_id: str):
+        """Retry a T-02 save against the current version if the client raced an update.
+
+        Orchestration still owns compare-and-set (ADR-009). The BFF only reloads
+        the authoritative version and retries once so `stale_context` is not
+        leaked to the customer during “Updating…”.
+        """
+        result = self.orchestration.correct_shared_understanding(
+            session_id=session_id, subject=subject, corrections=corrections,
+            observed_context_version=observed_context_version,
+            correlation_id=correlation_id)
+        if result.accepted or result.code != "stale_context":
+            return result
+        projection = self.orchestration.shared_understanding_projection(
+            session_id=session_id, subject=subject)
+        current = projection.get("context_version")
+        if (not isinstance(current, int) or isinstance(current, bool) or current < 0
+                or current == observed_context_version):
+            return result
+        return self.orchestration.correct_shared_understanding(
+            session_id=session_id, subject=subject, corrections=corrections,
+            observed_context_version=current, correlation_id=correlation_id)
 
     async def _error(self, send, status, code, correlation_id, extra_headers=None):
         await self._json(send, status, {"error": code, "correlation_id": correlation_id},

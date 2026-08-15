@@ -362,6 +362,20 @@ class FoundationTests(unittest.TestCase):
         self.assertEqual(result.structured_intent,
                          messages[0]["envelope"]["payload"]["structured_intent"])
 
+    def test_shared_understanding_correction_rebases_onto_current_context_version(self):
+        store = FakeStateStore({
+            "state_schema_version": 1, "context_version": 7,
+            "state": {"shared_understanding": {"occasion": "birthday", "recipient": "mother"}},
+        })
+        result = SharedUnderstandingService(store).correct(
+            session_id="session", corrections={"recipient": "Mum"},
+            observed_context_version=0, correlation_id="correction",
+            subject_reference="subject",
+        )
+        self.assertEqual(8, result.context_version)
+        self.assertEqual(7, store.applied[0][1])
+        self.assertEqual("Mum", result.structured_intent["recipient"])
+
     def test_shared_understanding_correction_rejects_invalid_or_unchanged_input(self):
         current = {
             "state_schema_version": 1, "context_version": 2,

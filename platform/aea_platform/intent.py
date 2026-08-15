@@ -211,8 +211,15 @@ class IntentCorrectionResult:
     suggestions: tuple[str, ...]
 
 
+def is_stale_context_error(error: BaseException) -> bool:
+    """True when apply_experience_patch missed the compare-and-set (SQLSTATE 40001)."""
+    return getattr(error, "sqlstate", None) == "40001"
+
+
 class SharedUnderstandingService:
     """Review and correct governed inferred intent without replacing sibling state (FR-021)."""
+
+    _STALE_CONTEXT_RETRIES = 3
 
     def __init__(self, state_store, *,
                  now: Callable[[], datetime] | None = None,
@@ -249,40 +256,54 @@ class SharedUnderstandingService:
         if not correction:
             raise IntentValidationError("at least one correction is required")
 
-        current = self.state_store.load(session_id)
-        if current is None:
-            raise IntentSessionNotFound(session_id)
-        state = current.get("state") or {}
-        existing = IntentAnalysisService._facets(state.get("shared_understanding") or {})
-        changed = {key: value for key, value in correction.items()
-                   if existing.get(key) != value}
-        if not changed:
-            raise IntentValidationError("correction does not change shared understanding")
-        merged = {**existing, **changed}
-        suggestions = missing_facet_suggestions(merged)
-        message_id = str(self.new_id())
-        published_at = self.now().astimezone(timezone.utc).isoformat()
-        envelope = {
-            "message_id": message_id, "topic": "experience.intent.updated",
-            "message_type": "event", "schema_version": "1.0.0",
-            "session_id": session_id, "correlation_id": correlation_id.strip(),
-            "source": "orchestration", "context_version": observed_context_version + 1,
-            "publication_time": published_at,
-            "security_context": {"classification": "confidential",
-                                 "subject_reference": subject_reference.strip()},
-            "payload": {"structured_intent": merged}, "outcome": {},
-        }
-        values = {
-            "shared_understanding": changed,
-            "thought_completion": {"suggestions": list(suggestions)},
-        }
-        changed_facets = [f"shared_understanding.{key}" for key in changed]
-        changed_facets.append("thought_completion.suggestions")
-        version = self.state_store.apply_patch(
-            session_id, observed_context_version, int(current["state_schema_version"]),
-            StatePatch.create(values, changed_facets), [{
+        last_error: BaseException | None = None
+        for _ in range(self._STALE_CONTEXT_RETRIES):
+            current = self.state_store.load(session_id)
+            if current is None:
+                raise IntentSessionNotFound(session_id)
+            # Rebase onto the authoritative version (ADR-005 / ADR-009). A T-02
+            # save during an in-flight conversation bump is newer customer intent,
+            # not a stale domain response; CAS still applies at the current version.
+            expected = int(current["context_version"])
+            state = current.get("state") or {}
+            existing = IntentAnalysisService._facets(state.get("shared_understanding") or {})
+            changed = {key: value for key, value in correction.items()
+                       if existing.get(key) != value}
+            if not changed:
+                raise IntentValidationError("correction does not change shared understanding")
+            merged = {**existing, **changed}
+            suggestions = missing_facet_suggestions(merged)
+            message_id = str(self.new_id())
+            published_at = self.now().astimezone(timezone.utc).isoformat()
+            envelope = {
                 "message_id": message_id, "topic": "experience.intent.updated",
-                "aggregate_key": session_id, "envelope": envelope,
-            }],
-        )
-        return IntentCorrectionResult(message_id, version, merged, suggestions)
+                "message_type": "event", "schema_version": "1.0.0",
+                "session_id": session_id, "correlation_id": correlation_id.strip(),
+                "source": "orchestration", "context_version": expected + 1,
+                "publication_time": published_at,
+                "security_context": {"classification": "confidential",
+                                     "subject_reference": subject_reference.strip()},
+                "payload": {"structured_intent": merged}, "outcome": {},
+            }
+            values = {
+                "shared_understanding": changed,
+                "thought_completion": {"suggestions": list(suggestions)},
+            }
+            changed_facets = [f"shared_understanding.{key}" for key in changed]
+            changed_facets.append("thought_completion.suggestions")
+            try:
+                version = self.state_store.apply_patch(
+                    session_id, expected, int(current["state_schema_version"]),
+                    StatePatch.create(values, changed_facets), [{
+                        "message_id": message_id, "topic": "experience.intent.updated",
+                        "aggregate_key": session_id, "envelope": envelope,
+                    }],
+                )
+            except Exception as error:
+                if not is_stale_context_error(error):
+                    raise
+                last_error = error
+                continue
+            return IntentCorrectionResult(message_id, version, merged, suggestions)
+        assert last_error is not None
+        raise last_error

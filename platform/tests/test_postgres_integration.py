@@ -1119,19 +1119,80 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         self.assertEqual(result.structured_intent,
                          outbox[2]["payload"]["structured_intent"])
 
-        with self.assertRaises(self.psycopg.errors.SerializationFailure):
-            service.correct(
-                session_id=str(session_id), corrections={"budget": 90},
-                observed_context_version=0, correlation_id="stale-correction",
-                subject_reference="subject-reference",
-            )
-        self.connection.rollback()
+        service = SharedUnderstandingService(
+            PsycopgExperienceStateStore(self.connection),
+            now=lambda: datetime(2026, 8, 12, tzinfo=timezone.utc),
+            new_id=lambda: uuid.UUID("00000000-0000-0000-0000-000000000041"),
+        )
+        result = service.correct(
+            session_id=str(session_id), corrections={"budget": 90},
+            observed_context_version=0, correlation_id="stale-correction",
+            subject_reference="subject-reference",
+        )
+        self.assertEqual(2, result.context_version)
         restored = PsycopgExperienceStateStore(self.connection).load(str(session_id))
-        self.assertEqual(80, restored["state"]["shared_understanding"]["budget"])
-        self.assertEqual(1, self.connection.execute(
+        self.assertEqual(90, restored["state"]["shared_understanding"]["budget"])
+        self.assertEqual("birthday", restored["state"]["shared_understanding"]["occasion"])
+        self.assertEqual(2, self.connection.execute(
             "SELECT count(*) FROM orchestration.outbox_message WHERE session_id=%s",
             (session_id,),
         ).fetchone()[0])
+
+    def test_shared_understanding_patch_rebases_stale_observed_after_conversation(self):
+        import asyncio
+        from aea_platform.internal_api import InternalOrchestrationApp
+
+        session_id = self.create_session()
+        app = InternalOrchestrationApp(self.connection, "internal-token")
+
+        def drive(method, path, body=b""):
+            return asyncio.run(self._invoke_internal(app, method, path, body))
+
+        status, accepted = drive(
+            "POST", f"/internal/v1/sessions/{session_id}/conversation",
+            json.dumps({"message_text": "Birthday roses for Mum, under $75",
+                        "observed_context_version": 0, "correlation_id": "conv"}).encode())
+        self.assertEqual(202, status)
+        self.assertGreaterEqual(accepted["context_version"], 1)
+
+        status, result = drive(
+            "PATCH", f"/internal/v1/sessions/{session_id}/shared-understanding",
+            json.dumps({"corrections": {"recipient": "Mum"},
+                        "observed_context_version": 0, "correlation_id": "corr"}).encode())
+        self.assertEqual(202, status)
+        self.assertEqual("accepted", result["code"])
+        self.assertGreater(result["context_version"], accepted["context_version"])
+
+        _, shared = drive("GET", f"/internal/v1/sessions/{session_id}/shared-understanding")
+        self.assertEqual("Mum", shared["structured_intent"]["recipient"])
+
+    def test_conversation_accepts_message_when_interpretation_is_stale(self):
+        import asyncio
+        from aea_platform.internal_api import InternalOrchestrationApp
+
+        session_id = self.create_session()
+        app = InternalOrchestrationApp(self.connection, "internal-token")
+
+        class StaleInterpretation:
+            def analyze(self, **_kwargs):
+                error = RuntimeError("stale experience context")
+                error.sqlstate = "40001"
+                raise error
+
+        app.intent = StaleInterpretation()
+
+        def drive(method, path, body=b""):
+            return asyncio.run(self._invoke_internal(app, method, path, body))
+
+        status, result = drive(
+            "POST", f"/internal/v1/sessions/{session_id}/conversation",
+            json.dumps({"message_text": "Birthday roses for Mum",
+                        "observed_context_version": 0, "correlation_id": "conv"}).encode())
+        self.assertEqual(202, status)
+        self.assertEqual("accepted", result["code"])
+        self.assertEqual(1, result["context_version"])
+        _, conversation = drive("GET", f"/internal/v1/sessions/{session_id}/conversation")
+        self.assertEqual("Birthday roses for Mum", conversation["messages"][0]["text"])
 
     def test_conversation_submission_commits_transcript_invalidation_and_outbox(self):
         from aea_platform.adapters import PsycopgExperienceStateStore
