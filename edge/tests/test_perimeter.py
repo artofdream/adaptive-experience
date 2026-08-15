@@ -482,6 +482,47 @@ class PerimeterTests(unittest.TestCase):
         self.assertEqual(2, result["context_version"])
         self.assertEqual(result["correlation_id"], response_headers["x-correlation-id"])
 
+    def test_shared_understanding_correction_retries_stale_context(self):
+        class StaleThenCurrent(FakeOrchestration):
+            def __init__(self):
+                super().__init__()
+                self.correct_versions = []
+                self.current_version = 4
+
+            def shared_understanding_projection(self, **kwargs):
+                data = super().shared_understanding_projection(**kwargs)
+                data["context_version"] = self.current_version
+                return data
+
+            def correct_shared_understanding(self, **kwargs):
+                observed = kwargs["observed_context_version"]
+                self.correct_versions.append(observed)
+                if observed < self.current_version:
+                    return CorrectionResult(False, "stale_context", self.current_version)
+                return super().correct_shared_understanding(**kwargs)
+
+        orchestration = StaleThenCurrent()
+        app = BffApp(orchestration, StaticTokenAuthenticator("good"),
+                     allowed_origin="https://localhost:8443")
+        def call(*args, **kwargs):
+            return asyncio.run(invoke(app, *args, **kwargs))
+        status, headers, body = call("POST", "/api/v1/session", self.auth)
+        self.assertEqual(201, status)
+        cookie = headers["set-cookie"].split(";", 1)[0]
+        csrf = json.loads(body)["csrf_token"]
+        headers = {**self.auth, "cookie": cookie, "x-csrf-token": csrf,
+                   "content-type": "application/json"}
+        status, _, body = call(
+            "PATCH", "/api/v1/shared-understanding", headers,
+            json.dumps({"corrections": {"recipient": "Mum"},
+                        "observed_context_version": 1}).encode())
+        self.assertEqual(202, status)
+        result = json.loads(body)
+        self.assertTrue(result["accepted"])
+        self.assertEqual("accepted", result["code"])
+        self.assertEqual(5, result["context_version"])
+        self.assertEqual([1, 4], orchestration.correct_versions)
+
     def test_florist_operator_reads_fail_closed_unless_enabled(self):
         cookie, _csrf = self.session()
         headers = {**self.auth, "cookie": cookie}

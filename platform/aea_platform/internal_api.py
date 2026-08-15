@@ -9,7 +9,8 @@ from .generative_ai import disclosure_for_mode
 from .conversation import ConversationService, ConversationSessionNotFound, ConversationValidationError
 from .delivery import DeliveryValidationError, normalize_delivery_details
 from .intent import (IntentAnalysisService, IntentSessionNotFound, IntentValidationError,
-                     ReferenceIntentInterpreter, SharedUnderstandingService)
+                     ReferenceIntentInterpreter, SharedUnderstandingService,
+                     is_stale_context_error)
 from .inventory import (InventoryAvailabilityService, InventoryForecastService,
                         InventoryUnavailableError, InventoryValidationError)
 from .order import (ORDER_STATUS_SEQUENCE, CheckoutService, CheckoutStateError,
@@ -145,12 +146,22 @@ class InternalOrchestrationApp:
                     message_text=body.get("message_text"),
                     observed_context_version=body.get("observed_context_version"),
                     correlation_id=body.get("correlation_id"))
-                analysis = self.intent.analyze(
-                    session_id=session_id, message_text=body.get("message_text"),
-                    observed_context_version=result.context_version,
-                    correlation_id=body.get("correlation_id"), subject_reference=subject)
+                try:
+                    analysis = self.intent.analyze(
+                        session_id=session_id, message_text=body.get("message_text"),
+                        observed_context_version=result.context_version,
+                        correlation_id=body.get("correlation_id"), subject_reference=subject)
+                    context_version = analysis.context_version
+                except Exception as error:
+                    if not is_stale_context_error(error):
+                        raise
+                    # ADR-005: the message is already accepted; a newer T-02
+                    # correction wins and the in-flight interpretation is dropped.
+                    loaded = self.store.load(session_id)
+                    context_version = (int(loaded["context_version"])
+                                       if loaded else result.context_version)
                 return await self._send(send, 202, {"code": "accepted",
-                    "context_version": analysis.context_version, "message_id": result.message_id,
+                    "context_version": context_version, "message_id": result.message_id,
                     **self._assistant_fields()})
             if resource == "shared-understanding" and method == "GET":
                 value = self.shared.projection(session_id=session_id)
