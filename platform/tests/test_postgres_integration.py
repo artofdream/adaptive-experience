@@ -462,6 +462,43 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
             "SELECT status FROM orchestration.customer_order WHERE session_id=%s",
             (session_id,)).fetchone()[0])
 
+    def test_checkout_creates_order_from_assembled_decisions(self):
+        import asyncio
+        from aea_platform.adapters import PsycopgExperienceStateStore
+        from aea_platform.internal_api import InternalOrchestrationApp
+        from aea_platform.pricing import REFERENCE_DELIVERY_FEE
+        from aea_platform.state import StatePatch
+
+        app = InternalOrchestrationApp(self.connection, "internal-token")
+        session_id = self.create_session()
+        store = PsycopgExperienceStateStore(self.connection)
+        with self.connection.transaction():
+            store.apply_patch(str(session_id), 0, 1, StatePatch.create(
+                {"decisions": {"product": {"product_id": "classic-rose-dozen"}}},
+                ["decisions.product"]), [])
+        with self.connection.transaction():
+            store.apply_patch(str(session_id), 1, 1, StatePatch.create(
+                {"decisions": {"delivery": {"destination_reference": "addr-1",
+                                            "timing": {"date": "2026-09-01", "window": "morning"}}}},
+                ["decisions.delivery"]), [])
+        total = round(70.0 + REFERENCE_DELIVERY_FEE, 2)
+        status, result = asyncio.run(self._invoke_internal(
+            app, "POST", f"/internal/v1/sessions/{session_id}/checkout",
+            json.dumps({"payment_reference": "tok_1", "observed_total": total,
+                        "correlation_id": "c"}).encode()))
+        self.assertEqual(202, status)
+        self.assertEqual("accepted", result["code"])
+        self.assertEqual("confirmed", result["order_status"])
+        self.assertTrue(result.get("order_id"))
+
+        empty = self.create_session()
+        status, result = asyncio.run(self._invoke_internal(
+            app, "POST", f"/internal/v1/sessions/{empty}/checkout",
+            json.dumps({"payment_reference": "tok_1", "observed_total": total,
+                        "correlation_id": "c"}).encode()))
+        self.assertEqual(422, status)
+        self.assertEqual("order_incomplete", result["code"])
+
     def test_order_status_advances_forward_and_publishes(self):
         import asyncio
         from aea_platform.adapters import PsycopgExperienceStateStore

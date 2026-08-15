@@ -200,10 +200,11 @@ class InternalOrchestrationApp:
                 body = await self._body(receive)
                 return await self._create_order(send, session_id, loaded, body)
             if resource == "checkout" and method == "POST":
-                if self.store.load(session_id) is None:
+                loaded = self.store.load(session_id)
+                if loaded is None:
                     return await self._send(send, 404, {"code": "session_not_found"})
                 body = await self._body(receive)
-                return await self._checkout(send, session_id, subject, body)
+                return await self._checkout(send, session_id, subject, loaded, body)
             if resource == "support" and method == "POST":
                 loaded = self.store.load(session_id)
                 if loaded is None:
@@ -491,10 +492,24 @@ class InternalOrchestrationApp:
             "escalation_reason": result["escalation_reason"],
         })
 
-    async def _checkout(self, send, session_id: str, subject: str, body: dict):
+    def _ensure_precheckout_order(self, session_id: str, loaded: dict) -> None:
+        """Create the FR-013 order from assembled decisions when checkout runs first."""
+        if self.order.projection(session_id=session_id) is not None:
+            return
+        decisions = (loaded.get("state") or {}).get("decisions") or {}
+        self.order.create(
+            session_id=session_id, decisions=decisions,
+            context_version=int(loaded["context_version"]))
+
+    async def _checkout(self, send, session_id: str, subject: str, loaded: dict, body: dict):
         correlation_id = body.get("correlation_id")
         if not isinstance(correlation_id, str) or not correlation_id.strip():
             return await self._send(send, 422, {"code": "validation_failed"})
+        try:
+            self._ensure_precheckout_order(session_id, loaded)
+        except OrderIncompleteError as error:
+            return await self._send(send, 422, {"code": "order_incomplete",
+                                               "missing": error.missing})
         try:
             submitted = self.checkout.submit(
                 session_id=session_id, payment_reference=body.get("payment_reference"),

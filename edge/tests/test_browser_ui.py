@@ -190,6 +190,9 @@ class BrowserUiTests(unittest.TestCase):
         self.assertIn("Confirm session payment reference", self.html)
         self.assertIn("I confirm delivery, total, and payment", self.html)
         self.assertIn("session_pay_ref", self.html)
+        self.assertIn("async function confirmAndPay", self.script)
+        self.assertIn('querySelector("#create-order").addEventListener("click", confirmAndPay)',
+                      self.script)
         self.assertIn(".confirm-panel", self.css)
         self.assertIn("unlockedThrough", self.script)
         self.assertIn("stepReady", self.script)
