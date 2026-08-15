@@ -452,6 +452,15 @@ class PerimeterTests(unittest.TestCase):
         self.assertEqual(200, self.call("GET", "/api/v1/workspace", {**self.auth, "cookie": cookie})[0])
         self.assertEqual(429, self.call("GET", "/api/v1/workspace", {**self.auth, "cookie": cookie})[0])
 
+    def test_workspace_passes_through_fallback_disclosure_without_claiming_ai(self):
+        shaped = BffApp._least_data_workspace({
+            "context_version": 1, "facets": {},
+            "ai_generated": False, "assistant_mode": "fallback",
+            "disclosure": "Automated interpretation; review and correct before ordering."})
+        self.assertFalse(shaped["ai_generated"])
+        self.assertEqual("fallback", shaped["assistant_mode"])
+        self.assertNotIn("AI-generated", shaped["disclosure"])
+
     def test_shared_understanding_review_and_correction_are_least_data(self):
         cookie, csrf = self.session()
         status, _, body = self.call("GET", "/api/v1/shared-understanding",

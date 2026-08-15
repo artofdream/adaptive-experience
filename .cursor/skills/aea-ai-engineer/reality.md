@@ -16,10 +16,11 @@ live customer behavior.
 - Fallback / reference still returns facets + suggestions so conversation
   continues (NFR-003).
 - Projections always include `ai_generated`, `assistant_mode`
-  (`primary` / `fallback` / `reference`), and disclosure
-  `"AI-generated interpretation; review and correct before ordering."`
-  even when the regex path ran. Honesty work is making disclosure match
-  mode (NFR-005), not removing disclosure from primary LLM output.
+  (`primary` / `fallback` / `reference`), and a disclosure. Primary mode
+  uses `"AI-generated interpretation; review and correct before ordering."`
+  Fallback and reference use `"Automated interpretation; review and correct
+  before ordering."` and `ai_generated` is false (NFR-005). Do not remove
+  disclosure from primary LLM output.
 
 Health: `GET /internal/v1/ai/health`. Edge SLO:
 `edge/scripts/check_assistant_slo.py`.
@@ -55,7 +56,7 @@ execute; tool results `authoritative=False`.
 |---|---|---|
 | Send fails / csrf_rejected | security/edge (`!165` / `#171`) | unless asked to own session+AI boot |
 | Intent summary never updates | intent interpreter / T-02 projection | |
-| Disclosure says AI while mode is fallback/reference | NFR-005 honesty (this skill + UX copy if wording) | |
+| Disclosure says AI while mode is fallback/reference | NFR-005 honesty (this skill + UX copy if wording) | Payload is mode-honest; static `#disclosure` HTML default is UX-owned |
 | Empty T-03 | inventory seeder / FR-007 ranking / availability fail-closed | do not invent LLM products |
 | Help answers nonsense | keyword FAQ / approved knowledge | do not free-generate policy |
 
@@ -71,7 +72,7 @@ execute; tool results `authoritative=False`.
 
 ## Tests that pin honesty
 
-- `platform/tests/test_generative_ai.py` — fallback + circuit
+- `platform/tests/test_generative_ai.py` — fallback + circuit + disclosure-vs-mode honesty
 - `platform/tests/test_agent.py` — fail-closed tools
 - `platform/tests/test_support.py` — keyword first; retriever optional
 - `platform/tests/test_retrieval.py` — hybrid candidates
