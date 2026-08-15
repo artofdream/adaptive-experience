@@ -144,6 +144,7 @@ branch in the same turn unless the user asked.
 | `aea-support-coordinator` | Batch-route a queue |
 | `aea-ai-engineer` | Implement AI gaps |
 | `aea-devsecops-platform` | Apply Terraform or redesign cloud |
+| `aea-senior-software-engineer` | Design, architect, or implement platform/edge |
 
 You **must** auto-merge an MR those skills produced, if this skill was
 invoked and the gates pass.

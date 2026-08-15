@@ -32,6 +32,7 @@ This skill **does not merge**. Only `@aea-mr-coordinator` may set auto-merge.
 | `@aea-support-coordinator` | Intake, route, follow up until owner + next action |
 | `@aea-ai-engineer` | Honest AI-supported paths; one gap under ADR-016 |
 | `@aea-devsecops-platform` | Platform excellence, security, CI/cloud IaC |
+| `@aea-senior-software-engineer` | Design, architect, develop, and enhance platform/edge against best practices |
 | `@aea-mr-coordinator` | Approve/merge when scope, boundary, and validation pass |
 
 ## Cadence
@@ -95,6 +96,7 @@ still lead with blockers + user-info in prose.
 | Queue, Contact Florist, owner + next action | `@aea-support-coordinator` |
 | Intent/LLM honesty, disclosure, ADR-016 | `@aea-ai-engineer` |
 | CI, secrets hygiene, perimeter, cloud IaC | `@aea-devsecops-platform` |
+| Design, architect, or implement platform/edge | `@aea-senior-software-engineer` |
 | Merge when gates pass | `@aea-mr-coordinator` |
 | Cross-lane conflict / cadence / bench | this skill |
 
