@@ -3,8 +3,9 @@
 GitLab: `artof-group/adaptive-experience-architecture` (`glab`).
 
 Run these before `glab mr merge` (immediate or auto-merge / MWPS).
-**All three groups must pass.** One miss → reach out; do not merge and
-do not set auto-merge.
+**All three groups must pass.** After they pass, **must** run
+`glab mr merge <n> --yes --auto-merge`. One miss → reach out; do not
+merge and do not set auto-merge.
 
 ## 1. Scope
 
@@ -61,8 +62,7 @@ but `edge/` or `platform/` changed.
 - Secrets, `.env`, vault credentials, or `infra/aws/terraform.tfvars`
 - Force-push to `main` / `master`
 - Disagreement between MR description and diff
-- User has not been the one who asked for this merge in-session **unless**
-  they invoked `@aea-mr-coordinator` to process a named MR
+- This skill was not invoked (loop tick / sibling skill)
 
 ## Commands
 
@@ -73,9 +73,10 @@ glab ci status
 glab mr merge <n> --yes --auto-merge
 ```
 
-`--auto-merge` is GitLab MWPS (`merge_when_pipeline_succeeds`). Prefer it
-over merging immediately while the pipeline is running. `--yes` skips the
-interactive prompt only.
+`--auto-merge` is GitLab MWPS (`merge_when_pipeline_succeeds`). After
+gates pass, **must** set it. Prefer MWPS while the pipeline is running.
+`--yes` skips the interactive prompt only. Do not wait for a second
+“please merge this named MR” prompt.
 
-Never: `git push --force` to `main`, `glab mr merge` on an unnamed MR,
+Never: `git push --force` to `main`, merge unless this skill was invoked,
 `--auto-merge=false` to skip a running pipeline, `terraform apply`.

@@ -45,12 +45,11 @@ the intentional design is documented, and clear it from the open findings list.
 
 - Pure **risks** (e.g. advisory lint) unless the user asks to address them.
 - Unrelated refactors, renames, or drive-by doc edits.
-- Casual auto-merging of MRs. Default remains: do not merge.
-  **Exception:** `@aea-mr-coordinator` may merge via `glab mr merge`
-  (immediate **or** GitLab auto-merge / MWPS:
-  `glab mr merge <n> --yes --auto-merge`) when scope, boundary, and
-  validation path are all satisfied (see
-  `.cursor/skills/aea-mr-coordinator/SKILL.md`). Prefer MWPS when the
-  pipeline is still running. Uncertainty → ask the user; do not merge
-  and do not set auto-merge. Remediation loop ticks still must not merge
+- Casual auto-merging of MRs. Loop ticks and sibling skills must not
+  merge. **Exception:** when `@aea-mr-coordinator` is invoked and scope,
+  boundary, and validation path all pass, it **must** set GitLab
+  auto-merge (`glab mr merge <n> --yes --auto-merge`). Prefer MWPS when
+  the pipeline is still running. Do not wait for a second “please merge
+  this named MR” prompt. Uncertainty → ask the user; do not merge and
+  do not set auto-merge. Remediation loop ticks still must not merge
   unless that skill was invoked.
