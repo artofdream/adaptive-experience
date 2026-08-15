@@ -9,3 +9,8 @@ __pycache__/
 .obsidian/
 .trash/
 .space/
+
+# Local secrets (never commit real endpoint/key/model values)
+.env
+.env.*
+!.env.example

@@ -1,0 +1,20 @@
+# Local-only LiteLLM proxy for OpenAICompatibleIntentInterpreter.
+# AEA_AI_MODEL must match a model_name below. Override via compose interpolation.
+model_list:
+  - model_name: claude-sonnet-5
+    litellm_params:
+      model: anthropic/claude-sonnet-5
+      api_key: os.environ/ANTHROPIC_API_KEY
+  - model_name: claude-opus-5
+    litellm_params:
+      model: anthropic/claude-opus-5
+      api_key: os.environ/ANTHROPIC_API_KEY
+  - model_name: claude-haiku-4-5
+    litellm_params:
+      model: anthropic/claude-haiku-4-5
+      api_key: os.environ/ANTHROPIC_API_KEY
+
+litellm_settings:
+  drop_params: true
+  request_timeout: 2
+  num_retries: 0

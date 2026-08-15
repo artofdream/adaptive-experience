@@ -24,6 +24,10 @@ live customer behavior.
 Health: `GET /internal/v1/ai/health`. Edge SLO:
 `edge/scripts/check_assistant_slo.py`.
 
+Local Compose: default `edge/docker-compose.yml` does not set `AEA_AI_*`.
+Opt-in overlay `edge/docker-compose.litellm.yml` points orchestration at
+`http://litellm:4000/v1/chat/completions` (Compose DNS, not localhost).
+
 ## Not AI (live)
 
 | Surface | What it actually is |
