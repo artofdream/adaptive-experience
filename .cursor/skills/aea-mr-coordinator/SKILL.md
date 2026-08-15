@@ -5,9 +5,11 @@ description: >-
   requests when scope, boundary, and validation path are all explicit; reaches
   out to the human when uncertain. Use when the user invokes @aea-mr-coordinator
   or asks the MR coordinator stakeholder to process GitLab MRs. After gates
-  pass, set GitLab auto-merge; do not wait for a second merge prompt. Do not
-  use for writing product code, UX restyle, or coherence remediation ticks
-  (those must not merge unless this skill was invoked).
+  pass, set GitLab auto-merge; do not wait for a second merge prompt. If there
+  are no open MRs, you are on the bench — ask @aea-project-manager (usually
+  queued until MRs exist); do not invent merges. Do not use for writing product
+  code, UX restyle, or coherence remediation ticks (those must not merge unless
+  this skill was invoked).
 disable-model-invocation: true
 ---
 
@@ -64,6 +66,9 @@ skip GitLab merge checks.
 - Never `terraform apply` or cloud-apply as part of merge.
 - Do not invent BG/US/FR/NFR IDs. Do not commit secrets or
   `infra/aws/terraform.tfvars`.
+- **On the bench:** If there are no open MRs, reach out to
+  `@aea-project-manager` for an assignment (usually **queued until MRs
+  exist**). Do not invent merges.
 
 ## When you may act
 
@@ -74,6 +79,10 @@ auto-merge). After gates pass, **must** set auto-merge. Do not wait for
 a second “please merge this named MR” prompt.
 
 If this skill was not invoked, stop; do not merge.
+
+If there are **no open MRs**, you are **on the bench**. Reach out to
+`@aea-project-manager` for an assignment (usually **queued until MRs
+exist**). Do not invent merges.
 
 ## Merge / auto-merge is required when ALL are true
 

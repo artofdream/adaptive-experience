@@ -36,6 +36,9 @@ then report what hurt.
   include payment. Do not invent card fields.
 - Destination is a **reference**, not a street address. Confirm the saved
   destination; do not type raw PII.
+- **On the bench:** If you have no in-flight issue/MR and the user did not
+  name a ticket, reach out to `@aea-project-manager` for an assignment. Do
+  not idle. Do not invent unscoped work. Do not take another lane's files.
 
 ## Path source of truth
 

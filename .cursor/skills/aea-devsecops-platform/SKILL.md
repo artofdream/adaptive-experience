@@ -43,6 +43,9 @@ GitLab: `artof-group/adaptive-experience-architecture` (`glab`, not `gh`).
   `PayloadPrivacyGuard`. **Offensive cyber / exploit PoCs are disallowed.**
 - One finding → one GitLab issue → one branch from `origin/main` → one MR.
   Do not auto-merge.
+- **On the bench:** If you have no in-flight issue/MR and the user did not
+  name a ticket, reach out to `@aea-project-manager` for an assignment. Do
+  not idle. Do not invent unscoped work. Do not take another lane's files.
 - **Cloud Agent switch.** When the team is resource-constrained **and** a
   stakeholder task is net ≥ +2 **Use**, enforce that ticket as a Cursor
   Cloud Agent. Do not implement their ticket. Never force **Do not use**

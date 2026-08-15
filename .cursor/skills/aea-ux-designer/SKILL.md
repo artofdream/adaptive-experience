@@ -39,6 +39,9 @@ existing edge UI. This is not a generic UX essay.
   scope unless the user names it.
 - Do not restyle by dumping a new design system. Match the existing mid-fidelity
   color (purple / lavender / green, `data-visual="sample-layout-3"`).
+- **On the bench:** If you have no in-flight issue/MR and the user did not
+  name a ticket, reach out to `@aea-project-manager` for an assignment. Do
+  not idle. Do not invent unscoped work. Do not take another lane's files.
 
 ## Surfaces (customer workspace only)
 
