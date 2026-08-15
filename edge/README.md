@@ -19,6 +19,42 @@ ephemeral and self-signed. The local bearer token is a non-production fixture
 declared in Compose; production authentication material must come from the
 deployment environment.
 
+## Optional live intent (LiteLLM)
+
+Default Compose leaves `AEA_AI_*` unset, so orchestration uses
+`ReferenceIntentInterpreter` (regex). That is a supported mode.
+
+To opt in to the live OpenAI-compatible path, create `platform/.env` from
+`platform/.env.example` (never commit it), put an Anthropic key from
+[console.anthropic.com/settings/keys](https://console.anthropic.com/settings/keys)
+in `ANTHROPIC_API_KEY`, and start the overlay:
+
+```sh
+docker compose --env-file platform/.env -f edge/docker-compose.yml -f edge/docker-compose.litellm.yml up --build --wait
+```
+
+The overlay starts LiteLLM (`ghcr.io/berriai/litellm:main-latest`, rolling tag
+for current Anthropic ids) and sets all three `AEA_AI_*` on orchestration to
+`http://litellm:4000/v1/chat/completions`, the local `LITELLM_MASTER_KEY`
+fixture, and `AEA_AI_MODEL` (default `claude-sonnet-5`). Anthropic native
+`/v1/messages` will not work with `OpenAICompatibleIntentInterpreter`.
+`localhost:4000` from inside the orchestration container will not reach the
+proxy; Compose DNS is required.
+
+Orchestration listens on 8081 inside the compose network and is not published
+to the host. After the overlay is up:
+
+```sh
+docker compose -f edge/docker-compose.yml -f edge/docker-compose.litellm.yml exec orchestration python -c "import urllib.request; r=urllib.request.Request('http://127.0.0.1:8081/internal/v1/ai/health', headers={'Authorization':'Bearer local-internal-token','x-subject-reference':'health'}); print(urllib.request.urlopen(r).read().decode())"
+```
+
+Expect `{"available": true, "mode": "primary", "circuit": "closed"}` when the
+live interpreter is constructed. `available` is true even on regex fallback
+(NFR-003); `mode` is what tells you the primary path is wired. Host uvicorn
+(not Compose) uses `http://localhost:8081` with `Authorization: Bearer` plus
+`x-subject-reference`, and `AEA_AI_ENDPOINT=http://localhost:4000/v1/chat/completions`
+only if LiteLLM's 4000 is published on the host.
+
 ## Local inventory seeder
 
 Postgres starts empty. `InventoryAvailabilityService` treats missing snapshots

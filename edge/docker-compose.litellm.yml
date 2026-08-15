@@ -1,0 +1,42 @@
+# Opt-in live intent: LiteLLM translates OpenAI chat-completions to Anthropic.
+# Default `docker compose -f edge/docker-compose.yml up` does not load this file,
+# so orchestration stays on ReferenceIntentInterpreter (regex).
+#
+#   docker compose --env-file platform/.env -f edge/docker-compose.yml -f edge/docker-compose.litellm.yml up --build --wait
+#
+# Orchestration must use the Compose service DNS name. Host loopback from inside
+# the orchestration container will not reach this proxy.
+name: adaptive-experience-edge
+
+services:
+  litellm:
+    image: ghcr.io/berriai/litellm:main-latest
+    environment:
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:?ANTHROPIC_API_KEY is required for the LiteLLM overlay}
+      LITELLM_MASTER_KEY: ${LITELLM_MASTER_KEY:-sk-aea-local-dev}
+    command: ["--config", "/app/config.yaml", "--port", "4000"]
+    volumes:
+      - ./litellm.yaml:/app/config.yaml:ro
+    ports:
+      - "4000:4000"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:4000/health/liveliness')",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 24
+      start_period: 20s
+
+  orchestration:
+    environment:
+      AEA_AI_ENDPOINT: http://litellm:4000/v1/chat/completions
+      AEA_AI_API_KEY: ${LITELLM_MASTER_KEY:-sk-aea-local-dev}
+      AEA_AI_MODEL: ${AEA_AI_MODEL:-claude-sonnet-5}
+    depends_on:
+      litellm:
+        condition: service_healthy
