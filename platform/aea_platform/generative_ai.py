@@ -13,6 +13,20 @@ class GenerativeAIUnavailable(RuntimeError):
     pass
 
 
+PRIMARY_DISCLOSURE = "AI-generated interpretation; review and correct before ordering."
+NON_AI_DISCLOSURE = "Automated interpretation; review and correct before ordering."
+
+
+def disclosure_for_mode(mode: str) -> dict:
+    """NFR-005: claim AI generation only when the primary interpreter ran."""
+    generated = mode == "primary"
+    return {
+        "ai_generated": generated,
+        "assistant_mode": mode,
+        "disclosure": PRIMARY_DISCLOSURE if generated else NON_AI_DISCLOSURE,
+    }
+
+
 class OpenAICompatibleIntentInterpreter:
     """Vendor-neutral chat-completions adapter with a strict JSON boundary."""
 

@@ -131,6 +131,8 @@ Orchestration (M2 Conversation and Shared Understanding):
   always include `ai_generated`, the active `assistant_mode`, and a plain-language
   disclosure telling customers to review and correct the interpretation
   (NFR-005). These fields remain present when the availability fallback is used.
+  When `assistant_mode` is `fallback` or `reference`, `ai_generated` is false and
+  the disclosure must not claim AI generation.
 - `GET /healthz` is an unauthenticated liveness check without dependency data.
 
 Reactive workspace substrate, wired end-to-end through `HttpOrchestration` to

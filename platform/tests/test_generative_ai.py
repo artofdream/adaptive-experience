@@ -11,7 +11,10 @@ sys.path.insert(0, str(ROOT))
 from aea_platform.generative_ai import (
     AvailableIntentInterpreter,
     GenerativeAIUnavailable,
+    NON_AI_DISCLOSURE,
     OpenAICompatibleIntentInterpreter,
+    PRIMARY_DISCLOSURE,
+    disclosure_for_mode,
 )
 from aea_platform.intent import ReferenceIntentInterpreter
 
@@ -110,6 +113,24 @@ class GenerativeAITests(unittest.TestCase):
         with self.assertRaises(ValueError):
             OpenAICompatibleIntentInterpreter("https://ai.example", "secret", "model",
                                               timeout_seconds=3)
+
+    def test_disclosure_claims_ai_only_for_primary_mode(self):
+        primary = disclosure_for_mode("primary")
+        self.assertEqual({
+            "ai_generated": True,
+            "assistant_mode": "primary",
+            "disclosure": PRIMARY_DISCLOSURE,
+        }, primary)
+        self.assertIn("AI-generated", primary["disclosure"])
+        for mode in ("fallback", "reference"):
+            payload = disclosure_for_mode(mode)
+            self.assertEqual({
+                "ai_generated": False,
+                "assistant_mode": mode,
+                "disclosure": NON_AI_DISCLOSURE,
+            }, payload)
+            self.assertNotIn("AI-generated", payload["disclosure"])
+            self.assertTrue(payload["disclosure"])
 
 
 if __name__ == "__main__":

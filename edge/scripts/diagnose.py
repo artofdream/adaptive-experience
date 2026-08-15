@@ -4,6 +4,20 @@ import urllib.error
 import urllib.request
 
 
+def disclosure_is_honest(payload):
+    """NFR-005: claim AI generation only when assistant_mode is primary."""
+    mode = payload.get("assistant_mode")
+    disclosure = payload.get("disclosure") or ""
+    generated = payload.get("ai_generated")
+    if not disclosure:
+        return False
+    if mode == "primary":
+        return generated is True and "AI-generated" in disclosure
+    if mode in ("fallback", "reference"):
+        return generated is False and "AI-generated" not in disclosure
+    return False
+
+
 context = ssl._create_unverified_context()
 with urllib.request.urlopen("https://localhost:8443/", context=context, timeout=5) as response:
     page = response.read().decode()
@@ -54,8 +68,7 @@ with urllib.request.urlopen(projection_request, context=context, timeout=5) as r
     if (response.status != 200 or projection.get("context_version") != 0
             or projection.get("structured_intent") != {}
             or projection.get("suggestions") != []
-            or projection.get("ai_generated") is not True
-            or "AI-generated" not in projection.get("disclosure", "")):
+            or not disclosure_is_honest(projection)):
         raise SystemExit("Shared Understanding projection is unexpected")
 print("authenticated Edge-to-Orchestration Shared Understanding path is healthy")
 
@@ -68,15 +81,14 @@ message_request = urllib.request.Request(
 with urllib.request.urlopen(message_request, context=context, timeout=5) as response:
     acceptance = json.load(response)
     if (response.status != 202 or acceptance.get("context_version") != 2
-            or acceptance.get("ai_generated") is not True
-            or "AI-generated" not in acceptance.get("disclosure", "")):
+            or not disclosure_is_honest(acceptance)):
         raise SystemExit("assistant did not analyze the accepted conversation")
 
 with urllib.request.urlopen(projection_request, context=context, timeout=5) as response:
     projection = json.load(response)
     if projection["structured_intent"] != {
         "occasion": "birthday", "flower_preference": "roses"
-    } or not projection["suggestions"] or projection.get("ai_generated") is not True:
+    } or not projection["suggestions"] or not disclosure_is_honest(projection):
         raise SystemExit("assistant intent/fallback projection is unexpected")
 print("24/7 assistant analysis and fallback path is healthy")
 
