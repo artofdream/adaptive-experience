@@ -120,7 +120,11 @@ queue but does not start remediation in the same iteration.
 - An archive/workbook change requires explicit human confirmation.
 - Do not overwrite a dirty worktree. Use an isolated worktree for finding
   branches.
-- Do not merge automatically. A human owns merge approval.
+- Do not merge casually. Default remains: do not merge. **Exception:**
+  `@aea-mr-coordinator` may merge via `glab mr merge` when scope, boundary,
+  and validation path are all satisfied (see
+  `.cursor/skills/aea-mr-coordinator/SKILL.md`). Uncertainty → ask the user.
+  Remediation loop ticks still must not merge unless that skill was invoked.
 - Stop on authentication, permission, unresolved conflict, failed required CI,
   or evidence that changes the intended scope.
 - Never process two findings in one branch or MR, even when they touch the same
@@ -134,9 +138,10 @@ queue but does not start remediation in the same iteration.
 Run one iteration of research/coherence-findings-loop.md. Work only on the
 first queued finding. Reproduce it against updated main, create or update its
 finding note, and—only if confirmed—follow the coherence findings SOP through
-one issue, one isolated branch, one focused fix, and one MR. Do not merge.
-After a human merges it, verify main and mark the row verified. Stop after this
-single finding and report the next queued item.
+one issue, one isolated branch, one focused fix, and one MR. Do not merge
+unless `@aea-mr-coordinator` was invoked and its merge gates pass.
+After merge (coordinator or human), verify main and mark the row verified.
+Stop after this single finding and report the next queued item.
 ```
 
 ## Assessment intake prompt
@@ -170,7 +175,8 @@ Hourly coherence tick for this repo. Follow research/coherence-findings-loop.md,
    against GitLab (open/merged). Do not invent CF IDs.
 3. If any row is queued or regressed: run ONE remediation iteration on the first
    such row (severity then dependency). Reproduce; if confirmed, one issue → one
-   isolated branch → one focused fix → one MR. Do not merge.
+   isolated branch → one focused fix → one MR. Do not merge unless
+   `@aea-mr-coordinator` was invoked and its merge gates pass.
 4. If none queued/regressed: run python scripts/check_coherence.py plus a light
    inconsistency/gap scan. If new findings appear, run assessment INTAKE only
    (dated assessment + queue update). Do not remediate in the same tick.
