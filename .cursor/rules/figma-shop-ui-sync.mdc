@@ -1,0 +1,23 @@
+---
+description: Repo shop UI is source of truth; Figma is the design mirror and journey prototype
+globs: edge/gateway/ui/**,figma/**
+alwaysApply: false
+---
+
+# Figma ↔ shop UI sync
+
+When changing `edge/gateway/ui/` or proposing a **new user journey**, follow
+`.cursor/skills/aea-ux-designer/SKILL.md` (Figma section).
+
+- **Runtime source of truth:** `edge/gateway/ui/` CSS/HTML/JS. Do not invent a
+  second CSS token system. Figma variables must mirror existing `:root` names.
+- **Figma file:** https://www.figma.com/design/4PNLwici0GMwU824BpoZ38
+  (`plugin-figma-figma` only; load `/figma-use` before `use_figma`).
+- **UI change:** update Figma library + composed frames in the **same MR** (or
+  immediately after on the same issue). Refresh `figma/README.md` mappings.
+- **New journey:** mockups of screens/states **and** a clickable Figma
+  prototype (not disconnected frames). Link the proto URL (file + node) in the
+  issue/MR and `figma/README.md`. After the journey ships, sync Figma to match
+  the implemented UI.
+- Do not restyle the live shop in a proposal unless that journey is approved
+  to implement. Do not invent BG/US/FR/NFR IDs.

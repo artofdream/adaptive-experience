@@ -68,6 +68,8 @@ separate overlay (thin FR-006 path).
   ASO vs escalation handlers
 - `edge/tests/test_browser_ui.py` — copy and selector contracts; update when
   those change
+- Figma mirror: `figma/README.md` + file `4PNLwici0GMwU824BpoZ38` (see skill
+  Figma section). New journeys need mockups **and** a clickable prototype.
 
 Do not treat CSRF `X-CSRF-Token` / `POST /api/v1/session` as a UX redesign.
 
