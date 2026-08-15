@@ -32,6 +32,14 @@ const ERROR_COPY = {
   http_502: "The shop is briefly unavailable. Try again in a moment.",
   http_503: "The shop is briefly unavailable. Try again in a moment.",
 };
+// Customer-facing names for T-03 cards (and T-04 arrangement). IDs stay slugs.
+const PRODUCT_NAMES = {
+  "pink-flower-vase": "Pink Flower Vase",
+  "lilac-bouquet": "Lilac Bouquet",
+  "classic-rose-dozen": "Classic Rose Dozen",
+  "budget-mixed-bunch": "Budget Mixed Bunch",
+  "premium-orchid": "Premium Orchid",
+};
 // Mirrored from platform REFERENCE_CATALOG flower tags for thin FR-003 selects.
 const PRODUCT_FLOWERS = {
   "pink-flower-vase": ["roses", "mixed"],
@@ -323,7 +331,13 @@ async function api(path, options = {}) {
 }
 
 function productLabel(productId) {
-  return String(productId || "").replace(/-/g, " ");
+  const id = String(productId || "");
+  if (PRODUCT_NAMES[id]) return PRODUCT_NAMES[id];
+  return id
+    .split("-")
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
 }
 
 function productArt(productId) {
