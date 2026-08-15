@@ -175,6 +175,24 @@ class PerimeterTests(unittest.TestCase):
         self.assertEqual(403, status)
         self.assertEqual("DENY", headers["x-frame-options"])
 
+    def test_session_post_reuses_valid_cookie_and_csrf(self):
+        cookie, csrf = self.session()
+        status, headers, body = self.call("POST", "/api/v1/session", {**self.auth, "cookie": cookie})
+        self.assertEqual(201, status)
+        self.assertEqual(csrf, json.loads(body)["csrf_token"])
+        self.assertEqual(cookie, headers["set-cookie"].split(";", 1)[0])
+        # A second boot (/florist or another tab) must not invalidate the first tab.
+        mutating = {**self.auth, "cookie": cookie, "x-csrf-token": csrf,
+                    "content-type": "application/json"}
+        self.assertEqual(202, self.call(
+            "POST", "/api/v1/conversation/messages", mutating,
+            json.dumps({"message_text": "hi", "observed_context_version": 0}).encode())[0])
+        self.assertEqual(202, self.call(
+            "POST", "/api/v1/delivery", mutating,
+            json.dumps({"delivery": {"destination_reference": "addr-ref",
+                                     "timing": {"date": "2026-09-01", "window": "morning"}},
+                        "observed_context_version": 0}).encode())[0])
+
     def test_command_contract_and_least_data_projection(self):
         cookie, csrf = self.session()
         headers = {**self.auth, "cookie": cookie, "x-csrf-token": csrf, "content-type": "application/json"}

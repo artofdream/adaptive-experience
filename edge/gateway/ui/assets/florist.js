@@ -112,15 +112,25 @@ function headers(extra) {
   };
 }
 
+async function ensureSession() {
+  const session = await api("/api/v1/session", { method: "POST", _retried: true });
+  state.csrf = session.csrf_token;
+  return session;
+}
+
 async function api(path, options = {}) {
+  const method = options.method || "GET";
   const init = {
-    method: options.method || "GET",
+    method,
     headers: headers(options.headers || {}),
     credentials: "same-origin",
   };
+  if (state.csrf && path !== "/api/v1/session"
+      && ["POST", "PUT", "PATCH", "DELETE"].includes(method.toUpperCase())) {
+    init.headers["X-CSRF-Token"] = state.csrf;
+  }
   if (options.body !== undefined) {
     init.headers["Content-Type"] = "application/json";
-    init.headers["X-CSRF-Token"] = state.csrf;
     init.body = JSON.stringify(options.body);
   }
   const response = await fetch(path, init);
@@ -128,6 +138,11 @@ async function api(path, options = {}) {
     ? await response.json() : await response.text();
   if (!response.ok) {
     const code = payload && payload.error || payload && payload.code || `http_${response.status}`;
+    if (!options._retried && path !== "/api/v1/session"
+        && (code === "csrf_rejected" || code === "session_required")) {
+      await ensureSession();
+      return api(path, { ...options, _retried: true });
+    }
     const error = new Error(code);
     error.status = response.status;
     throw error;
@@ -236,8 +251,7 @@ async function boot() {
   renderSession(SAMPLE_SESSIONS[SAMPLE_INBOX[0].session_id], "Sample session (labeled)");
   mode.textContent = "Showing labeled sample data until operator APIs are confirmed.";
   try {
-    const session = await api("/api/v1/session", { method: "POST" });
-    state.csrf = session.csrf_token;
+    await ensureSession();
     const inbox = await api("/api/v1/operator/escalations");
     state.live = true;
     state.items = inbox.items || [];
