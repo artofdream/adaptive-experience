@@ -50,6 +50,15 @@ const PRODUCT_FLOWERS = {
 };
 const COLOURS = ["red", "pink", "white", "yellow", "purple", "mixed"];
 const RIBBONS = ["none", "satin", "organza", "kraft"];
+/** ADR-003 chip copy: API missing-facet questions become thought completions. */
+const THOUGHT_COMPLETION_COPY = {
+  "What is the occasion?": "for a birthday",
+  "What budget should I work within?": "under €75",
+  "Who are the flowers for?": "for Mom",
+  "What style or mood would you prefer?": "romantic style",
+  "Any flower preferences?": "roses",
+  "When should they arrive?": "this weekend",
+};
 
 const help = document.querySelector("#help");
 const helpButton = document.querySelector(".help-button");
@@ -397,13 +406,22 @@ function openCorrection(key, value) {
   document.querySelector("#correct-value").focus();
 }
 
+function thoughtCompletionCopy(text) {
+  return THOUGHT_COMPLETION_COPY[text] || text;
+}
+
 function renderSuggestions(items) {
   const root = document.querySelector("#suggestions");
   if (!root) return;
   const list = (Array.isArray(items) ? items : [])
     .filter((item) => typeof item === "string" && item.trim())
     .slice(0, 3)
-    .map((item) => item.trim());
+    .map((item) => thoughtCompletionCopy(item.trim()));
+  const mom = list.indexOf("for Mom");
+  if (mom > 0) {
+    list.splice(mom, 1);
+    list.unshift("for Mom");
+  }
   root.replaceChildren();
   root.hidden = list.length === 0;
   for (const text of list) {
