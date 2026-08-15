@@ -534,6 +534,17 @@ class PerimeterTests(unittest.TestCase):
         self.assertIn("TLSv1.2 TLSv1.3", gateway)
         self.assertIn("client_max_body_size 64k", gateway)
 
+    def test_gateway_emits_claimed_security_headers(self):
+        root = pathlib.Path(__file__).resolve().parents[1]
+        gateway = (root / "gateway" / "nginx.conf").read_text(encoding="utf-8")
+        self.assertIn("add_header Content-Security-Policy", gateway)
+        self.assertIn("frame-ancestors 'none'", gateway)
+        self.assertIn("default-src 'self'", gateway)
+        self.assertIn("object-src 'none'", gateway)
+        self.assertIn("add_header Strict-Transport-Security", gateway)
+        self.assertIn("X-Content-Type-Options nosniff", gateway)
+        self.assertIn("X-Frame-Options DENY", gateway)
+
 
 if __name__ == "__main__":
     unittest.main()
