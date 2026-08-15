@@ -48,6 +48,26 @@
         </table>
       </section>
 
+      <section id="forecast" class="panel" aria-labelledby="forecast-title">
+        <header>
+          <div>
+            <p class="eyebrow">US-012 · FR-012</p>
+            <h2 id="forecast-title">Inventory forecast</h2>
+            <p class="subtitle">Trends from validated snapshot history. Does not invent demand.</p>
+          </div>
+        </header>
+        <table class="operator-table">
+          <thead>
+            <tr>
+              <th scope="col">Product</th>
+              <th scope="col">Trend</th>
+              <th scope="col">Recommendation</th>
+            </tr>
+          </thead>
+          <tbody id="forecast-rows"></tbody>
+        </table>
+      </section>
+
       <section id="session" class="panel" aria-labelledby="session-title">
         <header>
           <div>
@@ -95,7 +115,7 @@
         <li>Live chat and ticketing</li>
         <li>FR-016 / FR-017 CRM reminders and engagement analytics (#35 / #36)</li>
         <li>Billing CRM, payment fields, raw addresses</li>
-        <li>Inventory seeding, PSP, agentic runtime, customer T-03 Select</li>
+        <li>Production inventory feed, ML demand models, PSP, agentic runtime, customer T-03 Select</li>
       </ul>
     </section>
   </main>

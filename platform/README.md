@@ -155,6 +155,12 @@ payment evolution (#148) build on these workers.
   recent `support.escalation.requested` commands (reason + opaque session
   reference). `GET /internal/v1/operator/sessions/{id}` returns a least-data
   summary (conversation, order status, availability). Not FR-016 / FR-017 CRM.
+- Inventory forecast (#31, FR-012): validated snapshot history is appended to
+  `inventory.availability_observation`. `GET /internal/v1/operator/forecasts`
+  returns deterministic trend recommendations (declining / stable / rising /
+  depleted / insufficient) from that history and publishes
+  `inventory.forecast.ready`. It does not invent demand or replace FR-011
+  real-time availability. FR-012 stays Future.
 - Thin RAG scaffolding (#166, ADR-014/ADR-015): `RetrievalService` indexes the
   same approved FAQ/policy corpus into `retrieval.knowledge_chunk` (`pgvector` +
   FTS) and returns hybrid candidates. Similarity hits are never business truth.

@@ -5,7 +5,7 @@ import os
 import sys
 import unittest
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -26,7 +26,7 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
 
     def setUp(self):
         with self.connection.transaction():
-            self.connection.execute("TRUNCATE retrieval.knowledge_chunk, inventory.product_availability, orchestration.message_audit, orchestration.outbox_message, "
+            self.connection.execute("TRUNCATE retrieval.knowledge_chunk, inventory.availability_observation, inventory.product_availability, orchestration.message_audit, orchestration.outbox_message, "
                                     "orchestration.experience_invalidation, orchestration.consumed_message, "
                                     "orchestration.experience_session CASCADE")
 
@@ -146,6 +146,36 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         ).fetchone()[0]
         self.assertEqual("inventory.availability.validated", event["topic"])
         self.assertEqual(result.availability, event["payload"]["availability"])
+
+    def test_inventory_forecast_uses_validated_snapshot_history(self):
+        import asyncio
+        from aea_platform.adapters import PsycopgInventoryAvailabilityStore
+        from aea_platform.internal_api import InternalOrchestrationApp
+        from aea_platform.inventory import AvailabilitySnapshot, InventoryAvailabilityService
+
+        session_id = self.create_session()
+        now = datetime(2026, 8, 15, 12, 0, tzinfo=timezone.utc)
+        inventory = InventoryAvailabilityService(
+            PsycopgInventoryAvailabilityStore(self.connection), now=lambda: now)
+        inventory.record(AvailabilitySnapshot(
+            "classic-rose-dozen", 10, 1, now - timedelta(days=2)))
+        inventory.record(AvailabilitySnapshot("classic-rose-dozen", 4, 2, now))
+        inventory.record(AvailabilitySnapshot("pink-flower-vase", 5, 1, now))
+        app = InternalOrchestrationApp(self.connection, "internal-token")
+        app.forecast.now = lambda: now
+        status, body = asyncio.run(self._invoke_internal(
+            app, "GET", "/internal/v1/operator/forecasts", b"",
+            f"session_id={session_id}".encode()))
+        self.assertEqual(200, status)
+        items = {item["product_id"]: item for item in body["items"]}
+        self.assertEqual("declining", items["classic-rose-dozen"]["trend"])
+        self.assertIn("Plan a replenishment", items["classic-rose-dozen"]["recommendation"])
+        self.assertEqual("insufficient", items["pink-flower-vase"]["trend"])
+        event = self.connection.execute(
+            "SELECT envelope FROM orchestration.outbox_message WHERE topic=%s",
+            ("inventory.forecast.ready",),
+        ).fetchone()[0]
+        self.assertEqual(["classic-rose-dozen", "pink-flower-vase"], event["payload"]["product_ids"])
 
     def test_workspace_projection_and_stream_expose_facets_and_invalidations(self):
         import asyncio

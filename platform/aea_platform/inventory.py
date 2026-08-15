@@ -103,3 +103,139 @@ class InventoryAvailabilityService:
         if not isinstance(value, str) or not value.strip() or len(value.strip()) > 120:
             raise InventoryValidationError("product ID is invalid")
         return value.strip()
+
+
+FORECAST_TRENDS = frozenset({
+    "declining", "stable", "rising", "depleted", "insufficient",
+})
+
+
+@dataclass(frozen=True)
+class ForecastItem:
+    product_id: str
+    trend: str
+    recommendation: str
+    fact_references: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class ForecastResult:
+    message_id: str | None
+    items: tuple[ForecastItem, ...]
+
+
+class InventoryForecastService:
+    """Deterministic inventory trend recommendations (FR-012).
+
+    Uses only validated snapshot history written by InventoryAvailabilityService.
+    Does not invent demand, seasonality, or stock. FR-012 stays Future.
+    """
+
+    def __init__(self, store, *, max_age: timedelta = timedelta(minutes=1),
+                 now: Callable[[], datetime] | None = None,
+                 new_id: Callable[[], uuid.UUID] | None = None):
+        if max_age <= timedelta(0):
+            raise ValueError("inventory freshness window must be positive")
+        self.store = store
+        self.max_age = max_age
+        self.now = now or (lambda: datetime.now(timezone.utc))
+        self.new_id = new_id or uuid.uuid4
+
+    def recommend(self, *, session_id: str, context_version: int,
+                  correlation_id: str, subject_reference: str,
+                  product_ids: list[str] | None = None) -> ForecastResult:
+        if not isinstance(session_id, str) or not session_id.strip():
+            raise InventoryValidationError("session ID is required")
+        if (not isinstance(context_version, int)
+                or isinstance(context_version, bool)
+                or context_version < 0):
+            raise InventoryValidationError("context version is invalid")
+        if not isinstance(correlation_id, str) or not correlation_id.strip():
+            raise InventoryValidationError("correlation ID is required")
+        if not isinstance(subject_reference, str) or not subject_reference.strip():
+            raise InventoryValidationError("subject reference is required")
+        products = None
+        if product_ids is not None:
+            products = tuple(dict.fromkeys(
+                InventoryAvailabilityService._product_id(item) for item in product_ids))
+            if not products or len(products) > 100:
+                raise InventoryValidationError("between 1 and 100 product IDs are required")
+        published_at = self.now().astimezone(timezone.utc)
+        cutoff = published_at - self.max_age
+        grouped: dict[str, list[dict]] = {}
+        for row in self.store.list_observations(product_ids=products):
+            grouped.setdefault(row["product_id"], []).append(row)
+        items = tuple(
+            self._item(product_id, rows, cutoff)
+            for product_id, rows in sorted(grouped.items())
+        )
+        if not items:
+            return ForecastResult(None, ())
+        message_id = str(self.new_id())
+        self.store.record_forecast(
+            session_id=session_id.strip(),
+            context_version=context_version,
+            message_id=message_id,
+            correlation_id=correlation_id.strip(),
+            subject_reference=subject_reference.strip(),
+            published_at=published_at,
+            items=items,
+        )
+        return ForecastResult(message_id, items)
+
+    def _item(self, product_id: str, rows: list[dict],
+              cutoff: datetime) -> ForecastItem:
+        ordered = sorted(rows, key=lambda row: (row["observed_at"], row["source_version"]))
+        latest = ordered[-1]
+        refs = self._refs(ordered[0], latest)
+        if latest["observed_at"] < cutoff:
+            return ForecastItem(
+                product_id, "insufficient",
+                "Latest validated snapshot is stale; no forecast.", refs)
+        if latest["available_quantity"] == 0:
+            return ForecastItem(
+                product_id, "depleted",
+                "Restock now; validated quantity is 0.", refs)
+        if len(ordered) < 2:
+            return ForecastItem(
+                product_id, "insufficient",
+                "This product has only one validated snapshot; no trend yet.", refs)
+        first = ordered[0]
+        span = (latest["observed_at"] - first["observed_at"]).total_seconds()
+        if span <= 0:
+            return ForecastItem(
+                product_id, "insufficient",
+                "Validated snapshots share the same observation time; no trend yet.",
+                refs)
+        delta = latest["available_quantity"] - first["available_quantity"]
+        if delta == 0:
+            return ForecastItem(
+                product_id, "stable",
+                f"Quantity is stable at {latest['available_quantity']}; "
+                "no replenishment recommended.", refs)
+        if delta > 0:
+            return ForecastItem(
+                product_id, "rising",
+                f"Quantity rose from {first['available_quantity']} to "
+                f"{latest['available_quantity']}; monitor, no replenishment recommended.",
+                refs)
+        daily_burn = (-delta) / (span / 86400)
+        days = latest["available_quantity"] / daily_burn
+        if days >= 365:
+            horizon = "more than a year"
+        else:
+            horizon = f"about {max(1, round(days))} day" + (
+                "s" if max(1, round(days)) != 1 else "")
+        return ForecastItem(
+            product_id, "declining",
+            f"Quantity declined from {first['available_quantity']} to "
+            f"{latest['available_quantity']}; {horizon} to stockout at this rate. "
+            "Plan a replenishment.", refs)
+
+    @staticmethod
+    def _refs(first: dict, latest: dict) -> tuple[str, ...]:
+        refs = [f"inventory:{first['product_id']}:v{first['source_version']}"]
+        latest_ref = f"inventory:{latest['product_id']}:v{latest['source_version']}"
+        if latest_ref != refs[0]:
+            refs.append(latest_ref)
+        return tuple(refs)

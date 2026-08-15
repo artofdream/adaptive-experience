@@ -9,8 +9,8 @@ from .conversation import ConversationService, ConversationSessionNotFound, Conv
 from .delivery import DeliveryValidationError, normalize_delivery_details
 from .intent import (IntentAnalysisService, IntentSessionNotFound, IntentValidationError,
                      ReferenceIntentInterpreter, SharedUnderstandingService)
-from .inventory import (InventoryAvailabilityService, InventoryUnavailableError,
-                        InventoryValidationError)
+from .inventory import (InventoryAvailabilityService, InventoryForecastService,
+                        InventoryUnavailableError, InventoryValidationError)
 from .order import (ORDER_STATUS_SEQUENCE, CheckoutService, CheckoutStateError,
                     CheckoutTotalMismatch, OrderIncompleteError, OrderNotFound, OrderService,
                     OrderStatusError)
@@ -49,7 +49,9 @@ class InternalOrchestrationApp:
         self.shared = SharedUnderstandingService(store)
         self.interpreter = interpreter or ReferenceIntentInterpreter()
         self.intent = IntentAnalysisService(store, self.interpreter)
-        self.inventory = InventoryAvailabilityService(PsycopgInventoryAvailabilityStore(connection))
+        inventory_store = PsycopgInventoryAvailabilityStore(connection)
+        self.inventory = InventoryAvailabilityService(inventory_store)
+        self.forecast = InventoryForecastService(inventory_store)
         self.recommendation = RecommendationService(
             PsycopgRecommendationStore(connection), self.inventory)
         order_store = PsycopgOrderStore(connection)
@@ -74,6 +76,23 @@ class InternalOrchestrationApp:
             return await self._send(send, 200, health)
         if scope["path"] == "/internal/v1/operator/escalations" and scope["method"] == "GET":
             return await self._send(send, 200, {"items": self._operator_escalations()})
+        if scope["path"] == "/internal/v1/operator/forecasts" and scope["method"] == "GET":
+            query = parse_qs(scope.get("query_string", b"").decode())
+            session_id = (query.get("session_id") or [""])[0]
+            try:
+                session_id = str(uuid.UUID(session_id))
+            except ValueError:
+                return await self._send(send, 422, {"code": "invalid_session_reference"})
+            try:
+                loaded = self.store.load(session_id)
+                if loaded is None:
+                    return await self._send(send, 404, {"code": "session_not_found"})
+                return await self._send(send, 200, self._operator_forecasts(
+                    session_id, loaded, subject))
+            except InventoryValidationError:
+                return await self._send(send, 422, {"code": "validation_failed"})
+            except (ConversationSessionNotFound, IntentSessionNotFound):
+                return await self._send(send, 404, {"code": "session_not_found"})
         if (len(parts) == 5 and parts[:4] == ["internal", "v1", "operator", "sessions"]
                 and scope["method"] == "GET"):
             try:
@@ -253,6 +272,24 @@ class InternalOrchestrationApp:
     def _operator_escalations(self, *, limit: int = 50) -> list[dict]:
         """Least-data Contact Florist inbox (FR-006 / T-09). Not a CRM ticket."""
         return self.support.store.list_escalations(limit=limit)
+
+    def _operator_forecasts(self, session_id: str, loaded: dict, subject: str) -> dict:
+        """Manager inventory trends from validated snapshot history (FR-012)."""
+        result = self.forecast.recommend(
+            session_id=session_id,
+            context_version=int(loaded["context_version"]),
+            correlation_id=str(uuid.uuid4()),
+            subject_reference=subject,
+        )
+        return {
+            "items": [{
+                "product_id": item.product_id,
+                "trend": item.trend,
+                "recommendation": item.recommendation,
+                "fact_references": list(item.fact_references),
+            } for item in result.items],
+            "message_id": result.message_id,
+        }
 
     def _operator_summary(self, session_id: str, loaded: dict) -> dict:
         """Read-only florist view of one opaque session. No payment or raw PII."""

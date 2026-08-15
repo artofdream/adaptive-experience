@@ -24,6 +24,7 @@ corresponding MVP topics below.
 | inventory.availability.requested | 1.0.0 | Orchestration | Inventory | product IDs, delivery date |
 | inventory.availability.validated | 1.0.0 | Inventory | Orchestration, Recommendation, Workspace | product IDs, availability |
 | inventory.reservation.confirmed | 1.0.0 | Inventory | Order, Orchestration | reservation ID, product IDs |
+| inventory.forecast.ready | 1.0.0 | Inventory | Orchestration, Workspace | product IDs, trend recommendations |
 | delivery.details.updated | 1.0.0 | Orchestration | Delivery, Order, Workspace | destination reference, timing |
 | delivery.slots.ready | 1.0.0 | Delivery | Orchestration, Workspace | eligible slot IDs |
 | delivery.slot.selected | 1.0.0 | Orchestration | Pricing, Order, Workspace | slot ID |
@@ -55,4 +56,5 @@ corresponding MVP topics below.
 Remaining Future-backlog capabilities (CRM analytics, staff workspace) do not
 yet have governed topics. FR-006 / T-09 thin human escalation uses
 `support.escalation.requested`. FR-010 thin situational answers use
-`support.situation.answered` above.
+`support.situation.answered` above. FR-012 thin inventory forecasts use
+`inventory.forecast.ready` above.

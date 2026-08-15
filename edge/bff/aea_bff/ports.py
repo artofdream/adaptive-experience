@@ -104,6 +104,7 @@ class OrchestrationPort(Protocol):
     def request_escalation(self, *, session_id: str, subject: str, reason: str,
                            correlation_id: str) -> EscalationResult: ...
     def list_operator_escalations(self, *, subject: str) -> dict: ...
+    def list_operator_forecasts(self, *, session_id: str, subject: str) -> dict: ...
     def operator_session_summary(self, *, session_id: str, subject: str) -> dict: ...
     def workspace_projection(self, *, session_id: str, subject: str) -> dict: ...
     def stream_events(self, *, session_id: str, subject: str,
@@ -143,6 +144,9 @@ class UnavailableOrchestration:
         return EscalationResult(False, "orchestration_unavailable")
 
     def list_operator_escalations(self, **kwargs) -> dict:
+        return {"status": 503, "items": []}
+
+    def list_operator_forecasts(self, **kwargs) -> dict:
         return {"status": 503, "items": []}
 
     def operator_session_summary(self, **kwargs) -> dict:

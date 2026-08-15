@@ -47,6 +47,16 @@ class FakeOrchestration:
                                 "A florist has received your request.",
                                 kwargs["reason"])
 
+    def list_operator_forecasts(self, **kwargs):
+        return {"status": 200, "items": [{
+            "product_id": "classic-rose-dozen",
+            "trend": "declining",
+            "recommendation": "Plan a replenishment.",
+            "fact_references": ["inventory:classic-rose-dozen:v1"],
+            "secret": "omit",
+            "email": "private@example.invalid",
+        }]}
+
     def list_operator_escalations(self, **kwargs):
         return {"status": 200, "items": [{
             "message_id": "esc-1",
@@ -440,6 +450,7 @@ class PerimeterTests(unittest.TestCase):
         cookie, _csrf = self.session()
         headers = {**self.auth, "cookie": cookie}
         self.assertEqual(404, self.call("GET", "/api/v1/operator/escalations", headers)[0])
+        self.assertEqual(404, self.call("GET", "/api/v1/operator/forecasts", headers)[0])
         self.assertEqual(404, self.call(
             "GET", "/api/v1/operator/sessions/11111111-1111-4111-8111-111111111111",
             headers)[0])
@@ -467,6 +478,12 @@ class PerimeterTests(unittest.TestCase):
             "requested_at": "2026-08-15T00:00:00+00:00",
         }], inbox["items"])
         self.assertNotIn(b"secret", body)
+        self.assertNotIn(b"email", body)
+        status, _, body = call("GET", "/api/v1/operator/forecasts", auth)
+        self.assertEqual(200, status)
+        forecasts = json.loads(body)
+        self.assertEqual("declining", forecasts["items"][0]["trend"])
+        self.assertNotIn("secret", forecasts["items"][0])
         self.assertNotIn(b"email", body)
         status, _, body = call(
             "GET", "/api/v1/operator/sessions/11111111-1111-4111-8111-111111111111", auth)

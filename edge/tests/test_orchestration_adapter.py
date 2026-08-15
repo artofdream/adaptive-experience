@@ -100,12 +100,17 @@ class HttpOrchestrationTests(unittest.TestCase):
             calls.append((method, url, headers, payload))
             if url.endswith("/operator/escalations"):
                 return 200, '{"items":[{"message_id":"esc-1","session_id":"s1"}]}'
+            if "/operator/forecasts" in url:
+                return 200, '{"items":[{"product_id":"classic-rose-dozen","trend":"stable"}]}'
             return 200, '{"session_id":"s1","context_version":1,"conversation":{"messages":[]}}'
         adapter = HttpOrchestration("http://orchestration:8081", "internal", transport=transport)
         inbox = adapter.list_operator_escalations(subject="staff-1")
+        forecasts = adapter.list_operator_forecasts(session_id="s1", subject="staff-1")
         summary = adapter.operator_session_summary(session_id="s1", subject="staff-1")
         self.assertEqual("esc-1", inbox["items"][0]["message_id"])
+        self.assertEqual("stable", forecasts["items"][0]["trend"])
         self.assertEqual("s1", summary["session_id"])
         self.assertTrue(any(url.endswith("/operator/escalations") for _, url, _, _ in calls))
+        self.assertTrue(any("/operator/forecasts?session_id=s1" in url for _, url, _, _ in calls))
         self.assertTrue(any(url.endswith("/operator/sessions/s1") for _, url, _, _ in calls))
         self.assertTrue(all(headers["x-subject-reference"] == "staff-1" for _, _, headers, _ in calls))

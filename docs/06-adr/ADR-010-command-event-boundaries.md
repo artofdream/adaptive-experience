@@ -46,6 +46,7 @@ infrastructure messaging.
 | Tracking | Read authoritative status projection | `order.status.updated` |
 | Support escalation | Accept Contact Florist request; return acknowledgement | `support.escalation.requested` |
 | Situational support | Answer order status, delivery, or availability from session facts | `support.situation.answered` |
+| Inventory forecast | Analyze validated snapshot history; recommend replenishment | `inventory.forecast.ready` |
 
 ### Acknowledgement and timeouts
 

@@ -80,6 +80,7 @@ without a unique domain topic of its own (FR-020–FR-022 map through
 | FR-009 | Automated FAQ (ASO) | AI Concierge | support.faq.answered |
 | FR-010 | Support Automation | Support Service | support.situation.answered |
 | FR-011 | Inventory | Inventory | inventory.availability.validated |
+| FR-012 | Inventory forecasting | Inventory | inventory.forecast.ready |
 | FR-014 | Delivery | Delivery | delivery.slot.selected |
 | FR-018 | Order Summary | Pricing | order.summary.updated |
 | FR-019 | Checkout and authoritative payment | Orchestration / Payment / Order | order.checkout.requested → payment.authorization.requested → payment.authorization.succeeded / payment.authorization.failed → order.confirmed |

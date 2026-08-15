@@ -18,6 +18,7 @@
     {"name":"inventory.availability.requested","owner":"orchestration","publisher":"orchestration","subscribers":["inventory"],"key":"session_id","schema_version":"1.0.0"},
     {"name":"inventory.availability.validated","owner":"inventory","publisher":"inventory","subscribers":["orchestration","recommendation","workspace"],"key":"session_id","schema_version":"1.0.0"},
     {"name":"inventory.reservation.confirmed","owner":"inventory","publisher":"inventory","subscribers":["order","orchestration"],"key":"session_id","schema_version":"1.0.0"},
+    {"name":"inventory.forecast.ready","owner":"inventory","publisher":"inventory","subscribers":["orchestration","workspace"],"key":"session_id","schema_version":"1.0.0"},
     {"name":"delivery.details.updated","owner":"orchestration","publisher":"orchestration","subscribers":["delivery","order","workspace"],"key":"session_id","schema_version":"1.0.0"},
     {"name":"delivery.slots.ready","owner":"delivery","publisher":"delivery","subscribers":["orchestration","workspace"],"key":"session_id","schema_version":"1.0.0"},
     {"name":"delivery.slot.selected","owner":"orchestration","publisher":"orchestration","subscribers":["pricing","order","workspace"],"key":"session_id","schema_version":"1.0.0"},
