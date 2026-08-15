@@ -383,6 +383,25 @@ function openCorrection(key, value) {
   document.querySelector("#correct-value").focus();
 }
 
+function renderSuggestions(items) {
+  const root = document.querySelector("#suggestions");
+  if (!root) return;
+  const list = (Array.isArray(items) ? items : [])
+    .filter((item) => typeof item === "string" && item.trim())
+    .slice(0, 3)
+    .map((item) => item.trim());
+  root.replaceChildren();
+  root.hidden = list.length === 0;
+  for (const text of list) {
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = "chip";
+    chip.dataset.suggest = text;
+    chip.textContent = text;
+    root.append(chip);
+  }
+}
+
 function renderUnderstanding(intent) {
   const empty = document.querySelector("#understanding-empty");
   const list = document.querySelector("#understanding-list");
@@ -626,8 +645,10 @@ function renderWorkspace(workspace) {
   state.contextVersion = workspace.context_version || 0;
   if (workspace.disclosure) disclosure.textContent = workspace.disclosure;
   const f = workspace.facets || {};
+  const shared = f.shared_understanding || {};
   renderMessages((f.conversation || {}).messages);
-  renderUnderstanding((f.shared_understanding || {}).structured_intent || f.shared_understanding);
+  renderUnderstanding(shared.structured_intent || shared);
+  renderSuggestions(shared.suggestions);
   renderRecommendations((f.recommendations || {}).items || f.recommendations);
   renderSelection(f.selection);
   renderSummary(f.order_summary);
@@ -714,11 +735,11 @@ document.querySelector("#correct-open").addEventListener("click", () => {
   openCorrection(document.querySelector("#correct-facet").value, "");
 });
 
-document.querySelectorAll("[data-suggest]").forEach((chip) => {
-  chip.addEventListener("click", () => {
-    message.value = chip.dataset.suggest;
-    message.focus();
-  });
+document.querySelector("#suggestions").addEventListener("click", (event) => {
+  const chip = event.target.closest("[data-suggest]");
+  if (!chip) return;
+  message.value = chip.dataset.suggest;
+  message.focus();
 });
 
 form.addEventListener("submit", async (event) => {
