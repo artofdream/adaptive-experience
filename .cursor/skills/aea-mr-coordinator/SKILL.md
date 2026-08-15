@@ -138,6 +138,7 @@ branch in the same turn unless the user asked.
 
 | Skill | You do not |
 |---|---|
+| `aea-project-manager` | Cadence status, bench, routing, process coherence |
 | `aea-ux-designer` | Restyle the workspace |
 | `aea-customer-journey` | Walk the shop except as already recorded in the MR test plan |
 | `aea-support-coordinator` | Batch-route a queue |
