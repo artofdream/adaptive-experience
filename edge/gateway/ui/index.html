@@ -10,6 +10,7 @@
 </head>
 <body>
   <a class="skip-link" href="#conversation">Skip to conversation</a>
+  <a class="skip-link" href="#understanding">Skip to shared understanding</a>
   <header class="site-header">
     <a class="brand" href="/" aria-label="Lily's Florist home">Lily's Florist</a>
     <nav class="header-nav" aria-label="Workspace">
@@ -43,7 +44,7 @@
       <p class="welcome-card">
         <span class="welcome-copy">
           <strong>Welcome to Lily's Florist</strong>
-          <span>Let's create something beautiful together</span>
+          <span>Describe the occasion in your own words. You can change every detail later.</span>
         </span>
         <img class="welcome-art" src="/assets/bouquet-hero.svg" alt="">
       </p>
@@ -51,26 +52,33 @@
         <p class="assistant-message">Hello! What occasion are you shopping for today?</p>
       </div>
       <p id="disclosure" class="disclosure">AI-generated interpretation; review and correct before ordering.</p>
-      <form id="message-form" aria-describedby="message-hint">
+      <form id="message-form" aria-describedby="message-hint message-form-error">
         <label for="message">Your message</label>
+        <div class="suggestions" id="suggestions" aria-label="Optional starting points">
+          <button type="button" class="chip" data-suggest="Birthday flowers for Mum, under €75">Birthday</button>
+          <button type="button" class="chip" data-suggest="Wedding arrangement, budget around $1000">Wedding</button>
+          <button type="button" class="chip" data-suggest="Sympathy bouquet, delivered this week">Sympathy</button>
+        </div>
         <div class="composer">
           <textarea id="message" name="message" rows="2" maxlength="2000" required
                     placeholder="For example: Birthday roses for Mum, under €75"></textarea>
           <button class="send" type="submit" aria-label="Send message">Send</button>
         </div>
         <p id="message-hint">Include anything you already know. You can change every detail later.</p>
+        <p id="message-form-error" class="form-error" role="alert" hidden></p>
       </form>
     </section>
 
     <div class="workspace-main">
-      <aside class="panel understanding" aria-labelledby="understanding-title">
+      <aside id="understanding" class="panel understanding" aria-labelledby="understanding-title">
         <p class="eyebrow">T-02 · Persistent</p>
         <h2 id="understanding-title">Intent Summary (Shared Understanding)</h2>
-        <p id="understanding-empty">Your occasion, recipient, budget, style, flower preference, and timing will appear here.</p>
+        <p id="understanding-status" class="intent-status" hidden>Updating from your last message…</p>
+        <p id="understanding-empty">Your occasion, recipient, budget, style, flower preference, and timing will appear here. Review and correct anything that looks wrong.</p>
         <dl id="understanding-list" hidden></dl>
         <p class="reassurance">Nothing is final until you review the order.</p>
-        <button class="secondary" type="button" id="correct-open">Correct</button>
-        <form id="correct-form" hidden>
+        <button class="secondary" type="button" id="correct-open">Review and correct</button>
+        <form id="correct-form" hidden aria-describedby="correct-form-error">
           <label for="correct-facet">Facet</label>
           <select id="correct-facet">
             <option value="occasion">Occasion</option>
@@ -82,6 +90,7 @@
           </select>
           <label for="correct-value">Correction</label>
           <input id="correct-value" type="text" maxlength="200">
+          <p id="correct-form-error" class="form-error" role="alert" hidden></p>
           <button class="primary" type="submit">Save correction</button>
         </form>
       </aside>
@@ -91,6 +100,7 @@
           <p class="workspace-label">Adaptive Workspace</p>
           <p id="step-caption" class="step-caption">Step 1 · Enter / Discovery</p>
         </div>
+        <p id="persist-hint" class="persist-hint">Earlier choices stay visible on this workspace. The current stage is highlighted.</p>
 
         <p id="step-guidance" class="panel step-guidance" data-journey-steps="1,2">
           Describe the occasion in the conversation. Shared Understanding updates as we learn
@@ -122,7 +132,7 @@
             <p class="eyebrow">T-04 · Step 4</p>
             <h2 id="selection-title">Product Selection and Customization</h2>
             <p id="selection-empty">Select a recommendation to customize it.</p>
-            <form id="selection-form" hidden>
+            <form id="selection-form" hidden aria-describedby="selection-form-error">
               <label for="arrangement">Arrangement</label>
               <input id="arrangement" type="text" readonly>
               <label for="size">Size</label>
@@ -151,6 +161,7 @@
               </select>
               <label for="card-message">Card message</label>
               <textarea id="card-message" rows="2" maxlength="280" placeholder="A short message on the physical card"></textarea>
+              <p id="selection-form-error" class="form-error" role="alert" hidden></p>
               <button class="primary" type="submit">Update</button>
             </form>
             <button class="secondary" type="button" data-goto-step="5" data-requires-unlock="5">Continue to delivery</button>
@@ -160,7 +171,8 @@
                    data-journey-steps="5" hidden>
             <p class="eyebrow">T-05 · Step 5</p>
             <h2 id="delivery-title">Delivery and Recipient</h2>
-            <form id="delivery-form">
+            <form id="delivery-form" aria-describedby="delivery-form-error">
+              <p id="delivery-confirmed" class="confirmed-banner" hidden>Delivery details confirmed for this session.</p>
               <label for="delivery-date">Date</label>
               <input id="delivery-date" type="date" required>
               <fieldset>
@@ -171,12 +183,25 @@
               </fieldset>
               <div class="destination-card">
                 <p class="destination-label">Deliver to</p>
-                <label for="destination-reference">Destination reference</label>
-                <input id="destination-reference" type="text" maxlength="120" required
-                       placeholder="Opaque destination reference (not a raw address)">
-                <p class="hint">Recipient details stay reference-only. Raw name, address, and contact are rejected.</p>
+                <p class="hint">Saved destination reference — not a street address. Raw name, address, and contact are rejected.</p>
+                <fieldset>
+                  <legend class="visually-hidden">Destination reference</legend>
+                  <label class="choice">
+                    <input type="radio" name="destination-mode" value="session" checked>
+                    Confirm saved destination (<code id="session-destination-ref">home</code>)
+                  </label>
+                  <label class="choice">
+                    <input type="radio" name="destination-mode" value="other">
+                    Use a different destination reference
+                  </label>
+                </fieldset>
+                <label for="destination-reference" id="destination-reference-label" hidden>Different destination reference</label>
+                <input id="destination-reference" type="text" maxlength="120" hidden
+                       placeholder="Opaque destination reference (not a raw address)"
+                       autocomplete="off">
               </div>
-              <button class="primary" type="submit">Confirm Delivery</button>
+              <p id="delivery-form-error" class="form-error" role="alert" hidden></p>
+              <button class="primary" type="submit">Confirm delivery details</button>
             </form>
           </section>
 
@@ -194,7 +219,7 @@
             <p class="eyebrow">T-07 · Step 6</p>
             <h2 id="checkout-title">Checkout and Confirmation</h2>
             <p class="hint">Confirm the values already captured in this session. Change only what is missing or different.</p>
-            <form id="checkout-form">
+            <form id="checkout-form" aria-describedby="checkout-form-error">
               <div id="checkout-confirm" class="confirm-panel" aria-live="polite">
                 <p class="destination-label">Confirm before paying</p>
                 <dl class="confirm-facts">
@@ -218,7 +243,7 @@
                   <label class="choice">
                     <input type="radio" name="payment-mode" value="session" checked>
                     Confirm session payment reference
-                    (<code id="session-payment-ref">session_pay_ref</code>
+                    (<code id="session-payment-ref">session_pay_ref</code>)
                   </label>
                   <label class="choice">
                     <input type="radio" name="payment-mode" value="other">
@@ -235,6 +260,7 @@
                 <input id="checkout-ack" type="checkbox" required>
                 I confirm delivery, total, and payment for this order
               </label>
+              <p id="checkout-form-error" class="form-error" role="alert" hidden></p>
               <button class="primary" type="button" id="create-order">Create order</button>
               <button class="primary lock" type="submit">Place Order</button>
             </form>
@@ -265,16 +291,19 @@
               <button class="secondary" type="button" id="contact-florist"
                       aria-controls="escalation" aria-expanded="false">Contact Florist</button>
             </div>
+            <p class="hint">Chat with Lily opens automated Help. Contact Florist asks a person to follow up.</p>
           </section>
         </div>
       </div>
     </div>
   </main>
 
-  <button class="aso" type="button" aria-controls="help" aria-expanded="false" title="ASO FAQ overlay">?</button>
+  <button class="aso" type="button" aria-controls="help" aria-expanded="false"
+          title="ASO FAQ overlay" aria-label="Ask automated help">?</button>
 
   <dialog id="help" aria-labelledby="help-title">
     <h2 id="help-title">How it works</h2>
+    <p class="hint">Automated answers from approved shop information. This is not a person.</p>
     <ol>
       <li>Describe what you need in your own words.</li>
       <li>Check and correct what the assistant understood.</li>
@@ -286,6 +315,7 @@
       <button class="primary" type="submit">Ask</button>
     </form>
     <p id="support-answer" hidden></p>
+    <p class="hint">Need a person? Close this and use Contact Florist from tracking.</p>
     <button type="button" data-close-help>Got it</button>
   </dialog>
   <dialog id="escalation" aria-labelledby="escalation-title">
@@ -300,6 +330,7 @@
         <option value="delivery_issue">I need help with delivery</option>
         <option value="product_question">I have a product question</option>
       </select>
+      <p id="escalation-form-error" class="form-error" role="alert" hidden></p>
       <button class="primary" type="submit">Send to florist</button>
     </form>
     <p id="escalation-ack" hidden></p>

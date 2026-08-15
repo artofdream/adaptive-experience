@@ -131,10 +131,46 @@ class BrowserUiTests(unittest.TestCase):
         self.assertIn('data-journey-steps="4"', self.html)
         self.assertIn('data-journey-steps="5"', self.html)
         self.assertIn('data-journey-steps="7"', self.html)
-        self.assertIn("node.hidden = !steps.includes(next)", self.script)
+        self.assertIn("node.hidden = !entered", self.script)
+        self.assertIn("is-current", self.script)
         self.assertIn("T-01 · Persistent", self.html)
         self.assertIn("T-02 · Persistent", self.html)
         self.assertIn("ASO FAQ overlay", self.html)
+        self.assertIn("Earlier choices stay visible", self.html)
+
+    def test_workspace_errors_are_inline_and_plain_language(self):
+        self.assertIn('id="message-form-error"', self.html)
+        self.assertIn('id="delivery-form-error"', self.html)
+        self.assertIn('id="checkout-form-error"', self.html)
+        self.assertIn('role="alert"', self.html)
+        self.assertIn(".form-error", self.css)
+        self.assertIn("ERROR_COPY", self.script)
+        self.assertIn("csrf_rejected", self.script)
+        self.assertIn("showFormError", self.script)
+        self.assertIn("friendlyError", self.script)
+        self.assertIn("Refresh the page, then try again.", self.script)
+        self.assertNotIn("Conversation could not be sent (${error.message})", self.script)
+        self.assertNotIn("Delivery could not be saved (${error.message})", self.script)
+
+    def test_delivery_confirms_saved_destination_reference(self):
+        self.assertIn("SESSION_DESTINATION_REFERENCE", self.script)
+        self.assertIn('id="session-destination-ref"', self.html)
+        self.assertIn(">home<", self.html)
+        self.assertIn("Confirm saved destination", self.html)
+        self.assertIn("Confirm delivery details", self.html)
+        self.assertIn("Saved destination reference", self.html)
+        self.assertNotIn("Confirm Delivery", self.html)
+        self.assertIn("resolveDestinationReference", self.script)
+
+    def test_intent_summary_supports_review_and_correct(self):
+        self.assertIn("Review and correct", self.html)
+        self.assertIn('id="understanding-status"', self.html)
+        self.assertIn("Updating from your last message", self.html)
+        self.assertIn("appendPendingCustomer", self.script)
+        self.assertIn("setUnderstandingPending", self.script)
+        self.assertIn("intent-edit", self.script)
+        self.assertIn('id="suggestions"', self.html)
+        self.assertIn("data-suggest", self.html)
 
     def test_checkout_is_confirmation_driven(self):
         self.assertIn('id="checkout-confirm"', self.html)
