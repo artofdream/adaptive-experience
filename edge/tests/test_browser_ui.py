@@ -170,7 +170,11 @@ class BrowserUiTests(unittest.TestCase):
         self.assertIn("setUnderstandingPending", self.script)
         self.assertIn("intent-edit", self.script)
         self.assertIn('id="suggestions"', self.html)
-        self.assertIn("data-suggest", self.html)
+        self.assertNotIn("data-suggest", self.html)
+        self.assertIn("function renderSuggestions", self.script)
+        self.assertIn("shared.suggestions", self.script)
+        self.assertIn("chip.dataset.suggest", self.script)
+        self.assertIn("chip.textContent", self.script)
 
     def test_checkout_is_confirmation_driven(self):
         self.assertIn('id="checkout-confirm"', self.html)
@@ -257,6 +261,22 @@ class BrowserUiTests(unittest.TestCase):
         self.assertIn("try_files /florist.html =404;", nginx)
         self.assertIn("location /api/ {", nginx)
         self.assertIn('proxy_set_header X-Internal-Identity "";', nginx)
+
+    def test_t01_thought_completion_chips_come_from_api(self):
+        self.assertIn('id="suggestions"', self.html)
+        self.assertIn('aria-label="Optional thought-completion suggestions"', self.html)
+        self.assertNotIn('class="chip"', self.html)
+        self.assertNotIn("Birthday flowers for Mum, under €75", self.html)
+        self.assertNotIn(">Birthday</button>", self.html)
+        self.assertNotIn(">Wedding</button>", self.html)
+        self.assertNotIn(">Sympathy</button>", self.html)
+        self.assertIn("function renderSuggestions", self.script)
+        self.assertIn("renderSuggestions(shared.suggestions)", self.script)
+        self.assertIn("chip.dataset.suggest = text", self.script)
+        self.assertIn("chip.textContent = text", self.script)
+        self.assertIn('#suggestions").addEventListener("click"', self.script)
+        self.assertNotIn('querySelectorAll("[data-suggest]")', self.script)
+        self.assertIn('placeholder="For example: Birthday roses for Mum, under €75"', self.html)
 
 
 if __name__ == "__main__":

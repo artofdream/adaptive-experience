@@ -11,7 +11,11 @@ with urllib.request.urlopen("https://localhost:8443/", context=context, timeout=
             or 'id="understanding-title"' not in page
             or 'id="recommendations"' not in page
             or 'id="order-tracking"' not in page
-            or "T-01" not in page):
+            or "T-01" not in page
+            or 'id="suggestions"' not in page
+            or 'data-suggest="Birthday' in page
+            or ">Wedding</button>" in page
+            or ">Sympathy</button>" in page):
         raise SystemExit("guided browser interface is unavailable")
 print("guided browser interface is available")
 
@@ -85,6 +89,10 @@ with urllib.request.urlopen(workspace_request, context=context, timeout=5) as re
     available = next((item for item in items if item.get("available")), None)
     if available is None:
         raise SystemExit("T-03 recommendations have no available product")
+    shared = workspace.get("facets", {}).get("shared_understanding") or {}
+    if shared.get("suggestions") != projection["suggestions"] or not shared.get("suggestions"):
+        raise SystemExit("T-01 workspace suggestions do not match Shared Understanding API")
+print("T-01 thought-completion suggestions match Shared Understanding API")
 
 selection_request = urllib.request.Request(
     "https://localhost:8443/api/v1/selection", method="POST",
