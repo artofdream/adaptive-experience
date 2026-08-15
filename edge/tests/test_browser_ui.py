@@ -96,6 +96,11 @@ class BrowserUiTests(unittest.TestCase):
         self.assertIn("Arrangement", self.html)
         self.assertIn("Flower type", self.html)
         self.assertIn("PRODUCT_FLOWERS", self.script)
+        self.assertIn("PRODUCT_NAMES", self.script)
+        self.assertIn('"Classic Rose Dozen"', self.script)
+        self.assertIn('"Budget Mixed Bunch"', self.script)
+        self.assertIn("if (PRODUCT_NAMES[id]) return PRODUCT_NAMES[id];", self.script)
+        self.assertNotIn('return String(productId || "").replace(/-/g, " ");', self.script)
         self.assertNotIn("gift card", self.html.lower())
         self.assertNotIn("gift_card", self.script.lower())
 
