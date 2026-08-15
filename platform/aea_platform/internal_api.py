@@ -305,6 +305,10 @@ class InternalOrchestrationApp:
             availability.append({key: item[key] for key in
                                  ("product_id", "available", "availability_status")
                                  if key in item})
+        answers = []
+        list_fn = getattr(self.support.store, "list_session_answers", None)
+        if callable(list_fn):
+            answers = list_fn(session_id=session_id)
         return {
             "session_id": session_id,
             "context_version": workspace["context_version"],
@@ -315,6 +319,7 @@ class InternalOrchestrationApp:
             "selection": facets.get("selection"),
             "delivery": facets.get("delivery"),
             "availability": availability,
+            "support_answers": answers,
         }
 
     async def _select_product(self, send, session_id: str, subject: str,

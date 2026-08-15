@@ -89,6 +89,15 @@ class FakeOrchestration:
             "availability": [{"product_id": "classic-rose-dozen",
                               "availability_status": "available", "available": True,
                               "secret": "omit"}],
+            "support_answers": [{
+                "message_id": "faq-1",
+                "kind": "faq",
+                "answer": "Standard orders placed before 2 PM are delivered the same day.",
+                "approved_source_references": ["policy:delivery"],
+                "answered_at": "2026-08-15T00:01:00+00:00",
+                "secret": "omit",
+                "email": "private@example.invalid",
+            }],
             "email": "omit@example.invalid",
         }
 
@@ -511,6 +520,9 @@ class PerimeterTests(unittest.TestCase):
         self.assertEqual({"occasion": "birthday"}, summary["shared_understanding"]["structured_intent"])
         self.assertEqual("preparing", summary["order"]["authoritative_status"])
         self.assertEqual("available", summary["availability"][0]["availability_status"])
+        self.assertEqual("faq", summary["support_answers"][0]["kind"])
+        self.assertIn("2 PM", summary["support_answers"][0]["answer"])
+        self.assertNotIn("secret", summary["support_answers"][0])
         self.assertNotIn("email", summary)
         self.assertNotIn(b"private", body)
         self.assertEqual(422, call("GET", "/api/v1/operator/sessions/not-a-uuid", auth)[0])

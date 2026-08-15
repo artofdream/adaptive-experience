@@ -181,7 +181,8 @@ Internal Orchestration (#144; contract in
 - Local florist operator console (#170): `GET /florist` serves a labeled staff
   sample, separate from the customer workspace. `GET /api/v1/operator/escalations`
   and `GET /api/v1/operator/sessions/{id}` are least-data reads of Contact Florist
-  requests and a session summary (conversation, order status, availability).
+  requests and a session summary (conversation, prior ASO answers, order status,
+  availability).
   `GET /api/v1/operator/forecasts` returns thin FR-012 inventory trend
   recommendations from validated snapshot history. They return 404 unless
   `AEA_FLORIST_OPERATOR=1` and `AEA_ENVIRONMENT` is not `production`. See

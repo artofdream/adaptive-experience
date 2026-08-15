@@ -678,6 +678,23 @@ class BffApp:
                 timing = raw["delivery"]["timing"]
                 delivery["timing"] = {key: timing[key] for key in ("date", "window")
                                       if key in timing}
+        answers = []
+        for item in raw.get("support_answers") or []:
+            if not isinstance(item, dict):
+                continue
+            shaped = {key: item[key] for key in
+                      ("message_id", "kind", "answer", "approved_source_references",
+                       "situation_kind", "fact_references", "answered_at")
+                      if key in item}
+            if shaped.get("kind") not in ("faq", "situation"):
+                continue
+            if not isinstance(shaped.get("answer"), str) or not shaped["answer"]:
+                continue
+            for list_key in ("approved_source_references", "fact_references"):
+                refs = shaped.get(list_key)
+                if isinstance(refs, list):
+                    shaped[list_key] = [str(ref) for ref in refs if isinstance(ref, str)][:8]
+            answers.append(shaped)
         return {
             "session_id": raw.get("session_id"),
             "context_version": int(raw.get("context_version", 0)),
@@ -688,6 +705,7 @@ class BffApp:
             "selection": selection,
             "delivery": delivery or None,
             "availability": availability,
+            "support_answers": answers,
         }
 
     async def _error(self, send, status, code, correlation_id, extra_headers=None):

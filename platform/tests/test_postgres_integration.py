@@ -718,6 +718,39 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
             app, "GET", "/internal/v1/operator/sessions/00000000-0000-0000-0000-000000000000"))
         self.assertEqual(404, missing[0])
 
+    def test_operator_session_includes_prior_aso_answers(self):
+        import asyncio
+        from aea_platform.internal_api import InternalOrchestrationApp
+
+        session_id = self.create_session()
+        app = InternalOrchestrationApp(self.connection, "internal-token")
+        path = f"/internal/v1/sessions/{session_id}/support"
+        faq_status, faq = asyncio.run(self._invoke_internal(
+            app, "POST", path, json.dumps({
+                "question": "When do you deliver?", "correlation_id": "faq",
+            }).encode()))
+        self.assertEqual(200, faq_status)
+        self.assertTrue(faq["matched"])
+        sit_status, sit = asyncio.run(self._invoke_internal(
+            app, "POST", path, json.dumps({
+                "question": "What is my order status?", "correlation_id": "sit",
+            }).encode()))
+        self.assertEqual(200, sit_status)
+        self.assertEqual("situation", sit["kind"])
+
+        status, summary = asyncio.run(self._invoke_internal(
+            app, "GET", f"/internal/v1/operator/sessions/{session_id}"))
+        self.assertEqual(200, status)
+        answers = summary["support_answers"]
+        kinds = {item["kind"] for item in answers}
+        self.assertIn("faq", kinds)
+        self.assertIn("situation", kinds)
+        self.assertTrue(any("2 PM" in item["answer"] for item in answers if item["kind"] == "faq"))
+        for item in answers:
+            self.assertNotIn("subject_reference", item)
+            self.assertNotIn("email", item)
+            self.assertNotIn("security_context", item)
+
     def test_retrieval_indexes_approved_chunks_and_hybrid_query_filters_unapproved(self):
         from aea_platform.adapters import PsycopgRetrievalStore
         from aea_platform.retrieval import KnowledgeChunk, RetrievalService, chunks_from_approved

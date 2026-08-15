@@ -41,6 +41,15 @@ const SAMPLE_SESSIONS = {
       { product_id: "classic-rose-dozen", available: true, availability_status: "available" },
       { product_id: "premium-orchid", available: false, availability_status: "unknown" },
     ],
+    support_answers: [
+      {
+        kind: "faq",
+        answer: "Standard orders placed before 2 PM are delivered the same day; later orders arrive the next day.",
+        approved_source_references: ["policy:delivery"],
+        answered_at: "2026-08-15T08:05:00+00:00",
+        sample: true,
+      },
+    ],
   },
   "22222222-2222-4222-8222-222222222222": {
     session_id: "22222222-2222-4222-8222-222222222222",
@@ -54,6 +63,16 @@ const SAMPLE_SESSIONS = {
     delivery: { destination_reference: "dest-ref-2", timing: { date: "2026-08-15", window: "afternoon" } },
     availability: [
       { product_id: "lilac-bouquet", available: true, availability_status: "available" },
+    ],
+    support_answers: [
+      {
+        kind: "situation",
+        situation_kind: "order_status",
+        answer: "Your order is currently delayed.",
+        fact_references: ["session:order"],
+        answered_at: "2026-08-15T07:35:00+00:00",
+        sample: true,
+      },
     ],
   },
   "33333333-3333-4333-8333-333333333333": {
@@ -69,6 +88,15 @@ const SAMPLE_SESSIONS = {
     availability: [
       { product_id: "classic-rose-dozen", available: false, availability_status: "unknown" },
       { product_id: "budget-mixed-bunch", available: false, availability_status: "unknown" },
+    ],
+    support_answers: [
+      {
+        kind: "faq",
+        answer: "If a stem is unavailable we substitute a similar flower of equal or greater value, preserving the style.",
+        approved_source_references: ["policy:substitution"],
+        answered_at: "2026-08-14T16:02:00+00:00",
+        sample: true,
+      },
     ],
   },
 };
@@ -98,6 +126,7 @@ const mode = document.querySelector("#operator-mode");
 const inboxRows = document.querySelector("#inbox-rows");
 const forecastRows = document.querySelector("#forecast-rows");
 const transcript = document.querySelector("#transcript");
+const supportAnswers = document.querySelector("#support-answers");
 const orderFacts = document.querySelector("#order-facts");
 const availability = document.querySelector("#availability");
 const sessionRef = document.querySelector("#session-ref");
@@ -219,6 +248,21 @@ function renderSession(summary, label) {
     const li = document.createElement("li");
     li.textContent = `${item.product_id}: ${item.availability_status || "unknown"}`;
     availability.append(li);
+  }
+  if (supportAnswers) {
+    supportAnswers.replaceChildren();
+    const answers = summary.support_answers || [];
+    if (!answers.length) {
+      const empty = document.createElement("li");
+      empty.textContent = "No ASO answers recorded for this session yet.";
+      supportAnswers.append(empty);
+    }
+    for (const item of answers) {
+      const li = document.createElement("li");
+      const kind = item.kind === "situation" ? (item.situation_kind || "situation") : "faq";
+      li.textContent = `${kind}: ${item.answer}`;
+      supportAnswers.append(li);
+    }
   }
 }
 
