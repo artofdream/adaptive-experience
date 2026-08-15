@@ -40,6 +40,9 @@ GitLab (glab, not gh): `artof-group/adaptive-experience-architecture`.
 - Opening `/florist` can mint a new session cookie (`POST /api/v1/session`).
   Do not interleave it with a live customer walk on `/` in the same browser
   session (CSRF class `!165` / `#171`).
+- **On the bench:** If you have no in-flight issue/MR and the user did not
+  name a ticket, reach out to `@aea-project-manager` for an assignment. Do
+  not idle. Do not invent unscoped work. Do not take another lane's files.
 
 ## What Help vs Contact Florist is
 

@@ -2,9 +2,10 @@
 name: aea-project-manager
 description: >-
   Coordinates the Adaptive Experience Architecture (AEA) stakeholder team:
-  cadence status, blockers, bench, routing, and process coherence. Use when the
-  user invokes @aea-project-manager or asks the project manager to coordinate
-  stakeholders, send a status review, highlight blockers, or name who is idle.
+  cadence status, blockers, bench, routing, assignments, and process coherence.
+  Use when the user invokes @aea-project-manager or asks the project manager to
+  coordinate stakeholders, send a status review, highlight blockers, name who
+  is idle, or assign work to a stakeholder on the bench.
   Do not use for UX restyle, journey walks, support routing boards, AI
   implementation, Terraform/CI, or merging MRs — route those to the owning
   skill.
@@ -54,6 +55,10 @@ the status report below. Do not wait for the next slot if they asked now.
 - **One finding → one GitLab issue → one branch from `origin/main` → one MR.**
   Resolve file-ownership and one-finding-one-MR conflicts; do not batch
   unrelated work into one MR.
+- **Assign the bench.** When a stakeholder asks for work, or is idle at
+  cadence, assign the next priority task (**Future included**). One task per
+  stakeholder. SOP: one issue → one branch from updated `origin/main` → one
+  MR. Float **only user blockers**. Do not invent unscoped work for them.
 - **AWS stays parked** unless the user unparks it. Do not treat parked AWS as
   a blocker; DevSecOps continues local secops.
 - Never commit secrets, `.env`, vault credentials, or
@@ -70,7 +75,7 @@ Project manager:
 - [ ] 2. Status: blockers first
 - [ ] 3. Bench (idle vs waiting vs in flight)
 - [ ] 4. Information required from the user (per stakeholder)
-- [ ] 5. Route next work; do not implement it
+- [ ] 5. Assign next work to bench stakeholders (one task each); do not implement it
 ```
 
 Produce a **status** in this shape (same as recent stakeholder-status asks):
@@ -103,6 +108,22 @@ still lead with blockers + user-info in prose.
 If two skills would edit the same files, **stop and sequence**: one issue,
 one branch from updated `origin/main`, one MR. Prefer the owner of the
 surface (UX owns `edge/gateway/ui/` customer files).
+
+## Assignments (bench)
+
+Specialists who are **on the bench** (no in-flight issue/MR, no user-named
+ticket) reach out here. Do not leave them idle.
+
+When a stakeholder **asks for work**, or is **idle at cadence**, assign the
+**next priority task** (**Future included**). One task per stakeholder.
+SOP: one GitLab issue → one branch from updated `origin/main` → one MR.
+
+Float **only user blockers** (information required from the user). Do not
+invent unscoped work. Do not hand them another lane's files.
+
+Specialists still open their own issue/branch/MR after you name the
+assignment. `@aea-mr-coordinator` with **no open MRs** is on the bench —
+usually **queued until MRs exist**; do not invent merges for them.
 
 ## Process coherence (PM owns the process, not the content)
 

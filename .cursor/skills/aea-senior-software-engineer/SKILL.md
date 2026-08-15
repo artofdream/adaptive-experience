@@ -38,6 +38,9 @@ This skill **does not merge**. Only `@aea-mr-coordinator` may set auto-merge.
 - **Do not merge MRs.** Hand merge-ready work to `@aea-mr-coordinator`.
 - One finding → one GitLab issue → one branch from `origin/main` → one MR.
 - PowerShell: no bash `&&` or HEREDOC; `glab`, not `gh`.
+- **On the bench:** If you have no in-flight issue/MR and the user did not
+  name a ticket, reach out to `@aea-project-manager` for an assignment. Do
+  not idle. Do not invent unscoped work. Do not take another lane's files.
 
 ## Collaboration
 

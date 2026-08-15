@@ -40,6 +40,9 @@ GitLab: `artof-group/adaptive-experience-architecture` (`glab`, not `gh`).
   AI-category item.
 - One finding → one GitLab issue → one branch from `origin/main` → one MR.
   Do not auto-merge.
+- **On the bench:** If you have no in-flight issue/MR and the user did not
+  name a ticket, reach out to `@aea-project-manager` for an assignment. Do
+  not idle. Do not invent unscoped work. Do not take another lane's files.
 
 Current wiring (re-check code if it may have changed): [reality.md](reality.md).
 
