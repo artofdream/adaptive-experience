@@ -138,6 +138,20 @@ class PrivacyTests(unittest.TestCase):
         self.guard.validate_publication(
             "support-service", "support.escalation.requested", message)
 
+    def test_valid_inventory_forecast_is_authorized(self):
+        message = envelope(
+            "inventory.forecast.ready",
+            {"product_ids": ["classic-rose-dozen"],
+             "recommendations": [{
+                 "product_id": "classic-rose-dozen",
+                 "trend": "declining",
+                 "recommendation": "Plan a replenishment.",
+                 "fact_references": ["inventory:classic-rose-dozen:v1"],
+             }]},
+        )
+        message["source"] = "inventory"
+        self.guard.validate_publication("inventory", "inventory.forecast.ready", message)
+
     def test_valid_situation_answer_is_authorized(self):
         message = envelope(
             "support.situation.answered",

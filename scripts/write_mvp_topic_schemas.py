@@ -106,6 +106,45 @@ TOPICS: list[tuple[str, str, dict, list[str]]] = [
         ["reservation_id", "product_ids"],
     ),
     (
+        "inventory.forecast.ready",
+        "1.0.0",
+        {
+            "product_ids": {"type": "array", "items": {"type": "string"}},
+            "recommendations": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "product_id": {"type": "string"},
+                        "trend": {
+                            "type": "string",
+                            "enum": [
+                                "declining",
+                                "stable",
+                                "rising",
+                                "depleted",
+                                "insufficient",
+                            ],
+                        },
+                        "recommendation": {"type": "string"},
+                        "fact_references": {
+                            "type": "array",
+                            "items": {"type": "string"},
+                        },
+                    },
+                    "required": [
+                        "product_id",
+                        "trend",
+                        "recommendation",
+                        "fact_references",
+                    ],
+                    "additionalProperties": False,
+                },
+            },
+        },
+        ["product_ids", "recommendations"],
+    ),
+    (
         "delivery.details.updated",
         "1.0.0",
         {

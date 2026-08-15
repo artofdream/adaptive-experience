@@ -422,6 +422,22 @@ class BffApp:
             return await self._json(send, 200, self._least_data_operator_escalations(raw),
                                     correlation_id)
 
+        if path == "/api/v1/operator/forecasts" and method == "GET":
+            if not self.florist_operator_enabled:
+                return await self._error(send, 404, "not_found", correlation_id)
+            try:
+                raw = self.orchestration.list_operator_forecasts(
+                    session_id=session.session_id, subject=subject)
+            except OrchestrationUnavailable:
+                return await self._error(send, 503, "orchestration_unavailable", correlation_id)
+            status = int(raw.get("status") or 200)
+            if status == 404 or raw.get("code") == "session_not_found":
+                return await self._error(send, 404, "session_not_found", correlation_id)
+            if status >= 500:
+                return await self._error(send, 503, "orchestration_unavailable", correlation_id)
+            return await self._json(send, 200, self._least_data_operator_forecasts(raw),
+                                    correlation_id)
+
         operator_prefix = "/api/v1/operator/sessions/"
         if path.startswith(operator_prefix) and method == "GET":
             if not self.florist_operator_enabled:
@@ -613,6 +629,22 @@ class BffApp:
                       ("message_id", "session_id", "escalation_reason",
                        "context_reference", "requested_at") if key in item}
             if shaped:
+                items.append(shaped)
+        return {"items": items}
+
+    @staticmethod
+    def _least_data_operator_forecasts(raw: dict) -> dict:
+        items = []
+        for item in (raw.get("items") or [])[:100]:
+            if not isinstance(item, dict):
+                continue
+            shaped = {key: item[key] for key in
+                      ("product_id", "trend", "recommendation", "fact_references")
+                      if key in item}
+            if shaped.get("product_id") and shaped.get("trend") and shaped.get("recommendation"):
+                refs = shaped.get("fact_references")
+                if isinstance(refs, list):
+                    shaped["fact_references"] = [str(ref) for ref in refs if isinstance(ref, str)][:8]
                 items.append(shaped)
         return {"items": items}
 

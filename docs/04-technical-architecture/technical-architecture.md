@@ -90,7 +90,7 @@ defined in [MVP Topic Contracts](topic-contracts.md).
 | Intent | customer.message.submitted; experience.intent.updated |
 | Recommendation | product.recommendations.requested; product.recommendations.ready; product.selected |
 | Customization | product.customization.updated |
-| Inventory | inventory.availability.requested; inventory.availability.validated; inventory.reservation.confirmed |
+| Inventory | inventory.availability.requested; inventory.availability.validated; inventory.reservation.confirmed; inventory.forecast.ready (FR-012) |
 | Delivery | delivery.details.updated; delivery.slots.ready; delivery.slot.selected |
 | Order | order.summary.updated; order.checkout.requested; order.confirmed; order.status.updated |
 | Payment | payment.authorization.requested; payment.authorization.succeeded; payment.authorization.failed |

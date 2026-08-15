@@ -34,7 +34,8 @@ date: 2026-08-15
 | Conversation transcript | `GET .../sessions/{id}/conversation` (least-data messages) | Included in `GET /internal/v1/operator/sessions/{id}` | Redaction workflow |
 | Shared Understanding | `GET .../shared-understanding` (six facets) | Occasion/budget/etc. only | Staff edit of customer intent |
 | Order / status / delay | Workspace `order` facet; internal `POST .../order/status` and `POST .../order/delay` | **Read** order_id, status, delayed, authoritative_status | Staff UI that POSTs fulfillment transitions |
-| Inventory / availability | Workspace `recommendations[].availability_status` (`available` / `unknown` / unavailable) | Product id + status list | Catalog admin, seeding (separate issue) |
+| Inventory / availability | Workspace `recommendations[].availability_status` (`available` / `unknown` / unavailable) | Product id + status list | Catalog admin, production feed |
+| Inventory forecast (FR-012) | Validated snapshot history (`inventory.availability_observation`) | `GET /internal/v1/operator/forecasts` → BFF `GET /api/v1/operator/forecasts` | ML demand models, purchase orders |
 | FAQ vs escalation split | ASO `POST /api/v1/support` vs T-09 `POST /api/v1/support/escalation` | Explainer on `/florist`; inbox is T-09 only | Unified support desk |
 | Live chat / billing CRM / FR-016/017 | None | Out of scope | #35 / #36 |
 

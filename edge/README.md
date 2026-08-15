@@ -146,9 +146,10 @@ Internal Orchestration (#144; contract in
   sample, separate from the customer workspace. `GET /api/v1/operator/escalations`
   and `GET /api/v1/operator/sessions/{id}` are least-data reads of Contact Florist
   requests and a session summary (conversation, order status, availability).
-  They return 404 unless `AEA_FLORIST_OPERATOR=1` and `AEA_ENVIRONMENT` is not
-  `production`. See `research/design-notes/florist-operator-ui.md`. Not FR-016 /
-  FR-017 CRM.
+  `GET /api/v1/operator/forecasts` returns thin FR-012 inventory trend
+  recommendations from validated snapshot history. They return 404 unless
+  `AEA_FLORIST_OPERATOR=1` and `AEA_ENVIRONMENT` is not `production`. See
+  `research/design-notes/florist-operator-ui.md`. Not FR-016 / FR-017 CRM.
 - `POST /api/v1/checkout` performs FR-019 payment and checkout. It accepts only a
   `payment_reference` (an opaque vault token) and the `observed_total`; raw card
   fields (`card_number`, `cvv`, ...) are rejected at the edge (NFR-013). Checkout

@@ -107,6 +107,12 @@ class PsycopgInventoryAvailabilityStore:
                 "source_version=EXCLUDED.source_version,observed_at=EXCLUDED.observed_at,updated_at=clock_timestamp()",
                 (product_id, available_quantity, source_version, observed_at),
             )
+            self.connection.execute(
+                "INSERT INTO inventory.availability_observation "
+                "(product_id,available_quantity,source_version,observed_at) VALUES (%s,%s,%s,%s) "
+                "ON CONFLICT (product_id, source_version) DO NOTHING",
+                (product_id, available_quantity, source_version, observed_at),
+            )
             return "applied"
 
     def validate_and_enqueue(self, *, session_id: str, expected_context_version: int,
@@ -188,6 +194,58 @@ class PsycopgInventoryAvailabilityStore:
                     "source_version": row[2], "observed_at": row[3].isoformat(),
                 }
         return availability
+
+    def list_observations(self, product_ids: tuple[str, ...] | None = None) -> list[dict]:
+        """Validated snapshot history for FR-012 trend analysis."""
+        if product_ids:
+            rows = self.connection.execute(
+                "SELECT product_id,available_quantity,source_version,observed_at "
+                "FROM inventory.availability_observation WHERE product_id=ANY(%s) "
+                "ORDER BY product_id, observed_at, source_version",
+                (list(product_ids),),
+            ).fetchall()
+        else:
+            rows = self.connection.execute(
+                "SELECT product_id,available_quantity,source_version,observed_at "
+                "FROM inventory.availability_observation "
+                "ORDER BY product_id, observed_at, source_version",
+            ).fetchall()
+        return [{
+            "product_id": row[0],
+            "available_quantity": int(row[1]),
+            "source_version": int(row[2]),
+            "observed_at": row[3],
+        } for row in rows]
+
+    def record_forecast(self, *, session_id: str, context_version: int,
+                        message_id: str, correlation_id: str,
+                        subject_reference: str, published_at: datetime,
+                        items) -> None:
+        payload = {
+            "product_ids": [item.product_id for item in items],
+            "recommendations": [{
+                "product_id": item.product_id,
+                "trend": item.trend,
+                "recommendation": item.recommendation,
+                "fact_references": list(item.fact_references),
+            } for item in items],
+        }
+        envelope = {
+            "message_id": message_id, "topic": "inventory.forecast.ready",
+            "message_type": "event", "schema_version": "1.0.0",
+            "session_id": session_id, "correlation_id": correlation_id,
+            "source": "inventory", "context_version": context_version,
+            "publication_time": published_at.isoformat(),
+            "security_context": {"classification": "confidential",
+                                 "subject_reference": subject_reference},
+            "payload": payload, "outcome": {},
+        }
+        self.connection.execute(
+            "INSERT INTO orchestration.outbox_message "
+            "(message_id,session_id,context_version,topic,aggregate_key,envelope) "
+            "VALUES (%s,%s,%s,'inventory.forecast.ready',%s,%s::jsonb)",
+            (message_id, session_id, context_version, session_id, json.dumps(envelope)),
+        )
 
 
 class PsycopgRecommendationStore:

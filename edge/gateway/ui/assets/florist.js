@@ -73,8 +73,30 @@ const SAMPLE_SESSIONS = {
   },
 };
 
+const SAMPLE_FORECASTS = [
+  {
+    product_id: "classic-rose-dozen",
+    trend: "declining",
+    recommendation: "Quantity declined from 10 to 4; about 2 days to stockout at this rate. Plan a replenishment.",
+    sample: true,
+  },
+  {
+    product_id: "lilac-bouquet",
+    trend: "stable",
+    recommendation: "Quantity is stable at 8; no replenishment recommended.",
+    sample: true,
+  },
+  {
+    product_id: "budget-mixed-bunch",
+    trend: "insufficient",
+    recommendation: "This product has only one validated snapshot; no trend yet.",
+    sample: true,
+  },
+];
+
 const mode = document.querySelector("#operator-mode");
 const inboxRows = document.querySelector("#inbox-rows");
+const forecastRows = document.querySelector("#forecast-rows");
 const transcript = document.querySelector("#transcript");
 const orderFacts = document.querySelector("#order-facts");
 const availability = document.querySelector("#availability");
@@ -116,6 +138,17 @@ async function api(path, options = {}) {
 function shortRef(value) {
   const text = String(value || "");
   return text.length > 12 ? `${text.slice(0, 8)}…${text.slice(-4)}` : text;
+}
+
+function renderForecasts(items) {
+  forecastRows.replaceChildren();
+  for (const item of items) {
+    const row = document.createElement("tr");
+    row.innerHTML = `<td><code>${item.product_id}</code></td>
+      <td>${item.trend}</td>
+      <td>${item.recommendation}</td>`;
+    forecastRows.append(row);
+  }
 }
 
 function renderInbox(items) {
@@ -199,6 +232,7 @@ inboxRows.addEventListener("click", (event) => {
 
 async function boot() {
   renderInbox(SAMPLE_INBOX);
+  renderForecasts(SAMPLE_FORECASTS);
   renderSession(SAMPLE_SESSIONS[SAMPLE_INBOX[0].session_id], "Sample session (labeled)");
   mode.textContent = "Showing labeled sample data until operator APIs are confirmed.";
   try {
@@ -207,6 +241,14 @@ async function boot() {
     const inbox = await api("/api/v1/operator/escalations");
     state.live = true;
     state.items = inbox.items || [];
+    try {
+      const forecasts = await api("/api/v1/operator/forecasts");
+      if ((forecasts.items || []).length) {
+        renderForecasts(forecasts.items);
+      }
+    } catch (_error) {
+      renderForecasts(SAMPLE_FORECASTS);
+    }
     if (state.items.length) {
       renderInbox(state.items);
       await openSession(state.items[0].session_id);

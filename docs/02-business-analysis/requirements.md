@@ -94,5 +94,7 @@ FR-006 / T-09 remains Future in the requirements source of truth and is
 delivered as a thin Contact Florist overlay, separate from both FR-009 and
 FR-010. FR-010 remains Future in the source of truth and is delivered as a
 thin situational answer path (order status, session delivery, inventory
-availability) on ASO. Staff CRM and live chat remain out of scope
-(FR-016 / FR-017).
+availability) on ASO. FR-012 remains Future and is delivered as a thin
+manager forecast from validated inventory snapshot history; it does not
+replace FR-011 real-time availability and does not invent demand. Staff CRM
+and live chat remain out of scope (FR-016 / FR-017).
