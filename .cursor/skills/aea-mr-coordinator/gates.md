@@ -2,8 +2,10 @@
 
 GitLab: `artof-group/adaptive-experience-architecture` (`glab`).
 
-Run these before `glab mr merge`. **All three groups must pass.** One miss
-→ reach out; do not merge.
+Run these before `glab mr merge` (immediate or auto-merge / MWPS).
+**All three groups must pass.** After they pass, **must** run
+`glab mr merge <n> --yes --auto-merge`. One miss → reach out; do not
+merge and do not set auto-merge.
 
 ## 1. Scope
 
@@ -40,7 +42,9 @@ but `edge/` or `platform/` changed.
 ## 3. Validation path
 
 - MR body has a **test plan**.
-- Required GitLab CI on the MR pipeline is **green**.
+- Required GitLab CI on the MR pipeline is **green**, or still
+  running (set auto-merge / MWPS; do not merge immediately). Failed
+  required jobs are a fail.
 - No failed **required** jobs. Advisory `markdownlint` / `linkcheck`
   `allow_failure: true` are not blockers unless the user treats them as such.
 - Local integration recorded when the SOP requires it (command + outcome in
@@ -48,16 +52,17 @@ but `edge/` or `platform/` changed.
 - User already accepted CI-only **only** when local Docker was unavailable
   and they said so.
 
-## Reach-out (do not merge)
+## Reach-out (do not merge, do not set auto-merge)
 
 - Scope is mixed or unclear
 - Validation is missing, skipped, or “CI only” without user acceptance
 - Conflicts, rebase uncertainty, force-with-lease onto a shared branch you
   did not author
 - Security/privacy/cloud apply (`terraform apply`)
+- Secrets, `.env`, vault credentials, or `infra/aws/terraform.tfvars`
+- Force-push to `main` / `master`
 - Disagreement between MR description and diff
-- User has not been the one who asked for this merge in-session **unless**
-  they invoked `@aea-mr-coordinator` to process a named MR
+- This skill was not invoked (loop tick / sibling skill)
 
 ## Commands
 
@@ -65,8 +70,13 @@ but `edge/` or `platform/` changed.
 glab mr view <n>
 glab mr diff <n>
 glab ci status
-glab mr merge <n>
+glab mr merge <n> --yes --auto-merge
 ```
 
-Never: `git push --force` to `main`, `glab mr merge` on an unnamed MR,
-`terraform apply`.
+`--auto-merge` is GitLab MWPS (`merge_when_pipeline_succeeds`). After
+gates pass, **must** set it. Prefer MWPS while the pipeline is running.
+`--yes` skips the interactive prompt only. Do not wait for a second
+“please merge this named MR” prompt.
+
+Never: `git push --force` to `main`, merge unless this skill was invoked,
+`--auto-merge=false` to skip a running pipeline, `terraform apply`.
