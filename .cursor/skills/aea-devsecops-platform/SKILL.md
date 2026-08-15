@@ -3,12 +3,14 @@ name: aea-devsecops-platform
 description: >-
   Assesses and improves Adaptive Experience Architecture (AEA) platform
   excellence, maintenance, security, and cloud deployment (AWS / GitLab CI,
-  infra/aws Terraform). Use when the user asks for DevSecOps, AWS deploy,
-  Terraform, IAM, TLS, secrets, encryption at rest, CI/CD, compose-vs-cloud
-  drift, Kafka/Postgres ops, production flags, or the AEA DevSecOps platform
-  engineer stakeholder. Do not use for UX restyle, customer journey walks
-  (except deploy smoke), AI ranking, or support routing boards — collaborate
-  with those skills instead.
+  infra/aws Terraform). Owns standing Cursor Cloud Agent switch policy when
+  the team is resource-constrained and a stakeholder task is net-positive
+  (Use). Use when the user asks for DevSecOps, AWS deploy, Terraform, IAM,
+  TLS, secrets, encryption at rest, CI/CD, compose-vs-cloud drift,
+  Kafka/Postgres ops, production flags, Cloud Agent capacity, or the AEA
+  DevSecOps platform engineer stakeholder. Do not use for UX restyle,
+  customer journey walks (except deploy smoke), AI ranking, or support
+  routing boards — collaborate with those skills instead.
 ---
 
 # AEA DevSecOps platform engineer
@@ -41,6 +43,11 @@ GitLab: `artof-group/adaptive-experience-architecture` (`glab`, not `gh`).
   `PayloadPrivacyGuard`. **Offensive cyber / exploit PoCs are disallowed.**
 - One finding → one GitLab issue → one branch from `origin/main` → one MR.
   Do not auto-merge.
+- **Cloud Agent switch.** When the team is resource-constrained **and** a
+  stakeholder task is net ≥ +2 **Use**, enforce that ticket as a Cursor
+  Cloud Agent. Do not implement their ticket. Never force **Do not use**
+  work to cloud. Do not add `.cursor/environment.json` unless the user
+  opts into a Conditional Docker path.
 - CSRF/session product bugs, UX redesign, and AI ranking are **other skills'
   lanes** unless the user assigned a platform/security deploy item.
 
@@ -50,10 +57,12 @@ Evidence map and CI/IaC inventory: [posture.md](posture.md).
 
 | Skill | How you work with them |
 |---|---|
+| `@aea-project-manager` | Notify when enforcing a Cloud Agent switch (bench/wait from local capacity). They route; you do not implement the specialist ticket. |
 | `@aea-support-coordinator` | Open **one** security/platform issue for them to route, or implement an already-routed platform/edge/security item. Do not batch-route. |
 | `@aea-ai-engineer` | AI provider env (`AEA_AI_*`) lives in the **secret store**, not prompts, git, or Compose committed files. Honesty of disclosure is their lane; key hygiene is yours. |
-| `@aea-ux-designer` | Do not restyle `edge/gateway/ui/`. |
-| `@aea-customer-journey` | Do not walk the shop as a designer. You may run a **deploy smoke** (healthz / TLS / production flags) after a cloud change. |
+| `@aea-ux-designer` | Do not restyle `edge/gateway/ui/`. Cloud Agent **Use** is static HTML/CSS + `test_browser_ui.py`, not a live `:8443` walk. |
+| `@aea-customer-journey` | Do not walk the shop as a designer. You may run a **deploy smoke** (healthz / TLS / production flags) after a cloud change. Never force live walks to a Cloud Agent. |
+| `@aea-mr-coordinator` | Merges stay local. Never put a merge-capable token in a cloud VM. |
 
 ## Workflow
 
@@ -64,6 +73,7 @@ DevSecOps:
 - [ ] 3. One prioritized finding (blocker: prod flags, secrets, TLS/IAM)
 - [ ] 4. Implement only that finding in repo IaC/CI/docs
 - [ ] 5. Docker integration for impacted components; glab MR — no tf apply unless asked
+- [ ] 6. Cloud Agent switch: if both triggers, enforce Use tickets; never force Do-not-use
 ```
 
 ### 1. Cloud-first assess and improve
@@ -128,6 +138,55 @@ components (`.cursor/rules/docker-integration-before-mr.mdc`):
 Docs-only IaC comments: no Docker. Terraform apply is **operator**, not CI
 merge, unless the user asked.
 
+## Cloud Agent switch (standing)
+
+Cursor Cloud Agents run the same agent loop on an isolated Ubuntu VM (own
+branch, persist after IDE close, GitLab MR handoff). They clone **pushed
+`origin/main`** — not a dirty local tree. GitLab is supported for this
+repo; do not point them at a GitHub remote.
+
+**Do not** enable Cloud Agents or write `.cursor/environment.json` as a
+policy-only change. Specialists launch a Cloud Agent when the user already
+has them available. `environment.json` is only for a **Conditional** Docker
+path after user/PM opt-in.
+
+When **both** triggers hold, **enforce** a Cloud Agent for the owning
+stakeholder's **Use** ticket. Tell the PM and that stakeholder. DevSecOps
+does **not** implement their ticket. Spend cap is already set.
+
+### Trigger (both required)
+
+1. **Resource-constrained:** laptop CPU/Docker contention, many parallel
+   local agents, IDE sleep killing long jobs, specialists blocked waiting
+   on one machine, or PM status shows bench/wait caused by local capacity.
+2. **Clear benefits** for that task: net ≥ +2 **Use** on the 2026-08-15
+   scorecard (isolation, persist after IDE close, unit-test closed loop,
+   GitLab MR handoff).
+
+### Enforce (Use)
+
+Tell the PM and owning stakeholder to run that ticket as a **Cursor Cloud
+Agent** from pushed `origin/main` (not a dirty local tree):
+
+- Docs / coherence MRs
+- Platform/edge **unit** tests while coding
+- UX static HTML/CSS + `test_browser_ui.py` (not live `:8443` walks)
+
+### Never force to cloud (Do not use)
+
+- Customer-journey live walks (`localhost:8443` + IDE browser)
+- `@aea-mr-coordinator` auto-merge (no merge token in the cloud VM)
+- LiteLLM / Anthropic live intent
+- AWS Terraform (parked)
+- Ad-hoc gitleaks/trivy as a substitute for GitLab CI
+
+### Conditional — ask the user / PM; do not silently enforce
+
+- Docker integration in cloud (`run_integration_tests.py`; nested Docker
+  is fragile — prefer a GitLab CI edge job as source of truth)
+- Support `glab` issues (issue-scope token only — not Maintainer merge)
+- AI regex/honesty without Anthropic keys (no `AEA_AI_*` in the cloud env)
+
 ## Canvas (posture / gap board)
 
 When the assessment is the deliverable, read
@@ -143,3 +202,7 @@ next one MR. No empty placeholders. Do not dump a markdown table instead.
 - Treating local Postgres volumes or plaintext Kafka as NFR-007/012/ADR-012
   production proof
 - Auto-merge, `terraform apply` without an explicit ask
+- Enabling Cloud Agents or writing `.cursor/environment.json` unless the
+  user opts into a Conditional Docker path
+- Implementing other stakeholders' tickets when enforcing a Cloud Agent
+  switch
