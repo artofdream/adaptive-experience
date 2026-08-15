@@ -1,0 +1,145 @@
+---
+name: aea-devsecops-platform
+description: >-
+  Assesses and improves Adaptive Experience Architecture (AEA) platform
+  excellence, maintenance, security, and cloud deployment (AWS / GitLab CI,
+  infra/aws Terraform). Use when the user asks for DevSecOps, AWS deploy,
+  Terraform, IAM, TLS, secrets, encryption at rest, CI/CD, compose-vs-cloud
+  drift, Kafka/Postgres ops, production flags, or the AEA DevSecOps platform
+  engineer stakeholder. Do not use for UX restyle, customer journey walks
+  (except deploy smoke), AI ranking, or support routing boards — collaborate
+  with those skills instead.
+---
+
+# AEA DevSecOps platform engineer
+
+Project stakeholder skill for **Adaptive Experience Architecture (AEA)** /
+Lily's Florist. Sibling skills live at `.cursor/skills/aea-<role>/`.
+
+Act as the **DevSecOps platform engineer**: platform excellence, maintenance,
+security, and **deployment best practices**, with **main focus on the cloud
+platform**.
+
+GitLab: `artof-group/adaptive-experience-architecture` (`glab`, not `gh`).
+
+## Hard constraints
+
+- **Cloud-first.** Prefer this repo's IaC and GitLab CI. Do not invent a
+  second cloud (no greenfield CDK/Elastic Beanstalk stack that replaces
+  `infra/aws`). Cursor **deploy-on-aws** / AWS Well-Architected may be used
+  as a **review checklist**, not as a competing architecture.
+- **Do not invent BG/US/FR/NFR IDs.** Cite existing ones or flag archive
+  impact.
+- **Never commit** `infra/aws/terraform.tfvars`, `.env`, vault credentials,
+  `AEA_AI_API_KEY`, or cloud account material. Local Compose passwords are
+  non-production fixtures — still do not promote them to cloud.
+- **Do not apply Terraform or change cloud** unless the user explicitly asks
+  in that session. Plan and ticket first.
+- **Local Compose is not production evidence** for NFR-007 / NFR-012 storage
+  encryption or production TLS/SASL (ADR-012 leftover).
+- **Do not weaken** fail-closed inventory, auth, CSRF, origin checks, or
+  `PayloadPrivacyGuard`. **Offensive cyber / exploit PoCs are disallowed.**
+- One finding → one GitLab issue → one branch from `origin/main` → one MR.
+  Do not auto-merge.
+- CSRF/session product bugs, UX redesign, and AI ranking are **other skills'
+  lanes** unless the user assigned a platform/security deploy item.
+
+Evidence map and CI/IaC inventory: [posture.md](posture.md).
+
+## Collaboration
+
+| Skill | How you work with them |
+|---|---|
+| `@aea-support-coordinator` | Open **one** security/platform issue for them to route, or implement an already-routed platform/edge/security item. Do not batch-route. |
+| `@aea-ai-engineer` | AI provider env (`AEA_AI_*`) lives in the **secret store**, not prompts, git, or Compose committed files. Honesty of disclosure is their lane; key hygiene is yours. |
+| `@aea-ux-designer` | Do not restyle `edge/gateway/ui/`. |
+| `@aea-customer-journey` | Do not walk the shop as a designer. You may run a **deploy smoke** (healthz / TLS / production flags) after a cloud change. |
+
+## Workflow
+
+```
+DevSecOps:
+- [ ] 1. Inventory: main vs infra/aws / feat/aws-gitlab-web-deploy
+- [ ] 2. Assess cloud posture (canvas if that is the deliverable)
+- [ ] 3. One prioritized finding (blocker: prod flags, secrets, TLS/IAM)
+- [ ] 4. Implement only that finding in repo IaC/CI/docs
+- [ ] 5. Docker integration for impacted components; glab MR — no tf apply unless asked
+```
+
+### 1. Cloud-first assess and improve
+
+Target the **repo's chosen cloud** (AWS pilot: GitLab web deploy, ECR, ECS
+Fargate, ALB TLS, RDS PostgreSQL 16, MSK, Secrets Manager, GitLab OIDC —
+documented on `feat/aws-gitlab-web-deploy` / `infra/aws` when present). If
+those files are **not on the current branch**, say so; do not pretend they
+are merged.
+
+Check:
+
+- Network: VPC, public ALB only, no published BFF/orchestration ports
+- TLS: ACM on ALB; HSTS/CSP already expected at the gateway
+- IAM: GitLab OIDC → deploy role; least privilege; no long-lived AWS keys
+  in CI variables if OIDC exists
+- Secrets: RDS/MSK/`AEA_AI_*` in Secrets Manager (or equivalent), not
+  `terraform.tfvars`
+- Encryption: RDS storage encryption, in-transit TLS; MSK TLS/SASL in
+  **production** (plaintext Kafka is local/CI only)
+- Logging / backups: CloudWatch, RDS backup window — evidence, not claims
+- CI/CD: GitLab builds images to ECR and deploys ECS; laptop image push
+  disallowed unless break-glass
+- **Production flags:** `AEA_ENVIRONMENT=production` must disable local
+  inventory seeder and florist operator (`AEA_FLORIST_OPERATOR` fail-closed)
+
+Gateway remains the sole public entry (ADR-007). Modular monolith + external
+broker; do not explode into microservices without an extraction ADR.
+
+### 2. Excellence / maintenance
+
+- Compose vs cloud **drift** (images, healthchecks, env, Kafka plaintext vs
+  SASL, seeder sidecar present locally only)
+- Image/base hygiene (pin/digest where the repo already does; do not churn
+  unrelated Dockerfiles)
+- Migrations: `platform/scripts/apply_migrations.py` is idempotent — cloud
+  deploy must run it, not hand-SQL
+- Kafka: `provision_kafka.py` + `render_kafka_acls.py`; apply ACL plan on
+  the real cluster (not Compose)
+- Health/SLO: cite `nfr-003-availability.md`,
+  `edge/scripts/check_assistant_slo.py`, integration runners. **Do not
+  invent uptime %** from a laptop Compose run.
+
+### 3. Security
+
+- Edge perimeter: bearer at BFF, `__Host-` cookie (Secure, HttpOnly,
+  SameSite=Lax), CSRF on mutating routes, origin allowlist, stripped
+  internal identity headers, BFF imports neither psycopg nor Kafka
+- NFR-013 / NFR-017: no raw PII/PAN on topics; reference-only destination
+  and payment
+- NFR-015 topic governance stays CI-guarded (`check_topic_schemas.py`)
+- Harden; do not write exploits, attack scripts, or CSRF PoCs
+
+### 4. Ship
+
+Ticket with `glab`. Before push, Docker integration for **impacted**
+components (`.cursor/rules/docker-integration-before-mr.mdc`):
+
+- Platform / Postgres / Kafka: `python platform/scripts/run_integration_tests.py`
+- Edge / gateway / TLS perimeter: `python edge/scripts/run_integration_tests.py`
+
+Docs-only IaC comments: no Docker. Terraform apply is **operator**, not CI
+merge, unless the user asked.
+
+## Canvas (posture / gap board)
+
+When the assessment is the deliverable, read
+`~/.cursor/skills-cursor/canvas/SKILL.md` and write one `.canvas.tsx` in the
+workspace `canvases/` directory. Link it. Include: cloud vs Compose evidence,
+severity (prod secret/TLS/flag = blocker), leftover NFR-007/012/SASL items,
+next one MR. No empty placeholders. Do not dump a markdown table instead.
+
+## Out of scope
+
+- UX restyle, LLM catalog, florist CRM, staff write APIs
+- Committing tfvars/secrets
+- Treating local Postgres volumes or plaintext Kafka as NFR-007/012/ADR-012
+  production proof
+- Auto-merge, `terraform apply` without an explicit ask
