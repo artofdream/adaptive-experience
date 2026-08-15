@@ -4,8 +4,9 @@ description: >-
   Assesses and redesigns the Lily's Florist / AEA customer Adaptive Workspace
   (edge/gateway/ui tiles T-01…T-08, ASO, Contact Florist) against the defined
   journey, ADRs, and UX best practices, then implements a tight change in the
-  existing HTML/CSS/JS. Use when the user asks for a UX assessment, UX review,
-  workspace redesign, tile UX, journey UX, Adaptive Workspace accessibility, or
+  existing HTML/CSS/JS. Also keeps the Figma design mirror in sync with repo UI.
+  Use when the user asks for a UX assessment, UX review, workspace redesign,
+  tile UX, journey UX, Adaptive Workspace accessibility, Figma library sync, or
   when working as the AEA UX designer stakeholder. Do not use for live
   first-time customer walkthroughs (see aea-customer-journey) or CSRF/session
   plumbing.
@@ -62,9 +63,11 @@ Copy this checklist and track progress:
 UX designer:
 - [ ] 1. Ground in journey + live UI
 - [ ] 2. Assess (canvas when assessment is the deliverable)
-- [ ] 3. Scope one tight redesign
-- [ ] 4. Implement in existing HTML/CSS/JS
-- [ ] 5. Tests + SOP (issue, branch, MR) if shipping
+- [ ] 3. If new user journey: Figma mockups + clickable prototype (see below)
+- [ ] 4. Scope one tight redesign
+- [ ] 5. Implement in existing HTML/CSS/JS
+- [ ] 6. Sync Figma to match shipped UI
+- [ ] 7. Tests + SOP (issue, branch, MR) if shipping
 ```
 
 ### 1. Assess first
@@ -143,6 +146,63 @@ kitchen-sink restyle.
    impact). Do not push as if integrations passed if Docker is unavailable.
 
 Do not auto-merge. Do not commit unless the user asked.
+
+## Figma (design mirror + journey prototypes)
+
+**File:** [AEA Lily Florist](https://www.figma.com/design/4PNLwici0GMwU824BpoZ38)
+(`fileKey` `4PNLwici0GMwU824BpoZ38`). Do not create a second competing file.
+
+**Source of truth:** runnable UI under `edge/gateway/ui/` (`index.html`,
+`assets/styles.css`, `assets/app.js`, and `florist.html` / `florist.js` when
+that chrome shares the same kit). Figma is the **design mirror** and the place
+to **propose** journeys. Do **not** invent a second CSS token system — Figma
+variables must use the existing `:root` names (`var(--purple)`, …).
+
+Use official MCP **`plugin-figma-figma`** only (`use_figma`,
+`search_design_system`, `get_libraries`). Load `/figma-use` plus
+`/figma-generate-library` (tokens/components) or `/figma-generate-design`
+(screens/mockups) before writing. Never TalkToFigma.
+
+Page inventory and frame → file mapping: `figma/README.md`.
+
+### Sync when the shop UI changes
+
+When this skill changes `edge/gateway/ui/` (or florist chrome in the same kit),
+**update Figma in the same MR** (or immediately after on the same issue) so the
+mirror does not drift:
+
+- Recolor / restyle library components and Shop CSS variables to match CSS.
+- Refresh composed frames (tiles T-01…T-08, ASO, operator chrome if in scope).
+- Update `figma/README.md` if pages, prototype starting nodes, or mappings
+  change.
+
+Repo-only token edits that are not reflected in Figma are incomplete UX work.
+
+### New user journey — mockups and prototype (standing)
+
+When addressing a **new user journey** (new tile flow, new path, or a proposal
+before/alongside code):
+
+1. Illustrate the proposal in this Figma file with **mockups** of the
+   screens/states (persistent-tile workspace, not a multi-page wizard unless
+   ADR-002 is explicitly being changed).
+2. Wire a **prototype** (`setReactionsAsync` / ON_CLICK → NAVIGATE or OVERLAY)
+   so stakeholders can click the journey. Not a slide deck of disconnected
+   frames. Set a `flowStartingPoints` entry on the page.
+3. Do **not** restyle the live shop as part of a proposal unless the journey is
+   approved to implement. Reuse Shop CSS variables and library components.
+4. Do not invent BG/US/FR/NFR IDs. Keep NFR-017 (destination/payment references
+   only) in mockups — no street forms or card PAN fields.
+5. Link the **prototype URL** (file + starting `node-id`) in the GitLab issue
+   and MR, and add the mapping row in `figma/README.md`.
+6. After the journey **ships** in `edge/gateway/ui/`, sync Figma to the
+   implemented UI (mirror rule above). Until then, label frames as proposal.
+
+How-to: duplicate the **Shop UI · current journey** prototype page as a
+starting point; add one frame per state; connect Continue / tile actions;
+publish the proto link
+`https://www.figma.com/proto/4PNLwici0GMwU824BpoZ38?node-id=<id>&starting-point-node-id=<id>`
+(hyphens in the URL, colons in MCP `nodeId`).
 
 ## Help vs Contact Florist
 

@@ -1,33 +1,54 @@
 # Figma Workspace
 
-Active file (Lily's Florist MVP wireframes):
+Active file (Lily's Florist shop UI mirror + journey prototypes):
 
-**[AEA Lily Florist Wireframes](https://www.figma.com/design/4PNLwici0GMwU824BpoZ38)**
+**[AEA Lily Florist](https://www.figma.com/design/4PNLwici0GMwU824BpoZ38)**
+(`fileKey` `4PNLwici0GMwU824BpoZ38`)
+
+**Runtime source of truth** is `edge/gateway/ui/` (CSS `:root` tokens, tiles,
+ASO, florist chrome). Figma is the design **mirror** and the place to
+**propose** new journeys. Do not invent a second CSS token system.
+
+Sync and new-journey prototype rules:
+`.cursor/skills/aea-ux-designer/SKILL.md` and
+`.cursor/rules/figma-shop-ui-sync.mdc`.
 
 ## Pages (live inventory)
 
 | Page | Status | Contents |
 |---|---|---|
-| AEA Design System | Active | Grayscale components + `adaptive-workspace-mvp` frame (Header, T-01…T-08, ASO) |
-| Discovery v0.1 | Active | Composed Adaptive Workspace MVP (component instances) |
-| Recommendation Journey | Stub | Placeholder for journey step frames |
-| Delivery Journey | Stub | Placeholder |
-| Customer Support | Stub | ASO / Future T-09 escalation placeholder |
-| Discovery v1.0 | Planned stub | Not yet designed |
-| Discovery v2 | Planned stub | Not yet designed |
-| Presentation | Planned stub | Not yet designed |
+| Cover | Active | Shop UI library cover (15 Aug 2026) |
+| Foundations | Active | `:root` color swatches + Inter type specimens |
+| Components | Active | Color-matched atoms bound to AEA Shop CSS variables |
+| Shop UI · current journey | Active | Mid-fidelity mockups of steps 1–7 + clickable prototype |
+| AEA Design System | Archive | Grayscale wireframe components + `adaptive-workspace-mvp` |
+| Discovery v0.1 | Archive | Older composed workspace (component instances) |
+| Recommendation Journey | Stub | Hidden / empty placeholder |
+| Delivery Journey | Stub | Hidden / empty placeholder |
+| Customer Support | Stub | Hidden / empty placeholder |
+| Discovery v1.0 | Stub | Hidden / empty placeholder |
+| Discovery v2 | Stub | Hidden / empty placeholder |
+| Presentation | Stub | Hidden / empty placeholder |
 
-MVP fidelity (aligned with local SVGs / ADR-006 amended):
+## Frame → UI mapping
 
-- T-03 — Available badges on recommendation cards
-- T-04 — Arrangement, Size, Card message, and thin FR-003 selects (flower type,
-  colour, ribbon); free-form bouquet composition and gift-card products remain
-  Future / out of scope
-- T-08 — Contact Florist + Escalate (Future)
+| Figma | Repo |
+|---|---|
+| Collection **AEA Shop CSS** (`purple`, `ink`, `page`, …) | `edge/gateway/ui/assets/styles.css` `:root` |
+| Collection **AEA Wireframe Grayscale** | Archive only — not the live shop |
+| Text styles `AEA/Brand` … `AEA/Button` | Inter sizes/weights in `styles.css` |
+| Components `Button`, `Chip`, `Badge`, `Composer`, `Tile`, `Product Card`, `Header`, `ASO`, `Operator banner` | Classes in `index.html` / `florist.html` + `styles.css` |
+| Prototype **Shop UI · current journey** | `index.html` journey steps 1–7 (`data-journey-mode="steps"`) |
 
-Local SVG exports and structure notes:
-`implementations/florist/wireframes/` (see that README).
-Reusable split assets: `assets/`.
+Current-journey prototype (click Continue through steps 1→7):
+
+**[Open prototype](https://www.figma.com/proto/4PNLwici0GMwU824BpoZ38?node-id=21-24&starting-point-node-id=21-24)**
+
+Starting frame: `1 Discover` (`21:24`). Hyphens in the URL; MCP `nodeId` uses colons (`21:24`).
+
+New journey proposals: add a page, mockup states, wire prototype connections,
+then add a row here with the proto URL (file + `node-id`). After the journey
+ships in `edge/gateway/ui/`, sync frames to the implemented UI.
 
 ## Cursor integration
 
@@ -39,10 +60,9 @@ Cursor is wired to the **official Figma MCP** via the Figma plugin
 
 - Authenticate once in **Cursor Settings → Tools & MCP** (Connect next to Figma)
   if tools fail or return “Not connected”.
-- Paste a `figma.com` URL or ask the agent to create/update pages from the list
-  above.
-- Useful agent skills: `/figma-use`, `/figma-generate-design`,
-  `/figma-design-to-code`, `/figma-generate-library`.
+- Skills: `/figma-use` (required before writes), `/figma-generate-library`
+  (tokens/components), `/figma-generate-design` (screens + journey mockups).
+- Never TalkToFigma.
 
 Do not put Figma API tokens in this repo. Auth is OAuth via Cursor’s MCP
 connection.
