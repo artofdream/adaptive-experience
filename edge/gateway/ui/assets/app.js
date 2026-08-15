@@ -874,22 +874,7 @@ document.querySelector("#delivery-form").addEventListener("submit", async (event
   }
 });
 
-document.querySelector("#create-order").addEventListener("click", async () => {
-  clearFormError("checkout-form-error");
-  try {
-    const result = await api("/api/v1/order", { method: "POST", body: {} });
-    await refreshWorkspace();
-    await pullStream();
-    showNotice(result.accepted ? `Order ${result.order_id} created.` : `Order not created (${result.code}).`);
-  } catch (error) {
-    const copy = friendlyError(error, "Order could not be created");
-    showFormError("checkout-form-error", copy);
-    showNotice(copy, "error");
-  }
-});
-
-document.querySelector("#checkout-form").addEventListener("submit", async (event) => {
-  event.preventDefault();
+async function confirmAndPay() {
   const summary = (state.workspace && state.workspace.facets || {}).order_summary || {};
   const paymentReference = resolvePaymentReference();
   clearFormError("checkout-form-error");
@@ -930,6 +915,12 @@ document.querySelector("#checkout-form").addEventListener("submit", async (event
     showFormError("checkout-form-error", copy);
     showNotice(copy, "error");
   }
+}
+
+document.querySelector("#create-order").addEventListener("click", confirmAndPay);
+document.querySelector("#checkout-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  await confirmAndPay();
 });
 
 document.querySelectorAll("input[name='payment-mode']").forEach((input) => {

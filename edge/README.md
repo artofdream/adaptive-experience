@@ -191,7 +191,9 @@ Internal Orchestration (#144; contract in
   `research/design-notes/florist-operator-ui.md`. Not FR-016 / FR-017 CRM.
 - `POST /api/v1/checkout` performs FR-019 payment and checkout. It accepts only a
   `payment_reference` (an opaque vault token) and the `observed_total`; raw card
-  fields (`card_number`, `cvv`, ...) are rejected at the edge (NFR-013). Checkout
+  fields (`card_number`, `cvv`, ...) are rejected at the edge (NFR-013). If no
+  FR-013 order exists yet, checkout creates it from the session product and
+  delivery decisions; missing decisions return 422 `order_incomplete`. Checkout
   returns `202 accepted` with `pending: true`; authorization runs in the payment
   consumer (#148). Observe `order.confirmed` (or a decline) via workspace/stream.
   A stale `observed_total` or an already-confirmed order returns 409. The Adaptive
