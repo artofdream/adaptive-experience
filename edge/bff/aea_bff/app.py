@@ -59,7 +59,10 @@ class BffApp:
                                      extra_headers={"retry-after": "60"})
 
         if path == "/api/v1/session" and method == "POST":
-            session = self.sessions.create(subject)
+            # Reuse a valid same-subject cookie. A second tab or /florist boot
+            # must not mint a new session and invalidate the first tab's CSRF.
+            existing = self.sessions.get(self._cookie(headers.get("cookie"), "__Host-aea_session"))
+            session = existing if existing is not None and existing.subject == subject else self.sessions.create(subject)
             try:
                 self.orchestration.ensure_session(session_id=session.session_id, subject=subject)
             except (OrchestrationUnavailable, RuntimeError):

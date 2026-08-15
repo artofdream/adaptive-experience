@@ -238,15 +238,25 @@ function headers(extra) {
   };
 }
 
+async function ensureSession() {
+  const session = await api("/api/v1/session", { method: "POST", _retried: true });
+  state.csrf = session.csrf_token;
+  return session;
+}
+
 async function api(path, options = {}) {
+  const method = options.method || "GET";
   const init = {
-    method: options.method || "GET",
+    method,
     headers: headers(options.headers || {}),
     credentials: "same-origin",
   };
+  if (state.csrf && path !== "/api/v1/session"
+      && ["POST", "PUT", "PATCH", "DELETE"].includes(method.toUpperCase())) {
+    init.headers["X-CSRF-Token"] = state.csrf;
+  }
   if (options.body !== undefined) {
     init.headers["Content-Type"] = "application/json";
-    init.headers["X-CSRF-Token"] = state.csrf;
     init.body = JSON.stringify(options.body);
   }
   const response = await fetch(path, init);
@@ -254,6 +264,11 @@ async function api(path, options = {}) {
     ? await response.json() : await response.text();
   if (!response.ok) {
     const code = payload && payload.error || payload && payload.code || `http_${response.status}`;
+    if (!options._retried && path !== "/api/v1/session"
+        && (code === "csrf_rejected" || code === "session_required")) {
+      await ensureSession();
+      return api(path, { ...options, _retried: true });
+    }
     throw new Error(code);
   }
   return payload;
@@ -770,8 +785,7 @@ window.addEventListener("hashchange", () => {
 
 async function boot() {
   try {
-    const session = await api("/api/v1/session", { method: "POST" });
-    state.csrf = session.csrf_token;
+    await ensureSession();
     await refreshWorkspace();
     await pullStream();
     const hashStep = Number((window.location.hash.match(/^#step-([1-7])$/) || [])[1]);

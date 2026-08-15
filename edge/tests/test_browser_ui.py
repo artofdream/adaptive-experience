@@ -185,6 +185,23 @@ class BrowserUiTests(unittest.TestCase):
         self.assertIn("delivery_issue", self.html)
         self.assertIn("product_question", self.html)
 
+    def test_mutating_fetches_send_csrf_and_use_allowed_windows(self):
+        self.assertIn("async function ensureSession()", self.script)
+        self.assertIn('init.headers["X-CSRF-Token"] = state.csrf', self.script)
+        self.assertIn('["POST", "PUT", "PATCH", "DELETE"]', self.script)
+        self.assertIn('code === "csrf_rejected" || code === "session_required"', self.script)
+        for path in ("/api/v1/conversation/messages", "/api/v1/delivery",
+                     "/api/v1/selection", "/api/v1/checkout", "/api/v1/support",
+                     "/api/v1/shared-understanding"):
+            self.assertIn(path, self.script)
+        self.assertIn('value="morning"', self.html)
+        self.assertIn('value="afternoon"', self.html)
+        self.assertIn('value="evening"', self.html)
+        self.assertNotIn('value="10:00-12:00"', self.html)
+        florist = (ROOT / "ui" / "assets" / "florist.js").read_text(encoding="utf-8")
+        self.assertIn("async function ensureSession()", florist)
+        self.assertIn('code === "csrf_rejected" || code === "session_required"', florist)
+
     def test_florist_operator_console_is_separate_labeled_sample(self):
         html = (ROOT / "ui" / "florist.html").read_text(encoding="utf-8")
         script = (ROOT / "ui" / "assets" / "florist.js").read_text(encoding="utf-8")

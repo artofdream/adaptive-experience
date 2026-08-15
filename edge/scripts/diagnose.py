@@ -33,6 +33,15 @@ with urllib.request.urlopen(session_request, context=context, timeout=5) as resp
     if response.status != 201 or not session.get("csrf_token") or not cookie:
         raise SystemExit("browser session did not reach orchestration")
 
+reuse_request = urllib.request.Request(
+    "https://localhost:8443/api/v1/session", method="POST",
+    headers={**base_headers, "Cookie": cookie})
+with urllib.request.urlopen(reuse_request, context=context, timeout=5) as response:
+    reused = json.load(response)
+    if response.status != 201 or reused.get("csrf_token") != session["csrf_token"]:
+        raise SystemExit("second session boot rotated CSRF and would reject the first tab")
+print("session reuse preserves CSRF across a second boot")
+
 projection_request = urllib.request.Request(
     "https://localhost:8443/api/v1/shared-understanding",
     headers={**base_headers, "Cookie": cookie})
