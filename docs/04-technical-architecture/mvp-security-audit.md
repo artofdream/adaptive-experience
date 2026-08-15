@@ -87,6 +87,7 @@ data protection).
 | Reference-only payment / PII | NFR-013/017 | test_checkout, test_delivery, nfr-013-data-protection.md |
 | Preference / delivery encryption posture | NFR-007/012 | nfr-007-012-encryption.md; TLS edge; production disk encryption required |
 | BFF imports no infra; boundary | NFR-017 | test_boundary_contains_no_domain_or_infrastructure_authority |
+| Gateway security headers (CSP, HSTS, nosniff, frame-ancestors none) | NFR-017 | nginx.conf; test_gateway_emits_claimed_security_headers |
 
 ## Outcome
 
