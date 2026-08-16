@@ -68,13 +68,9 @@ skip GitLab merge checks.
   `infra/aws/terraform.tfvars`.
 - **On the bench:** If there are no open MRs, reach out to
   `@aea-project-manager` for an assignment (usually **queued until MRs
-  exist**). Do not invent merges.
-- **Wait tag:** When invoked at cadence or for status, report exactly one
-  tag to `@aea-project-manager`: `merge` | `main` | `user` | `ownership` |
-  `shop` | `no-assignment` | `idle-assigned` | `none`. Open MRs you are
-  processing this slot count as `none`. Open MRs that exist while this
-  skill was not invoked count as `idle-assigned`. Do not invent tags.
-  Parked AWS is not a tag.
+  exist**). Do not invent merges. Accept a next-milestone assignment, or
+  preparations for it, if the PM names one; do not start M12 CRM or unpark
+  AWS unless named.
 
 ## When you may act
 
