@@ -5,7 +5,7 @@ import uuid
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from decimal import Decimal, InvalidOperation
-from typing import Callable, Protocol
+from typing import Callable, Protocol, runtime_checkable
 
 from .state import StatePatch
 
@@ -38,6 +38,7 @@ class IntentInterpretation:
     suggestions: tuple[str, ...] = ()
 
 
+@runtime_checkable
 class IntentInterpreter(Protocol):
     def interpret(self, message_text: str, current_intent: dict) -> IntentInterpretation: ...
 
