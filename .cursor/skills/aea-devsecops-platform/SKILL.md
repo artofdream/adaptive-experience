@@ -50,6 +50,12 @@ GitLab: `artof-group/adaptive-experience-architecture` (`glab`, not `gh`).
 - **On the bench:** If you have no in-flight issue/MR and the user did not
   name a ticket, reach out to `@aea-project-manager` for an assignment. Do
   not idle. Do not invent unscoped work. Do not take another lane's files.
+- **Wait tag:** When invoked at cadence or for status, report exactly one
+  tag to `@aea-project-manager`: `merge` | `main` | `user` | `ownership` |
+  `shop` | `no-assignment` | `idle-assigned` | `none`. `none` needs work
+  evidence this slot (branch commit, MR update, or this invocation on the
+  named ticket). A named ticket with no evidence is `idle-assigned`. Do
+  not invent tags. Parked AWS is not a tag.
 - **Cloud Agent switch.** When the team is resource-constrained **and** a
   stakeholder task is net ≥ +2 **Use**, enforce that ticket as a Cursor
   Cloud Agent. Do not implement their ticket. Never force **Do not use**
