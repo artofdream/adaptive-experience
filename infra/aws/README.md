@@ -29,7 +29,7 @@ fail-closed auth.
 - ALB HTTPS → gateway (ECS) → BFF → orchestration (Cloud Map DNS)
 - ECR repos for `orchestration`, `bff`, `gateway`
 - RDS PostgreSQL 16 (private, `storage_encrypted`)
-- MSK Kafka 3.6 with TLS + SASL/SCRAM, **2 brokers / RF=2**
+- MSK Kafka 3.6 with TLS + SASL/SCRAM, **2 brokers / RF=2 / MinISR=1** (pilot; AWS Health requires MinISR = RF-1)
 - Secrets Manager app secret (`AEA_*` including Kafka SASL)
 - GitLab OIDC IAM role for CI push/deploy (main branch only)
 - ECS services: gateway, bff, orchestration, relay, consumer-workspace

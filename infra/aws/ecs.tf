@@ -99,6 +99,7 @@ resource "aws_ecs_task_definition" "orchestration" {
     portMappings = [{ containerPort = 8081, protocol = "tcp" }]
     environment = [
       { name = "AEA_ENVIRONMENT", value = "production" },
+      { name = "AEA_KAFKA_REPLICATION_PROFILE", value = "pilot" },
     ]
     secrets = [
       { name = "AEA_POSTGRES_DSN", valueFrom = "${aws_secretsmanager_secret.app.arn}:AEA_POSTGRES_DSN::" },
@@ -191,6 +192,7 @@ resource "aws_ecs_task_definition" "relay" {
     command   = ["python", "platform/scripts/run_relay.py", "--loop"]
     environment = [
       { name = "AEA_ENVIRONMENT", value = "production" },
+      { name = "AEA_KAFKA_REPLICATION_PROFILE", value = "pilot" },
     ]
     secrets = [
       { name = "AEA_POSTGRES_DSN", valueFrom = "${aws_secretsmanager_secret.app.arn}:AEA_POSTGRES_DSN::" },
@@ -225,6 +227,7 @@ resource "aws_ecs_task_definition" "consumer_workspace" {
     command   = ["python", "platform/scripts/run_consumer.py", "workspace", "--loop"]
     environment = [
       { name = "AEA_ENVIRONMENT", value = "production" },
+      { name = "AEA_KAFKA_REPLICATION_PROFILE", value = "pilot" },
     ]
     secrets = [
       { name = "AEA_POSTGRES_DSN", valueFrom = "${aws_secretsmanager_secret.app.arn}:AEA_POSTGRES_DSN::" },

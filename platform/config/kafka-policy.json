@@ -2,6 +2,7 @@
   "defaults": {
     "partitions": 3,
     "production_replication_factor": 3,
+    "pilot_replication_factor": 2,
     "local_replication_factor": 1,
     "retention_ms": 86400000,
     "max_message_bytes": 1048576,
