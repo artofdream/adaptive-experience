@@ -16,3 +16,14 @@ __pycache__/
 !.env.example
 *.tfvars
 !*.tfvars.example
+
+# Terraform plugin cache / working directory (never commit)
+.terraform/
+**/.terraform/
+tfplan
+*.tfplan
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+.terraform.tfstate.lock.info
