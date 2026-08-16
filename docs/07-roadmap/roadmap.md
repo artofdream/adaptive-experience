@@ -12,6 +12,8 @@ Inventory availability, and **automated FAQ support** (FR-009).
 
 ## MVP+
 Prior-order retrieval, Reorder, Modify-before-reorder, and Customer Memory / CRM.
+Scheduled as **M8** (returning shopper / FR-008) then **M12** (CRM / FR-016,
+FR-017). Workbook scope stays Future.
 
 ## Future
 Free-form bouquet composition beyond thin T-04 option keys, inventory
@@ -25,7 +27,9 @@ and the physical **card message** are delivered on T-04 (ADR-006 amended).
 
 ## Group Milestones
 
-The delivery pipeline is structured into 8 implementation milestones (M0–M7) plus Future Backlog:
+The delivery pipeline is structured into 8 MVP milestones (M0–M7), five
+post-MVP milestones pulled from Future (M8–M12), and an unscheduled Future
+Backlog:
 
 | Milestone | Title | Focus & Primary Deliverables | Requirements Coverage |
 |---|---|---|---|
@@ -63,4 +67,8 @@ The delivery pipeline is structured into 8 implementation milestones (M0–M7) p
   PostgreSQL outbox, and Kafka foundation. M7 audits, exercises, and hardens
   those controls; it does not defer their first implementation until the end of
   the MVP.
+- M8–M12 are delivery milestones pulled from Future. They do not promote
+  those requirements to MVP in the workbook. M8 first slice (#190 same-session
+  T-03 hint) may land before the rest of FR-008. Do not start M12 while M8
+  is open. AWS stays parked and is not a milestone.
 
