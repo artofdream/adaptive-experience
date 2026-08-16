@@ -53,7 +53,7 @@ const RIBBONS = ["none", "satin", "organza", "kraft"];
 /** ADR-003 chip copy: API missing-facet questions become thought completions. */
 const THOUGHT_COMPLETION_COPY = {
   "What is the occasion?": "for a birthday",
-  "What budget should I work within?": "under €75",
+  "What budget should I work within?": "under $75",
   "Who are the flowers for?": "for Mom",
   "What style or mood would you prefer?": "romantic style",
   "Any flower preferences?": "roses",
