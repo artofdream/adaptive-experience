@@ -278,6 +278,8 @@ class BrowserUiTests(unittest.TestCase):
         self.assertIn('aria-label="Optional thought-completion suggestions"', self.html)
         self.assertNotIn('class="chip"', self.html)
         self.assertNotIn("Birthday flowers for Mum, under €75", self.html)
+        self.assertNotIn("under €75", self.html)
+        self.assertNotIn("under €75", self.script)
         self.assertNotIn(">Birthday</button>", self.html)
         self.assertNotIn(">Wedding</button>", self.html)
         self.assertNotIn(">Sympathy</button>", self.html)
@@ -287,11 +289,12 @@ class BrowserUiTests(unittest.TestCase):
         self.assertIn('THOUGHT_COMPLETION_COPY', self.script)
         self.assertIn('"Who are the flowers for?": "for Mom"', self.script)
         self.assertIn('"What is the occasion?": "for a birthday"', self.script)
+        self.assertIn('"What budget should I work within?": "under $75"', self.script)
         self.assertIn("chip.dataset.suggest = text", self.script)
         self.assertIn("chip.textContent = text", self.script)
         self.assertIn('#suggestions").addEventListener("click"', self.script)
         self.assertNotIn('querySelectorAll("[data-suggest]")', self.script)
-        self.assertIn('placeholder="For example: Birthday roses for Mum, under €75"', self.html)
+        self.assertIn('placeholder="For example: Birthday roses for Mum, under $75"', self.html)
 
 
 if __name__ == "__main__":
