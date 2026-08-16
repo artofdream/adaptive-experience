@@ -57,7 +57,9 @@ but `edge/` or `platform/` changed.
 - Scope is mixed or unclear
 - Validation is missing, skipped, or “CI only” without user acceptance
 - Conflicts, rebase uncertainty, force-with-lease onto a shared branch you
-  did not author
+  did not author. Conflicts → **do not merge** and **do not rebase**.
+  Hand review/resolution to `@aea-senior-software-engineer` (comment /
+  assign). Do not invent a rebase unless SSE owns it.
 - Security/privacy/cloud apply (`terraform apply`)
 - Secrets, `.env`, vault credentials, or `infra/aws/terraform.tfvars`
 - Force-push to `main` / `master`
