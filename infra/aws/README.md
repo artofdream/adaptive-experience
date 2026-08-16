@@ -12,7 +12,16 @@ GitLab CI `build-ecr` (OIDC, `main` only) pushes images to ECR.
 `GET $AEA_PUBLIC_URL/healthz`.
 
 Canonical public origin: `https://aea.artof.link` (no `www`, no `:443`, no
-trailing slash).
+trailing slash). `AEA_ALLOWED_ORIGIN` must be that exact value.
+
+Path B BFF `AEA_LOCAL_BEARER_TOKEN` must match the shipped UI fixture
+`local-browser-token` in `edge/gateway/ui/assets/app.js` (same value as local
+Compose). Terraform no longer generates a random browser token. Align a live
+secret by merging that one JSON key (do not replace the whole secret blob —
+operator `AEA_AI_*` keys would be dropped), then
+`aws ecs update-service --cluster aea-pilot --service bff --force-new-deployment`
+so Fargate re-injects the secret. Do not weaken CSRF, origin checks, or
+fail-closed auth.
 
 ## What it creates
 
