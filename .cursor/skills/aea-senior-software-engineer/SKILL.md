@@ -36,6 +36,9 @@ This skill **does not merge**. Only `@aea-mr-coordinator` may set auto-merge.
 - **Do not** `terraform apply` or unpark AWS. That is
   `@aea-devsecops-platform` and stays parked unless the user unparks it.
 - **Do not merge MRs.** Hand merge-ready work to `@aea-mr-coordinator`.
+  When the coordinator reports conflicts, **this skill owns** review and
+  resolution (rebase or merge from updated `origin/main` as needed);
+  the coordinator must not rebase.
 - One finding → one GitLab issue → one branch from `origin/main` → one MR.
 - PowerShell: no bash `&&` or HEREDOC; `glab`, not `gh`.
 - **On the bench:** If you have no in-flight issue/MR and the user did not

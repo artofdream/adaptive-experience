@@ -64,6 +64,11 @@ skip GitLab merge checks.
 - Uncertainty → **ask the user**; do not merge and do not set auto-merge.
 - Never force-push `main` / `master`. Not a merge of `main` into itself.
 - Never `terraform apply` or cloud-apply as part of merge.
+- **Conflicts:** If GitLab reports merge conflicts, **do not merge** and
+  **do not rebase**. `@aea-senior-software-engineer` holds authority on
+  development topics, including conflict review and resolution. Comment
+  on the MR (assign or ping SSE). Do not invent a rebase unless SSE
+  owns it.
 - Do not invent BG/US/FR/NFR IDs. Do not commit secrets or
   `infra/aws/terraform.tfvars`.
 - **On the bench:** If there are no open MRs, reach out to
@@ -98,7 +103,9 @@ Checklist detail: [gates.md](gates.md).
 
 - Scope is mixed or unclear
 - Validation is missing, skipped, or “CI only” without user acceptance
-- Conflicts, rebase uncertainty, force-with-lease onto a shared branch you did not author
+- Conflicts, rebase uncertainty, force-with-lease onto a shared branch you did not author.
+  Conflicts → **do not rebase**; hand review/resolution to
+  `@aea-senior-software-engineer`
 - Security/privacy/cloud apply (`terraform apply`)
 - Secrets, `.env`, vault credentials, or `infra/aws/terraform.tfvars`
 - Force-push to `main` / `master`
@@ -139,8 +146,9 @@ glab mr merge <n> --yes --auto-merge
 
 `--yes` skips the confirmation prompt, not GitLab merge checks. Do not
 squash unless the project setting already requires it. Do not merge if
-GitLab reports conflicts. If the pipeline is already green, the same
-command merges now.
+GitLab reports conflicts. **Do not rebase** the source branch yourself;
+hand review/resolution to `@aea-senior-software-engineer`. If the
+pipeline is already green, the same command merges now.
 
 After merge, report the MR URL and merged SHA. Do not start the next finding’s
 branch in the same turn unless the user asked.
@@ -155,7 +163,7 @@ branch in the same turn unless the user asked.
 | `aea-support-coordinator` | Batch-route a queue |
 | `aea-ai-engineer` | Implement AI gaps |
 | `aea-devsecops-platform` | Apply Terraform or redesign cloud |
-| `aea-senior-software-engineer` | Design, architect, or implement platform/edge |
+| `aea-senior-software-engineer` | Design, architect, or implement platform/edge; they own MR conflict review/resolution — do not rebase for them |
 
 You **must** auto-merge an MR those skills produced, if this skill was
 invoked and the gates pass.
