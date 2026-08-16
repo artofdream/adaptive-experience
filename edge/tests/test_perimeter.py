@@ -607,6 +607,23 @@ class PerimeterTests(unittest.TestCase):
         self.assertIn("X-Content-Type-Options nosniff", gateway)
         self.assertIn("X-Frame-Options DENY", gateway)
 
+    def test_gateway_alb_mode_listens_http_for_alb_targets(self):
+        root = pathlib.Path(__file__).resolve().parents[1]
+        alb = (root / "gateway" / "nginx-alb.conf").read_text(encoding="utf-8")
+        dockerfile = (root / "gateway" / "Dockerfile").read_text(encoding="utf-8")
+        entrypoint = (root / "gateway" / "entrypoint.sh").read_text(encoding="utf-8")
+        self.assertIn("listen 8080;", alb)
+        self.assertNotIn("listen 8443", alb)
+        self.assertNotIn("ssl_certificate", alb)
+        self.assertIn("location = /healthz", alb)
+        self.assertIn("__BFF_UPSTREAM__", alb)
+        self.assertIn("proxy_set_header X-Internal-Identity \"\";", alb)
+        self.assertIn("add_header Content-Security-Policy", alb)
+        self.assertIn("frame-ancestors 'none'", alb)
+        self.assertIn("COPY nginx-alb.conf", dockerfile)
+        self.assertIn('AEA_GATEWAY_MODE:-}" = "alb"', entrypoint)
+        self.assertIn("openssl req", entrypoint)
+
 
 if __name__ == "__main__":
     unittest.main()

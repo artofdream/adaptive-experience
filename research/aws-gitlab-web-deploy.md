@@ -1,15 +1,15 @@
 # AWS web deploy from GitLab — plan & checklist
 
 tags: #aea #deployment #aws #gitlab
-status: iac-recovered-awaiting-merge
+status: ci-jobs-awaiting-merge
 target: public web MVP (no native apps yet)
 domain: aea.artof.link
 canonical_origin: https://aea.artof.link
 region: us-east-1
-assessed_ref: origin/main (replayed from 13 Aug stash; not feat/aws-gitlab-web-deploy)
-branch: infra/aws-stash-recover
-issue: "#198"
-plan: recover parked `infra/aws` + operator docs; no terraform apply; no CI deploy jobs in this MR
+assessed_ref: origin/main
+branch: ci/build-ecr-deploy-ecs
+issue: "#199"
+plan: GitLab CI build-ecr + deploy-ecs on main (OIDC) plus gateway ALB-mode image so ALB /healthz can pass; no terraform apply
 
 ## Goal
 
@@ -41,10 +41,11 @@ Images:
 |-------|------------|
 | orchestration | `platform/Dockerfile.orchestration` |
 | bff | `edge/bff/Dockerfile` |
-| gateway | `edge/gateway/Dockerfile` (`AEA_GATEWAY_MODE=alb` in the task def; image support is a later slice) |
+| gateway | `edge/gateway/Dockerfile` (`AEA_GATEWAY_MODE=alb` → `nginx-alb.conf` HTTP :8080) |
 
 IaC: `infra/aws/` · Bootstrap: `infra/aws/BOOTSTRAP.md` · CI `build-ecr` /
-`deploy-ecs`: **later MR** (not recovered here).
+`deploy-ecs`: this MR (#199). Gateway ALB mode is in the same image (required
+for a healthy ALB target).
 
 **Image policy (locked):** cloud-only. Laptop builds stay on compose/dev; they
 are not the promotion path into ECS.
@@ -67,7 +68,7 @@ ADR-012 production proof.
 
 ### Phase 1 — GitLab builds images → ECR (cloud-only)
 
-- [ ] CI `build-ecr` on `main` — **later MR** (stash CI not recovered here)
+- [ ] CI `build-ecr` on `main` — this MR (#199)
 - [ ] Push to **ECR** via GitLab OIDC
 - [ ] Tag `$CI_COMMIT_SHA` (+ `latest` on main)
 
@@ -88,7 +89,7 @@ ADR-012 production proof.
 
 ### Phase 4 — GitLab deploy
 
-- [ ] Manual `deploy-ecs` on `main` — **later MR**
+- [ ] Manual `deploy-ecs` on `main` — auto after `build-ecr` in this MR (#199)
 - [x] OIDC IAM role in Terraform (no long-lived keys in git)
 - [ ] Rolling ECS update + `GET $AEA_PUBLIC_URL/healthz` smoke
 
@@ -100,7 +101,7 @@ operator apply pending a later explicit ask.
 ### Deferred
 
 - Native apps / Cognito full customer IdP
-- Gateway ALB-mode image + Kafka SASL app adapters (later slices; not this MR)
+- Gateway ALB-mode image + Kafka SASL app adapters (ALB mode is in #199; Kafka SASL clients remain later)
 - SSE durable recall (#193) and NFR-008 (#196)
 - Multi-AZ / large load test
 - Florist SoT replacements for reference authorities
@@ -129,7 +130,7 @@ OIDC is restricted to `project_path:<gitlab_project_path>:ref_type:branch:ref:ma
 1. ALB ingress is open (`0.0.0.0/0`); tighten later only if needed.
 2. Point DNS at ALB; confirm ACM on listener for `aea.artof.link`.
 3. Bootstrap migrations + Kafka topics + ACLs (`infra/aws/BOOTSTRAP.md`).
-4. Cloud `build-ecr` then manual `deploy-ecs` (after those jobs exist); confirm `/healthz`.
+4. Cloud `build-ecr` then `deploy-ecs` on `main`; confirm `/healthz`.
 5. Browser journey: session → recommendations → selection → checkout (pilot bearer).
 6. Confirm `AEA_ALLOWED_ORIGIN` = `https://aea.artof.link`; no Compose fixture secrets.
 7. Watch CloudWatch `/aea/<prefix>/*` for 15–30 minutes; check outbox via `diagnose.py`.
@@ -137,10 +138,10 @@ OIDC is restricted to `project_path:<gitlab_project_path>:ref_type:branch:ref:ma
 
 ## Operator sequence
 
-1. Merge this IaC recover MR; later `terraform apply` in `infra/aws` when explicitly asked; configure GitLab variables.
-2. After CI jobs land: pipeline on `main` → **cloud** `build-ecr` (not a local docker push).
+1. Merge this CI/ALB-mode MR (#199). Terraform is already applied; GitLab OIDC vars are already set.
+2. Pipeline on `main` → **cloud** `build-ecr` (not a local docker push) then `deploy-ecs`.
 3. Bootstrap once; thereafter migrations only when schema changes.
-4. Manual **deploy-ecs** → healthz smoke.
+4. Confirm `/healthz` (deploy job smokes this).
 5. Soft-launch → public is already open (`0.0.0.0/0`); harden with WAF/CIDR later if needed.
 
 ## Local vs cloud builds
@@ -148,7 +149,7 @@ OIDC is restricted to `project_path:<gitlab_project_path>:ref_type:branch:ref:ma
 | | Local (compose/dev) | Cloud (GitLab → ECR) |
 |--|---------------------|----------------------|
 | Purpose | Iterate Dockerfiles, run edge stack | Images ECS actually runs |
-| Push to pilot ECR | No (blocked by default) | Yes (`build-ecr`, later MR) |
+| Push to pilot ECR | No (blocked by default) | Yes (`build-ecr`, #199) |
 | Tag | ad hoc | `$CI_COMMIT_SHA` (+ `latest` on main) |
 
 ## Checklist — “ready for public web”

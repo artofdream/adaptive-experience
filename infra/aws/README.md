@@ -6,8 +6,10 @@ App task definitions hardcode `AEA_ENVIRONMENT=production` so the local
 inventory seeder and florist operator stay fail-closed.
 
 **This directory is IaC + operator docs.** `@aea-devsecops-platform` operates
-`plan`/`apply`/bootstrap. The scrum master does not run terraform. GitLab
-`build-ecr` / `deploy-ecs` jobs are a later MR.
+`plan`/`apply`/bootstrap. The scrum master does not run terraform.
+GitLab CI `build-ecr` (OIDC, `main` only) pushes images to ECR.
+`deploy-ecs` force-deploys ECS after a successful image build and smokes
+`GET $AEA_PUBLIC_URL/healthz`.
 
 Canonical public origin: `https://aea.artof.link` (no `www`, no `:443`, no
 trailing slash).
@@ -83,10 +85,11 @@ Optional: set `AEA_OIDC_AUD` if the OIDC audience is not `https://gitlab.com`.
 
 ECS images must be built in GitLab CI and pushed to ECR via OIDC. Local
 `docker build` is for compose/dev; do **not** push those images to the pilot
-ECR. The CI jobs themselves are out of scope for this recover MR.
+ECR unless break-glass is documented.
 
-Gateway task defs set `AEA_GATEWAY_MODE=alb`. The gateway image on `main` may
-not honor that mode until a later product/DevSecOps slice.
+Gateway task defs set `AEA_GATEWAY_MODE=alb`. The gateway image uses
+`nginx-alb.conf` (HTTP :8080 behind the ALB). Compose keeps ephemeral TLS on
+`:8443` when that variable is unset.
 
 ## Fail-closed flags
 

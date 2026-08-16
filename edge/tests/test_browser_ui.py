@@ -53,10 +53,14 @@ class BrowserUiTests(unittest.TestCase):
 
     def test_gateway_serves_ui_without_weakening_api_perimeter(self):
         nginx = (ROOT / "nginx.conf").read_text(encoding="utf-8")
+        alb = (ROOT / "nginx-alb.conf").read_text(encoding="utf-8")
         self.assertIn("include /etc/nginx/mime.types;", nginx)
         self.assertIn("location = / {", nginx)
         self.assertIn("location /api/ {", nginx)
         self.assertIn('proxy_set_header X-Internal-Identity "";', nginx)
+        self.assertIn("location = / {", alb)
+        self.assertIn("location /api/ {", alb)
+        self.assertIn('proxy_set_header X-Internal-Identity "";', alb)
 
     def test_layout_has_explicit_desktop_tablet_and_mobile_contracts(self):
         self.assertIn("grid-template-columns: minmax(0, 1.7fr)", self.css)
@@ -254,6 +258,7 @@ class BrowserUiTests(unittest.TestCase):
         html = (ROOT / "ui" / "florist.html").read_text(encoding="utf-8")
         script = (ROOT / "ui" / "assets" / "florist.js").read_text(encoding="utf-8")
         nginx = (ROOT / "nginx.conf").read_text(encoding="utf-8")
+        alb = (ROOT / "nginx-alb.conf").read_text(encoding="utf-8")
         self.assertIn("Local florist operator sample", html)
         self.assertIn("Not live chat", html)
         self.assertIn("FR-016", html)
@@ -272,6 +277,8 @@ class BrowserUiTests(unittest.TestCase):
         self.assertIn("try_files /florist.html =404;", nginx)
         self.assertIn("location /api/ {", nginx)
         self.assertIn('proxy_set_header X-Internal-Identity "";', nginx)
+        self.assertIn("location = /florist {", alb)
+        self.assertIn("try_files /florist.html =404;", alb)
 
     def test_t01_thought_completion_chips_come_from_api(self):
         self.assertIn('id="suggestions"', self.html)
