@@ -69,6 +69,10 @@ skip GitLab merge checks.
 - **On the bench:** If there are no open MRs, reach out to
   `@aea-project-manager` for an assignment (usually **queued until MRs
   exist**). Do not invent merges.
+- **Wait tag:** When invoked at cadence or for status, report exactly one
+  tag to `@aea-project-manager`: `merge` | `main` | `user` | `ownership` |
+  `shop` | `no-assignment` | `none`. Do not invent tags. Parked AWS is not
+  a tag. Open MRs you are processing count as `none`.
 
 ## When you may act
 
