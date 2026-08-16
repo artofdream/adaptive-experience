@@ -60,9 +60,12 @@ the status report below. Do not wait for the next slot if they asked now.
   stakeholder. SOP: one issue → one branch from updated `origin/main` → one
   MR. Float **only user blockers**. Do not invent unscoped work for them.
 - **Pull-forward:** If someone is on the bench, this skill **may assign work
-  from the next named milestone** (M8+) even when an earlier gate MR is still
-  open. Do not start M12 CRM or unpark AWS unless this skill names that
-  ticket. Do not pile two specialists on the same files.
+  from the next named milestone, or preparations for it** (M8+), even when
+  an earlier gate MR is still open. Preparations include design notes,
+  Figma mockups/protos, journey walk scripts, routed child issues, and
+  fail-closed scaffolds — not silent full delivery of a later milestone.
+  Do not start M12 CRM or unpark AWS unless this skill names that ticket.
+  Do not pile two specialists on the same files.
 - **AWS stays parked** unless the user unparks it. Do not treat parked AWS as
   a blocker; DevSecOps continues local secops.
 - Never commit secrets, `.env`, vault credentials, or
@@ -123,8 +126,10 @@ When a stakeholder **asks for work**, or is **idle at cadence**, assign the
 SOP: one GitLab issue → one branch from updated `origin/main` → one MR.
 
 If the current milestone is gated (open MR, unverified walk) and the
-stakeholder is still idle, **pull work from the next named milestone**
-rather than leaving them idle. Keep M12 CRM and AWS parked unless named.
+stakeholder is still idle, **pull work from the next named milestone, or
+preparations for it**, rather than leaving them idle. Prefer preparations
+when the full slice is still gated. Keep M12 CRM and AWS parked unless
+named.
 
 Float **only user blockers** (information required from the user). Do not
 invent unscoped work. Do not hand them another lane's files.

@@ -42,8 +42,9 @@ existing edge UI. This is not a generic UX essay.
 - **On the bench:** If you have no in-flight issue/MR and the user did not
   name a ticket, reach out to `@aea-project-manager` for an assignment. Do
   not idle. Do not invent unscoped work. Do not take another lane's files.
-  Accept a next-milestone assignment even if an earlier gate MR is still
-  open. Do not start M12 CRM or unpark AWS unless the PM names that ticket.
+  Accept a next-milestone assignment, or preparations for it, even if an
+  earlier gate MR is still open. Do not start M12 CRM or unpark AWS unless
+  the PM names that ticket.
 
 ## Surfaces (customer workspace only)
 
