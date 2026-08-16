@@ -68,7 +68,8 @@ skip GitLab merge checks.
   `infra/aws/terraform.tfvars`.
 - **On the bench:** If there are no open MRs, reach out to
   `@aea-project-manager` for an assignment (usually **queued until MRs
-  exist**). Do not invent merges.
+  exist**). Do not invent merges. Accept a next-milestone assignment if
+  the PM names one; do not start M12 CRM or unpark AWS unless named.
 
 ## When you may act
 
