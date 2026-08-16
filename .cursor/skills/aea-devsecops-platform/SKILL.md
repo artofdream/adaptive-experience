@@ -32,11 +32,15 @@ GitLab: `artof-group/adaptive-experience-architecture` (`glab`, not `gh`).
   as a **review checklist**, not as a competing architecture.
 - **Do not invent BG/US/FR/NFR IDs.** Cite existing ones or flag archive
   impact.
-- **Never commit** `infra/aws/terraform.tfvars`, `.env`, vault credentials,
-  `AEA_AI_API_KEY`, or cloud account material. Local Compose passwords are
-  non-production fixtures — still do not promote them to cloud.
-- **Do not apply Terraform or change cloud** unless the user explicitly asks
-  in that session. Plan and ticket first.
+- **Never commit** `infra/aws/terraform.tfvars`, `.terraform/`, `.env`, vault
+  credentials, `AEA_AI_API_KEY`, or cloud account material. Commit
+  `.terraform.lock.hcl`. Local Compose passwords are non-production fixtures
+  — still do not promote them to cloud.
+- **Operate the unparked AWS stack.** This skill owns `plan`/`apply`,
+  bootstrap, Secrets Manager hygiene, GitLab OIDC variable handoff notes,
+  and Path B integration ops. The scrum master does **not** run terraform,
+  bootstrap, or DNS; they route and decide (origin, live Anthropic, pilot
+  RF, unpark). Destructive `destroy` still needs an explicit user ask.
 - **Local Compose is not production evidence** for NFR-007 / NFR-012 storage
   encryption or production TLS/SASL (ADR-012 leftover).
 - **Do not weaken** fail-closed inventory, auth, CSRF, origin checks, or
@@ -59,11 +63,38 @@ GitLab: `artof-group/adaptive-experience-architecture` (`glab`, not `gh`).
 
 Evidence map and CI/IaC inventory: [posture.md](posture.md).
 
+## AWS operations (unparked)
+
+AWS is **unparked**. Path A remains local Compose. Path B is `infra/aws`
+(ECS Fargate, ALB+ACM, RDS PostgreSQL 16, MSK TLS+SASL, Secrets Manager,
+GitLab OIDC). Do not invent a second cloud.
+
+**Who runs what**
+
+| Actor | Owns |
+|---|---|
+| This skill | `terraform plan`/`apply`, bootstrap (migrations/topics/ACLs), Secrets Manager key names, GitLab OIDC var **handoff notes**, Path B ops |
+| Scrum master / user | Origin, live Anthropic decision, pilot RF, unpark. Paste GitLab CI vars if `glab` cannot set them. Do **not** `terraform apply`. |
+
+Laptop Terraform on this ARM64 Windows machine **must** be amd64:
+`C:\apps\terraform-amd64\terraform.exe`. The ARM64 CLI at
+`C:\apps\terraform\terraform.exe` cannot fetch AWS provider 5.x.
+
+Fail-closed: `AEA_ENVIRONMENT=production` on task defs; no inventory seeder;
+no florist operator in production. Do not put `AEA_AI_API_KEY` in git or
+`terraform.tfvars` — operator keys in Secrets Manager only.
+
+**Wait tags** (PM cadence): parked AWS is **no longer** “not a wait because
+parked.” If apply/bootstrap is blocked, that wait is real.
+
+- `none` — this skill is applying or bootstrapping
+- `user` — DNS CNAME/ALIAS or GitLab CI vars the SM must paste
+
 ## Collaboration
 
 | Skill | How you work with them |
 |---|---|
-| `@aea-project-manager` | Notify when enforcing a Cloud Agent switch (bench/wait from local capacity). They route; you do not implement the specialist ticket. |
+| `@aea-project-manager` | They route; you operate AWS. Notify when enforcing a Cloud Agent switch (bench/wait from local capacity). Do not wait for the SM to apply. |
 | `@aea-support-coordinator` | Open **one** security/platform issue for them to route, or implement an already-routed platform/edge/security item. Do not batch-route. |
 | `@aea-ai-engineer` | AI provider env (`AEA_AI_*`) lives in the **secret store**, not prompts, git, or Compose committed files. Honesty of disclosure is their lane; key hygiene is yours. |
 | `@aea-ux-designer` | Do not restyle `edge/gateway/ui/`. Cloud Agent **Use** is static HTML/CSS + `test_browser_ui.py`, not a live `:8443` walk. |
@@ -78,17 +109,17 @@ DevSecOps:
 - [ ] 2. Assess cloud posture (canvas if that is the deliverable)
 - [ ] 3. One prioritized finding (blocker: prod flags, secrets, TLS/IAM)
 - [ ] 4. Implement only that finding in repo IaC/CI/docs
-- [ ] 5. Docker integration for impacted components; glab MR — no tf apply unless asked
+- [ ] 5. Docker integration for impacted components; glab MR; you apply Path B (SM does not)
 - [ ] 6. Cloud Agent switch: if both triggers, enforce Use tickets; never force Do-not-use
 ```
 
 ### 1. Cloud-first assess and improve
 
-Target the **repo's chosen cloud** (AWS pilot: GitLab web deploy, ECR, ECS
-Fargate, ALB TLS, RDS PostgreSQL 16, MSK, Secrets Manager, GitLab OIDC —
-documented on `feat/aws-gitlab-web-deploy` / `infra/aws` when present). If
-those files are **not on the current branch**, say so; do not pretend they
-are merged.
+Target the **repo's chosen cloud** (AWS Path B, unparked: GitLab web deploy,
+ECR, ECS Fargate, ALB TLS, RDS PostgreSQL 16, MSK, Secrets Manager, GitLab
+OIDC — `infra/aws`, recovered on `infra/aws-stash-recover` / #198). If those
+files are **not on the current branch**, say so; do not pretend they are
+merged. You operate this stack; do not wait for the scrum master to apply.
 
 Check:
 
@@ -141,8 +172,8 @@ components (`.cursor/rules/docker-integration-before-mr.mdc`):
 - Platform / Postgres / Kafka: `python platform/scripts/run_integration_tests.py`
 - Edge / gateway / TLS perimeter: `python edge/scripts/run_integration_tests.py`
 
-Docs-only IaC comments: no Docker. Terraform apply is **operator**, not CI
-merge, unless the user asked.
+Docs-only IaC comments: no Docker. Terraform apply is **this skill** (Path B
+ops), not CI merge and not the scrum master.
 
 ## Cloud Agent switch (standing)
 
@@ -183,7 +214,7 @@ Agent** from pushed `origin/main` (not a dirty local tree):
 - Customer-journey live walks (`localhost:8443` + IDE browser)
 - `@aea-mr-coordinator` auto-merge (no merge token in the cloud VM)
 - LiteLLM / Anthropic live intent
-- AWS Terraform (parked)
+- AWS Terraform apply/bootstrap (this skill operates locally; never a Cloud Agent)
 - Ad-hoc gitleaks/trivy as a substitute for GitLab CI
 
 ### Conditional — ask the user / PM; do not silently enforce
@@ -207,7 +238,8 @@ next one MR. No empty placeholders. Do not dump a markdown table instead.
 - Committing tfvars/secrets
 - Treating local Postgres volumes or plaintext Kafka as NFR-007/012/ADR-012
   production proof
-- Auto-merge, `terraform apply` without an explicit ask
+- Auto-merge; `terraform destroy` without an explicit user ask; waiting for
+  the scrum master to apply Path B
 - Enabling Cloud Agents or writing `.cursor/environment.json` unless the
   user opts into a Conditional Docker path
 - Implementing other stakeholders' tickets when enforcing a Cloud Agent

@@ -1,0 +1,18 @@
+aws_region          = "us-east-1"
+environment         = "pilot"
+name_prefix         = "aea"
+gitlab_url          = "https://gitlab.com"
+gitlab_project_path = "artof-group/adaptive-experience-architecture"
+gitlab_oidc_audience = "https://gitlab.com"
+# Canonical public origin host (no www, no :443). AEA_ALLOWED_ORIGIN is https://<domain_name>.
+domain_name         = "aea.artof.link"
+# Regional ACM ARN for domain_name. Copy this file to terraform.tfvars (gitignored) and
+# replace the placeholders. Never commit a live ARN or account id.
+acm_certificate_arn = "arn:aws:acm:us-east-1:ACCOUNT_ID:certificate/CERTIFICATE_ID"
+container_image_tag = "latest" # Prefer a git SHA from cloud build-ecr for real deploys
+# Public web: ALB open to the internet (soft-launch CIDR restriction not used).
+pilot_ingress_cidrs = ["0.0.0.0/0"]
+db_instance_class   = "db.t4g.medium"
+# Pilot Kafka: 2 brokers / RF=2 (must match the two private subnets).
+msk_broker_nodes    = 2
+desired_count       = 1

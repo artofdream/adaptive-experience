@@ -2,7 +2,8 @@
 name: aea-project-manager
 description: >-
   Coordinates the Adaptive Experience Architecture (AEA) stakeholder team:
-  cadence status, blockers, bench, routing, assignments, and process coherence.
+  cadence status, blockers, bench, wait-tag, routing, assignments, and
+  process coherence.
   Use when the user invokes @aea-project-manager or asks the project manager to
   coordinate stakeholders, send a status review, highlight blockers, name who
   is idle, or assign work to a stakeholder on the bench.
@@ -44,6 +45,8 @@ Existing stakeholder status slots (do **not** invent another cadence):
 
 When invoked at a slot, or when the user asks for stakeholder status, produce
 the status report below. Do not wait for the next slot if they asked now.
+Collect one **wait tag** per stakeholder at these slots. Do not invent a
+fifth daily meeting. Do not use story-point velocity.
 
 ## Hard constraints
 
@@ -67,7 +70,7 @@ the status report below. Do not wait for the next slot if they asked now.
   Do not start M12 CRM or unpark AWS unless this skill names that ticket.
   Do not pile two specialists on the same files.
 - **AWS stays parked** unless the user unparks it. Do not treat parked AWS as
-  a blocker; DevSecOps continues local secops.
+  a blocker; DevSecOps continues local secops. Parked AWS is not a wait tag.
 - Never commit secrets, `.env`, vault credentials, or
   `infra/aws/terraform.tfvars`.
 - PowerShell: no bash `&&` or HEREDOC; `glab`, not `gh`.
@@ -83,6 +86,7 @@ Project manager:
 - [ ] 3. Bench (idle vs waiting vs in flight)
 - [ ] 4. Information required from the user (per stakeholder)
 - [ ] 5. Assign next work to bench stakeholders (one task each); do not implement it
+- [ ] 6. Collect one wait tag per stakeholder; tally throughput, cycle time, unused heads
 ```
 
 Produce a **status** in this shape (same as recent stakeholder-status asks):
@@ -93,6 +97,11 @@ Produce a **status** in this shape (same as recent stakeholder-status asks):
 4. **Information required** — one concrete ask per stakeholder that needs
    the user (or “none”)
 5. **Conflicts / process** — file ownership, one-finding-one-MR, parked AWS
+6. **Wait mix** — one tag per stakeholder (`merge` | `main` | `user` |
+   `ownership` | `shop` | `no-assignment` | `idle-assigned` | `none`) plus
+   MRs merged since the last slot and unused heads / 8 (idle vs blocked).
+   Prefer specialist self-report; label PM observation if they have not
+   answered this slot.
 
 Do **not** dump that board as a markdown table when the board is the
 deliverable: read `~/.cursor/skills-cursor/canvas/SKILL.md` and write one
@@ -135,8 +144,37 @@ Float **only user blockers** (information required from the user). Do not
 invent unscoped work. Do not hand them another lane's files.
 
 Specialists still open their own issue/branch/MR after you name the
-assignment. `@aea-mr-coordinator` with **no open MRs** is on the bench —
-usually **queued until MRs exist**; do not invent merges for them.
+assignment. **Same turn as the assignment:** invoke the owner. An issue
+without a kickoff is `idle-assigned`, not used capacity.
+`@aea-mr-coordinator` with **no open MRs** is on the bench — usually
+**queued until MRs exist**; do not invent merges for them.
+
+## Flow metrics (existing cadence only)
+
+**Bench** means idle, no ticket. **Blocked / waiting** means they have a
+lane but cannot proceed. **Idle-assigned** means a ticket is named but
+there is no work evidence this slot. Do not mix the words. Opening a
+GitLab issue is not used capacity.
+
+Closed wait tags (exactly one per stakeholder per slot):
+
+| Tag | Means |
+|---|---|
+| `merge` | Ticket done; waiting for MR coordinator or pipeline |
+| `main` | Cannot start the next slice until `origin/main` moves |
+| `user` | Need a decision or secret the user has not given |
+| `ownership` | Another skill owns the files; sequenced |
+| `shop` | Live walk or florist path blocked by the local stack |
+| `no-assignment` | On the bench; this skill had not named a ticket |
+| `idle-assigned` | Ticket named; no branch/commit and skill not producing that ticket this slot |
+| `none` | Actively working: branch commit, MR updated, or skill invoked on the named ticket this slot |
+
+Unused heads = `idle-assigned` + `no-assignment` (idle unused) + `merge` /
+`main` / `user` / `ownership` / `shop` (blocked unused). Report unused
+heads / 8, split idle vs blocked. Do not set an FTE utilization target.
+
+Do not invent tags. Parked AWS is not a tag. When a specialist is invoked
+at cadence or for status, they report the tag; this skill tallies.
 
 ## Process coherence (PM owns the process, not the content)
 

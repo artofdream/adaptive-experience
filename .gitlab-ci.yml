@@ -6,6 +6,7 @@ stages:
   - verify
   - integration
   - lint
+  - deploy
 
 coherence-guard:
   stage: verify
@@ -133,3 +134,98 @@ linkcheck:
     - changes:
         - "**/*.md"
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+
+# Path B: cloud images only. OIDC role trusts main. Do not push to pilot ECR from a laptop.
+.aws_oidc:
+  id_tokens:
+    GITLAB_OIDC_TOKEN:
+      aud: https://gitlab.com
+  variables:
+    AWS_DEFAULT_REGION: us-east-1
+    FF_NETWORK_PER_BUILD: "true"
+
+build-ecr:
+  extends: .aws_oidc
+  stage: deploy
+  image: docker:27.1.1-cli
+  services:
+    - name: docker:27.1.1-dind
+      alias: docker
+      command: ["--tls=false"]
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+    DOCKER_DRIVER: overlay2
+  timeout: 45m
+  resource_group: path-b-ecs
+  before_script:
+    - apk add --no-cache aws-cli
+    - mkdir -p /tmp
+    - printf '%s' "$GITLAB_OIDC_TOKEN" > /tmp/web-identity-token
+    - chmod 0400 /tmp/web-identity-token
+    - export AWS_WEB_IDENTITY_TOKEN_FILE=/tmp/web-identity-token
+    - export AWS_ROLE_SESSION_NAME="gitlab-${CI_PIPELINE_ID}"
+    - export AWS_REGION="${AWS_DEFAULT_REGION:-us-east-1}"
+    - test -n "${AWS_ROLE_ARN:-}"
+    - test -n "${AEA_ECR_ORCHESTRATION:-}"
+    - test -n "${AEA_ECR_BFF:-}"
+    - test -n "${AEA_ECR_GATEWAY:-}"
+  script:
+    - REGISTRY=$(printf '%s' "$AEA_ECR_GATEWAY" | cut -d/ -f1)
+    - aws ecr get-login-password --region "$AWS_REGION" | docker login --username AWS --password-stdin "$REGISTRY"
+    - docker build -f platform/Dockerfile.orchestration -t "$AEA_ECR_ORCHESTRATION:$CI_COMMIT_SHA" -t "$AEA_ECR_ORCHESTRATION:latest" .
+    - docker build -f edge/bff/Dockerfile -t "$AEA_ECR_BFF:$CI_COMMIT_SHA" -t "$AEA_ECR_BFF:latest" edge
+    - docker build -f edge/gateway/Dockerfile -t "$AEA_ECR_GATEWAY:$CI_COMMIT_SHA" -t "$AEA_ECR_GATEWAY:latest" edge/gateway
+    - docker push "$AEA_ECR_ORCHESTRATION:$CI_COMMIT_SHA"
+    - docker push "$AEA_ECR_ORCHESTRATION:latest"
+    - docker push "$AEA_ECR_BFF:$CI_COMMIT_SHA"
+    - docker push "$AEA_ECR_BFF:latest"
+    - docker push "$AEA_ECR_GATEWAY:$CI_COMMIT_SHA"
+    - docker push "$AEA_ECR_GATEWAY:latest"
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      changes:
+        - platform/**/*
+        - edge/**/*
+        - .gitlab-ci.yml
+    - if: '$CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "web"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: manual
+      allow_failure: true
+
+deploy-ecs:
+  extends: .aws_oidc
+  stage: deploy
+  image: python:3.12-alpine
+  needs:
+    - job: build-ecr
+  timeout: 30m
+  resource_group: path-b-ecs
+  before_script:
+    - apk add --no-cache aws-cli curl
+    - mkdir -p /tmp
+    - printf '%s' "$GITLAB_OIDC_TOKEN" > /tmp/web-identity-token
+    - chmod 0400 /tmp/web-identity-token
+    - export AWS_WEB_IDENTITY_TOKEN_FILE=/tmp/web-identity-token
+    - export AWS_ROLE_SESSION_NAME="gitlab-${CI_PIPELINE_ID}"
+    - export AWS_REGION="${AWS_DEFAULT_REGION:-us-east-1}"
+    - test -n "${AWS_ROLE_ARN:-}"
+    - test -n "${AEA_ECR_ORCHESTRATION:-}"
+    - test -n "${AEA_ECR_BFF:-}"
+    - test -n "${AEA_ECR_GATEWAY:-}"
+    - test -n "${AEA_ECS_CLUSTER:-}"
+    - test -n "${AEA_PUBLIC_URL:-}"
+  script:
+    - |
+      for svc in orchestration bff gateway relay consumer-workspace; do
+        aws ecs update-service --cluster "$AEA_ECS_CLUSTER" --service "$svc" --force-new-deployment --query service.serviceName --output text
+      done
+    - aws ecs wait services-stable --cluster "$AEA_ECS_CLUSTER" --services gateway bff
+    - curl -fsS --retry 20 --retry-delay 15 --retry-all-errors "${AEA_PUBLIC_URL}/healthz"
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      changes:
+        - platform/**/*
+        - edge/**/*
+        - .gitlab-ci.yml
+    - if: '$CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "web"'
