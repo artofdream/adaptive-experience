@@ -71,8 +71,10 @@ skip GitLab merge checks.
   exist**). Do not invent merges.
 - **Wait tag:** When invoked at cadence or for status, report exactly one
   tag to `@aea-project-manager`: `merge` | `main` | `user` | `ownership` |
-  `shop` | `no-assignment` | `none`. Do not invent tags. Parked AWS is not
-  a tag. Open MRs you are processing count as `none`.
+  `shop` | `no-assignment` | `idle-assigned` | `none`. Open MRs you are
+  processing this slot count as `none`. Open MRs that exist while this
+  skill was not invoked count as `idle-assigned`. Do not invent tags.
+  Parked AWS is not a tag.
 
 ## When you may act
 
