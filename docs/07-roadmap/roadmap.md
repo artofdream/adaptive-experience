@@ -12,6 +12,8 @@ Inventory availability, and **automated FAQ support** (FR-009).
 
 ## MVP+
 Prior-order retrieval, Reorder, Modify-before-reorder, and Customer Memory / CRM.
+Scheduled as **M8** (returning shopper / FR-008) then **M12** (CRM / FR-016,
+FR-017). Workbook scope stays Future.
 
 ## Future
 Free-form bouquet composition beyond thin T-04 option keys, inventory
@@ -25,7 +27,9 @@ and the physical **card message** are delivered on T-04 (ADR-006 amended).
 
 ## Group Milestones
 
-The delivery pipeline is structured into 8 implementation milestones (M0–M7) plus Future Backlog:
+The delivery pipeline is structured into 8 MVP milestones (M0–M7), five
+post-MVP milestones pulled from Future (M8–M12), and an unscheduled Future
+Backlog:
 
 | Milestone | Title | Focus & Primary Deliverables | Requirements Coverage |
 |---|---|---|---|
@@ -37,7 +41,12 @@ The delivery pipeline is structured into 8 implementation milestones (M0–M7) p
 | **M5** | Checkout & Confirmation | Deliver T-06 Order Summary breakdown, T-07 Payment & Checkout integration, and Order Confirmation | FR-018, FR-019; NFR-007, NFR-012, NFR-013 |
 | **M6** | Tracking & Automated Support | Deliver approved product/policy answers, T-08 Order Tracking timeline, Contact Florist action, and Automated Support Overlay (ASO / FR-009) | FR-005, FR-009, FR-023; NFR-011 |
 | **M7** | MVP Hardening | End-to-end integration, availability and performance optimization, security audit, reference deployment validation, and final verification of the governance, auditability, and privacy controls introduced in M1 | NFR-003; final validation and hardening of NFR-015, NFR-016, NFR-017 |
-| **Future** | Future Backlog | Free-form compositional builder beyond thin T-04 options, history-based recommendations (FR-008), CRM analytics (FR-016, FR-017). Thin T-09 / FR-006 Contact Florist escalation, thin FR-010 situational ASO answers, and thin FR-012 inventory forecasts are delivered. | FR-008, FR-010, FR-012, FR-016, FR-017; NFR-008, NFR-010, NFR-014 |
+| **M8** | Returning shopper | Durable prior-order recall (no login), reorder, and modify-before-reorder after the same-session T-03 hint. Parent #27 stays open. Not CRM. | FR-008 |
+| **M9** | Assistant reliability | AI response quality monitoring and error tracking. No new assistant surfaces. | NFR-008 |
+| **M10** | Compositional T-04 | Free-form bouquet composition beyond thin FR-003 option keys (ADR-006 remainder). | FR-003 (free-form only; thin keys already MVP) |
+| **M11** | Inventory analytics depth | Forecasting and analytics beyond the thin `/florist` snapshot trends. | FR-012, NFR-010 |
+| **M12** | Engagement CRM | Occasion reminders and engagement analytics. Staff live chat and ticketing stay out. | FR-016, FR-017 |
+| **Future** | Future Backlog | Unscheduled: voice, semantic caching, progressive hydration, other industry implementations. Thin T-09 / FR-006, thin FR-010, thin FR-012, and the NFR-014 adapter pin remain delivered and Future in the workbook. | Thin-delivered FR-006, FR-010, FR-012; NFR-014 pin |
 
 ## Notes
 - Secure Payment / Checkout (FR-019) and the itemized Order Summary (FR-018) are
@@ -61,4 +70,8 @@ The delivery pipeline is structured into 8 implementation milestones (M0–M7) p
   PostgreSQL outbox, and Kafka foundation. M7 audits, exercises, and hardens
   those controls; it does not defer their first implementation until the end of
   the MVP.
+- M8–M12 are delivery milestones pulled from Future. They do not promote
+  those requirements to MVP in the workbook. M8 first slice (#190 same-session
+  T-03 hint) may land before the rest of FR-008. Do not start M12 while M8
+  is open. AWS stays parked and is not a milestone.
 
