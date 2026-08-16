@@ -31,7 +31,9 @@ Docker Compose.
 
 - `apply_migrations.py` is idempotent: it skips already-applied versions, so a
   re-run is a no-op (verified in the integration path by applying twice).
-- `provision_kafka.py` is idempotent: it creates only missing topics.
+- `provision_kafka.py` is idempotent: it creates missing topics and aligns
+  `min.insync.replicas` to RF-1 (floor 1) so RF is never equal to MinISR when
+  RF >= 2. Path B pilot uses `AEA_KAFKA_REPLICATION_PROFILE=pilot` (RF=2).
 - `render_kafka_acls.py` emits the ACL plan for the deployment automation.
 - Local credentials are non-production values isolated to the Compose network;
   production secrets come from the deployment environment, not the repository.

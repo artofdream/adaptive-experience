@@ -68,8 +68,12 @@ variable "db_instance_class" {
 
 variable "msk_broker_nodes" {
   type        = number
-  description = "Pilot Kafka broker count. Locked at 2 (RF=2, two private subnets)."
+  description = "Pilot Kafka broker count. Locked at 2 (RF=2, MinISR=1, two private subnets). Do not raise to 3 without SM unpark."
   default     = 2
+  validation {
+    condition     = var.msk_broker_nodes >= 2
+    error_message = "MSK broker count must be at least 2 so min.insync.replicas can be RF-1."
+  }
 }
 
 variable "desired_count" {

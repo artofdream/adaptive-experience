@@ -14,8 +14,10 @@ export AEA_KAFKA_SECURITY=SASL_SSL
 export AEA_KAFKA_SASL_USERNAME=aea
 export AEA_KAFKA_SASL_PASSWORD=...
 export AEA_KAFKA_SASL_MECHANISM=SCRAM-SHA-512
-# Use production replication when creating topics on MSK (RF=2 with 2 brokers).
+# Fail-closed seeder/florist. Kafka RF is selected separately: 2-broker
+# pilot cannot host production RF=3. MinISR is RF-1 (pilot: RF=2 MinISR=1).
 export AEA_ENVIRONMENT=production
+export AEA_KAFKA_REPLICATION_PROFILE=pilot
 ```
 
 Or run the orchestration image with those secrets injected (same as the relay task).
@@ -79,5 +81,8 @@ aws ecs run-task \
   --overrides '{"containerOverrides":[{"name":"orchestration","command":["python","platform/scripts/apply_migrations.py"]}]}'
 ```
 
-Repeat with `provision_kafka.py`. Prefer a documented runbook ticket when
-changing production schema.
+Repeat with `provision_kafka.py` on the **relay** task definition (Kafka SASL
+secrets are injected there). Worker task defs set
+`AEA_KAFKA_REPLICATION_PROFILE=pilot` so new topics get RF=2 MinISR=1, not
+production RF=3. Prefer a documented runbook ticket when changing production
+schema.
