@@ -452,6 +452,20 @@ class PerimeterTests(unittest.TestCase):
         self.assertEqual(200, self.call("GET", "/api/v1/workspace", {**self.auth, "cookie": cookie})[0])
         self.assertEqual(429, self.call("GET", "/api/v1/workspace", {**self.auth, "cookie": cookie})[0])
 
+    def test_workspace_keeps_prior_order_hint_and_drops_secrets(self):
+        shaped = BffApp._least_data_workspace({
+            "context_version": 2,
+            "facets": {"recommendations": {"items": [{
+                "product_id": "lilac-bouquet", "price": 95.0, "score": 5.5,
+                "rank": 1, "available": True, "availability_status": "available",
+                "prior_order_hint": True, "secret": "omit"}]}},
+            "ai_generated": False, "assistant_mode": "reference",
+            "disclosure": "Automated interpretation; review and correct before ordering."})
+        item = shaped["facets"]["recommendations"]["items"][0]
+        self.assertTrue(item["prior_order_hint"])
+        self.assertEqual("lilac-bouquet", item["product_id"])
+        self.assertNotIn("secret", item)
+
     def test_workspace_passes_through_fallback_disclosure_without_claiming_ai(self):
         shaped = BffApp._least_data_workspace({
             "context_version": 1, "facets": {},

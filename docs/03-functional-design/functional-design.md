@@ -15,7 +15,7 @@
 |---|---|---|---|
 | T-01 | Conversation and Intent | Captures natural-language goals and clarification; persistent. | MVP |
 | T-02 | Intent Summary (Shared Understanding) | Shows the current interpretation and permits correction (FR-021). | MVP |
-| T-03 | Curated Recommendations | Presents validated options matching intent, budget, availability, and delivery. | MVP |
+| T-03 | Curated Recommendations | Presents validated options matching intent, budget, availability, and delivery. A same-session accepted order may apply a deterministic ranking hint (thin FR-008); ranking remains FR-007, not AI. | MVP |
 | T-04 | Product Selection and Customization | Product/arrangement selection, eligible catalog size, physical card message, and thin FR-003 options (flower type, colour, ribbon). Free-form bouquet composition remains Future. | MVP |
 | T-05 | Delivery and Recipient | Recipient details and valid dates/windows. | MVP |
 | T-06 | Order Summary | Selections, fees, taxes, discounts, and total; continuously updated (FR-018). | MVP |
@@ -34,6 +34,7 @@ active stage without replacing the adaptive workspace.
 | Support Escalation (T-09) | Customer requests human florist follow-up for an unresolved request. Records `support.escalation.requested`; does not open a staff CRM. | FR-006 | Future (thin path delivered) |
 | Situational support (ASO) | Automates answers about this session's order status, delivery details, and product availability from authoritative facts. | FR-010 | Future (thin path delivered) |
 | Inventory forecast | Manager insights from validated inventory snapshot history (replenish / monitor / insufficient). Not a customer tile. | FR-012 | Future (thin path delivered) |
+| Session prior-order hint | Same-session submitted or later order may boost that product on T-03. Not cross-session history and not CRM. | FR-008 | Future (thin path delivered) |
 
 ASO is distinct from tile **T-09 Support Escalation** (FR-006). See ADR-004 and
 `docs/03-functional-design/automated-support-overlay.md`. The inventory
