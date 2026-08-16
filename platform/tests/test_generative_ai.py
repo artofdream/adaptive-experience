@@ -1,9 +1,13 @@
 from __future__ import annotations
 
+import ast
+import inspect
 import json
 import sys
 import unittest
+from datetime import datetime, timezone
 from pathlib import Path
+from typing import get_type_hints
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
@@ -16,7 +20,15 @@ from aea_platform.generative_ai import (
     PRIMARY_DISCLOSURE,
     disclosure_for_mode,
 )
-from aea_platform.intent import ReferenceIntentInterpreter
+from aea_platform.intent import (
+    IntentAnalysisService,
+    IntentInterpretation,
+    IntentInterpreter,
+    ReferenceIntentInterpreter,
+)
+from aea_platform.inventory import InventoryAvailabilityService
+from aea_platform.order import OrderService
+from aea_platform.recommendation import RecommendationService
 
 
 class GenerativeAITests(unittest.TestCase):
@@ -131,6 +143,141 @@ class GenerativeAITests(unittest.TestCase):
             }, payload)
             self.assertNotIn("AI-generated", payload["disclosure"])
             self.assertTrue(payload["disclosure"])
+
+
+class _FakeStateStore:
+    def __init__(self, current=None):
+        self.current = current
+        self.applied = []
+
+    def load(self, session_id):
+        return self.current
+
+    def apply_patch(self, session_id, expected, schema_version, patch, messages):
+        self.applied.append((session_id, expected, schema_version, patch, messages))
+        return expected + 1
+
+
+class _ReplacementPrimary:
+    """Stand-in for a future model adapter; same IntentInterpretation contract."""
+
+    def interpret(self, message_text: str, current_intent: dict) -> IntentInterpretation:
+        return IntentInterpretation(
+            {"occasion": "birthday", "recipient": "mother"},
+            ("What budget should I work within?",),
+        )
+
+
+class AdapterReplacementArchitectureTests(unittest.TestCase):
+    """ADR-007 / NFR-014: model enhancement does not redesign domain modules."""
+
+    DOMAIN_MODULES = (
+        "intent.py", "order.py", "inventory.py", "recommendation.py",
+        "pricing.py", "delivery.py", "payment.py",
+    )
+    VENDOR_MODULES = frozenset({
+        "openai", "anthropic", "litellm", "generative_ai",
+    })
+    AI_PARAMETER_NAMES = frozenset({
+        "interpreter", "openai", "anthropic", "api_key", "model", "endpoint",
+    })
+
+    def test_shipped_and_replacement_adapters_satisfy_intent_interpreter(self):
+        shipped = (
+            ReferenceIntentInterpreter(),
+            OpenAICompatibleIntentInterpreter(
+                "https://ai.example", "secret", "model",
+                transport=lambda *_: (200, "{}")),
+            AvailableIntentInterpreter(_ReplacementPrimary()),
+        )
+        for adapter in (*shipped, _ReplacementPrimary()):
+            self.assertIsInstance(adapter, IntentInterpreter)
+            self.assertTrue(callable(adapter.interpret))
+
+    def test_available_interpreter_swaps_primary_without_new_contract(self):
+        available = AvailableIntentInterpreter(_ReplacementPrimary())
+        result = available.interpret("flowers for Mum", {})
+        self.assertIsInstance(result, IntentInterpretation)
+        self.assertEqual({"occasion": "birthday", "recipient": "mother"}, result.facets)
+        self.assertEqual("primary", available.health()["mode"])
+
+    def test_intent_analysis_accepts_replacement_primary_without_redesign(self):
+        store = _FakeStateStore({
+            "state_schema_version": 1, "context_version": 2,
+            "state": {"shared_understanding": {}},
+        })
+        service = IntentAnalysisService(
+            store, AvailableIntentInterpreter(_ReplacementPrimary()),
+            now=lambda: datetime(2026, 8, 16, tzinfo=timezone.utc),
+        )
+        result = service.analyze(
+            session_id="session", message_text="birthday flowers for Mum",
+            observed_context_version=2, correlation_id="correlation",
+            subject_reference="subject",
+        )
+        self.assertEqual({"occasion": "birthday", "recipient": "mother"},
+                         result.structured_intent)
+        self.assertEqual(("What budget should I work within?",), result.suggestions)
+        self.assertEqual("experience.intent.updated", store.applied[0][4][0]["topic"])
+
+    def test_intent_analysis_depends_on_interpreter_protocol_not_vendor(self):
+        annotation = get_type_hints(IntentAnalysisService.__init__)["interpreter"]
+        self.assertEqual(annotation, IntentInterpreter)
+        source = (ROOT / "aea_platform" / "intent.py").read_text(encoding="utf-8")
+        self.assertNotIn("OpenAICompatibleIntentInterpreter", source)
+        self.assertNotIn("AEA_AI_API_KEY", source)
+        self.assertNotIn("openai", source)
+
+    def test_authoritative_domain_modules_do_not_import_ai_vendors(self):
+        for name in self.DOMAIN_MODULES:
+            imported = _top_level_imports(ROOT / "aea_platform" / name)
+            leaked = imported & self.VENDOR_MODULES
+            self.assertFalse(leaked, f"{name} imports AI vendor modules: {sorted(leaked)}")
+
+    def test_generative_adapter_does_not_import_authoritative_domain_modules(self):
+        imported = _top_level_imports(ROOT / "aea_platform" / "generative_ai.py")
+        leaked = imported & {
+            "order", "inventory", "recommendation", "pricing", "delivery", "payment",
+        }
+        self.assertFalse(leaked, f"generative_ai imports domain modules: {sorted(leaked)}")
+        self.assertIn("intent", imported)
+
+    def test_domain_service_constructors_do_not_take_vendor_clients(self):
+        for service in (OrderService, InventoryAvailabilityService, RecommendationService):
+            names = set(inspect.signature(service.__init__).parameters)
+            leaked = names & self.AI_PARAMETER_NAMES
+            self.assertFalse(
+                leaked, f"{service.__name__} constructor takes AI parameters: {sorted(leaked)}")
+        generate = inspect.signature(RecommendationService.generate).parameters
+        self.assertIn("intent", generate)
+        self.assertNotIn("interpreter", generate)
+        self.assertEqual(get_type_hints(RecommendationService.generate)["intent"], dict)
+
+    def test_runtime_constructs_adapter_outside_domain_modules(self):
+        runtime = (ROOT / "aea_platform" / "internal_runtime.py").read_text(encoding="utf-8")
+        self.assertIn("AvailableIntentInterpreter(OpenAICompatibleIntentInterpreter(", runtime)
+        self.assertIn("InternalOrchestrationApp(", runtime)
+        for name in self.DOMAIN_MODULES:
+            source = (ROOT / "aea_platform" / name).read_text(encoding="utf-8")
+            self.assertNotIn("OpenAICompatibleIntentInterpreter", source)
+            self.assertNotIn("AEA_AI_ENDPOINT", source)
+            self.assertNotIn("AEA_AI_API_KEY", source)
+            self.assertNotIn("AEA_AI_MODEL", source)
+
+
+def _top_level_imports(path: Path) -> set[str]:
+    tree = ast.parse(path.read_text(encoding="utf-8"))
+    names: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                names.add(alias.name.split(".")[0])
+        elif isinstance(node, ast.ImportFrom):
+            if node.module:
+                names.add(node.module.split(".")[0])
+            for alias in node.names:
+                names.add(alias.name.split(".")[0])
+    return names
 
 
 if __name__ == "__main__":

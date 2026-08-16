@@ -205,8 +205,11 @@ payment evolution (#148) build on these workers.
   Configure `AEA_AI_ENDPOINT`, `AEA_AI_API_KEY`, and `AEA_AI_MODEL` together;
   `/internal/v1/ai/health` reports primary/fallback mode without exposing secrets
   (FR-004). A concrete vendor remains a deployment choice, not an architecture
-  dependency. Local edge Compose stays on the regex interpreter unless you also
-  pass `-f edge/docker-compose.litellm.yml` (see `edge/README.md` and
+  dependency. Adapter-replacement tests in `tests/test_generative_ai.py` pin that
+  swapping the primary interpreter (same `IntentInterpretation` contract) does
+  not redesign `IntentAnalysisService`, orders, inventory, or recommendations
+  (NFR-014 / ADR-007). Local edge Compose stays on the regex interpreter unless
+  you also pass `-f edge/docker-compose.litellm.yml` (see `edge/README.md` and
   `platform/.env.example`).
 - `InventoryAvailabilityService` records monotonic, versioned product snapshots
   in the inventory-owned PostgreSQL schema. Validation reads treat missing or

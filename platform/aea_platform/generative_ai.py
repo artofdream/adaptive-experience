@@ -5,7 +5,7 @@ import time
 import urllib.error
 import urllib.request
 
-from .intent import (IntentInterpretation, IntentValidationError,
+from .intent import (IntentInterpretation, IntentInterpreter, IntentValidationError,
                      ReferenceIntentInterpreter, SUPPORTED_FACETS)
 
 
@@ -88,8 +88,8 @@ class OpenAICompatibleIntentInterpreter:
 class AvailableIntentInterpreter:
     """Keeps the assistant available with bounded failures and local degradation."""
 
-    def __init__(self, primary, fallback=None, *, failure_threshold: int = 3,
-                 recovery_seconds: float = 30, clock=None):
+    def __init__(self, primary: IntentInterpreter, fallback: IntentInterpreter | None = None,
+                 *, failure_threshold: int = 3, recovery_seconds: float = 30, clock=None):
         self.primary = primary
         self.fallback = fallback or ReferenceIntentInterpreter()
         self.failure_threshold = failure_threshold
