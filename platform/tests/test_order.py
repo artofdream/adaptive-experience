@@ -12,11 +12,12 @@ from aea_platform.order import (OrderIncompleteError, OrderNotFound, OrderServic
 
 
 class FakeOrderStore:
-    def __init__(self, *, current="created", exists=True):
+    def __init__(self, *, current="created", exists=True, product_id="classic-rose-dozen"):
         self.created = None
         self.advanced = None
         self.current = current
         self.exists = exists
+        self.product_id = product_id
 
     def create_or_get(self, **kwargs):
         self.created = kwargs
@@ -38,6 +39,17 @@ class FakeOrderStore:
         delayed = kwargs["delayed"]
         return {"order_id": "order-1", "status": self.current, "delayed": delayed,
                 "authoritative_status": "delayed" if delayed else self.current}
+
+    def checkout_view(self, session_id):
+        if not self.exists:
+            return None
+        return {
+            "order_id": "order-1",
+            "status": self.current,
+            "product": {"product_id": self.product_id} if self.product_id else {},
+            "delivery": {},
+            "context_version": 1,
+        }
 
 
 class OrderServiceTests(unittest.TestCase):
@@ -114,6 +126,24 @@ class OrderServiceTests(unittest.TestCase):
         with self.assertRaises(OrderNotFound):
             OrderService(FakeOrderStore(exists=False)).set_delay(
                 session_id="s", delayed=True, correlation_id="c", subject_reference="subj")
+
+    def test_session_prior_product_id_only_after_accepted_order(self):
+        self.assertIsNone(OrderService(FakeOrderStore(current="created"))
+                          .session_prior_product_id("s"))
+        self.assertEqual(
+            "lilac-bouquet",
+            OrderService(FakeOrderStore(current="submitted", product_id="lilac-bouquet"))
+            .session_prior_product_id("s"))
+        self.assertEqual(
+            "classic-rose-dozen",
+            OrderService(FakeOrderStore(current="confirmed"))
+            .session_prior_product_id("s"))
+        self.assertIsNone(OrderService(FakeOrderStore(exists=False))
+                          .session_prior_product_id("s"))
+        self.assertIsNone(OrderService(FakeOrderStore(current="submitted", product_id=""))
+                          .session_prior_product_id("s"))
+        self.assertIsNone(OrderService(FakeOrderStore(current="submitted"))
+                          .session_prior_product_id("  "))
 
 
 if __name__ == "__main__":

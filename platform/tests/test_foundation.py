@@ -139,6 +139,11 @@ class FakeInventoryStore:
             product_id, {"status": "unknown", "freshness": "missing"})
                 for product_id in values["product_ids"]}
 
+    def read_availability(self, product_ids, cutoff):
+        return {product_id: self.availability.get(
+            product_id, {"status": "unknown", "freshness": "missing"})
+                for product_id in product_ids}
+
 
 class FakeRecommendationStore:
     def __init__(self):
@@ -231,6 +236,72 @@ class FoundationTests(unittest.TestCase):
             intent={"occasion": "birthday", "budget": 50},
         )
         self.assertEqual([], result.eligible_product_ids)
+
+    def test_recommendations_apply_session_prior_order_hint_without_replacing_fr007(self):
+        now = datetime(2026, 8, 12, 12, 0, tzinfo=timezone.utc)
+        inventory = InventoryAvailabilityService(FakeInventoryStore({
+            "classic-rose-dozen": {"status": "available", "freshness": "current"},
+            "lilac-bouquet": {"status": "available", "freshness": "current"},
+            "budget-mixed-bunch": {"status": "available", "freshness": "current"},
+            "pink-flower-vase": {"status": "available", "freshness": "current"},
+            "premium-orchid": {"status": "unavailable", "freshness": "current"},
+        }), now=lambda: now)
+        baseline = RecommendationService(FakeRecommendationStore(), inventory)
+        hinted = RecommendationService(
+            FakeRecommendationStore(), inventory,
+            prior_product_lookup=lambda _session: "lilac-bouquet",
+        )
+        birthday = {"occasion": "birthday", "budget": 100}
+        roses = {**birthday, "flower_preference": "roses"}
+        plain_birthday = baseline.generate(
+            session_id="session", observed_context_version=2,
+            correlation_id="c", subject_reference="s", intent=birthday,
+        )
+        boosted_birthday = hinted.generate(
+            session_id="session", observed_context_version=2,
+            correlation_id="c", subject_reference="s", intent=birthday,
+        )
+        self.assertEqual("budget-mixed-bunch", plain_birthday.ranking[0]["product_id"])
+        self.assertEqual("lilac-bouquet", boosted_birthday.ranking[0]["product_id"])
+        self.assertTrue(boosted_birthday.ranking[0]["prior_order_hint"])
+
+        roses_with_lilac_history = hinted.generate(
+            session_id="session", observed_context_version=2,
+            correlation_id="c", subject_reference="s", intent=roses,
+        )
+        self.assertEqual("classic-rose-dozen", roses_with_lilac_history.ranking[0]["product_id"])
+        lilac = next(item for item in roses_with_lilac_history.ranking
+                     if item["product_id"] == "lilac-bouquet")
+        self.assertTrue(lilac["prior_order_hint"])
+
+        preview = hinted.preview(intent=birthday, session_id="session")
+        self.assertEqual("lilac-bouquet", preview[0]["product_id"])
+        self.assertTrue(preview[0]["prior_order_hint"])
+
+        over_budget = RecommendationService(
+            FakeRecommendationStore(), inventory,
+            prior_product_lookup=lambda _session: "pink-flower-vase",
+        ).preview(intent=birthday, session_id="session")
+        self.assertNotIn("pink-flower-vase", [item["product_id"] for item in over_budget])
+
+        unavailable = RecommendationService(
+            FakeRecommendationStore(), inventory,
+            prior_product_lookup=lambda _session: "premium-orchid",
+        ).generate(
+            session_id="session", observed_context_version=2,
+            correlation_id="c", subject_reference="s",
+            intent={"occasion": "anniversary", "budget": 200},
+        )
+        self.assertNotIn("premium-orchid", unavailable.eligible_product_ids)
+
+        def boom(_session):
+            raise RuntimeError("lookup")
+
+        broken = RecommendationService(
+            FakeRecommendationStore(), inventory, prior_product_lookup=boom,
+        ).preview(intent=roses, session_id="session")
+        self.assertEqual("classic-rose-dozen", broken[0]["product_id"])
+        self.assertNotIn("prior_order_hint", broken[0])
 
     def test_reference_interpreter_extracts_supported_intent_and_prompts_for_gaps(self):
         result = ReferenceIntentInterpreter().interpret(

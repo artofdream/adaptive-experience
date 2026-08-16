@@ -33,7 +33,7 @@ Opt-in overlay `edge/docker-compose.litellm.yml` points orchestration at
 
 | Surface | What it actually is |
 |---|---|
-| T-03 recommendations | `RecommendationService` ranks `REFERENCE_CATALOG` (5 SKUs) by intent overlap + price; inventory must be `available`. FR-007. FR-008 not implemented. |
+| T-03 recommendations | `RecommendationService` ranks `REFERENCE_CATALOG` (5 SKUs) by intent overlap + price; inventory must be `available`. FR-007. Thin FR-008: same-session accepted order may add a deterministic ranking hint. Persistent history / CRM is not implemented. |
 | T-01 conversation log | `ConversationService` stores **customer** messages. Static “Hello! …” is HTML chrome. No generative assistant replies in-stream. |
 | ASO `POST /support` | `SupportService` keyword match on `REFERENCE_KNOWLEDGE`. Unmatched → safe no-approved-information string. Never fabricate. |
 | FR-010 | Token/session-fact answers (`kind=situation`). Not an LLM. |

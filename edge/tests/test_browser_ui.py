@@ -209,6 +209,8 @@ class BrowserUiTests(unittest.TestCase):
         self.assertIn("Complete earlier steps to unlock", self.script)
         # Product selection suggests Customize (4), not Delivery (5).
         self.assertIn("if (f.selection && f.selection.product_id) return 4;", self.script)
+        self.assertIn("prior_order_hint", self.script)
+        self.assertIn("Ordered earlier in this session", self.script)
 
     def test_shell_uses_edge_apis_without_data_plane_secrets(self):
         for path in ("/api/v1/session", "/api/v1/conversation/messages",

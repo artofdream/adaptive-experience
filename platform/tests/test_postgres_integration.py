@@ -432,6 +432,53 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         self.assertEqual(409, post({"payment_reference": "tok_1", "observed_total": total,
                                     "correlation_id": "c2"})[0])
 
+    def test_workspace_hints_same_session_accepted_order_on_recommendations(self):
+        import asyncio
+        from aea_platform.adapters import (PsycopgExperienceStateStore,
+                                           PsycopgInventoryAvailabilityStore)
+        from aea_platform.internal_api import InternalOrchestrationApp
+        from aea_platform.inventory import AvailabilitySnapshot, InventoryAvailabilityService
+        from aea_platform.pricing import REFERENCE_DELIVERY_FEE
+        from aea_platform.state import StatePatch
+
+        app = InternalOrchestrationApp(self.connection, "internal-token")
+        session_id = self._order_ready_for_checkout(app)
+        now = datetime.now(timezone.utc)
+        inventory = InventoryAvailabilityService(
+            PsycopgInventoryAvailabilityStore(self.connection), now=lambda: now)
+        for product_id, qty in (("classic-rose-dozen", 5), ("lilac-bouquet", 2),
+                                ("budget-mixed-bunch", 4)):
+            inventory.record(AvailabilitySnapshot(product_id, qty, 1, now))
+
+        def workspace():
+            return asyncio.run(self._invoke_internal(
+                app, "GET", f"/internal/v1/sessions/{session_id}/workspace"))[1]
+
+        loaded = workspace()
+        store = PsycopgExperienceStateStore(self.connection)
+        with self.connection.transaction():
+            store.apply_patch(
+                str(session_id), loaded["context_version"], 1,
+                StatePatch.create(
+                    {"shared_understanding": {"occasion": "birthday", "budget": 100}},
+                    ["shared_understanding.occasion", "shared_understanding.budget"]),
+                [])
+
+        draft_items = workspace()["facets"]["recommendations"]["items"]
+        self.assertEqual("budget-mixed-bunch", draft_items[0]["product_id"])
+        self.assertFalse(any(item.get("prior_order_hint") for item in draft_items))
+
+        total = round(70.0 + REFERENCE_DELIVERY_FEE, 2)
+        status, _result = asyncio.run(self._invoke_internal(
+            app, "POST", f"/internal/v1/sessions/{session_id}/checkout",
+            json.dumps({"payment_reference": "tok_hint", "observed_total": total,
+                        "correlation_id": "hint"}).encode()))
+        self.assertEqual(202, status)
+
+        hinted = workspace()["facets"]["recommendations"]["items"]
+        self.assertEqual("classic-rose-dozen", hinted[0]["product_id"])
+        self.assertTrue(hinted[0]["prior_order_hint"])
+
     def test_checkout_decline_leaves_order_submitted(self):
         import asyncio
         from aea_platform.internal_api import InternalOrchestrationApp

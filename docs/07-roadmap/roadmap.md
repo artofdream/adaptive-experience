@@ -41,12 +41,7 @@ Backlog:
 | **M5** | Checkout & Confirmation | Deliver T-06 Order Summary breakdown, T-07 Payment & Checkout integration, and Order Confirmation | FR-018, FR-019; NFR-007, NFR-012, NFR-013 |
 | **M6** | Tracking & Automated Support | Deliver approved product/policy answers, T-08 Order Tracking timeline, Contact Florist action, and Automated Support Overlay (ASO / FR-009) | FR-005, FR-009, FR-023; NFR-011 |
 | **M7** | MVP Hardening | End-to-end integration, availability and performance optimization, security audit, reference deployment validation, and final verification of the governance, auditability, and privacy controls introduced in M1 | NFR-003; final validation and hardening of NFR-015, NFR-016, NFR-017 |
-| **M8** | Returning shopper | Durable prior-order recall (no login), reorder, and modify-before-reorder after the same-session T-03 hint. Parent #27 stays open. Not CRM. | FR-008 |
-| **M9** | Assistant reliability | AI response quality monitoring and error tracking. No new assistant surfaces. | NFR-008 |
-| **M10** | Compositional T-04 | Free-form bouquet composition beyond thin FR-003 option keys (ADR-006 remainder). | FR-003 (free-form only; thin keys already MVP) |
-| **M11** | Inventory analytics depth | Forecasting and analytics beyond the thin `/florist` snapshot trends. | FR-012, NFR-010 |
-| **M12** | Engagement CRM | Occasion reminders and engagement analytics. Staff live chat and ticketing stay out. | FR-016, FR-017 |
-| **Future** | Future Backlog | Unscheduled: voice, semantic caching, progressive hydration, other industry implementations. Thin T-09 / FR-006, thin FR-010, thin FR-012, and the NFR-014 adapter pin remain delivered and Future in the workbook. | Thin-delivered FR-006, FR-010, FR-012; NFR-014 pin |
+| **Future** | Future Backlog | Free-form compositional builder beyond thin T-04 options, history-based recommendations (FR-008), CRM analytics (FR-016, FR-017). Thin T-09 / FR-006 Contact Florist escalation, thin FR-010 situational ASO answers, thin FR-012 inventory forecasts, and a thin same-session prior-order ranking hint on T-03 are delivered. | FR-008, FR-010, FR-012, FR-016, FR-017; NFR-008, NFR-010, NFR-014 |
 
 ## Notes
 - Secure Payment / Checkout (FR-019) and the itemized Order Summary (FR-018) are
@@ -61,6 +56,8 @@ Backlog:
 - Thin FR-010 situational answers (order status, session delivery, inventory
   availability) are delivered on ASO via `support.situation.answered`. They do
   not replace T-08 tracking or FR-009 policy FAQ.
+- Thin FR-008 same-session prior-order ranking hint is delivered on T-03
+  behind FR-007. It does not implement persistent purchase history or CRM.
 - T-04 is MVP for product/arrangement selection, eligible catalog size, the
   physical card message, and thin FR-003 option keys (flower type, colour,
   ribbon). Free-form bouquet composition and compositional inventory/pricing

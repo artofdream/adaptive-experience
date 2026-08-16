@@ -72,7 +72,8 @@ that session, for example:
 - completed decisions preserved across selective regeneration (FR-020 / ADR-009)
 
 MVP does **not** require cross-session customer memory, prior-order recall, or
-CRM-driven prefills.
+CRM-driven prefills. A thin same-session ranking hint on T-03 (accepted order
+in this browser session only) does not change that rule.
 
 ### Scope — Future
 

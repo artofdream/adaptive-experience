@@ -54,11 +54,12 @@ class InternalOrchestrationApp:
         inventory_store = PsycopgInventoryAvailabilityStore(connection)
         self.inventory = InventoryAvailabilityService(inventory_store)
         self.forecast = InventoryForecastService(inventory_store)
-        self.recommendation = RecommendationService(
-            PsycopgRecommendationStore(connection), self.inventory)
         order_store = PsycopgOrderStore(connection)
         self.order_store = order_store
         self.order = OrderService(order_store)
+        self.recommendation = RecommendationService(
+            PsycopgRecommendationStore(connection), self.inventory,
+            prior_product_lookup=self.order.session_prior_product_id)
         self.pricing = PricingService()
         self.checkout = CheckoutService(order_store, self.pricing)
         self.payment_handler = PaymentCheckoutHandler(order_store, ReferencePaymentAuthority())
@@ -252,7 +253,8 @@ class InternalOrchestrationApp:
                 "structured_intent": shared.structured_intent,
                 "suggestions": list(shared.suggestions),
             },
-            "recommendations": {"items": self.recommendation.preview(intent=shared.structured_intent)},
+            "recommendations": {"items": self.recommendation.preview(
+                intent=shared.structured_intent, session_id=session_id)},
         }
         decisions = state.get("decisions") or {}
         selection = decisions.get("product")

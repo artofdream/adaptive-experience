@@ -536,7 +536,7 @@ class BffApp:
                 if isinstance(item, dict):
                     items.append({key: item[key] for key in
                                   ("product_id", "price", "score", "rank", "available",
-                                   "availability_status") if key in item})
+                                   "availability_status", "prior_order_hint") if key in item})
             facets["recommendations"] = {"items": items}
         if isinstance(facets_in.get("selection"), dict):
             selection = {}

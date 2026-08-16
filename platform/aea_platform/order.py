@@ -10,6 +10,10 @@ from typing import Callable
 ORDER_STATUS_SEQUENCE = ("created", "submitted", "confirmed", "preparing",
                          "dispatched", "delivered", "completed")
 
+# Accepted checkout or later. Draft ``created`` rows do not hint T-03.
+PRIOR_ORDER_HINT_STATUSES = frozenset(
+    ORDER_STATUS_SEQUENCE[ORDER_STATUS_SEQUENCE.index("submitted"):])
+
 
 class OrderIncompleteError(RuntimeError):
     """A required T-04/T-05 decision is missing, so no order can be created."""
@@ -62,6 +66,28 @@ class OrderService:
 
     def projection(self, *, session_id: str) -> dict | None:
         return self.store.by_session(session_id)
+
+    def session_prior_product_id(self, session_id: str) -> str | None:
+        """Same-session accepted-order product for the thin FR-008 T-03 hint.
+
+        Returns a catalog product_id only when this session already has an
+        order at submitted or later. Draft ``created`` rows, missing views,
+        and malformed product payloads return None. Not cross-session CRM.
+        """
+        if not isinstance(session_id, str) or not session_id.strip():
+            return None
+        view = self.store.checkout_view(session_id.strip())
+        if not isinstance(view, dict):
+            return None
+        if view.get("status") not in PRIOR_ORDER_HINT_STATUSES:
+            return None
+        product = view.get("product")
+        if not isinstance(product, dict):
+            return None
+        product_id = product.get("product_id")
+        if not isinstance(product_id, str) or not product_id.strip():
+            return None
+        return product_id.strip()
 
     def advance_status(self, *, session_id: str, target_status: str,
                        correlation_id: str, subject_reference: str) -> dict:

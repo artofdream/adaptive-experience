@@ -29,7 +29,8 @@ GitLab: `artof-group/adaptive-experience-architecture` (`glab`, not `gh`).
   impact.
 - **Do not claim ranking is AI.** T-03 is deterministic FR-007. Do not turn
   recommendations into unconstrained LLM picks without an explicit product
-  ask. FR-008 history recs are Future and not implemented.
+  ask. FR-008 persistent history recs are Future. A thin same-session
+  prior-order ranking hint may apply; that is not AI and not CRM.
 - **ADR-016:** agents prepare; domain services execute. Fail-closed tools.
   No agent writes to orders, payments, inventory, or experience-state SoT.
 - **Do not weaken inventory fail-closed** (unknown/stale → not selectable).

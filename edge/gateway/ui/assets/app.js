@@ -495,13 +495,20 @@ function renderRecommendations(items) {
     const badge = document.createElement("span");
     badge.className = item.available ? "badge" : "badge unavailable";
     badge.textContent = item.available ? "Available" : (item.availability_status || "Unknown");
+    card.append(thumb, title, price, badge);
+    if (item.prior_order_hint) {
+      const prior = document.createElement("p");
+      prior.className = "hint";
+      prior.textContent = "Ordered earlier in this session";
+      card.append(prior);
+    }
     const select = document.createElement("button");
     select.className = "primary";
     select.type = "button";
     select.textContent = "Select";
     select.disabled = item.available === false;
     select.addEventListener("click", () => selectProduct(item.product_id));
-    card.append(thumb, title, price, badge, select);
+    card.append(select);
     cards.append(card);
   }
 }
