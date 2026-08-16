@@ -4,15 +4,6 @@ import os
 import sys
 from pathlib import Path
 
-from confluent_kafka.admin import (
-    AdminClient,
-    AlterConfigOpType,
-    ConfigEntry,
-    ConfigResource,
-    NewTopic,
-    RESOURCE_TOPIC,
-)
-
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from aea_platform.policy import KafkaPolicy
 
@@ -63,7 +54,14 @@ def _topic_replication(metadata_topic) -> int:
     return len(partitions[0].replicas)
 
 
-def align_min_insync_replicas(admin: AdminClient, names: list[str]) -> None:
+def align_min_insync_replicas(admin, names: list[str]) -> None:
+    from confluent_kafka.admin import (
+        AlterConfigOpType,
+        ConfigEntry,
+        ConfigResource,
+        RESOURCE_TOPIC,
+    )
+
     if not names:
         print("provision_kafka: no topics to align")
         return
@@ -105,6 +103,8 @@ def align_min_insync_replicas(admin: AdminClient, names: list[str]) -> None:
 
 
 def main() -> None:
+    from confluent_kafka.admin import AdminClient, NewTopic
+
     policy = KafkaPolicy.load(ROOT / "config" / "kafka-policy.json")
     admin = AdminClient(admin_client_config())
     existing = set(admin.list_topics(timeout=10).topics)
