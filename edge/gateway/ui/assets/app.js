@@ -218,7 +218,7 @@ function updateJourneyChrome() {
     button.setAttribute("aria-disabled", ok ? "false" : "true");
   });
   const current = document.querySelector(`#journey-steps [data-step="${state.step}"]`);
-  if (current) current.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
+  if (current) current.scrollIntoView({ inline: "nearest", block: "nearest", behavior: "smooth" });
 }
 
 function renderStepEmpty(step) {
