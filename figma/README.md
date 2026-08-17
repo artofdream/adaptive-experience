@@ -22,6 +22,7 @@ Sync and new-journey prototype rules:
 | Components | Active | Color-matched atoms bound to AEA Shop CSS variables |
 | Shop UI · current journey | Active | Mid-fidelity mockups of steps 1–7 + clickable prototype |
 | Shop UI · returning shopper (proposal) | Proposal | M8 reorder / modify-before-reorder mockups + clickable proto (#194). Not live shop. |
+| Florist operator · T-09 inbox | Active | Operator console first slice: honest empty inbox, labeled sample, session read (#213). Mirrors `/florist`. |
 | AEA Design System | Archive | Grayscale wireframe components + `adaptive-workspace-mvp` |
 | Discovery v0.1 | Archive | Older composed workspace (component instances) |
 | Recommendation Journey | Stub | Hidden / empty placeholder |
@@ -43,6 +44,8 @@ Sync and new-journey prototype rules:
 | Shop UI · current journey T-03 Product Card | Live T-03 card; optional `Ordered earlier in this browser` hint uses existing `.hint` (thin FR-008, same browser, no login) |
 | Prototype **Shop UI · current journey** | `index.html` journey steps 1–7 (`data-journey-mode="steps"`) |
 | Prototype **Shop UI · returning shopper (proposal)** | M8 FR-008 proposal only. Reorder + modify-before-reorder in the persistent workspace. Do not restyle live shop until approved. |
+| Florist operator · T-09 inbox `1 Live empty` | Live `/florist` empty inbox (no sample rows when operator APIs are on) |
+| Florist operator · T-09 inbox `2 Sample layout` | Fail-closed labeled sample; T-09 primary, session next, forecast secondary |
 
 Current-journey prototype (click Continue through steps 1→7):
 
@@ -55,6 +58,12 @@ Returning-shopper proposal (recall → last order → reorder **or** modify → 
 **[Open prototype](https://www.figma.com/proto/4PNLwici0GMwU824BpoZ38?node-id=33-4&starting-point-node-id=33-4)**
 
 Starting frame: `1 Recall` (`33:4`). Page `Shop UI · returning shopper (proposal)` (`33:3`). Branch at `3 Last order` (`33:26`): Reorder → `4 Reorder confirm` (`33:37`); Modify → `4b Modify` (`33:176`).
+
+Florist operator T-09 (live empty ↔ fail-closed sample):
+
+**[Open prototype](https://www.figma.com/proto/4PNLwici0GMwU824BpoZ38?node-id=38-4&starting-point-node-id=38-4)**
+
+Starting frame: `1 Live empty` (`38:4`). Page `Florist operator · T-09 inbox` (`38:3`). Sample layout: `2 Sample layout` (`38:5`).
 
 New journey proposals: add a page, mockup states, wire prototype connections,
 then add a row here with the proto URL (file + `node-id`). After the journey

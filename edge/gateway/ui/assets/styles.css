@@ -402,11 +402,18 @@ dialog::backdrop { background: rgba(42, 36, 56, .45); }
 }
 
 body.operator { background: var(--page); }
+.operator .header-note {
+  margin: 0;
+  max-width: 22rem;
+  color: var(--muted);
+  font-size: .8rem;
+  text-align: right;
+}
 .operator-shell {
   width: min(1440px, calc(100% - 2rem));
   margin: 1rem auto 2rem;
   display: grid;
-  gap: 1rem;
+  gap: 1.15rem;
 }
 .operator-banner {
   margin: 0;
@@ -416,29 +423,46 @@ body.operator { background: var(--page); }
   background: var(--lavender-soft);
   color: var(--ink);
 }
-.operator-mode { margin: 0; color: var(--muted); font-size: .9rem; }
+.operator-banner details { margin-top: .45rem; color: var(--muted); font-size: .85rem; }
+.operator-banner summary { cursor: pointer; font-weight: 650; color: var(--purple-deep); }
+.operator-mode { justify-self: start; }
 .operator-layout {
   display: grid;
-  grid-template-columns: minmax(16rem, 0.9fr) minmax(0, 1.4fr);
-  gap: 1rem;
+  grid-template-columns: 1fr;
+  gap: 1.15rem;
   align-items: start;
 }
+.operator .panel > header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: .75rem;
+}
+.operator h1 { font-size: 1.35rem; line-height: 1.2; margin: 0; }
 .operator-table { width: 100%; border-collapse: collapse; }
 .operator-table th, .operator-table td {
   text-align: left;
-  padding: .55rem .35rem;
+  padding: .7rem .55rem;
   border-bottom: 1px solid var(--line);
   overflow-wrap: anywhere;
 }
-.operator-split { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-.operator-facts { margin: 0; display: grid; grid-template-columns: 8rem 1fr; gap: .35rem .75rem; }
+.operator-table tbody tr.is-selected { background: var(--lavender-soft); }
+.operator-table .text-link { color: var(--purple); font-weight: 650; }
+.operator-empty { color: var(--muted); padding: 1rem .55rem; }
+.operator-split { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+.operator-facts { margin: 0; display: grid; grid-template-columns: 8.5rem 1fr; gap: .45rem .75rem; }
 .operator-facts dt { color: var(--muted); font-size: .8rem; }
 .operator-facts dd { margin: 0; font-weight: 650; overflow-wrap: anywhere; }
-.operator-list { margin: 0; padding-left: 1.1rem; }
+.operator-list { margin: 0; padding-left: 1.1rem; display: grid; gap: .35rem; }
 .operator-transcript { min-height: 8rem; }
 .operator h1, .operator h2, .operator h3 { color: var(--purple-deep); }
-.operator .hint { color: var(--muted); font-size: .85rem; }
+.operator h3 { margin: 1rem 0 .35rem; font-size: 1rem; }
+.operator h3:first-child { margin-top: 0; }
+.operator .hint { color: var(--muted); font-size: .85rem; margin: 0 0 .5rem; }
+.operator-secondary { opacity: .96; }
+.operator-secondary h2 { font-size: 1.05rem; }
 
 @media (max-width: 60rem) {
-  .operator-layout, .operator-split, .operator-facts { grid-template-columns: 1fr; }
+  .operator-split, .operator-facts { grid-template-columns: 1fr; }
+  .operator .header-note { max-width: none; text-align: left; }
 }
