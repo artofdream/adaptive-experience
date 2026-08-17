@@ -170,7 +170,8 @@
             <form id="delivery-form" aria-describedby="delivery-form-error">
               <p id="delivery-confirmed" class="confirmed-banner" hidden>Delivery details confirmed for this session.</p>
               <label for="delivery-date">Date</label>
-              <input id="delivery-date" type="date" required>
+              <input id="delivery-date" type="date" required aria-describedby="delivery-date-hint">
+              <p id="delivery-date-hint" class="hint">Today or later — past days cannot be delivered.</p>
               <fieldset>
                 <legend>Window</legend>
                 <label><input type="radio" name="window" value="morning" required> 10:00–12:00 <span class="badge">Available</span></label>

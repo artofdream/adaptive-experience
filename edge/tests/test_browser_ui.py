@@ -1,5 +1,6 @@
 from html.parser import HTMLParser
 import pathlib
+import re
 import unittest
 
 
@@ -160,6 +161,37 @@ class BrowserUiTests(unittest.TestCase):
         self.assertIn("Refresh the page, then try again.", self.script)
         self.assertNotIn("Conversation could not be sent (${error.message})", self.script)
         self.assertNotIn("Delivery could not be saved (${error.message})", self.script)
+
+    def test_delivery_date_rejects_days_before_today(self):
+        self.assertIn('id="delivery-date"', self.html)
+        self.assertIn('type="date"', self.html)
+        self.assertIn('id="delivery-date-hint"', self.html)
+        self.assertIn("Today or later", self.html)
+        self.assertIn("function localIsoDate", self.script)
+        self.assertIn("function isDeliveryDateBeforeToday", self.script)
+        self.assertIn("function constrainDeliveryDateMin", self.script)
+        self.assertIn("function rejectPastDeliveryDate", self.script)
+        self.assertIn("function bindDeliveryDateGuard", self.script)
+        self.assertIn("input.min = localIsoDate()", self.script)
+        self.assertIn("delivery_date_past", self.script)
+        self.assertIn("Delivery cannot be scheduled in the past.", self.script)
+        self.assertIn("Choose today or a later date.", self.script)
+        self.assertIn("const pastCopy = rejectPastDeliveryDate()", self.script)
+        self.assertIn("bindDeliveryDateGuard()", self.script)
+        # Mirrors isDeliveryDateBeforeToday: YYYY-MM-DD compare; invalid non-empty fails closed.
+        today = "2026-08-17"
+        self.assertTrue(self._is_delivery_date_before_today("2026-08-16", today))
+        self.assertFalse(self._is_delivery_date_before_today("2026-08-17", today))
+        self.assertFalse(self._is_delivery_date_before_today("2026-08-18", today))
+        self.assertFalse(self._is_delivery_date_before_today("", today))
+        self.assertTrue(self._is_delivery_date_before_today("17/08/2026", today))
+
+    @staticmethod
+    def _is_delivery_date_before_today(value, today):
+        iso = str(value or "").strip()
+        if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", iso):
+            return bool(iso)
+        return iso < today
 
     def test_delivery_confirms_saved_destination_reference(self):
         self.assertIn("SESSION_DESTINATION_REFERENCE", self.script)
