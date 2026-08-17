@@ -98,8 +98,8 @@ The UI uses standards-based HTML, CSS, and JavaScript for current evergreen
 desktop, tablet, and mobile browsers. Its tested viewport contract is:
 
 - desktop above 960px: conversation and Shared Understanding remain side by side;
-- tablet from 641px to 960px: primary regions form one column and tiles form two;
-- mobile through 640px: one-column reading order, full-width primary action,
+- tablet from 641px to 960px: T-01 Conversation stays left of T-02 Intent Summary; tiles span full width in two columns;
+- mobile through 640px: one-column reading order (T-01 above T-02), full-width primary action,
   minimum 44px interactive targets, wrapping user content, and compact progress.
 
 Reduced-motion and forced-colour preferences are preserved. Release validation

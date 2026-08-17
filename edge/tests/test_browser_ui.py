@@ -68,6 +68,17 @@ class BrowserUiTests(unittest.TestCase):
         self.assertIn("@media (max-width: 60rem)", self.css)
         self.assertIn("@media (max-width: 40rem)", self.css)
         self.assertIn("grid-template-columns: 1fr", self.css)
+        self.assertIn("grid-area: conversation", self.css)
+        self.assertIn("grid-area: understanding", self.css)
+        tablet = self.css.split("@media (max-width: 60rem)", 1)[1].split("@media", 1)[0]
+        self.assertNotIn("order: -1", tablet)
+        self.assertIn('"conversation understanding"', tablet)
+        self.assertIn('"main main"', tablet)
+        conversation = self.html.index('id="conversation"')
+        understanding = self.html.index('id="understanding"')
+        workspace_main = self.html.index('class="workspace-main"')
+        self.assertLess(conversation, understanding)
+        self.assertLess(understanding, workspace_main)
 
     def test_mobile_controls_and_content_resist_clipping(self):
         self.assertIn("min-height: 44px", self.css)

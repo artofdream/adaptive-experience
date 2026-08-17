@@ -178,10 +178,14 @@ main.workspace {
   padding: 1.25rem 0 5rem;
   display: grid;
   grid-template-columns: minmax(0, 1.7fr) minmax(22rem, 2.3fr);
+  grid-template-areas:
+    "conversation understanding"
+    "conversation main";
   gap: 1.15rem;
   align-items: start;
 }
-.workspace-main { display: grid; gap: 1rem; min-width: 0; }
+.conversation { grid-area: conversation; }
+.workspace-main { grid-area: main; display: grid; gap: 1rem; min-width: 0; }
 .workspace-label { margin: 0; font-weight: 800; font-size: .9rem; color: var(--purple-deep); }
 
 .panel, .tile-grid .tile { border: 1px solid var(--line); border-radius: .75rem; background: var(--card); }
@@ -264,7 +268,7 @@ textarea, input, select {
   font-size: .85rem;
   font-weight: 650;
 }
-.understanding { background: var(--lavender-soft); }
+.understanding { grid-area: understanding; background: var(--lavender-soft); }
 .understanding dl { display: grid; grid-template-columns: 1fr 1.5fr; gap: .5rem; }
 .understanding dt { color: var(--muted); }
 .understanding dd { margin: 0; font-weight: 650; }
@@ -352,8 +356,13 @@ dialog::backdrop { background: rgba(42, 36, 56, .45); }
 .notice.is-error { background: var(--danger); }
 
 @media (max-width: 60rem) {
-  main.workspace { grid-template-columns: 1fr; }
-  .understanding { order: -1; }
+  /* T-01 and T-02 are workspace siblings. Nested order cannot swap them. */
+  main.workspace {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      "conversation understanding"
+      "main main";
+  }
   .tile-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
@@ -378,6 +387,11 @@ dialog::backdrop { background: rgba(42, 36, 56, .45); }
     min-width: 0;
     overflow-x: clip;
     padding-bottom: max(1.5rem, env(safe-area-inset-bottom, 0px));
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "conversation"
+      "understanding"
+      "main";
   }
   /* Header Help already opens ASO (ADR-004). Hide the duplicate FAB so it
      cannot cover full-width Send or other primary actions on T-01. */
