@@ -39,6 +39,16 @@ class CheckoutTotalMismatch(ValueError):
     """The observed total does not match the authoritative order total."""
 
 
+def _amounts_equal(observed, total) -> bool:
+    """Two-decimal money compare; JSON may send int 47 for a 47.00 summary."""
+    if isinstance(observed, bool) or not isinstance(observed, (int, float)):
+        return False
+    try:
+        return round(float(observed), 2) == round(float(total), 2)
+    except (TypeError, ValueError):
+        return False
+
+
 class OrderService:
     """Assemble a customer order from completed decisions (FR-013).
 
@@ -152,9 +162,10 @@ class OrderService:
 class CheckoutService:
     """Async-ready checkout submission (FR-019 / #148).
 
-    Price-checks the assembled order, stores a private payment intent, and emits
-    ``order.checkout.requested``. Authorization runs in the payment consumer
-    (``PaymentCheckoutHandler``), not on this request path.
+    Price-checks the shopper-confirmed basket (current product + delivery, the
+    same inputs as workspace ``order_summary``), stores a private payment intent,
+    and emits ``order.checkout.requested``. Authorization runs in the payment
+    consumer (``PaymentCheckoutHandler``), not on this request path.
     """
 
     def __init__(self, store, pricing, *,
@@ -165,7 +176,8 @@ class CheckoutService:
         self.now = now or (lambda: datetime.now(timezone.utc))
 
     def submit(self, *, session_id: str, payment_reference: str, observed_total,
-               correlation_id: str, subject_reference: str) -> dict:
+               correlation_id: str, subject_reference: str, decisions=None,
+               context_version: int | None = None) -> dict:
         from .payment import normalize_payment_reference
         reference = normalize_payment_reference(payment_reference)
         view = self.store.checkout_view(session_id)
@@ -173,20 +185,33 @@ class CheckoutService:
             raise OrderNotFound(session_id)
         if view["status"] not in ("created", "submitted"):
             raise CheckoutStateError(view["status"])
-        summary = self.pricing.summarize({"product": view["product"], "delivery": view["delivery"]})
+        # Price the same product + delivery the workspace order_summary used
+        # (FR-018). A prior create/submit on this session can freeze a stale
+        # snapshot; T-07 confirms the live total, not the old row.
+        product, delivery = view["product"], view["delivery"]
+        if isinstance(decisions, dict):
+            if isinstance(decisions.get("product"), dict):
+                product = decisions["product"]
+            if isinstance(decisions.get("delivery"), dict):
+                delivery = decisions["delivery"]
+        summary = self.pricing.summarize({"product": product, "delivery": delivery})
         if summary is None:
             raise CheckoutStateError("unpriced")
         total = summary["total"]
-        if (isinstance(observed_total, bool) or not isinstance(observed_total, (int, float))
-                or round(float(observed_total), 2) != total):
+        if not _amounts_equal(observed_total, total):
             raise CheckoutTotalMismatch()
+        assembled_version = (
+            context_version if isinstance(context_version, int)
+            and not isinstance(context_version, bool) and context_version >= 0
+            else view["context_version"])
         published_at = self.now().astimezone(timezone.utc)
         message_id = str(self.new_id())
         if not self.store.request_checkout(
                 session_id=session_id, order_id=view["order_id"], total=total,
                 payment_reference=reference, message_id=message_id,
                 correlation_id=correlation_id, subject_reference=subject_reference,
-                published_at=published_at, context_version=view["context_version"]):
+                published_at=published_at, context_version=assembled_version,
+                product=product, delivery=delivery):
             raise CheckoutStateError("not_submittable")
         return {
             "accepted": True,
@@ -194,7 +219,7 @@ class CheckoutService:
             "order_id": view["order_id"],
             "status": "submitted",
             "message_id": message_id,
-            "context_version": view["context_version"],
+            "context_version": assembled_version,
             "total": total,
             "correlation_id": correlation_id,
             "subject_reference": subject_reference,

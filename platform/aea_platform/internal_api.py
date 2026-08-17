@@ -543,7 +543,9 @@ class InternalOrchestrationApp:
             submitted = self.checkout.submit(
                 session_id=session_id, payment_reference=body.get("payment_reference"),
                 observed_total=body.get("observed_total"), correlation_id=correlation_id.strip(),
-                subject_reference=subject)
+                subject_reference=subject,
+                decisions=(loaded.get("state") or {}).get("decisions") or {},
+                context_version=int(loaded["context_version"]))
         except OrderNotFound:
             return await self._send(send, 404, {"code": "order_not_found"})
         except CheckoutTotalMismatch:

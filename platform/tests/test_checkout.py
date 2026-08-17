@@ -8,10 +8,11 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from aea_platform.order import (CheckoutService, CheckoutStateError, CheckoutTotalMismatch,
-                                OrderNotFound)
+                                OrderNotFound, _amounts_equal)
 from aea_platform.payment import (PaymentOutcome, PaymentValidationError,
                                   ReferencePaymentAuthority, normalize_payment_reference)
 from aea_platform.payment_checkout import PaymentCheckoutHandler
+from aea_platform.pricing import PricingService, REFERENCE_DELIVERY_FEE
 
 
 class PaymentAuthorityTests(unittest.TestCase):
@@ -131,6 +132,43 @@ class CheckoutServiceTests(unittest.TestCase):
             self._service(FakeCheckoutStore(self._view()), total=None).submit(
                 session_id="s", payment_reference="tok", observed_total=70.0,
                 correlation_id="c", subject_reference="subj")
+
+    def test_amounts_equal_accepts_json_int_and_rejects_bool(self):
+        self.assertTrue(_amounts_equal(47, 47.0))
+        self.assertTrue(_amounts_equal(47.0, 47))
+        self.assertFalse(_amounts_equal(True, 1.0))
+        self.assertFalse(_amounts_equal(82.0, 47.0))
+
+    def test_submit_prices_current_decisions_not_stale_order_snapshot(self):
+        store = FakeCheckoutStore({
+            "order_id": "o1", "status": "submitted",
+            "product": {"product_id": "classic-rose-dozen"},
+            "delivery": {"destination_reference": "old-home"},
+            "context_version": 2,
+        })
+        service = CheckoutService(store, PricingService(), new_id=lambda: "m")
+        live = {
+            "product": {"product_id": "budget-mixed-bunch"},
+            "delivery": {"destination_reference": "home"},
+        }
+        live_total = round(35.0 + REFERENCE_DELIVERY_FEE, 2)
+        stale_total = round(70.0 + REFERENCE_DELIVERY_FEE, 2)
+        self.assertEqual(47.0, live_total)
+        with self.assertRaises(CheckoutTotalMismatch):
+            service.submit(
+                session_id="s", payment_reference="tok", observed_total=live_total,
+                correlation_id="c", subject_reference="subj")
+        # Browser JSON often sends 47 rather than 47.0 for order_summary.total.
+        result = service.submit(
+            session_id="s", payment_reference="tok_ok", observed_total=47,
+            correlation_id="c", subject_reference="subj", decisions=live,
+            context_version=4)
+        self.assertTrue(result["accepted"] and result["pending"])
+        self.assertEqual(live_total, result["total"])
+        self.assertEqual(4, result["context_version"])
+        self.assertEqual("budget-mixed-bunch", store.last_request["product"]["product_id"])
+        self.assertEqual("home", store.last_request["delivery"]["destination_reference"])
+        self.assertNotEqual(stale_total, result["total"])
 
 
 class PaymentCheckoutHandlerTests(unittest.TestCase):
