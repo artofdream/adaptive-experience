@@ -48,8 +48,10 @@ resource "aws_secretsmanager_secret_version" "msk_scram" {
 }
 
 resource "aws_msk_configuration" "main" {
-  name              = "${local.prefix}-msk"
-  kafka_versions    = ["3.6.0"]
+  # kafka_versions is ForceNew. New name + create_before_destroy so the
+  # in-use 3.6.0 configuration is not destroyed before the cluster moves.
+  name           = "${local.prefix}-msk-3-9-x"
+  kafka_versions = ["3.9.x"]
   # Pilot is 2 brokers: RF=2, MinISR=RF-1=1. AWS Health flags RF==MinISR.
   # Do not raise broker count here; SM locked 2-broker pilot HA.
   server_properties = <<-PROPS
@@ -58,6 +60,10 @@ resource "aws_msk_configuration" "main" {
     default.replication.factor=${var.msk_broker_nodes}
     min.insync.replicas=${var.msk_broker_nodes - 1}
   PROPS
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "aws_cloudwatch_log_group" "msk" {
@@ -67,7 +73,8 @@ resource "aws_cloudwatch_log_group" "msk" {
 
 resource "aws_msk_cluster" "main" {
   cluster_name           = "${local.prefix}-kafka"
-  kafka_version          = "3.6.0"
+  # MSK recommended string is 3.9.x (not 3.9.0). AWS Health: 3.6.0 EOL 8 Sep 2026.
+  kafka_version          = "3.9.x"
   number_of_broker_nodes = var.msk_broker_nodes
 
   broker_node_group_info {
