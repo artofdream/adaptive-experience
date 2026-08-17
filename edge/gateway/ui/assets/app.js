@@ -31,6 +31,7 @@ const ERROR_COPY = {
   http_500: "Something went wrong on our side. Try again in a moment.",
   http_502: "The shop is briefly unavailable. Try again in a moment.",
   http_503: "The shop is briefly unavailable. Try again in a moment.",
+  delivery_date_past: "Delivery cannot be scheduled in the past. Choose today or a later date.",
 };
 // Customer-facing names for T-03 cards (and T-04 arrangement). IDs stay slugs.
 const PRODUCT_NAMES = {
@@ -609,6 +610,57 @@ function resolveDestinationReference() {
   return document.querySelector("#destination-reference").value.trim();
 }
 
+function localIsoDate(now) {
+  const d = now || new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function isDeliveryDateBeforeToday(value, today) {
+  const iso = String(value || "").trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return Boolean(iso);
+  return iso < (today || localIsoDate());
+}
+
+function constrainDeliveryDateMin() {
+  const input = document.querySelector("#delivery-date");
+  if (!input) return;
+  input.min = localIsoDate();
+}
+
+function rejectPastDeliveryDate() {
+  const input = document.querySelector("#delivery-date");
+  constrainDeliveryDateMin();
+  const copy = ERROR_COPY.delivery_date_past;
+  if (!input || !input.value) {
+    if (input) input.setCustomValidity("");
+    return "";
+  }
+  if (isDeliveryDateBeforeToday(input.value, input.min)) {
+    input.setCustomValidity(copy);
+    return copy;
+  }
+  input.setCustomValidity("");
+  return "";
+}
+
+function bindDeliveryDateGuard() {
+  const input = document.querySelector("#delivery-date");
+  if (!input || input.dataset.minBound === "true") return;
+  input.dataset.minBound = "true";
+  constrainDeliveryDateMin();
+  const onDateEdit = () => {
+    const copy = rejectPastDeliveryDate();
+    if (copy) showFormError("delivery-form-error", copy);
+    else clearFormError("delivery-form-error");
+  };
+  input.addEventListener("input", onDateEdit);
+  input.addEventListener("change", onDateEdit);
+  input.addEventListener("focus", constrainDeliveryDateMin);
+}
+
 function renderDelivery(delivery) {
   const confirmed = document.querySelector("#delivery-confirmed");
   const sessionRef = document.querySelector("#session-destination-ref");
@@ -626,7 +678,11 @@ function renderDelivery(delivery) {
     }
     document.querySelector("#destination-reference").value = saved;
     if (delivery.timing && delivery.timing.date) {
-      document.querySelector("#delivery-date").value = delivery.timing.date;
+      constrainDeliveryDateMin();
+      const dateInput = document.querySelector("#delivery-date");
+      dateInput.value = isDeliveryDateBeforeToday(delivery.timing.date, dateInput.min)
+        ? ""
+        : delivery.timing.date;
     }
     if (delivery.timing && delivery.timing.window) {
       const match = document.querySelector(`input[name="window"][value="${delivery.timing.window}"]`);
@@ -870,6 +926,13 @@ document.querySelector("#delivery-form").addEventListener("submit", async (event
   const windowValue = document.querySelector("input[name='window']:checked");
   const destinationReference = resolveDestinationReference();
   clearFormError("delivery-form-error");
+  const pastCopy = rejectPastDeliveryDate();
+  if (pastCopy) {
+    showFormError("delivery-form-error", pastCopy);
+    showNotice(pastCopy, "error");
+    document.querySelector("#delivery-date").reportValidity();
+    return;
+  }
   if (!destinationReference) {
     const copy = "Confirm the saved destination or enter a different destination reference.";
     showFormError("delivery-form-error", copy);
@@ -1012,6 +1075,7 @@ window.addEventListener("hashchange", () => {
 });
 
 async function boot() {
+  bindDeliveryDateGuard();
   try {
     await ensureSession();
     await refreshWorkspace();
