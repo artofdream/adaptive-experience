@@ -1,4 +1,5 @@
 # Local-only LiteLLM proxy for OpenAICompatibleIntentInterpreter.
+# Path B Terraform embeds this file into the LiteLLM task (infra/aws/ecs.tf).
 # AEA_AI_MODEL must match a model_name below. Override via compose interpolation.
 model_list:
   - model_name: claude-sonnet-5

@@ -33,8 +33,23 @@ resource "aws_service_discovery_service" "orchestration" {
   }
 }
 
+resource "aws_service_discovery_service" "litellm" {
+  name = "litellm"
+  dns_config {
+    namespace_id = aws_service_discovery_private_dns_namespace.main.id
+    dns_records {
+      ttl  = 10
+      type = "A"
+    }
+    routing_policy = "MULTIVALUE"
+  }
+  health_check_custom_config {
+    failure_threshold = 1
+  }
+}
+
 resource "aws_cloudwatch_log_group" "ecs" {
-  for_each          = toset(["gateway", "bff", "orchestration", "relay", "consumer"])
+  for_each          = toset(["gateway", "bff", "orchestration", "relay", "consumer", "litellm"])
   name              = "/aea/${local.prefix}/${each.key}"
   retention_in_days = 30
 }
@@ -77,11 +92,14 @@ resource "aws_ecs_cluster" "main" {
 }
 
 locals {
-  orchestration_image = "${aws_ecr_repository.orchestration.repository_url}:${var.container_image_tag}"
-  bff_image           = "${aws_ecr_repository.bff.repository_url}:${var.container_image_tag}"
-  gateway_image       = "${aws_ecr_repository.gateway.repository_url}:${var.container_image_tag}"
-  discovery_bff_host  = "bff.${local.prefix}.internal"
-  discovery_orch_host = "orchestration.${local.prefix}.internal"
+  orchestration_image    = "${aws_ecr_repository.orchestration.repository_url}:${var.container_image_tag}"
+  bff_image              = "${aws_ecr_repository.bff.repository_url}:${var.container_image_tag}"
+  gateway_image          = "${aws_ecr_repository.gateway.repository_url}:${var.container_image_tag}"
+  discovery_bff_host     = "bff.${local.prefix}.internal"
+  discovery_orch_host    = "orchestration.${local.prefix}.internal"
+  discovery_litellm_host = "litellm.${local.prefix}.internal"
+  # Same aliases as Path A. Do not duplicate; keep edge/litellm.yaml the SoT.
+  litellm_config_yaml = file("${path.module}/../../edge/litellm.yaml")
 }
 
 resource "aws_ecs_task_definition" "orchestration" {
@@ -93,9 +111,9 @@ resource "aws_ecs_task_definition" "orchestration" {
   execution_role_arn       = aws_iam_role.ecs_execution.arn
   task_role_arn            = aws_iam_role.ecs_task.arn
   container_definitions = jsonencode([{
-    name      = "orchestration"
-    image     = local.orchestration_image
-    essential = true
+    name         = "orchestration"
+    image        = local.orchestration_image
+    essential    = true
     portMappings = [{ containerPort = 8081, protocol = "tcp" }]
     environment = [
       { name = "AEA_ENVIRONMENT", value = "production" },
@@ -125,9 +143,9 @@ resource "aws_ecs_task_definition" "bff" {
   execution_role_arn       = aws_iam_role.ecs_execution.arn
   task_role_arn            = aws_iam_role.ecs_task.arn
   container_definitions = jsonencode([{
-    name      = "bff"
-    image     = local.bff_image
-    essential = true
+    name         = "bff"
+    image        = local.bff_image
+    essential    = true
     portMappings = [{ containerPort = 8080, protocol = "tcp" }]
     environment = [
       { name = "AEA_ENVIRONMENT", value = "production" },
@@ -158,9 +176,9 @@ resource "aws_ecs_task_definition" "gateway" {
   execution_role_arn       = aws_iam_role.ecs_execution.arn
   task_role_arn            = aws_iam_role.ecs_task.arn
   container_definitions = jsonencode([{
-    name      = "gateway"
-    image     = local.gateway_image
-    essential = true
+    name         = "gateway"
+    image        = local.gateway_image
+    essential    = true
     portMappings = [{ containerPort = 8080, protocol = "tcp" }]
     environment = [
       { name = "AEA_GATEWAY_MODE", value = "alb" },
@@ -247,6 +265,48 @@ resource "aws_ecs_task_definition" "consumer_workspace" {
   }])
 }
 
+resource "aws_ecs_task_definition" "litellm" {
+  family                   = "${local.prefix}-litellm"
+  requires_compatibilities = ["FARGATE"]
+  network_mode             = "awsvpc"
+  cpu                      = "512"
+  memory                   = "1024"
+  execution_role_arn       = aws_iam_role.ecs_execution.arn
+  task_role_arn            = aws_iam_role.ecs_task.arn
+  container_definitions = jsonencode([{
+    name         = "litellm"
+    image        = var.litellm_image
+    essential    = true
+    portMappings = [{ containerPort = 4000, protocol = "tcp" }]
+    # Image ENTRYPOINT is litellm; write Path A yaml then exec the proxy.
+    entryPoint = ["python", "-c"]
+    command = [
+      "import os, pathlib; pathlib.Path('/tmp/config.yaml').write_text(os.environ['LITELLM_CONFIG_YAML']); os.execvp('litellm', ['litellm', '--config', '/tmp/config.yaml', '--port', '4000'])"
+    ]
+    environment = [
+      { name = "LITELLM_CONFIG_YAML", value = local.litellm_config_yaml },
+    ]
+    secrets = [
+      { name = "ANTHROPIC_API_KEY", valueFrom = "${aws_secretsmanager_secret.app.arn}:ANTHROPIC_API_KEY::" },
+    ]
+    healthCheck = {
+      command     = ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:4000/health/liveliness')"]
+      interval    = 30
+      timeout     = 5
+      retries     = 3
+      startPeriod = 60
+    }
+    logConfiguration = {
+      logDriver = "awslogs"
+      options = {
+        awslogs-group         = aws_cloudwatch_log_group.ecs["litellm"].name
+        awslogs-region        = var.aws_region
+        awslogs-stream-prefix = "litellm"
+      }
+    }
+  }])
+}
+
 resource "aws_ecs_service" "orchestration" {
   name            = "orchestration"
   cluster         = aws_ecs_cluster.main.id
@@ -326,6 +386,23 @@ resource "aws_ecs_service" "consumer_workspace" {
     subnets          = aws_subnet.private[*].id
     security_groups  = [aws_security_group.orchestration.id]
     assign_public_ip = false
+  }
+  tags = { Project = "adaptive-experience" }
+}
+
+resource "aws_ecs_service" "litellm" {
+  name            = "litellm"
+  cluster         = aws_ecs_cluster.main.id
+  task_definition = aws_ecs_task_definition.litellm.arn
+  desired_count   = var.desired_count
+  launch_type     = "FARGATE"
+  network_configuration {
+    subnets          = aws_subnet.private[*].id
+    security_groups  = [aws_security_group.litellm.id]
+    assign_public_ip = false
+  }
+  service_registries {
+    registry_arn = aws_service_discovery_service.litellm.arn
   }
   tags = { Project = "adaptive-experience" }
 }
