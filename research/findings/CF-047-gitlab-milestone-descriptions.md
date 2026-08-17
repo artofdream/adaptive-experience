@@ -7,7 +7,7 @@ severity: medium
 source_assessment: research/assessments/2026-08-16-coherence-impl-status.md
 issue: "#206"
 branch: docs/restore-roadmap-m8-m12
-merge_request:
+merge_request: "!211"
 supersedes:
 
 ## Claim
@@ -46,7 +46,7 @@ first slices (#190 / #193). Workbook scopes unchanged.
 |------|-------|-------------------|
 | 2026-08-16 | in-mr | #191 / !195 named M8–M12 and aligned GitLab descriptions |
 | 2026-08-17 | investigating | Post-merge verify: GitLab descriptions match !195; published table on main does not (`542ec78` overwrite). Status not verified. |
-| 2026-08-17 | in-mr | New cycle: #206 / branch `docs/restore-roadmap-m8-m12` restores the published table. |
+| 2026-08-17 | in-mr | New cycle: #206 / !211 on `docs/restore-roadmap-m8-m12` restores the published table. Status not verified. |
 
 ## Assessment history
 
