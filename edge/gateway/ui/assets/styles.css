@@ -18,7 +18,14 @@
   background: var(--page);
 }
 * { box-sizing: border-box; }
-body { margin: 0; line-height: 1.55; }
+html { overflow-x: clip; }
+body {
+  margin: 0;
+  line-height: 1.55;
+  overflow-x: clip;
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
 img, svg { max-width: 100%; height: auto; }
 button, textarea, input, select { font: inherit; }
 button { cursor: pointer; }
@@ -166,6 +173,7 @@ button { cursor: pointer; }
 
 main.workspace {
   width: min(1440px, calc(100% - 2rem));
+  min-width: 0;
   margin: 0 auto;
   padding: 1.25rem 0 5rem;
   display: grid;
@@ -326,8 +334,8 @@ fieldset label { font-weight: 500; display: flex; gap: .5rem; align-items: cente
 
 .aso {
   position: fixed;
-  right: 1.25rem;
-  bottom: 1.25rem;
+  right: max(1.25rem, env(safe-area-inset-right, 0px));
+  bottom: max(1.25rem, env(safe-area-inset-bottom, 0px));
   width: 3.5rem;
   height: 3.5rem;
   border: 0;
@@ -350,15 +358,31 @@ dialog::backdrop { background: rgba(42, 36, 56, .45); }
 }
 
 @media (max-width: 40rem) {
-  .site-header { min-height: 4rem; padding-inline: 1rem; }
+  .site-header { min-height: 4rem; padding-inline: 1rem; position: relative; z-index: 5; }
   .help-button, .primary, .send, .secondary, .aso, .operator .text-link { min-height: 44px; }
-  .journey-nav { width: min(100% - 1rem, 1440px); position: sticky; top: 0; z-index: 4; background: var(--page); padding-bottom: .35rem; }
+  .journey-nav {
+    width: min(calc(100% - 2rem), 1440px);
+    position: sticky;
+    top: 0;
+    z-index: 4;
+    background: var(--page);
+    padding-bottom: .35rem;
+    overflow-x: hidden;
+  }
   .journey-nav .steps li { min-width: 3.25rem; flex: 0 0 auto; }
   .journey-nav .steps button { flex-direction: column; align-items: center; font-size: .7rem; padding-top: .45rem; }
   .journey-nav .steps .step-label { font-size: 0; }
   .journey-nav .steps .step-label::after { content: attr(data-short); font-size: .68rem; }
-  main.workspace { width: min(100% - 1rem, 1440px); }
-  .panel { padding: 1rem; border-radius: .75rem; }
+  main.workspace {
+    width: min(calc(100% - 2rem), 1440px);
+    min-width: 0;
+    overflow-x: clip;
+    padding-bottom: max(1.5rem, env(safe-area-inset-bottom, 0px));
+  }
+  /* Header Help already opens ASO (ADR-004). Hide the duplicate FAB so it
+     cannot cover full-width Send or other primary actions on T-01. */
+  .aso { display: none; }
+  .panel { padding: 1rem; border-radius: .75rem; max-width: 100%; }
   .welcome-card { grid-template-columns: 1fr; }
   .messages p { max-width: 92%; overflow-wrap: anywhere; }
   textarea { min-height: 7rem; }
@@ -366,7 +390,7 @@ dialog::backdrop { background: rgba(42, 36, 56, .45); }
   .understanding dl { grid-template-columns: 1fr; }
   .tile-grid, .cards, .tracking-layout { grid-template-columns: 1fr; }
   .composer { flex-direction: column; }
-  .notice { left: .5rem; right: .5rem; bottom: 5rem; max-width: none; }
+  .notice { left: .5rem; right: .5rem; bottom: max(1rem, env(safe-area-inset-bottom, 0px)); max-width: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
