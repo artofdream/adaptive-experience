@@ -89,6 +89,26 @@ class OrderService:
             return None
         return product_id.strip()
 
+    def prior_product_id(self, session_id: str) -> str | None:
+        """FR-007 ranking hint: this session's accepted order, else this browser.
+
+        Durable recall is an opaque browser token mapped to the last accepted
+        catalog product_id. No login. Not CRM (FR-016 / FR-017).
+        """
+        same_session = self.session_prior_product_id(session_id)
+        if same_session:
+            return same_session
+        lookup = getattr(self.store, "recalled_product_id", None)
+        if not callable(lookup) or not isinstance(session_id, str) or not session_id.strip():
+            return None
+        try:
+            value = lookup(session_id.strip())
+        except Exception:
+            return None
+        if not isinstance(value, str) or not value.strip():
+            return None
+        return value.strip()
+
     def advance_status(self, *, session_id: str, target_status: str,
                        correlation_id: str, subject_reference: str) -> dict:
         """Move the order forward to an authoritative status and publish it (FR-015).

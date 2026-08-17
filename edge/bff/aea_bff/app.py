@@ -20,6 +20,10 @@ SECURITY_HEADERS = {
     "cache-control": "no-store",
 }
 
+SESSION_COOKIE = "__Host-aea_session"
+RECALL_COOKIE = "__Host-aea_recall"
+RECALL_MAX_AGE_SECONDS = 2592000
+
 
 class BffApp:
     def __init__(self, orchestration: OrchestrationPort, authenticator: StaticTokenAuthenticator,
@@ -61,18 +65,29 @@ class BffApp:
         if path == "/api/v1/session" and method == "POST":
             # Reuse a valid same-subject cookie. A second tab or /florist boot
             # must not mint a new session and invalidate the first tab's CSRF.
-            existing = self.sessions.get(self._cookie(headers.get("cookie"), "__Host-aea_session"))
-            session = existing if existing is not None and existing.subject == subject else self.sessions.create(subject)
+            existing = self.sessions.get(self._cookie(headers.get("cookie"), SESSION_COOKIE))
+            presented_recall = self._recall_id(
+                self._cookie(headers.get("cookie"), RECALL_COOKIE))
+            if existing is not None and existing.subject == subject:
+                session = existing
+                if session.recall_id is None:
+                    session.recall_id = presented_recall or str(uuid.uuid4())
+            else:
+                session = self.sessions.create(
+                    subject, recall_id=presented_recall or str(uuid.uuid4()))
             try:
-                self.orchestration.ensure_session(session_id=session.session_id, subject=subject)
+                self.orchestration.ensure_session(
+                    session_id=session.session_id, subject=subject,
+                    recall_id=session.recall_id)
             except (OrchestrationUnavailable, RuntimeError):
                 return await self._error(send, 503, "orchestration_unavailable", correlation_id)
-            cookie = (f"__Host-aea_session={session.session_id}; Path=/; Secure; HttpOnly; "
-                      "SameSite=Lax")
-            return await self._json(send, 201, {"csrf_token": session.csrf_token}, correlation_id,
-                                    {"set-cookie": cookie})
+            return await self._json(send, 201, {"csrf_token": session.csrf_token}, correlation_id, (
+                ("set-cookie", self._cookie_header(SESSION_COOKIE, session.session_id)),
+                ("set-cookie", self._cookie_header(
+                    RECALL_COOKIE, session.recall_id, max_age=RECALL_MAX_AGE_SECONDS)),
+            ))
 
-        session = self.sessions.get(self._cookie(headers.get("cookie"), "__Host-aea_session"))
+        session = self.sessions.get(self._cookie(headers.get("cookie"), SESSION_COOKIE))
         if session is None or session.subject != subject:
             return await self._error(send, 401, "session_required", correlation_id)
         if method in {"POST", "PUT", "PATCH", "DELETE"}:
@@ -512,6 +527,22 @@ class BffApp:
         return cookie[name].value if name in cookie else None
 
     @staticmethod
+    def _recall_id(candidate: str | None) -> str | None:
+        if not isinstance(candidate, str) or not candidate.strip():
+            return None
+        try:
+            return str(uuid.UUID(candidate.strip()))
+        except ValueError:
+            return None
+
+    @staticmethod
+    def _cookie_header(name: str, value: str, *, max_age: int | None = None) -> str:
+        header = f"{name}={value}; Path=/; Secure; HttpOnly; SameSite=Lax"
+        if max_age is not None:
+            header += f"; Max-Age={max_age}"
+        return header
+
+    @staticmethod
     def _correlation_id(candidate: str | None) -> str:
         try:
             return str(uuid.UUID(candidate)) if candidate else str(uuid.uuid4())
@@ -742,9 +773,12 @@ class BffApp:
                          extra_headers)
 
     async def _send(self, send, status, body, content_type, correlation_id, extra_headers=None):
-        headers = dict(SECURITY_HEADERS)
-        headers.update({"content-type": content_type, "x-correlation-id": correlation_id})
-        headers.update(extra_headers or {})
+        headers = list(SECURITY_HEADERS.items())
+        headers.extend((("content-type", content_type), ("x-correlation-id", correlation_id)))
+        if isinstance(extra_headers, dict):
+            headers.extend(extra_headers.items())
+        elif extra_headers:
+            headers.extend(extra_headers)
         await send({"type": "http.response.start", "status": status,
-                    "headers": [(key.encode(), value.encode()) for key, value in headers.items()]})
+                    "headers": [(key.encode(), value.encode()) for key, value in headers]})
         await send({"type": "http.response.body", "body": body})

@@ -499,7 +499,7 @@ function renderRecommendations(items) {
     if (item.prior_order_hint) {
       const prior = document.createElement("p");
       prior.className = "hint";
-      prior.textContent = "Ordered earlier in this session";
+      prior.textContent = "Ordered earlier in this browser";
       card.append(prior);
     }
     const select = document.createElement("button");

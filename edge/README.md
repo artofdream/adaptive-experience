@@ -117,7 +117,9 @@ Wired end-to-end through authenticated `HttpOrchestration` to Internal
 Orchestration (M2 Conversation and Shared Understanding):
 
 - `POST /api/v1/session` creates an opaque browser session and CSRF token, then
-  ensures the matching internal experience session.
+  ensures the matching internal experience session. It also mints or reuses a
+  durable `__Host-aea_recall` cookie so a later session in this browser can
+  hint T-03 from the last accepted product (thin FR-008; no login; not CRM).
 - `POST /api/v1/conversation/messages` accepts a T-01 customer message and
   returns its message ID, correlation ID, and new context version immediately;
   AI processing continues asynchronously through `customer.message.submitted`.

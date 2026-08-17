@@ -59,7 +59,7 @@ class InternalOrchestrationApp:
         self.order = OrderService(order_store)
         self.recommendation = RecommendationService(
             PsycopgRecommendationStore(connection), self.inventory,
-            prior_product_lookup=self.order.session_prior_product_id)
+            prior_product_lookup=self.order.prior_product_id)
         self.pricing = PricingService()
         self.checkout = CheckoutService(order_store, self.pricing)
         self.payment_handler = PaymentCheckoutHandler(order_store, ReferencePaymentAuthority())
@@ -115,11 +115,17 @@ class InternalOrchestrationApp:
         method = scope["method"]
         try:
             if len(parts) == 4 and method == "PUT":
+                body = await self._body(receive)
+                recall_id = self._recall_id(body.get("recall_id") if isinstance(body, dict) else None)
                 self.connection.execute(
                     "INSERT INTO orchestration.experience_session "
-                    "(session_id,state_schema_version,expires_at) VALUES (%s,1,%s) "
-                    "ON CONFLICT (session_id) DO NOTHING",
-                    (session_id, datetime.now(timezone.utc) + timedelta(minutes=30)))
+                    "(session_id,state_schema_version,expires_at,recall_id) "
+                    "VALUES (%s,1,%s,%s) "
+                    "ON CONFLICT (session_id) DO UPDATE SET "
+                    "recall_id = COALESCE("
+                    "orchestration.experience_session.recall_id, EXCLUDED.recall_id)",
+                    (session_id, datetime.now(timezone.utc) + timedelta(minutes=30),
+                     recall_id))
                 self.connection.commit()
                 return await self._send(send, 204, {})
             if (len(parts) == 6 and parts[4] == "order" and parts[5] in ("status", "delay")
@@ -622,6 +628,15 @@ class InternalOrchestrationApp:
             raise
         return await self._send(send, 202, {"code": "accepted",
             "context_version": new_version, "message_id": message_id})
+
+    @staticmethod
+    def _recall_id(candidate) -> str | None:
+        if not isinstance(candidate, str) or not candidate.strip():
+            return None
+        try:
+            return str(uuid.UUID(candidate.strip()))
+        except ValueError:
+            return None
 
     @staticmethod
     def _query_after(scope) -> int | None:

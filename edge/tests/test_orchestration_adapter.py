@@ -73,6 +73,18 @@ class HttpOrchestrationTests(unittest.TestCase):
         self.assertTrue(any(url.endswith("/sessions/s1/stream?after=3") for _, url, _ in calls))
         self.assertTrue(all(headers["x-subject-reference"] == "user1" for _, _, headers in calls))
 
+    def test_ensure_session_forwards_browser_recall_token(self):
+        calls = []
+        def transport(method, url, headers, payload, timeout):
+            calls.append((method, url, payload))
+            return 204, ""
+        adapter = HttpOrchestration("http://orchestration:8081", "internal", transport=transport)
+        adapter.ensure_session(session_id="s1", subject="user1",
+                               recall_id="11111111-1111-4111-8111-111111111111")
+        self.assertEqual("PUT", calls[0][0])
+        self.assertTrue(calls[0][1].endswith("/sessions/s1"))
+        self.assertEqual("11111111-1111-4111-8111-111111111111", calls[0][2]["recall_id"])
+
     def test_request_escalation_posts_to_internal_support_escalation(self):
         from edge.bff.aea_bff.ports import EscalationResult
         calls = []

@@ -145,6 +145,27 @@ class OrderServiceTests(unittest.TestCase):
         self.assertIsNone(OrderService(FakeOrderStore(current="submitted"))
                           .session_prior_product_id("  "))
 
+    def test_prior_product_id_falls_back_to_browser_recall(self):
+        class RecallingStore(FakeOrderStore):
+            def recalled_product_id(self, session_id):
+                self.looked_up = session_id
+                return "lilac-bouquet"
+
+        store = RecallingStore(current="created")
+        self.assertEqual("lilac-bouquet", self._service(store).prior_product_id("s2"))
+        self.assertEqual("s2", store.looked_up)
+        self.assertEqual(
+            "classic-rose-dozen",
+            OrderService(FakeOrderStore(current="submitted")).prior_product_id("s"))
+        self.assertIsNone(OrderService(FakeOrderStore(current="created")).prior_product_id("s"))
+        self.assertIsNone(self._service().prior_product_id("  "))
+
+        class BrokenStore(FakeOrderStore):
+            def recalled_product_id(self, session_id):
+                raise RuntimeError("lookup")
+
+        self.assertIsNone(OrderService(BrokenStore(current="created")).prior_product_id("s"))
+
 
 if __name__ == "__main__":
     unittest.main()

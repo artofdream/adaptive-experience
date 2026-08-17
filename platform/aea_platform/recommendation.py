@@ -67,7 +67,7 @@ REFERENCE_CATALOG: tuple[CatalogProduct, ...] = (
 )
 
 
-# Modest FR-007 score bump when this session already accepted an order.
+# Modest FR-007 score bump when this browser already accepted an order.
 # Occasion (+3) and flower (+2) still outrank a hint-only match.
 PRIOR_ORDER_HINT_SCORE = 1.5
 
@@ -75,9 +75,10 @@ PRIOR_ORDER_HINT_SCORE = 1.5
 class RecommendationService:
     """Availability-aware recommendation ranking boundary (FR-007 / NFR-006).
 
-    Optional same-session prior-order hint (thin FR-008): if ``prior_product_lookup``
-    returns a catalog product_id for the session, that SKU gets a deterministic
-    score bump and wins score ties. Not AI-ranked. Not cross-session history.
+    Optional prior-order hint (thin FR-008): if ``prior_product_lookup`` returns
+    a catalog product_id for the session, that SKU gets a deterministic score
+    bump and wins score ties. Lookup may be this session's accepted order or
+    the last accepted product in this browser (no login). Not AI-ranked. Not CRM.
     """
 
     def __init__(

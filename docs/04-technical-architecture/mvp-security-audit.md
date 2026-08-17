@@ -59,7 +59,9 @@ data protection).
 ## Security review checklist
 
 - **Authentication / session:** bearer authentication at the internal boundary;
-  opaque `__Host-` session cookie (Secure, HttpOnly, SameSite=Lax) at the edge.
+  opaque `__Host-` session cookie (Secure, HttpOnly, SameSite=Lax) at the edge,
+  plus a separate durable `__Host-aea_recall` cookie that stores only an opaque
+  token for last-accepted-product ranking (no login, no CRM).
 - **CSRF:** enforced on every state-changing edge request (session, commands,
   conversation, shared-understanding, selection, delivery, order, checkout,
   support).
