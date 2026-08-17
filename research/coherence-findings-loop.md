@@ -60,7 +60,7 @@ completed rows because the queue is also the audit trail.
 | 44 | CF-044 | FR-018 requires taxes/discounts/customization charges; PricingService is product + flat delivery only | Medium | verified | 2026-08-14 | 2026-08-14 | #159 / !147 |
 | 45 | CF-045 | NFR-007/NFR-012 encryption-at-rest claimed in ADRs without evidenced platform implementation | Medium | verified | 2026-08-14 | 2026-08-14 | #160 / !149 |
 | 46 | CF-046 | ADR-013 confirmation UX Accepted while T-07 still blank payment_reference re-entry | Low | verified | 2026-08-14 | 2026-08-14 | #161 / !150 |
-| 47 | CF-047 | Group milestone descriptions (M4–M7, Future Backlog, UX alignment) still list pre-CF-041 coverage and closed “current” work | Medium | in-mr | 2026-08-16 | 2026-08-17 | #191 / !195 · #206 / !211 |
+| 47 | CF-047 | Group milestone descriptions (M4–M7, Future Backlog, UX alignment) still list pre-CF-041 coverage and closed “current” work | Medium | verified | 2026-08-16 | 2026-08-17 | #191 / !195 · #206 / !211 @ 7cae086 |
 
 Allowed statuses: `queued`, `investigating`, `ready`, `in-progress`, `in-mr`,
 `verified`, `regressed`, `duplicate`, `not-reproducible`, and `blocked`.
