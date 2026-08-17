@@ -3,7 +3,11 @@
 Terraform for the public-web **pilot** stack in `us-east-1` (override via
 `aws_region`). Terraform `environment` may stay `pilot` for names and tags.
 App task definitions hardcode `AEA_ENVIRONMENT=production` so the local
-inventory seeder and florist operator stay fail-closed.
+inventory seeder stays fail-closed. Florist operator APIs stay 404 in
+**generic** production. `aea-pilot` is a **named exception** (#209): BFF sets
+`AEA_FLORIST_OPERATOR=1` plus `AEA_FLORIST_OPERATOR_EXCEPTION=aea-pilot`.
+That is read-only T-09 inbox; it does **not** write inventory or unblock
+T-03 Select. Do not open `/florist` in the same browser as the shop (CSRF).
 
 **This directory is IaC + operator docs.** `@aea-devsecops-platform` operates
 `plan`/`apply`/bootstrap. The scrum master does not run terraform.
@@ -113,7 +117,13 @@ Gateway task defs set `AEA_GATEWAY_MODE=alb`. The gateway image uses
 
 - `AEA_ENVIRONMENT=production` on orchestration, BFF, relay, and consumer
 - Do **not** set `AEA_SEED_INVENTORY` (production seeder raises)
-- Do **not** set `AEA_FLORIST_OPERATOR` (BFF 404s florist in production)
+- Florist operator: generic production 404s even if `AEA_FLORIST_OPERATOR=1`.
+  Named **aea-pilot** exception only: when Terraform `local.prefix` is
+  `aea-pilot`, BFF also sets `AEA_FLORIST_OPERATOR=1` and
+  `AEA_FLORIST_OPERATOR_EXCEPTION=aea-pilot`. Other prefixes must not copy
+  those vars. Inbox is least-data reads; it does not seed inventory or
+  enable T-03 Select. Do not open `/florist` beside the customer shop
+  (CSRF class !165 / #171).
 - Prefer a live-test inventory feed into `inventory.product_availability`;
   do not invent a warehouse in this stack
 

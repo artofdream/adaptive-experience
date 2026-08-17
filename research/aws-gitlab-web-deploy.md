@@ -19,7 +19,8 @@ backed by RDS Postgres and MSK Kafka (TLS + SASL, **2 brokers / RF=2**).
 
 Canonical origin is `https://aea.artof.link` (no `www`, no `:443`, no trailing
 slash). Terraform stack name may stay `pilot`. App task defs set
-`AEA_ENVIRONMENT=production` (seeder off, florist operator off).
+`AEA_ENVIRONMENT=production` (seeder off; florist operator 404s except named
+`aea-pilot` exception, #209).
 
 ## Target topology
 

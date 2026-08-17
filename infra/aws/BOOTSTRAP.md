@@ -14,7 +14,9 @@ export AEA_KAFKA_SECURITY=SASL_SSL
 export AEA_KAFKA_SASL_USERNAME=aea
 export AEA_KAFKA_SASL_PASSWORD=...
 export AEA_KAFKA_SASL_MECHANISM=SCRAM-SHA-512
-# Fail-closed seeder/florist. Kafka RF is selected separately: 2-broker
+# Fail-closed seeder. Florist operator is a named aea-pilot BFF exception
+# (AEA_FLORIST_OPERATOR_EXCEPTION), not this bootstrap env. Kafka RF is
+# selected separately: 2-broker
 # pilot cannot host production RF=3. MinISR is RF-1 (pilot: RF=2 MinISR=1).
 export AEA_ENVIRONMENT=production
 export AEA_KAFKA_REPLICATION_PROFILE=pilot

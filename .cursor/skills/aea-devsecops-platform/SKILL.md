@@ -81,8 +81,10 @@ Laptop Terraform on this ARM64 Windows machine **must** be amd64:
 `C:\apps\terraform\terraform.exe` cannot fetch AWS provider 5.x.
 
 Fail-closed: `AEA_ENVIRONMENT=production` on task defs; no inventory seeder;
-no florist operator in production. Do not put `AEA_AI_API_KEY` in git or
-`terraform.tfvars` — operator keys in Secrets Manager only.
+generic production 404s florist. Named `aea-pilot` exception may enable
+read-only `/florist` without unblocking Select (see `infra/aws` README).
+Do not put `AEA_AI_API_KEY` in git or `terraform.tfvars` — operator keys
+in Secrets Manager only.
 
 **Wait tags** (PM cadence): parked AWS is **no longer** “not a wait because
 parked.” If apply/bootstrap is blocked, that wait is real.
@@ -135,7 +137,9 @@ Check:
 - CI/CD: GitLab builds images to ECR and deploys ECS; laptop image push
   disallowed unless break-glass
 - **Production flags:** `AEA_ENVIRONMENT=production` must disable local
-  inventory seeder and florist operator (`AEA_FLORIST_OPERATOR` fail-closed)
+  inventory seeder. Florist operator 404s in generic production;
+  `AEA_FLORIST_OPERATOR_EXCEPTION=aea-pilot` is a named Path B exception
+  only (read-only; does not unblock T-03 Select).
 
 Gateway remains the sole public entry (ADR-007). Modular monolith + external
 broker; do not explode into microservices without an extraction ADR.
