@@ -1,13 +1,15 @@
 from __future__ import annotations
 
 import json
+import time
 import uuid
 from http.cookies import SimpleCookie
 from urllib.parse import parse_qs
 
 from .ports import OrchestrationPort
 from .orchestration import OrchestrationUnavailable
-from .security import FixedWindowRateLimiter, SessionStore, StaticTokenAuthenticator
+from .security import (FixedWindowRateLimiter, Session, SessionStore,
+                       StaticTokenAuthenticator)
 
 
 SECURITY_HEADERS = {
@@ -29,13 +31,15 @@ class BffApp:
     def __init__(self, orchestration: OrchestrationPort, authenticator: StaticTokenAuthenticator,
                  *, allowed_origin: str, max_request_bytes: int = 65536,
                  sessions: SessionStore | None = None,
+                 session_signing_key: str | None = None,
                  rate_limiter: FixedWindowRateLimiter | None = None,
                  florist_operator_enabled: bool = False):
         self.orchestration = orchestration
         self.authenticator = authenticator
         self.allowed_origin = allowed_origin
         self.max_request_bytes = max_request_bytes
-        self.sessions = sessions or SessionStore()
+        self.sessions = sessions or SessionStore(
+            signing_key=session_signing_key or authenticator.token)
         self.rate_limiter = rate_limiter or FixedWindowRateLimiter()
         self.florist_operator_enabled = florist_operator_enabled
 
@@ -73,9 +77,14 @@ class BffApp:
         if path == "/api/v1/session" and method == "POST":
             # Reuse a valid same-subject cookie. A second tab or /florist boot
             # must not mint a new session and invalidate the first tab's CSRF.
-            existing = self.sessions.get(self._cookie(headers.get("cookie"), SESSION_COOKIE))
+            # Rebind from Orchestration when this BFF task has empty memory
+            # (ECS rolling deploy / Cloud Map MULTIVALUE).
             presented_recall = self._recall_id(
                 self._cookie(headers.get("cookie"), RECALL_COOKIE))
+            try:
+                existing = self._browser_session(headers.get("cookie"), subject)
+            except OrchestrationUnavailable:
+                return await self._error(send, 503, "orchestration_unavailable", correlation_id)
             if existing is not None and existing.subject == subject:
                 session = existing
                 if session.recall_id is None:
@@ -95,7 +104,10 @@ class BffApp:
                     RECALL_COOKIE, session.recall_id, max_age=RECALL_MAX_AGE_SECONDS)),
             ))
 
-        session = self.sessions.get(self._cookie(headers.get("cookie"), SESSION_COOKIE))
+        try:
+            session = self._browser_session(headers.get("cookie"), subject)
+        except OrchestrationUnavailable:
+            return await self._error(send, 503, "orchestration_unavailable", correlation_id)
         if session is None or session.subject != subject:
             return await self._error(send, 401, "session_required", correlation_id)
         if method in {"POST", "PUT", "PATCH", "DELETE"}:
@@ -528,6 +540,27 @@ class BffApp:
                 return 413, "request_too_large"
             if not message.get("more_body", False):
                 return bytes(data)
+
+    def _browser_session(self, cookie_header: str | None, subject: str) -> Session | None:
+        session_id = self._recall_id(self._cookie(cookie_header, SESSION_COOKIE))
+        if session_id is None:
+            return None
+        existing = self.sessions.get(session_id)
+        if existing is not None and existing.subject == subject:
+            return existing
+        try:
+            raw = self.orchestration.load_session(session_id=session_id, subject=subject)
+        except (OrchestrationUnavailable, RuntimeError):
+            raise OrchestrationUnavailable("orchestration unavailable")
+        status = int(raw.get("status") or 200)
+        if status == 404 or raw.get("code") == "session_not_found":
+            return None
+        if status >= 500:
+            raise OrchestrationUnavailable("orchestration unavailable")
+        recall = self._recall_id(raw.get("recall_id"))
+        return self.sessions.remember(Session(
+            session_id, subject, self.sessions.csrf_for(session_id),
+            time.time() + self.sessions.ttl_seconds, recall))
 
     @staticmethod
     def _cookie(raw: str | None, name: str) -> str | None:

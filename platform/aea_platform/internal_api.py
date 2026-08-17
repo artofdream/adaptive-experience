@@ -119,6 +119,22 @@ class InternalOrchestrationApp:
         session_id = parts[3]
         method = scope["method"]
         try:
+            if len(parts) == 4 and method == "GET":
+                try:
+                    session_id = str(uuid.UUID(session_id))
+                except ValueError:
+                    return await self._send(send, 422, {"code": "invalid_session_reference"})
+                row = self.connection.execute(
+                    "SELECT recall_id FROM orchestration.experience_session "
+                    "WHERE session_id=%s AND lifecycle_status='active'",
+                    (session_id,),
+                ).fetchone()
+                if row is None:
+                    return await self._send(send, 404, {"code": "session_not_found"})
+                payload = {"session_id": session_id}
+                if row[0] is not None:
+                    payload["recall_id"] = str(row[0])
+                return await self._send(send, 200, payload)
             if len(parts) == 4 and method == "PUT":
                 body = await self._body(receive)
                 recall_id = self._recall_id(body.get("recall_id") if isinstance(body, dict) else None)
