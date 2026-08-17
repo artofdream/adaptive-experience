@@ -122,6 +122,25 @@ const SAMPLE_FORECASTS = [
   },
 ];
 
+const REASON_LABELS = {
+  unresolved_request: "Unresolved request",
+  delivery_issue: "Delivery issue",
+  product_question: "Product question",
+};
+const FACET_LABELS = {
+  occasion: "Occasion",
+  recipient: "Recipient",
+  budget: "Budget",
+  style: "Style",
+  flower_preference: "Flower preference",
+  timing: "Timing",
+};
+const TREND_LABELS = {
+  declining: "Declining",
+  stable: "Stable",
+  insufficient: "Not enough history",
+};
+
 const mode = document.querySelector("#operator-mode");
 const inboxRows = document.querySelector("#inbox-rows");
 const forecastRows = document.querySelector("#forecast-rows");
@@ -131,7 +150,7 @@ const orderFacts = document.querySelector("#order-facts");
 const availability = document.querySelector("#availability");
 const sessionRef = document.querySelector("#session-ref");
 
-const state = { csrf: "", live: false, items: SAMPLE_INBOX };
+const state = { csrf: "", live: false, items: SAMPLE_INBOX, selectedId: "" };
 
 function headers(extra) {
   return {
@@ -184,12 +203,46 @@ function shortRef(value) {
   return text.length > 12 ? `${text.slice(0, 8)}…${text.slice(-4)}` : text;
 }
 
+function reasonLabel(value) {
+  const key = String(value || "");
+  return REASON_LABELS[key] || key.replaceAll("_", " ");
+}
+
+function facetLabel(key) {
+  return FACET_LABELS[key] || key.replaceAll("_", " ");
+}
+
+function formatRequested(value) {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(date);
+}
+
+function emptyRow(columns, copy) {
+  const row = document.createElement("tr");
+  const cell = document.createElement("td");
+  cell.colSpan = columns;
+  cell.className = "operator-empty";
+  cell.textContent = copy;
+  row.append(cell);
+  return row;
+}
+
 function renderForecasts(items) {
   forecastRows.replaceChildren();
+  if (!items.length) {
+    forecastRows.append(emptyRow(3, "No validated inventory snapshots yet. Forecast stays empty until history exists."));
+    return;
+  }
   for (const item of items) {
     const row = document.createElement("tr");
+    const trend = TREND_LABELS[item.trend] || item.trend;
     row.innerHTML = `<td><code>${item.product_id}</code></td>
-      <td>${item.trend}</td>
+      <td><span class="badge">${trend}</span></td>
       <td>${item.recommendation}</td>`;
     forecastRows.append(row);
   }
@@ -197,10 +250,17 @@ function renderForecasts(items) {
 
 function renderInbox(items) {
   inboxRows.replaceChildren();
+  state.items = items;
+  if (!items.length) {
+    inboxRows.append(emptyRow(3, "No Contact Florist requests yet. This inbox stays empty until a customer uses T-09."));
+    return;
+  }
   for (const item of items) {
     const row = document.createElement("tr");
-    row.innerHTML = `<td>${item.requested_at || "—"}</td>
-      <td><button type="button" class="text-link" data-session="${item.session_id}">${item.escalation_reason}</button></td>
+    if (item.session_id === state.selectedId) row.className = "is-selected";
+    const sample = item.sample ? ' <span class="status">Sample</span>' : "";
+    row.innerHTML = `<td>${formatRequested(item.requested_at)}</td>
+      <td><button type="button" class="text-link" data-session="${item.session_id}">${reasonLabel(item.escalation_reason)}</button>${sample}</td>
       <td><code>${shortRef(item.context_reference || item.session_id)}</code></td>`;
     inboxRows.append(row);
   }
@@ -217,10 +277,17 @@ function fact(term, value) {
 function renderSession(summary, label) {
   sessionRef.textContent = label;
   transcript.replaceChildren();
-  for (const message of summary.conversation?.messages || []) {
+  const messages = summary.conversation?.messages || [];
+  if (!messages.length) {
+    const empty = document.createElement("p");
+    empty.className = "operator-empty";
+    empty.textContent = "No messages in this session yet.";
+    transcript.append(empty);
+  }
+  for (const message of messages) {
     const p = document.createElement("p");
-    p.className = message.role === "customer" ? "user-message" : "assistant-message";
-    p.textContent = `${message.role}: ${message.text}`;
+    p.className = message.role === "customer" ? "customer-message" : "assistant-message";
+    p.textContent = message.text;
     transcript.append(p);
   }
   orderFacts.replaceChildren();
@@ -228,7 +295,7 @@ function renderSession(summary, label) {
   if (order) {
     fact("Order", order.order_id || "—");
     fact("Status", order.status || "—");
-    fact("Authoritative", order.authoritative_status || "—");
+    fact("Authoritative status", order.authoritative_status || "—");
     fact("Delayed", order.delayed ? "yes" : "no");
   } else {
     fact("Order", "none yet");
@@ -237,16 +304,26 @@ function renderSession(summary, label) {
     fact("Selection", summary.selection.product_id);
   }
   if (summary.delivery?.destination_reference) {
-    fact("Destination", summary.delivery.destination_reference);
+    fact("Saved destination", shortRef(summary.delivery.destination_reference));
   }
   const intent = summary.shared_understanding?.structured_intent || {};
   for (const [key, value] of Object.entries(intent)) {
-    fact(key, String(value));
+    fact(facetLabel(key), String(value));
   }
   availability.replaceChildren();
-  for (const item of summary.availability || []) {
+  const stock = summary.availability || [];
+  if (!stock.length) {
+    const empty = document.createElement("li");
+    empty.textContent = "No availability on this session yet.";
+    availability.append(empty);
+  }
+  for (const item of stock) {
     const li = document.createElement("li");
-    li.textContent = `${item.product_id}: ${item.availability_status || "unknown"}`;
+    const status = item.availability_status || "unknown";
+    const badge = document.createElement("span");
+    badge.className = status === "available" ? "badge" : "badge unavailable";
+    badge.textContent = status === "available" ? "Available" : "Unknown";
+    li.append(`${item.product_id} `, badge);
     availability.append(li);
   }
   if (supportAnswers) {
@@ -259,7 +336,7 @@ function renderSession(summary, label) {
     }
     for (const item of answers) {
       const li = document.createElement("li");
-      const kind = item.kind === "situation" ? (item.situation_kind || "situation") : "faq";
+      const kind = item.kind === "situation" ? (item.situation_kind || "situation") : "FAQ";
       li.textContent = `${kind}: ${item.answer}`;
       supportAnswers.append(li);
     }
@@ -267,6 +344,8 @@ function renderSession(summary, label) {
 }
 
 async function openSession(sessionId) {
+  state.selectedId = sessionId;
+  renderInbox(state.items);
   if (!state.live) {
     const sample = SAMPLE_SESSIONS[sessionId];
     if (sample) {
@@ -289,37 +368,67 @@ inboxRows.addEventListener("click", (event) => {
   }
 });
 
-async function boot() {
+function showSampleLayout(modeCopy) {
+  state.live = false;
+  state.selectedId = SAMPLE_INBOX[0].session_id;
   renderInbox(SAMPLE_INBOX);
   renderForecasts(SAMPLE_FORECASTS);
   renderSession(SAMPLE_SESSIONS[SAMPLE_INBOX[0].session_id], "Sample session (labeled)");
-  mode.textContent = "Showing labeled sample data until operator APIs are confirmed.";
+  mode.textContent = modeCopy;
+}
+
+function showEmptySession() {
+  sessionRef.textContent = "Select an inbox row when a request arrives.";
+  transcript.replaceChildren();
+  const empty = document.createElement("p");
+  empty.className = "operator-empty";
+  empty.textContent = "No session selected.";
+  transcript.append(empty);
+  orderFacts.replaceChildren();
+  fact("Order", "none yet");
+  availability.replaceChildren();
+  const stockEmpty = document.createElement("li");
+  stockEmpty.textContent = "No availability on this session yet.";
+  availability.append(stockEmpty);
+  if (supportAnswers) {
+    supportAnswers.replaceChildren();
+    const answerEmpty = document.createElement("li");
+    answerEmpty.textContent = "No ASO answers recorded for this session yet.";
+    supportAnswers.append(answerEmpty);
+  }
+}
+
+async function boot() {
+  showSampleLayout("Showing labeled sample data until operator APIs are confirmed.");
   try {
     await ensureSession();
     const inbox = await api("/api/v1/operator/escalations");
     state.live = true;
-    state.items = inbox.items || [];
+    let forecasts = [];
     try {
-      const forecasts = await api("/api/v1/operator/forecasts");
-      if ((forecasts.items || []).length) {
-        renderForecasts(forecasts.items);
-      }
+      const payload = await api("/api/v1/operator/forecasts");
+      forecasts = payload.items || [];
     } catch (_error) {
-      renderForecasts(SAMPLE_FORECASTS);
+      forecasts = [];
     }
-    if (state.items.length) {
-      renderInbox(state.items);
-      await openSession(state.items[0].session_id);
-      mode.textContent = "Live local operator reads are enabled (least-data).";
+    renderForecasts(forecasts);
+    const items = inbox.items || [];
+    if (items.length) {
+      state.selectedId = items[0].session_id;
+      renderInbox(items);
+      await openSession(items[0].session_id);
+      mode.textContent = "Live operator reads (least-data).";
     } else {
-      mode.textContent = "Operator APIs enabled; no Contact Florist requests yet. Sample rows remain for layout.";
+      state.selectedId = "";
+      renderInbox([]);
+      showEmptySession();
+      mode.textContent = "Live operator reads enabled. No Contact Florist requests yet.";
     }
   } catch (error) {
-    state.live = false;
     if (error.status === 404) {
-      mode.textContent = "Operator APIs disabled (fail closed). Labeled sample layout is shown.";
+      showSampleLayout("Operator APIs disabled (fail closed). Labeled sample layout is shown.");
     } else {
-      mode.textContent = `Operator APIs unavailable (${error.message}). Labeled sample layout is shown.`;
+      showSampleLayout(`Operator APIs unavailable (${error.message}). Labeled sample layout is shown.`);
     }
   }
 }

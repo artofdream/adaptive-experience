@@ -12,32 +12,32 @@
   <a class="skip-link" href="#inbox">Skip to inbox</a>
   <header class="site-header">
     <a class="brand" href="/florist" aria-label="Florist operator home">Lily's Florist · Operator</a>
-    <nav class="header-nav" aria-label="Operator">
-      <a href="/">Customer workspace</a>
-    </nav>
+    <p class="header-note">Shop is a separate browser. Do not open this console in the same browser as the customer workspace (CSRF).</p>
   </header>
 
   <main class="operator-shell">
     <p class="operator-banner" role="note">
       <strong>Local florist operator sample.</strong>
-      Separate from the customer Adaptive Workspace. Not live chat, not billing CRM,
-      and not FR-016 / FR-017 engagement. Reads fail closed unless
-      <code>AEA_FLORIST_OPERATOR=1</code> and either
-      <code>AEA_ENVIRONMENT</code> is not <code>production</code> or the named
-      Path B exception <code>AEA_FLORIST_OPERATOR_EXCEPTION=aea-pilot</code> is
-      set. Generic production stays 404. Inventory here is read-only and does
-      not enable T-03 Select. Do not open this console in the same browser as
-      the shop (CSRF). Opaque session references only (NFR-017).
+      Read-only T-09 inbox. Not live chat, not billing CRM, and not FR-016 / FR-017 engagement.
+      Inventory here does not enable T-03 Select.
+      <details>
+        <summary>Flags and least-data rules</summary>
+        Reads fail closed unless
+        <code>AEA_FLORIST_OPERATOR=1</code> and either
+        <code>AEA_ENVIRONMENT</code> is not <code>production</code> or the named
+        Path B exception <code>AEA_FLORIST_OPERATOR_EXCEPTION=aea-pilot</code> is
+        set. Generic production stays 404. Opaque session references only (NFR-017).
+      </details>
     </p>
-    <p id="operator-mode" class="operator-mode" aria-live="polite"></p>
+    <p id="operator-mode" class="status operator-mode" aria-live="polite"></p>
 
     <div class="operator-layout">
-      <section id="inbox" class="panel" aria-labelledby="inbox-title">
+      <section id="inbox" class="panel operator-inbox" aria-labelledby="inbox-title">
         <header>
           <div>
             <p class="eyebrow">T-09 · FR-006</p>
             <h1 id="inbox-title">Contact Florist inbox</h1>
-            <p class="subtitle">Recent <code>support.escalation.requested</code> commands</p>
+            <p class="subtitle">Human follow-up requests. Opaque session references only.</p>
           </div>
         </header>
         <table class="operator-table">
@@ -52,7 +52,35 @@
         </table>
       </section>
 
-      <section id="forecast" class="panel" aria-labelledby="forecast-title">
+      <section id="session" class="panel" aria-labelledby="session-title">
+        <header>
+          <div>
+            <p class="eyebrow">Session summary</p>
+            <h2 id="session-title">Conversation, order, availability</h2>
+            <p class="subtitle" id="session-ref">Select an inbox row</p>
+          </div>
+        </header>
+        <div class="operator-split">
+          <div>
+            <h3>Inbound conversation</h3>
+            <p class="hint">Least-data transcript. No contact dump.</p>
+            <div id="transcript" class="messages operator-transcript" role="log"></div>
+            <h3>What Lily already answered</h3>
+            <p class="hint">Prior ASO FAQ and situational answers for this session. Not a ticket thread.</p>
+            <ul id="support-answers" class="operator-list"></ul>
+          </div>
+          <div>
+            <h3>Order / status</h3>
+            <dl id="order-facts" class="operator-facts"></dl>
+            <p class="hint">Read-only. Fulfillment status changes are not on this console.</p>
+            <h3>Inventory / availability</h3>
+            <p class="hint">Why Select can fail locally: unknown vs available (FR-011).</p>
+            <ul id="availability" class="operator-list"></ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="forecast" class="panel operator-secondary" aria-labelledby="forecast-title">
         <header>
           <div>
             <p class="eyebrow">US-012 · FR-012</p>
@@ -71,37 +99,9 @@
           <tbody id="forecast-rows"></tbody>
         </table>
       </section>
-
-      <section id="session" class="panel" aria-labelledby="session-title">
-        <header>
-          <div>
-            <p class="eyebrow">Session summary</p>
-            <h2 id="session-title">Conversation, order, availability</h2>
-            <p class="subtitle" id="session-ref">Select an inbox row</p>
-          </div>
-        </header>
-        <div class="operator-split">
-          <div>
-            <h3>Inbound conversation</h3>
-            <p class="hint">Least-data transcript (role, text, time). No contact dump.</p>
-            <div id="transcript" class="messages operator-transcript" role="log"></div>
-            <h3>What Lily already answered</h3>
-            <p class="hint">Prior ASO FAQ and situational answers for this session. Not a ticket thread.</p>
-            <ul id="support-answers" class="operator-list"></ul>
-          </div>
-          <div>
-            <h3>Order / status</h3>
-            <dl id="order-facts" class="operator-facts"></dl>
-            <p class="hint">Fulfillment <code>POST .../order/status</code> and delay exist internally; this slice is read-only.</p>
-            <h3>Inventory / availability</h3>
-            <p class="hint">Why Select can fail locally: unknown vs available (FR-011).</p>
-            <ul id="availability" class="operator-list"></ul>
-          </div>
-        </div>
-      </section>
     </div>
 
-    <section id="support-split" class="panel" aria-labelledby="split-title">
+    <section id="support-split" class="panel operator-secondary" aria-labelledby="split-title">
       <p class="eyebrow">ADR-004</p>
       <h2 id="split-title">FAQ versus human escalation</h2>
       <div class="operator-split">
@@ -116,7 +116,7 @@
       </div>
     </section>
 
-    <section class="panel" aria-labelledby="out-title">
+    <section class="panel operator-secondary" aria-labelledby="out-title">
       <h2 id="out-title">Out of scope in this slice</h2>
       <ul>
         <li>Live chat and ticketing</li>

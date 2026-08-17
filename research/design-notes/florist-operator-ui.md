@@ -1,7 +1,7 @@
 # Design note — Florist operator UI (#170)
 
 status: accepted (2026-08-15)
-for_issues: "#170 (florist operator surface; not FR-016/017 CRM); #209 (named aea-pilot Path B exception)"
+for_issues: "#170 (florist operator surface; not FR-016/017 CRM); #209 (named aea-pilot Path B exception); #213 (shop-kit first slice)"
 affects: "local Edge console; named aea-pilot BFF exception; thin operator reads; T-09 / FR-006 follow-up"
 author: claude
 date: 2026-08-15
@@ -23,6 +23,10 @@ date: 2026-08-15
 > GETs on that stack only. This does **not** write inventory, unblock T-03
 > Select, or unpark FR-016 / FR-017. Do not open `/florist` in the same
 > browser as the shop (CSRF).
+>
+> **Decision (2026-08-17, #213):** `/florist` uses the shop kit (tokens,
+> tiles, badges, empty states). Live empty inbox must not keep sample rows.
+> Sample layout is only for fail-closed. Not a CRM rebuild.
 
 ## Grounding
 
