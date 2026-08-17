@@ -54,15 +54,14 @@ Do not commit `terraform.tfvars`, `.env`, vault credentials, or `AEA_AI_API_KEY`
 3. DNS CNAME/ALIAS from `aea.artof.link` to the ALB (after apply)
 4. GitLab project path matching `gitlab_project_path`, plus OIDC CI variables
    after apply (`AWS_ROLE_ARN`, ECR URLs, cluster name)
-5. Live Anthropic (two slices). **Today:** merge JSON key `ANTHROPIC_API_KEY`
-   into Secrets Manager `aea-pilot/app` (do not replace the blob; keep
-   postgres/kafka/bearer/origin). Do **not** add `AEA_AI_*` yet. Terraform
-   injects that key into the LiteLLM task only. **Follow-up:** after the proxy
-   is up and a `LITELLM_MASTER_KEY` is in the same secret, merge all three
-   `AEA_AI_*` (`http://litellm.aea-pilot.internal:4000/v1/chat/completions`,
-   the proxy bearer, `claude-sonnet-5`) and inject them into orchestration
-   together. Never a raw Anthropic Messages URL. Not in git. Not in
-   `terraform.tfvars`.
+5. Live Anthropic via LiteLLM. Operator-merge into `aea-pilot/app` (do not
+   replace the blob; keep postgres/kafka/bearer/origin/Anthropic):
+   `LITELLM_MASTER_KEY` (proxy bearer, same value as `AEA_AI_API_KEY`),
+   `AEA_AI_ENDPOINT` (`http://litellm.aea-pilot.internal:4000/v1/chat/completions`),
+   `AEA_AI_API_KEY`, and `AEA_AI_MODEL` (`claude-sonnet-5`). Terraform injects
+   `ANTHROPIC_API_KEY` + `LITELLM_MASTER_KEY` into LiteLLM, and all three
+   `AEA_AI_*` into orchestration together. Never a raw Anthropic Messages
+   URL. Not in git. Not in `terraform.tfvars`.
 6. Confirm `pilot_ingress_cidrs` (default public `0.0.0.0/0`)
 
 ## Apply (DevSecOps skill; not the scrum master)
@@ -80,9 +79,10 @@ terraform plan
 terraform apply
 ```
 
-Do **not** apply the LiteLLM service until the scrum master confirms
-`ANTHROPIC_API_KEY` is in `aea-pilot/app` (no value in chat). Missing JSON
-key → LiteLLM `ResourceInitializationError`.
+Do **not** apply orchestration `AEA_AI_*` `valueFrom` until `aea-pilot/app`
+has `AEA_AI_ENDPOINT`, `AEA_AI_API_KEY`, `AEA_AI_MODEL`, and
+`LITELLM_MASTER_KEY` (boolean `has(...)` only). Missing JSON key →
+`ResourceInitializationError`.
 
 Copy outputs into GitLab CI/CD variables (masked where needed) when the CI
 deploy jobs exist:
@@ -128,23 +128,17 @@ Private Fargate service `litellm` (Cloud Map `litellm.aea-pilot.internal:4000`).
 Same image/tag and `edge/litellm.yaml` aliases as Path A. No public listener.
 Orchestration security group is the only ingress on :4000.
 
-This slice injects `ANTHROPIC_API_KEY` from `aea-pilot/app` into **LiteLLM
-only**. Orchestration does **not** get `AEA_AI_ENDPOINT` / `AEA_AI_API_KEY` /
-`AEA_AI_MODEL` (partial env crashes the process). Regex intent stays in
-production until a follow-up wires all three after:
+LiteLLM injects `ANTHROPIC_API_KEY` (Anthropic console key, LiteLLM only) and
+`LITELLM_MASTER_KEY` (proxy bearer). Orchestration injects all three
+`AEA_AI_*` together from the same secret (partial env crashes the process).
+`AEA_AI_API_KEY` is the proxy bearer, not the Anthropic console key. Smoke
+`GET /internal/v1/ai/health` until `mode` is `primary` (not only
+`available: true`). Compose is not NFR-007/012 proof.
 
-1. Scrum master confirms `ANTHROPIC_API_KEY` is in `aea-pilot/app` (no value
-   in chat/git).
-2. A proxy master key `LITELLM_MASTER_KEY` is in the same secret (operator
-   generated; not the Anthropic console key; never a committed placeholder).
-3. Those three `AEA_AI_*` keys are merged (not replaced) and injected
-   together, plus `LITELLM_MASTER_KEY` on LiteLLM. Then force-new-deploy
-   `litellm` and `orchestration`.
-
-**Do not apply this LiteLLM service until step 1 is confirmed.** A missing
-`ANTHROPIC_API_KEY` JSON key makes the LiteLLM task fail
-`ResourceInitializationError`; other services stay up. Keep 2-broker Kafka.
-No seeder. No florist operator.
+Missing JSON keys on a task `valueFrom` make that task fail
+`ResourceInitializationError`; other services stay up. Merge vault keys
+before applying the task defs, then force-new-deploy `litellm` and
+`orchestration`. Keep 2-broker Kafka. No seeder. No florist operator.
 
 ## Bootstrap (after first images are in ECR)
 

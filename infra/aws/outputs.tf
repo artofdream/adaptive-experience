@@ -56,6 +56,6 @@ output "service_names" {
 }
 
 output "litellm_internal_url" {
-  description = "OpenAI-compatible chat-completions URL for a later orchestration AEA_AI_ENDPOINT follow-up. Not injected in this slice."
+  description = "OpenAI-compatible chat-completions URL. Operator-merged as AEA_AI_ENDPOINT and injected into orchestration with AEA_AI_API_KEY and AEA_AI_MODEL."
   value       = "http://${local.discovery_litellm_host}:4000/v1/chat/completions"
 }

@@ -27,15 +27,14 @@ local seeder. Inventory for a live test must come from an operator feed into
 `inventory.product_availability` (POS/export or curated fixture load), not
 this Terraform.
 
-Live intent is two slices. **Now:** merge `ANTHROPIC_API_KEY` into
-`${prefix}/app` (do not replace the blob). LiteLLM ECS injects that key only.
-Do **not** set `AEA_AI_*` yet. **Follow-up:** after LiteLLM is healthy and
-`LITELLM_MASTER_KEY` is in the same secret, merge `AEA_AI_ENDPOINT` =
-`http://litellm.${prefix}.internal:4000/v1/chat/completions`, `AEA_AI_API_KEY`
-= the proxy bearer (same as `LITELLM_MASTER_KEY`), and `AEA_AI_MODEL` =
-`claude-sonnet-5`, then inject all three into orchestration together. Do not
-put keys in `terraform.tfvars` or git. Until that follow-up, orchestration
-stays on regex intent.
+Live intent: merge `ANTHROPIC_API_KEY`, `LITELLM_MASTER_KEY`,
+`AEA_AI_ENDPOINT`, `AEA_AI_API_KEY`, and `AEA_AI_MODEL` into `${prefix}/app`
+(do not replace the blob). `AEA_AI_ENDPOINT` =
+`http://litellm.${prefix}.internal:4000/v1/chat/completions`. `AEA_AI_API_KEY`
+is the proxy bearer (same value as `LITELLM_MASTER_KEY`), not the Anthropic
+console key. `AEA_AI_MODEL` = `claude-sonnet-5`. Inject all three `AEA_AI_*`
+into orchestration together. Do not put keys in `terraform.tfvars` or git.
+Smoke `GET /internal/v1/ai/health` for `mode: "primary"`.
 
 ## 2. Migrations
 

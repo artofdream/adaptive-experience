@@ -122,6 +122,9 @@ resource "aws_ecs_task_definition" "orchestration" {
     secrets = [
       { name = "AEA_POSTGRES_DSN", valueFrom = "${aws_secretsmanager_secret.app.arn}:AEA_POSTGRES_DSN::" },
       { name = "AEA_ORCHESTRATION_TOKEN", valueFrom = "${aws_secretsmanager_secret.app.arn}:AEA_ORCHESTRATION_TOKEN::" },
+      { name = "AEA_AI_ENDPOINT", valueFrom = "${aws_secretsmanager_secret.app.arn}:AEA_AI_ENDPOINT::" },
+      { name = "AEA_AI_API_KEY", valueFrom = "${aws_secretsmanager_secret.app.arn}:AEA_AI_API_KEY::" },
+      { name = "AEA_AI_MODEL", valueFrom = "${aws_secretsmanager_secret.app.arn}:AEA_AI_MODEL::" },
     ]
     logConfiguration = {
       logDriver = "awslogs"
@@ -288,6 +291,7 @@ resource "aws_ecs_task_definition" "litellm" {
     ]
     secrets = [
       { name = "ANTHROPIC_API_KEY", valueFrom = "${aws_secretsmanager_secret.app.arn}:ANTHROPIC_API_KEY::" },
+      { name = "LITELLM_MASTER_KEY", valueFrom = "${aws_secretsmanager_secret.app.arn}:LITELLM_MASTER_KEY::" },
     ]
     healthCheck = {
       command     = ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:4000/health/liveliness')"]
