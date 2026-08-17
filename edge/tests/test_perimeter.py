@@ -592,6 +592,14 @@ class PerimeterTests(unittest.TestCase):
         self.assertTrue(BffApp.florist_operator_enabled_for(environment="local", flag="1"))
         self.assertFalse(BffApp.florist_operator_enabled_for(environment="production", flag="1"))
         self.assertFalse(BffApp.florist_operator_enabled_for(environment="local", flag=None))
+        self.assertTrue(BffApp.florist_operator_enabled_for(
+            environment="production", flag="1", exception="aea-pilot"))
+        self.assertFalse(BffApp.florist_operator_enabled_for(
+            environment="production", flag="1", exception="1"))
+        self.assertFalse(BffApp.florist_operator_enabled_for(
+            environment="production", flag="1", exception="production"))
+        self.assertFalse(BffApp.florist_operator_enabled_for(
+            environment="production", flag=None, exception="aea-pilot"))
 
     def test_florist_operator_inbox_and_session_are_least_data_when_enabled(self):
         app = BffApp(FakeOrchestration(), StaticTokenAuthenticator("good"),

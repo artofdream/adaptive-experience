@@ -16,6 +16,7 @@ def create_app() -> BffApp:
     florist_operator_enabled = BffApp.florist_operator_enabled_for(
         environment=os.environ.get("AEA_ENVIRONMENT", "local"),
         flag=os.environ.get("AEA_FLORIST_OPERATOR"),
+        exception=os.environ.get("AEA_FLORIST_OPERATOR_EXCEPTION"),
     )
     return BffApp(
         HttpOrchestration(orchestration_url, orchestration_token),
