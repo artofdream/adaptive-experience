@@ -22,8 +22,12 @@
       <strong>Local florist operator sample.</strong>
       Separate from the customer Adaptive Workspace. Not live chat, not billing CRM,
       and not FR-016 / FR-017 engagement. Reads fail closed unless
-      <code>AEA_FLORIST_OPERATOR=1</code> and <code>AEA_ENVIRONMENT</code> is not
-      <code>production</code>. Opaque session references only (NFR-017).
+      <code>AEA_FLORIST_OPERATOR=1</code> and either
+      <code>AEA_ENVIRONMENT</code> is not <code>production</code> or the named
+      Path B exception <code>AEA_FLORIST_OPERATOR_EXCEPTION=aea-pilot</code> is
+      set. Generic production stays 404. Inventory here is read-only and does
+      not enable T-03 Select. Do not open this console in the same browser as
+      the shop (CSRF). Opaque session references only (NFR-017).
     </p>
     <p id="operator-mode" class="operator-mode" aria-live="polite"></p>
 

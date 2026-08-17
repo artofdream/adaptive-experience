@@ -39,10 +39,18 @@ class BffApp:
         self.rate_limiter = rate_limiter or FixedWindowRateLimiter()
         self.florist_operator_enabled = florist_operator_enabled
 
+    # Named Path B exception only. Generic production stays 404 even if the flag is set.
+    FLORIST_OPERATOR_PILOT_EXCEPTION = "aea-pilot"
+
     @staticmethod
-    def florist_operator_enabled_for(*, environment: str, flag: str | None) -> bool:
-        """Local-only staff reads. Production always fails closed."""
-        return flag == "1" and environment != "production"
+    def florist_operator_enabled_for(*, environment: str, flag: str | None,
+                                     exception: str | None = None) -> bool:
+        """Staff reads. Generic production 404s; aea-pilot is a named exception."""
+        if flag != "1":
+            return False
+        if environment != "production":
+            return True
+        return exception == BffApp.FLORIST_OPERATOR_PILOT_EXCEPTION
 
     async def __call__(self, scope, receive, send):
         if scope["type"] != "http":

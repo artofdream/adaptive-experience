@@ -53,7 +53,7 @@ GitLab (glab, not gh): `artof-group/adaptive-experience-architecture`.
 |---|---|---|
 | Help / `?` / Chat with Lily | ASO, FR-009 FAQ (`support.faq.answered`) | Not a human ticket. If FAQ is wrong/missing, route **support** (content) or **docs/coherence**. |
 | Contact Florist | T-09, thin FR-006 (`support.escalation.requested`) | Human follow-up. List from `/florist` (least-data). Map to a GitLab issue. |
-| `/florist` inbox | Local staff sample (`AEA_FLORIST_OPERATOR=1`), not production CRM | Read only. Opaque session refs (NFR-017). |
+| `/florist` inbox | Local staff sample (`AEA_FLORIST_OPERATOR=1`); Path B `aea-pilot` named exception only (#209). Not production CRM | Read only. Opaque session refs (NFR-017). |
 
 ASO never publishes `support.escalation.requested`. Contact Florist never
 opens ASO.

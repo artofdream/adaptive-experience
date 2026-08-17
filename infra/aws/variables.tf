@@ -6,7 +6,7 @@ variable "aws_region" {
 
 variable "environment" {
   type        = string
-  description = "Terraform stack name for tags and resource prefixes (pilot). App task defs hardcode AEA_ENVIRONMENT=production for fail-closed seeder/florist."
+  description = "Terraform stack name for tags and resource prefixes (pilot). App task defs hardcode AEA_ENVIRONMENT=production so the seeder stays fail-closed. Florist operator is a named aea-pilot exception only, not generic production."
   default     = "pilot"
 }
 

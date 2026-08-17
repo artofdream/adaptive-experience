@@ -100,6 +100,9 @@ locals {
   discovery_litellm_host = "litellm.${local.prefix}.internal"
   # Same aliases as Path A. Do not duplicate; keep edge/litellm.yaml the SoT.
   litellm_config_yaml = file("${path.module}/../../edge/litellm.yaml")
+  # Named aea-pilot exception only. Generic production BFF still 404s florist.
+  # Does not write inventory or unblock T-03 Select. Seeder stays fail-closed.
+  florist_pilot_exception = local.prefix == "aea-pilot"
 }
 
 resource "aws_ecs_task_definition" "orchestration" {
@@ -150,10 +153,16 @@ resource "aws_ecs_task_definition" "bff" {
     image        = local.bff_image
     essential    = true
     portMappings = [{ containerPort = 8080, protocol = "tcp" }]
-    environment = [
-      { name = "AEA_ENVIRONMENT", value = "production" },
-      { name = "AEA_ORCHESTRATION_URL", value = "http://${local.discovery_orch_host}:8081" },
-    ]
+    environment = concat(
+      [
+        { name = "AEA_ENVIRONMENT", value = "production" },
+        { name = "AEA_ORCHESTRATION_URL", value = "http://${local.discovery_orch_host}:8081" },
+      ],
+      local.florist_pilot_exception ? [
+        { name = "AEA_FLORIST_OPERATOR", value = "1" },
+        { name = "AEA_FLORIST_OPERATOR_EXCEPTION", value = "aea-pilot" },
+      ] : [],
+    )
     secrets = [
       { name = "AEA_ORCHESTRATION_TOKEN", valueFrom = "${aws_secretsmanager_secret.app.arn}:AEA_ORCHESTRATION_TOKEN::" },
       { name = "AEA_LOCAL_BEARER_TOKEN", valueFrom = "${aws_secretsmanager_secret.app.arn}:AEA_LOCAL_BEARER_TOKEN::" },

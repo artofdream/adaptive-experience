@@ -23,7 +23,9 @@ Fail-closed production flags (must hold in cloud task defs):
 - `AEA_ENVIRONMENT=production` → seeder raises
   (`platform/aea_platform/local_inventory_seed.py`)
 - Florist operator 404 when environment is production even if
-  `AEA_FLORIST_OPERATOR=1` (`edge/bff/aea_bff/runtime.py`)
+  `AEA_FLORIST_OPERATOR=1`, unless named exception
+  `AEA_FLORIST_OPERATOR_EXCEPTION=aea-pilot` (`edge/bff/aea_bff/runtime.py`).
+  Generic production stays 404. Inbox does not write inventory.
 - Kafka provision treats production as non-local
   (`platform/scripts/provision_kafka.py`)
 
@@ -77,7 +79,7 @@ access keys in the repo.
 
 | Severity | Example |
 |---|---|
-| blocker | Production task def still seeds inventory or enables `/florist`; secrets in git; public BFF port; plaintext MSK in prod |
+| blocker | Production task def still seeds inventory, or enables `/florist` **without** the named `aea-pilot` exception; secrets in git; public BFF port; plaintext MSK in prod |
 | high | No RDS encryption flag; CI using long-lived AWS keys; compose/cloud image drift |
 | medium | Missing CloudWatch alarms; backup window undocumented; `.gitignore` does not exclude `*.tfvars` |
 | low | Base-image pin hygiene; README compose-vs-cloud table |
