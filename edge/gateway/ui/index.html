@@ -120,6 +120,29 @@
             <p id="recommendations-empty" class="empty-hint" hidden>
               No recommendations yet. Share occasion and budget in the conversation first.
             </p>
+            <p class="hint photo-credit">
+              Photos are open-licence likenesses of the flower type, not this shop's cooler.
+              They do not mean the arrangement is in stock.
+            </p>
+            <details class="photo-credits">
+              <summary>Photo credits</summary>
+              <ul>
+                <li>Classic Rose Dozen — Nancy Wong, <cite>Red Roses bouquet spray</cite>,
+                  <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a></li>
+                <li>Lilac Bouquet — George Chernilevsky, <cite>Lilac bouquet 2017 G1</cite>, public domain</li>
+                <li>Budget Mixed Bunch — BEST Bud's for Life, <cite>COLORFUL SPRING BOUQUET</cite>,
+                  <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a></li>
+                <li>Pink Flower Vase — Soumendra Kumar Sahoo, <cite>Rose flowers vase by FnP</cite>,
+                  <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a></li>
+                <li>Premium Orchid — Guillaume Paumier, <cite>Phalaenopsis Maki Watanabe at the Pacific Orchid Exposition 2010</cite>,
+                  <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a></li>
+              </ul>
+              <p>
+                Sources and the SKU map are in
+                <a href="/assets/NOTICE.txt">NOTICE.txt</a>.
+                CC BY-SA applies to those photos, not the whole shop.
+              </p>
+            </details>
             <button class="secondary" type="button" data-goto-step="4" data-requires-unlock="4">Continue to customize</button>
           </section>
 
@@ -129,6 +152,7 @@
             <h2 id="selection-title">Product Selection and Customization</h2>
             <p id="selection-empty">Select a recommendation to customize it.</p>
             <form id="selection-form" hidden aria-describedby="selection-form-error">
+              <img id="selection-thumb" class="thumb selection-thumb" alt="" hidden>
               <label for="arrangement">Arrangement</label>
               <input id="arrangement" type="text" readonly>
               <label for="size">Size</label>
@@ -158,6 +182,7 @@
               <label for="card-message">Card message</label>
               <textarea id="card-message" rows="2" maxlength="280" placeholder="A short message on the physical card"></textarea>
               <p id="selection-form-error" class="form-error" role="alert" hidden></p>
+              <p class="hint photo-credit">Photo is an open-licence likeness of the flower type, not this shop's cooler.</p>
               <button class="primary" type="submit">Update</button>
             </form>
             <button class="secondary" type="button" data-goto-step="5" data-requires-unlock="5">Continue to delivery</button>

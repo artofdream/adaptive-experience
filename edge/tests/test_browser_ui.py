@@ -128,6 +128,43 @@ class BrowserUiTests(unittest.TestCase):
         self.assertNotIn("gift card", self.html.lower())
         self.assertNotIn("gift_card", self.script.lower())
 
+    def test_t03_ranking_skus_use_vendored_attributed_photos(self):
+        assets = ROOT / "ui" / "assets"
+        skus = (
+            "classic-rose-dozen",
+            "lilac-bouquet",
+            "budget-mixed-bunch",
+            "pink-flower-vase",
+            "premium-orchid",
+        )
+        self.assertIn("const PRODUCT_ART", self.script)
+        for sku in skus:
+            self.assertIn(f'"{sku}": "/assets/sku-{sku}.jpg"', self.script)
+            jpeg = assets / f"sku-{sku}.jpg"
+            self.assertTrue(jpeg.exists(), sku)
+            self.assertGreater(jpeg.stat().st_size, 10000)
+            self.assertEqual(b"\xff\xd8\xff", jpeg.read_bytes()[:3])
+        notice = (assets / "NOTICE.txt").read_text(encoding="utf-8")
+        self.assertIn("classic-rose-dozen", notice)
+        self.assertIn("Nancy Wong", notice)
+        self.assertIn("George Chernilevsky", notice)
+        self.assertIn("BEST Bud's for Life", notice)
+        self.assertIn("Soumendra Kumar Sahoo", notice)
+        self.assertIn("Guillaume Paumier", notice)
+        self.assertIn("CC BY-SA 4.0", notice)
+        self.assertIn("not photographs of this shop's cooler", notice)
+        self.assertIn("not the rest of this", notice)
+        self.assertIn("repository", notice)
+        self.assertIn("thumb.alt = productLabel(item.product_id)", self.script)
+        self.assertIn('id="selection-thumb"', self.html)
+        self.assertIn("thumb.src = productArt(selection.product_id)", self.script)
+        self.assertIn("not this shop's cooler", self.html)
+        self.assertIn("Photo credits", self.html)
+        self.assertIn("/assets/NOTICE.txt", self.html)
+        self.assertNotIn("upload.wikimedia.org", self.script)
+        self.assertNotIn("unsplash.com", self.script.lower())
+        self.assertNotIn("pexels.com", self.script.lower())
+
     def test_sample_layout_3_color_and_journey_steps(self):
         self.assertIn('data-visual="sample-layout-3"', self.html)
         self.assertIn('data-journey-mode="steps"', self.html)
@@ -147,6 +184,8 @@ class BrowserUiTests(unittest.TestCase):
         self.assertIn("linear-gradient", self.css)
         self.assertIn("bouquet-hero.svg", self.html)
         self.assertIn("bouquet-pink.svg", self.script)
+        self.assertIn("PRODUCT_ART", self.script)
+        self.assertIn("sku-classic-rose-dozen.jpg", self.script)
         self.assertIn("Chat with Lily", self.html)
         self.assertIn("confirmed-banner", self.html)
         self.assertIn("payment-card", self.html)

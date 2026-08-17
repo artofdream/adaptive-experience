@@ -49,6 +49,15 @@ const PRODUCT_FLOWERS = {
   "budget-mixed-bunch": ["mixed", "carnations"],
   "premium-orchid": ["orchid"],
 };
+// Vendored open-licence stills for FR-007 ranking SKUs (T-03 + T-04).
+// Category likeness, not this shop's cooler. Credits: /assets/NOTICE.txt
+const PRODUCT_ART = {
+  "classic-rose-dozen": "/assets/sku-classic-rose-dozen.jpg",
+  "lilac-bouquet": "/assets/sku-lilac-bouquet.jpg",
+  "budget-mixed-bunch": "/assets/sku-budget-mixed-bunch.jpg",
+  "pink-flower-vase": "/assets/sku-pink-flower-vase.jpg",
+  "premium-orchid": "/assets/sku-premium-orchid.jpg",
+};
 const COLOURS = ["red", "pink", "white", "yellow", "purple", "mixed"];
 const RIBBONS = ["none", "satin", "organza", "kraft"];
 /** ADR-003 chip copy: API missing-facet questions become thought completions. */
@@ -352,6 +361,7 @@ function productLabel(productId) {
 
 function productArt(productId) {
   const key = String(productId || "");
+  if (PRODUCT_ART[key]) return PRODUCT_ART[key];
   return key.length % 2 ? "/assets/bouquet-pink.svg" : "/assets/bouquet-mixed.svg";
 }
 
@@ -486,7 +496,7 @@ function renderRecommendations(items) {
     card.className = "card";
     const thumb = document.createElement("img");
     thumb.className = "thumb";
-    thumb.alt = "";
+    thumb.alt = productLabel(item.product_id);
     thumb.src = productArt(item.product_id);
     const title = document.createElement("h3");
     title.textContent = productLabel(item.product_id);
@@ -535,11 +545,23 @@ function renderSelection(selection) {
   if (!selection || !selection.product_id) {
     empty.hidden = false;
     formEl.hidden = true;
+    const thumb = document.querySelector("#selection-thumb");
+    if (thumb) {
+      thumb.removeAttribute("src");
+      thumb.alt = "";
+      thumb.hidden = true;
+    }
     return;
   }
   empty.hidden = true;
   formEl.hidden = false;
   const options = selection.options || {};
+  const thumb = document.querySelector("#selection-thumb");
+  if (thumb) {
+    thumb.src = productArt(selection.product_id);
+    thumb.alt = productLabel(selection.product_id);
+    thumb.hidden = false;
+  }
   document.querySelector("#arrangement").value = productLabel(selection.product_id);
   document.querySelector("#size").value = options.size || "";
   fillSelect(

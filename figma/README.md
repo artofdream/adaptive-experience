@@ -39,9 +39,10 @@ Sync and new-journey prototype rules:
 | Collection **AEA Shop CSS** (`purple`, `ink`, `page`, …) | `edge/gateway/ui/assets/styles.css` `:root` |
 | Collection **AEA Wireframe Grayscale** | Archive only — not the live shop |
 | Text styles `AEA/Brand` … `AEA/Button` | Inter sizes/weights in `styles.css` |
-| Components `Button`, `Chip`, `Badge`, `Composer`, `Tile`, `Product Card`, `Header`, `ASO`, `Operator banner` | Classes in `index.html` / `florist.html` + `styles.css` |
+| Components `Button`, `Chip`, `Badge`, `Composer`, `Tile`, `Product Card` (`45:11`), `Header`, `ASO`, `Operator banner` | Classes in `index.html` / `florist.html` + `styles.css` |
 | Shop UI · current journey `1 Discover` T-01 Chip | Live T-01 thought-completion copy (`for Mom` after a partial thought; API questions remapped in `app.js`) |
-| Shop UI · current journey T-03 Product Card | Live T-03 card; optional `Ordered earlier in this browser` hint uses existing `.hint` (thin FR-008, same browser, no login) |
+| Shop UI · current journey T-03 Product Card | Live T-03 card with vendored SKU still (`PRODUCT_ART` / `/assets/sku-*.jpg`); optional `Ordered earlier in this browser` hint uses existing `.hint` (thin FR-008, same browser, no login). Photos are category likenesses, not the shop cooler. |
+| Shop UI · current journey T-04 selection thumb | Same vendored still as T-03 (`#selection-thumb`) |
 | Prototype **Shop UI · current journey** | `index.html` journey steps 1–7 (`data-journey-mode="steps"`). Tablet (641–960px) keeps T-01 left of T-02; tiles span below (#215). |
 | Prototype **Shop UI · returning shopper (proposal)** | M8 FR-008 proposal only. Reorder + modify-before-reorder in the persistent workspace. Do not restyle live shop until approved. |
 | Florist operator · T-09 inbox `1 Live empty` | Live `/florist` empty inbox (no sample rows when operator APIs are on) |

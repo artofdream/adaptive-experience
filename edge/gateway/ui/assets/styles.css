@@ -286,7 +286,19 @@ textarea, input, select {
 .tile-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
 .cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; }
 .card { border: 1px solid var(--line); border-radius: .65rem; padding: .75rem; display: grid; gap: .4rem; background: var(--card); }
-.card .thumb { width: 100%; min-height: 5.5rem; object-fit: cover; border-radius: .45rem; background: var(--lavender); }
+.card .thumb { width: 100%; min-height: 8rem; aspect-ratio: 4 / 3; object-fit: cover; object-position: center; border-radius: .45rem; background: var(--lavender); }
+.selection-thumb { width: min(100%, 16rem); min-height: 8rem; aspect-ratio: 4 / 3; object-fit: cover; object-position: center; border-radius: .45rem; background: var(--lavender); }
+.photo-credit { margin: .65rem 0 0; }
+.photo-credits { margin: .35rem 0 .75rem; color: var(--muted); font-size: .85rem; }
+.photo-credits summary {
+  cursor: pointer;
+  font-weight: 650;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+.photo-credits ul { margin: .35rem 0 0; padding-left: 1.1rem; }
+.photo-credits a { color: var(--purple-deep); }
 .card .price { margin: 0; font-weight: 800; color: var(--purple-deep); }
 .badge {
   display: inline-block;
