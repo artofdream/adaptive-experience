@@ -81,6 +81,25 @@ resource "aws_security_group" "orchestration" {
   tags = { Name = "${local.prefix}-orchestration" }
 }
 
+resource "aws_security_group" "litellm" {
+  name        = "${local.prefix}-litellm"
+  description = "LiteLLM proxy private (orchestration only)"
+  vpc_id      = aws_vpc.main.id
+  ingress {
+    from_port       = 4000
+    to_port         = 4000
+    protocol        = "tcp"
+    security_groups = [aws_security_group.orchestration.id]
+  }
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  tags = { Name = "${local.prefix}-litellm" }
+}
+
 resource "aws_security_group" "rds" {
   name        = "${local.prefix}-rds"
   description = "Postgres private"

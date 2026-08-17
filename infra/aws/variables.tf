@@ -81,3 +81,9 @@ variable "desired_count" {
   description = "Desired ECS tasks per service."
   default     = 1
 }
+
+variable "litellm_image" {
+  type        = string
+  description = "Public LiteLLM image. Same rolling tag as Path A (edge/docker-compose.litellm.yml) so Anthropic model ids stay current. Not an ECR build."
+  default     = "ghcr.io/berriai/litellm:main-latest"
+}

@@ -51,5 +51,11 @@ output "service_names" {
     orchestration = aws_ecs_service.orchestration.name
     relay         = aws_ecs_service.relay.name
     consumer      = aws_ecs_service.consumer_workspace.name
+    litellm       = aws_ecs_service.litellm.name
   }
+}
+
+output "litellm_internal_url" {
+  description = "OpenAI-compatible chat-completions URL for a later orchestration AEA_AI_ENDPOINT follow-up. Not injected in this slice."
+  value       = "http://${local.discovery_litellm_host}:4000/v1/chat/completions"
 }

@@ -27,11 +27,15 @@ local seeder. Inventory for a live test must come from an operator feed into
 `inventory.product_availability` (POS/export or curated fixture load), not
 this Terraform.
 
-Live intent (optional, later slice): put `AEA_AI_ENDPOINT`, `AEA_AI_API_KEY`,
-and `AEA_AI_MODEL` in Secrets Manager. Use an OpenAI-compatible URL (LiteLLM
-or equivalent). Do not put the key in `terraform.tfvars` or git. Task defs in
-this recover MR do not inject those three yet — orchestration stays on regex
-intent until they are wired.
+Live intent is two slices. **Now:** merge `ANTHROPIC_API_KEY` into
+`${prefix}/app` (do not replace the blob). LiteLLM ECS injects that key only.
+Do **not** set `AEA_AI_*` yet. **Follow-up:** after LiteLLM is healthy and
+`LITELLM_MASTER_KEY` is in the same secret, merge `AEA_AI_ENDPOINT` =
+`http://litellm.${prefix}.internal:4000/v1/chat/completions`, `AEA_AI_API_KEY`
+= the proxy bearer (same as `LITELLM_MASTER_KEY`), and `AEA_AI_MODEL` =
+`claude-sonnet-5`, then inject all three into orchestration together. Do not
+put keys in `terraform.tfvars` or git. Until that follow-up, orchestration
+stays on regex intent.
 
 ## 2. Migrations
 
