@@ -136,6 +136,7 @@ linkcheck:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
 
 # Path B: cloud images only. OIDC role trusts main. Do not push to pilot ECR from a laptop.
+# Alpine aws-cli is musl Python; --upgrade expat so pyexpat symbols resolve (#204).
 .aws_oidc:
   id_tokens:
     GITLAB_OIDC_TOKEN:
@@ -159,7 +160,8 @@ build-ecr:
   timeout: 45m
   resource_group: path-b-ecs
   before_script:
-    - apk add --no-cache aws-cli
+    - apk add --no-cache --upgrade aws-cli expat
+    - aws --version
     - mkdir -p /tmp
     - printf '%s' "$GITLAB_OIDC_TOKEN" > /tmp/web-identity-token
     - chmod 0400 /tmp/web-identity-token
@@ -202,7 +204,8 @@ deploy-ecs:
   timeout: 30m
   resource_group: path-b-ecs
   before_script:
-    - apk add --no-cache aws-cli curl
+    - apk add --no-cache --upgrade aws-cli expat curl
+    - aws --version
     - mkdir -p /tmp
     - printf '%s' "$GITLAB_OIDC_TOKEN" > /tmp/web-identity-token
     - chmod 0400 /tmp/web-identity-token
