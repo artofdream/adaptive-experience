@@ -111,11 +111,15 @@ Gateway task defs set `AEA_GATEWAY_MODE=alb`. The gateway image uses
 
 ## Fail-closed flags
 
-- `AEA_ENVIRONMENT=production` on orchestration, BFF, relay, and consumer
+- `AEA_ENVIRONMENT=production` on orchestration, BFF, relay, consumer, and
+  `lily-reference-live-test`
 - Do **not** set `AEA_SEED_INVENTORY` (production seeder raises)
 - Do **not** set `AEA_FLORIST_OPERATOR` (BFF 404s florist in production)
-- Prefer a live-test inventory feed into `inventory.product_availability`;
-  do not invent a warehouse in this stack
+- Named live-test feed: ECS service `lily-reference-live-test`
+  (`AEA_INVENTORY_FEED=lily-reference-live-test`, 30s loop) writes the five
+  Lily `REFERENCE_CATALOG` SKUs into `inventory.product_availability` via
+  `InventoryAvailabilityService.record()`. That is not a warehouse and not
+  the Compose seeder.
 
 ## Soft launch
 

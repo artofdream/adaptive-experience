@@ -1058,6 +1058,36 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         self.assertTrue(all(status == "applied" for status in second.values()))
         self.assertEqual(3, next_source_version(self.connection))
 
+    def test_lily_reference_live_test_writes_fresh_catalog_in_production(self):
+        from unittest.mock import patch
+
+        from aea_platform.adapters import PsycopgInventoryAvailabilityStore
+        from aea_platform.inventory import InventoryAvailabilityService
+        from aea_platform.lily_reference_live_test import (
+            FEED_NAME, assert_live_test_feed_allowed, record_reference_catalog,
+            reference_product_ids, snapshots_are_fresh,
+        )
+        from aea_platform.local_inventory_seed import assert_local_seed_allowed
+
+        now = datetime.now(timezone.utc)
+        with patch.dict(os.environ, {
+            "AEA_ENVIRONMENT": "production",
+            "AEA_INVENTORY_FEED": FEED_NAME,
+        }, clear=False):
+            assert_live_test_feed_allowed()
+            with self.assertRaisesRegex(RuntimeError, "must not run"):
+                assert_local_seed_allowed()
+            service = InventoryAvailabilityService(
+                PsycopgInventoryAvailabilityStore(self.connection), now=lambda: now)
+            results = record_reference_catalog(
+                service, self.connection, observed_at=now)
+        self.assertEqual(set(reference_product_ids()), set(results))
+        self.assertTrue(all(status == "applied" for status in results.values()))
+        self.assertTrue(snapshots_are_fresh(self.connection))
+        availability = service.availability(product_ids=list(reference_product_ids()))
+        for product_id in reference_product_ids():
+            self.assertEqual("available", availability[product_id]["status"])
+
     def test_selection_options_contract_and_fr020_preservation(self):
         import asyncio
         from aea_platform.adapters import (PsycopgExperienceStateStore,

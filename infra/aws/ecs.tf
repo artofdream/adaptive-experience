@@ -49,7 +49,7 @@ resource "aws_service_discovery_service" "litellm" {
 }
 
 resource "aws_cloudwatch_log_group" "ecs" {
-  for_each          = toset(["gateway", "bff", "orchestration", "relay", "consumer", "litellm"])
+  for_each          = toset(["gateway", "bff", "orchestration", "relay", "consumer", "litellm", "lily-reference-live-test"])
   name              = "/aea/${local.prefix}/${each.key}"
   retention_in_days = 30
 }
@@ -268,6 +268,45 @@ resource "aws_ecs_task_definition" "consumer_workspace" {
   }])
 }
 
+resource "aws_ecs_task_definition" "lily_reference_live_test" {
+  family                   = "${local.prefix}-lily-reference-live-test"
+  requires_compatibilities = ["FARGATE"]
+  network_mode             = "awsvpc"
+  cpu                      = "256"
+  memory                   = "512"
+  execution_role_arn       = aws_iam_role.ecs_execution.arn
+  task_role_arn            = aws_iam_role.ecs_task.arn
+  container_definitions = jsonencode([{
+    name      = "lily-reference-live-test"
+    image     = local.orchestration_image
+    essential = true
+    command   = ["python", "platform/scripts/lily_reference_live_test.py", "--loop"]
+    environment = [
+      { name = "AEA_ENVIRONMENT", value = "production" },
+      { name = "AEA_INVENTORY_FEED", value = "lily-reference-live-test" },
+      { name = "AEA_INVENTORY_FEED_INTERVAL_SECONDS", value = "30" },
+    ]
+    secrets = [
+      { name = "AEA_POSTGRES_DSN", valueFrom = "${aws_secretsmanager_secret.app.arn}:AEA_POSTGRES_DSN::" },
+    ]
+    healthCheck = {
+      command     = ["CMD", "python", "platform/scripts/lily_reference_live_test.py", "--check"]
+      interval    = 30
+      timeout     = 5
+      retries     = 3
+      startPeriod = 60
+    }
+    logConfiguration = {
+      logDriver = "awslogs"
+      options = {
+        awslogs-group         = aws_cloudwatch_log_group.ecs["lily-reference-live-test"].name
+        awslogs-region        = var.aws_region
+        awslogs-stream-prefix = "lily-reference-live-test"
+      }
+    }
+  }])
+}
+
 resource "aws_ecs_task_definition" "litellm" {
   family                   = "${local.prefix}-litellm"
   requires_compatibilities = ["FARGATE"]
@@ -384,6 +423,20 @@ resource "aws_ecs_service" "consumer_workspace" {
   name            = "consumer-workspace"
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.consumer_workspace.arn
+  desired_count   = 1
+  launch_type     = "FARGATE"
+  network_configuration {
+    subnets          = aws_subnet.private[*].id
+    security_groups  = [aws_security_group.orchestration.id]
+    assign_public_ip = false
+  }
+  tags = { Project = "adaptive-experience" }
+}
+
+resource "aws_ecs_service" "lily_reference_live_test" {
+  name            = "lily-reference-live-test"
+  cluster         = aws_ecs_cluster.main.id
+  task_definition = aws_ecs_task_definition.lily_reference_live_test.arn
   desired_count   = 1
   launch_type     = "FARGATE"
   network_configuration {
