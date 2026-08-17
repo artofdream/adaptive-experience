@@ -48,7 +48,9 @@ then report what hurt.
 Read before walking (do not improvise the script):
 
 - `implementations/florist/journeys/mother-birthday-journey.md` — default
-  scenario
+  first-time scenario
+- `implementations/florist/journeys/returning-shopper-journey.md` — M8 recall →
+  reorder (`scripts/walk_returning_shopper.py`)
 - `docs/03-functional-design/customer-journey.md` — seven stages
 - `docs/03-functional-design/functional-design.md` — tiles T-01…T-08 + ASO
 
