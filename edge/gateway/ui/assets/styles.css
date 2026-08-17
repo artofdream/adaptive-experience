@@ -388,12 +388,33 @@ dialog::backdrop { background: rgba(42, 36, 56, .45); }
     z-index: 4;
     background: var(--page);
     padding-bottom: .35rem;
-    overflow-x: hidden;
+    min-width: 0;
   }
-  .journey-nav .steps li { min-width: 3.25rem; flex: 0 0 auto; }
-  .journey-nav .steps button { flex-direction: column; align-items: center; font-size: .7rem; padding-top: .45rem; }
-  .journey-nav .steps .step-label { font-size: 0; }
-  .journey-nav .steps .step-label::after { content: attr(data-short); font-size: .68rem; }
+  .journey-nav .steps {
+    gap: .12rem;
+    width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+  }
+  .journey-nav .steps li { flex: 1 1 0; min-width: 0; }
+  .journey-nav .steps button {
+    flex-direction: column;
+    align-items: center;
+    font-size: .7rem;
+    padding: .45rem 0 0;
+    min-width: 0;
+    min-height: 44px;
+    gap: .12rem;
+  }
+  .journey-nav .steps .step-num { width: 1.35rem; height: 1.35rem; font-size: .68rem; }
+  .journey-nav .steps .step-label { font-size: 0; max-width: 100%; }
+  .journey-nav .steps .step-label::after {
+    content: attr(data-short);
+    display: block;
+    font-size: .62rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
   main.workspace {
     width: min(calc(100% - 2rem), 1440px);
     min-width: 0;

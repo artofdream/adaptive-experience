@@ -93,6 +93,13 @@ class BrowserUiTests(unittest.TestCase):
         self.assertIn('class="aso"', self.html)
         # Duplicate ASO FAB is hidden on narrow viewports; header Help remains.
         self.assertIn(".aso { display: none; }", self.css)
+        mobile = self.css.split("@media (max-width: 40rem)", 1)[1].split("@media", 1)[0]
+        self.assertNotIn("overflow-x: hidden", mobile)
+        self.assertNotIn("min-width: 3.25rem", mobile)
+        self.assertIn(".journey-nav .steps li { flex: 1 1 0; min-width: 0; }", mobile)
+        self.assertIn('data-short="Track"', self.html)
+        self.assertIn('data-step="7"', self.html)
+        self.assertIn('inline: "nearest"', self.script)
 
     def test_platform_preferences_remain_usable(self):
         self.assertIn("prefers-reduced-motion: reduce", self.css)
