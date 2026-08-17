@@ -396,7 +396,33 @@ class PsycopgOrderStore:
                 "(message_id,session_id,context_version,topic,aggregate_key,envelope) "
                 "VALUES (%s,%s,%s,'order.checkout.requested',%s,%s::jsonb)",
                 (message_id, session_id, context_version, order_id, json.dumps(envelope)))
+            self.remember_browser_product(session_id)
             return True
+
+    def remember_browser_product(self, session_id: str) -> None:
+        """Persist last accepted catalog SKU for this browser token. Not CRM."""
+        self.connection.execute(
+            "INSERT INTO orchestration.browser_order_recall (recall_id, product_id) "
+            "SELECT s.recall_id, btrim(o.product->>'product_id') "
+            "FROM orchestration.experience_session s "
+            "JOIN orchestration.customer_order o ON o.session_id = s.session_id "
+            "WHERE s.session_id=%s AND s.recall_id IS NOT NULL "
+            "AND COALESCE(btrim(o.product->>'product_id'), '') <> '' "
+            "ON CONFLICT (recall_id) DO UPDATE SET "
+            "product_id=EXCLUDED.product_id, updated_at=clock_timestamp()",
+            (session_id,),
+        )
+
+    def recalled_product_id(self, session_id: str) -> str | None:
+        row = self.connection.execute(
+            "SELECT r.product_id FROM orchestration.experience_session s "
+            "JOIN orchestration.browser_order_recall r ON r.recall_id = s.recall_id "
+            "WHERE s.session_id=%s",
+            (session_id,),
+        ).fetchone()
+        if row is None or not isinstance(row[0], str) or not row[0].strip():
+            return None
+        return row[0].strip()
 
     def load_checkout_intent(self, order_id: str) -> dict | None:
         row = self.connection.execute(

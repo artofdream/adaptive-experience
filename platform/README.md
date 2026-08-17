@@ -225,8 +225,10 @@ payment evolution (#148) build on these workers.
   Understanding facets (occasion, budget, style, flower preference), asks
   Inventory for freshness-aware availability, and publishes
   `product.recommendations.ready` with eligible product IDs and ranking through
-  the transactional outbox (FR-007 / NFR-006). Catalog ownership remains outside
-  this boundary; the reference catalog is a local ranking fixture.
+  the transactional outbox (FR-007 / NFR-006). A thin FR-008 hint may boost the
+  last accepted catalog product in this browser (same session or durable
+  recall cookie); ranking stays deterministic and is not CRM. Catalog ownership
+  remains outside this boundary; the reference catalog is a local ranking fixture.
 - Relay claims use `FOR UPDATE SKIP LOCKED`; a row becomes published only after
   the Kafka producer returns an `acks=all` delivery acknowledgement.
 - Message IDs remain stable across relay retries.

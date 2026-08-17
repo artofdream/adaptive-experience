@@ -87,7 +87,8 @@ class EscalationResult:
 
 
 class OrchestrationPort(Protocol):
-    def ensure_session(self, *, session_id: str, subject: str) -> None: ...
+    def ensure_session(self, *, session_id: str, subject: str,
+                       recall_id: str | None = None) -> None: ...
     def accept_command(self, *, session_id: str, subject: str, command: dict,
                        observed_context_version: int, correlation_id: str) -> CommandResult: ...
     def select_product(self, *, session_id: str, subject: str, product_id: str,

@@ -61,8 +61,12 @@ class HttpOrchestration:
                                   data.get("assistant_mode"), data.get("disclosure"))
 
     def ensure_session(self, **kwargs):
+        payload = {}
+        recall_id = kwargs.get("recall_id")
+        if recall_id:
+            payload["recall_id"] = recall_id
         self._call("PUT", f"/internal/v1/sessions/{kwargs['session_id']}",
-                   subject=kwargs["subject"], payload={})
+                   subject=kwargs["subject"], payload=payload)
 
     def conversation_projection(self, **kwargs):
         return self._call("GET", f"/internal/v1/sessions/{kwargs['session_id']}/conversation",

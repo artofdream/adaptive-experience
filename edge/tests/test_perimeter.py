@@ -161,7 +161,19 @@ async def invoke(app, method, path, headers=None, body=b"", query=b""):
     raw_headers = [(k.lower().encode(), v.encode()) for k, v in (headers or {}).items()]
     await app({"type": "http", "method": method, "path": path, "query_string": query, "headers": raw_headers}, receive, send)
     start, response = sent
-    return start["status"], {k.decode(): v.decode() for k, v in start["headers"]}, response["body"]
+    header_map = {}
+    cookies = []
+    for key, value in start["headers"]:
+        name, text = key.decode(), value.decode()
+        if name == "set-cookie":
+            cookies.append(text)
+        header_map[name] = text
+    if cookies:
+        session_cookie = next((item for item in cookies if item.startswith("__Host-aea_session=")),
+                              cookies[-1])
+        header_map["set-cookie"] = session_cookie
+        header_map["set-cookie-all"] = "\n".join(cookies)
+    return start["status"], header_map, response["body"]
 
 
 class PerimeterTests(unittest.TestCase):
@@ -201,6 +213,38 @@ class PerimeterTests(unittest.TestCase):
             json.dumps({"delivery": {"destination_reference": "addr-ref",
                                      "timing": {"date": "2026-09-01", "window": "morning"}},
                         "observed_context_version": 0}).encode())[0])
+
+    def test_session_mints_and_reuses_durable_recall_cookie(self):
+        status, headers, _ = self.call("POST", "/api/v1/session", self.auth)
+        self.assertEqual(201, status)
+        cookies = headers["set-cookie-all"].split("\n")
+        recall = next(item for item in cookies if item.startswith("__Host-aea_recall="))
+        session = next(item for item in cookies if item.startswith("__Host-aea_session="))
+        self.assertIn("Max-Age=2592000", recall)
+        self.assertIn("Secure; HttpOnly; SameSite=Lax", recall)
+        self.assertNotIn("Max-Age", session)
+        recall_pair = recall.split(";", 1)[0]
+        session_pair = session.split(";", 1)[0]
+        recall_id = recall_pair.split("=", 1)[1]
+        self.assertEqual(recall_id, self.app.orchestration.session["recall_id"])
+        self.assertEqual(session_pair.split("=", 1)[1],
+                         self.app.orchestration.session["session_id"])
+
+        reused = self.call("POST", "/api/v1/session", {
+            **self.auth, "cookie": f"{session_pair}; {recall_pair}"})[1]
+        reused_recall = next(item for item in reused["set-cookie-all"].split("\n")
+                             if item.startswith("__Host-aea_recall="))
+        self.assertEqual(recall_id, reused_recall.split(";", 1)[0].split("=", 1)[1])
+        self.assertEqual(session_pair.split("=", 1)[1],
+                         self.app.orchestration.session["session_id"])
+
+        minted = self.call("POST", "/api/v1/session", {
+            **self.auth, "cookie": "__Host-aea_recall=not-a-uuid"})[1]
+        minted_recall = next(item for item in minted["set-cookie-all"].split("\n")
+                             if item.startswith("__Host-aea_recall="))
+        minted_id = minted_recall.split(";", 1)[0].split("=", 1)[1]
+        self.assertNotEqual("not-a-uuid", minted_id)
+        self.assertEqual(minted_id, self.app.orchestration.session["recall_id"])
 
     def test_command_contract_and_least_data_projection(self):
         cookie, csrf = self.session()

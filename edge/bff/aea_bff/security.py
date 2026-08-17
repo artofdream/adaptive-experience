@@ -12,6 +12,7 @@ class Session:
     subject: str
     csrf_token: str
     expires_at: float
+    recall_id: str | None = None
 
 
 class SessionStore:
@@ -19,9 +20,9 @@ class SessionStore:
         self.ttl_seconds = ttl_seconds
         self._sessions: dict[str, Session] = {}
 
-    def create(self, subject: str) -> Session:
+    def create(self, subject: str, recall_id: str | None = None) -> Session:
         session = Session(str(uuid.uuid4()), subject, secrets.token_urlsafe(32),
-                          time.time() + self.ttl_seconds)
+                          time.time() + self.ttl_seconds, recall_id)
         self._sessions[session.session_id] = session
         return session
 
