@@ -98,6 +98,7 @@ class AvailableIntentInterpreter:
         self.failures = 0
         self.opened_at = None
         self.last_mode = "primary"
+        self.last_error_code = None
 
     def interpret(self, message_text, current_intent):
         now = self.clock()
@@ -107,8 +108,12 @@ class AvailableIntentInterpreter:
         try:
             result = self.primary.interpret(message_text, current_intent)
             self.failures, self.opened_at, self.last_mode = 0, None, "primary"
+            self.last_error_code = None
             return result
-        except (GenerativeAIUnavailable, IntentValidationError):
+        except (GenerativeAIUnavailable, IntentValidationError) as error:
+            self.last_error_code = (
+                "provider_unavailable" if isinstance(error, GenerativeAIUnavailable)
+                else "invalid_output")
             self.failures += 1
             if self.failures >= self.failure_threshold:
                 self.opened_at = now

@@ -922,6 +922,51 @@ class PsycopgAuditReader:
         return [dict(zip(keys, row)) for row in rows]
 
 
+class PsycopgQualityStore:
+    """Persist payload-free NFR-008 quality/error events for intent and FAQ."""
+
+    def __init__(self, connection):
+        self.connection = connection
+
+    def record(self, event: dict) -> None:
+        recorded_at = event["recorded_at"]
+        self.connection.execute(
+            "INSERT INTO orchestration.ai_quality_event "
+            "(event_id,path,outcome,error_code,quality_flags,assistant_mode,matched,recorded_at) "
+            "VALUES (%s,%s,%s,%s,%s,%s,%s,%s)",
+            (event["event_id"], event["path"], event["outcome"], event.get("error_code"),
+             list(event.get("quality_flags") or ()), event.get("assistant_mode"),
+             event.get("matched"), recorded_at),
+        )
+
+    def summary(self) -> dict:
+        counts = {
+            path: {outcome: 0 for outcome in ("ok", "fallback", "unmatched", "error")}
+            for path in ("intent", "faq")
+        }
+        for path, outcome, total in self.connection.execute(
+            "SELECT path, outcome, count(*) FROM orchestration.ai_quality_event "
+            "GROUP BY path, outcome"
+        ).fetchall():
+            counts[path][outcome] = int(total)
+        recent = []
+        for path, outcome, error_code, assistant_mode, quality_flags, recorded_at in (
+                self.connection.execute(
+                    "SELECT path, outcome, error_code, assistant_mode, quality_flags, recorded_at "
+                    "FROM orchestration.ai_quality_event "
+                    "WHERE outcome IN ('error', 'fallback') "
+                    "ORDER BY recorded_at DESC LIMIT 20"
+                ).fetchall()):
+            recent.append({
+                "path": path, "outcome": outcome, "error_code": error_code,
+                "assistant_mode": assistant_mode,
+                "quality_flags": list(quality_flags or ()),
+                "recorded_at": recorded_at.isoformat() if hasattr(recorded_at, "isoformat")
+                else recorded_at,
+            })
+        return {"paths": ["intent", "faq"], "counts": counts, "recent_errors": recent}
+
+
 class KafkaAcknowledgedPublisher:
     def __init__(self, bootstrap_servers: str, client_id: str, environ=None):
         from confluent_kafka import Producer

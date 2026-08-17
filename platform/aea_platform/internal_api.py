@@ -20,6 +20,7 @@ from .payment import PaymentValidationError, ReferencePaymentAuthority
 from .payment_checkout import PaymentCheckoutHandler
 from .pricing import PricingService
 from .support import SupportService, SupportValidationError
+from .quality import QualityMonitor, QualityTrackingError
 from .recommendation import RecommendationService
 from .selection import SelectionValidationError, normalize_selection_options
 from .state import StatePatch
@@ -42,15 +43,17 @@ class InternalOrchestrationApp:
         if not token:
             raise ValueError("internal token is required")
         from .adapters import (PsycopgExperienceStateStore, PsycopgInventoryAvailabilityStore,
-                               PsycopgOrderStore, PsycopgRecommendationStore, PsycopgSupportStore)
+                               PsycopgOrderStore, PsycopgQualityStore, PsycopgRecommendationStore,
+                               PsycopgSupportStore)
         store = PsycopgExperienceStateStore(connection)
         self.store = store
         self.connection = connection
         self.token = token
+        self.quality = QualityMonitor(PsycopgQualityStore(connection))
         self.conversation = ConversationService(store)
         self.shared = SharedUnderstandingService(store)
         self.interpreter = interpreter or ReferenceIntentInterpreter()
-        self.intent = IntentAnalysisService(store, self.interpreter)
+        self.intent = IntentAnalysisService(store, self.interpreter, quality=self.quality)
         inventory_store = PsycopgInventoryAvailabilityStore(connection)
         self.inventory = InventoryAvailabilityService(inventory_store)
         self.forecast = InventoryForecastService(inventory_store)
@@ -63,7 +66,7 @@ class InternalOrchestrationApp:
         self.pricing = PricingService()
         self.checkout = CheckoutService(order_store, self.pricing)
         self.payment_handler = PaymentCheckoutHandler(order_store, ReferencePaymentAuthority())
-        self.support = SupportService(PsycopgSupportStore(connection))
+        self.support = SupportService(PsycopgSupportStore(connection), quality=self.quality)
 
     async def __call__(self, scope, receive, send):
         headers = {key.decode().lower(): value.decode() for key, value in scope.get("headers", [])}
@@ -77,6 +80,8 @@ class InternalOrchestrationApp:
             health = getattr(self.interpreter, "health", lambda: {
                 "available": True, "mode": "reference", "circuit": "closed"})()
             return await self._send(send, 200, health)
+        if scope["path"] == "/internal/v1/ai/quality" and scope["method"] == "GET":
+            return await self._send(send, 200, self.quality.summary())
         if scope["path"] == "/internal/v1/operator/escalations" and scope["method"] == "GET":
             return await self._send(send, 200, {"items": self._operator_escalations()})
         if scope["path"] == "/internal/v1/operator/forecasts" and scope["method"] == "GET":
@@ -444,7 +449,7 @@ class InternalOrchestrationApp:
                 correlation_id=correlation_id.strip(), subject_reference=subject,
                 context_version=int(loaded["context_version"]),
                 situation=self._support_situation(session_id, loaded))
-        except SupportValidationError:
+        except (SupportValidationError, QualityTrackingError):
             return await self._send(send, 422, {"code": "validation_failed"})
         return await self._send(send, 200, {"code": "answered", "answer": result["answer"],
             "approved_source_references": result.get("approved_source_references", []),
