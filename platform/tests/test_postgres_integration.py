@@ -26,7 +26,7 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
 
     def setUp(self):
         with self.connection.transaction():
-            self.connection.execute("TRUNCATE retrieval.knowledge_chunk, inventory.availability_observation, inventory.product_availability, orchestration.message_audit, orchestration.outbox_message, "
+            self.connection.execute("TRUNCATE retrieval.knowledge_chunk, inventory.availability_observation, inventory.product_availability, orchestration.ai_quality_event, orchestration.message_audit, orchestration.outbox_message, "
                                     "orchestration.experience_invalidation, orchestration.consumed_message, "
                                     "orchestration.browser_order_recall, orchestration.experience_session CASCADE")
 
@@ -762,6 +762,12 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         for row in rows:
             guard.validate_publication("ai-concierge", "support.faq.answered", row[0])
 
+        quality = self.connection.execute(
+            "SELECT path, outcome, matched FROM orchestration.ai_quality_event "
+            "WHERE path='faq' ORDER BY recorded_at"
+        ).fetchall()
+        self.assertEqual([("faq", "ok", True), ("faq", "unmatched", False)], quality)
+
     def test_support_situation_answers_from_session_facts(self):
         import asyncio
         from aea_platform.internal_api import InternalOrchestrationApp
@@ -1300,6 +1306,58 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
 
         _, shared = drive("GET", f"/internal/v1/sessions/{session_id}/shared-understanding")
         self.assertEqual("Mum", shared["structured_intent"]["recipient"])
+
+    def test_intent_and_faq_quality_endpoint_is_payload_free(self):
+        import asyncio
+        from aea_platform.generative_ai import AvailableIntentInterpreter, GenerativeAIUnavailable
+        from aea_platform.internal_api import InternalOrchestrationApp
+
+        session_id = self.create_session()
+
+        class Down:
+            def interpret(self, *_):
+                raise GenerativeAIUnavailable("down")
+
+        app = InternalOrchestrationApp(
+            self.connection, "internal-token",
+            AvailableIntentInterpreter(Down(), failure_threshold=3))
+
+        def drive(method, path, body=b""):
+            return asyncio.run(self._invoke_internal(app, method, path, body))
+
+        status, accepted = drive(
+            "POST", f"/internal/v1/sessions/{session_id}/conversation",
+            json.dumps({"message_text": "Birthday roses for Mum",
+                        "observed_context_version": 0, "correlation_id": "q-intent"}).encode())
+        self.assertEqual(202, status)
+        self.assertGreaterEqual(accepted["context_version"], 1)
+
+        faq_status, faq = drive(
+            "POST", f"/internal/v1/sessions/{session_id}/support",
+            json.dumps({"question": "When do you deliver?", "correlation_id": "q-faq"}).encode())
+        self.assertEqual(200, faq_status)
+        self.assertTrue(faq["matched"])
+
+        quality_status, quality = drive("GET", "/internal/v1/ai/quality")
+        self.assertEqual(200, quality_status)
+        self.assertEqual(["intent", "faq"], quality["paths"])
+        self.assertGreaterEqual(quality["counts"]["intent"]["fallback"], 1)
+        self.assertGreaterEqual(quality["counts"]["faq"]["ok"], 1)
+        self.assertEqual("provider_unavailable", quality["recent_errors"][0]["error_code"])
+        serialized = json.dumps(quality)
+        self.assertNotIn("Birthday roses", serialized)
+        self.assertNotIn("When do you deliver", serialized)
+        self.assertNotIn("2 PM", serialized)
+
+        columns = {row[0] for row in self.connection.execute(
+            "SELECT column_name FROM information_schema.columns "
+            "WHERE table_schema='orchestration' AND table_name='ai_quality_event'"
+        ).fetchall()}
+        self.assertTrue({"path", "outcome", "error_code", "quality_flags"} <= columns)
+        self.assertNotIn("payload", columns)
+        self.assertNotIn("question", columns)
+        self.assertNotIn("answer", columns)
+        self.assertNotIn("message_text", columns)
 
     def test_conversation_accepts_message_when_interpretation_is_stale(self):
         import asyncio

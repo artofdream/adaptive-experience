@@ -5,6 +5,8 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Callable
 
+from .quality import QualityMonitor
+
 QUESTION_MAX_LENGTH = 500
 NO_APPROVED_ANSWER = (
     "I do not have approved information for that question. A florist can help you further."
@@ -83,12 +85,14 @@ class SupportService:
     """
 
     def __init__(self, store, *, knowledge=None, retriever=None,
-                 new_id: Callable[[], uuid.UUID] | None = None, now=None):
+                 new_id: Callable[[], uuid.UUID] | None = None, now=None,
+                 quality: QualityMonitor | None = None):
         self.store = store
         self.knowledge = tuple(knowledge if knowledge is not None else REFERENCE_KNOWLEDGE)
         self.retriever = retriever
         self.new_id = new_id or uuid.uuid4
         self.now = now or (lambda: datetime.now(timezone.utc))
+        self.quality = quality or QualityMonitor()
 
     def lookup(self, question) -> dict:
         """Read-only approved-knowledge match. Does not persist or publish."""
@@ -120,6 +124,11 @@ class SupportService:
                 context_version=context_version)
             return situational
         result = self.lookup(question)
+        self.quality.assess_faq(
+            result,
+            approved_answers={entry.answer: tuple(entry.source_references)
+                              for entry in self.knowledge},
+            unmatched_answer=NO_APPROVED_ANSWER)
         self.store.record_answer(
             session_id=session_id, answer=result["answer"],
             approved_source_references=result["approved_source_references"],

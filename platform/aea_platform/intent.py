@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from decimal import Decimal, InvalidOperation
 from typing import Callable, Protocol, runtime_checkable
 
+from .quality import QualityMonitor
 from .state import StatePatch
 
 
@@ -111,11 +112,13 @@ class IntentAnalysisService:
 
     def __init__(self, state_store, interpreter: IntentInterpreter, *,
                  now: Callable[[], datetime] | None = None,
-                 new_id: Callable[[], uuid.UUID] | None = None):
+                 new_id: Callable[[], uuid.UUID] | None = None,
+                 quality: QualityMonitor | None = None):
         self.state_store = state_store
         self.interpreter = interpreter
         self.now = now or (lambda: datetime.now(timezone.utc))
         self.new_id = new_id or uuid.uuid4
+        self.quality = quality or QualityMonitor()
 
     def analyze(self, *, session_id: str, message_text: str,
                 observed_context_version: int, correlation_id: str,
@@ -136,8 +139,14 @@ class IntentAnalysisService:
         state = current.get("state") or {}
         existing = self._facets(state.get("shared_understanding") or {})
         interpretation = self.interpreter.interpret(message_text.strip(), dict(existing))
-        facets = self._facets(interpretation.facets)
-        suggestions = self._suggestions(interpretation.suggestions)
+        try:
+            facets = self._facets(interpretation.facets)
+            suggestions = self._suggestions(interpretation.suggestions)
+        except IntentValidationError as error:
+            code = ("unsupported_facets" if "unsupported intent facets" in str(error)
+                    else "invalid_output")
+            self.quality.record_intent_error(code, self.interpreter)
+            raise
         merged = {**existing, **facets}
         values = {"shared_understanding": facets,
                   "thought_completion": {"suggestions": list(suggestions)}}
@@ -164,6 +173,7 @@ class IntentAnalysisService:
             session_id, observed_context_version, int(current["state_schema_version"]),
             StatePatch.create(values, changed), messages,
         )
+        self.quality.observe_intent(self.interpreter)
         return IntentAnalysisResult(message_id, version, merged, suggestions)
 
     @staticmethod

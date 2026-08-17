@@ -70,6 +70,7 @@ class GenerativeAITests(unittest.TestCase):
         self.assertEqual("roses", second.facets["flower_preference"])
         self.assertEqual({"available": True, "mode": "fallback", "circuit": "open"},
                          available.health())
+        self.assertEqual("provider_unavailable", available.last_error_code)
         # An open circuit skips the provider while preserving useful behavior.
         third = available.interpret("for Mum", {})
         self.assertEqual("mother", third.facets["recipient"])

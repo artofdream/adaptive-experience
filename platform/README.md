@@ -94,7 +94,7 @@ payment evolution (#148) build on these workers.
   transaction (FR-021).
 - The authenticated Internal Orchestration HTTP surface exposes session create,
   conversation submit/projection, Shared Understanding review/correction, AI
-  health, and the reactive workspace substrate (#144): `GET .../workspace` returns
+  health, AI quality (NFR-008 first slice), and the reactive workspace substrate (#144): `GET .../workspace` returns
   the aggregate least-data facet document at the current context version, and
   `GET .../stream` returns a `snapshot` event on cold connect or the per-version
   `invalidation` deltas after `?after=`, sourced from `experience_invalidation`
@@ -204,7 +204,11 @@ payment evolution (#148) build on these workers.
   and thought completion remain available outside provider or business hours.
   Configure `AEA_AI_ENDPOINT`, `AEA_AI_API_KEY`, and `AEA_AI_MODEL` together;
   `/internal/v1/ai/health` reports primary/fallback mode without exposing secrets
-  (FR-004). A concrete vendor remains a deployment choice, not an architecture
+  (FR-004). `QualityMonitor` records fail-closed, payload-free intent and FAQ
+  quality/error events in `orchestration.ai_quality_event`;
+  `/internal/v1/ai/quality` returns counts and recent failures (NFR-008 first
+  slice; see `docs/04-technical-architecture/nfr-008-quality-monitoring.md`).
+  A concrete vendor remains a deployment choice, not an architecture
   dependency. Adapter-replacement tests in `tests/test_generative_ai.py` pin that
   swapping the primary interpreter (same `IntentInterpretation` contract) does
   not redesign `IntentAnalysisService`, orders, inventory, or recommendations
@@ -257,7 +261,8 @@ payment evolution (#148) build on these workers.
   and context versions, publication time, sanitized outcomes, and the governed
   security context. Operators query a workflow by correlation ID without
   exposing business payloads; diagnostics report aggregate audit/failure
-  counts only.
+  counts only. NFR-008 first-slice AI quality/error tracking uses a separate
+  payload-free `ai_quality_event` table for the live intent and FAQ paths.
 
 ## Recovery
 

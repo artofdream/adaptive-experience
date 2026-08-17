@@ -34,7 +34,9 @@ respond: availability is bounded below by the local path, not the provider.
 
 `GET /internal/v1/ai/health` reports `{available, mode, circuit}`; `available` is
 always true because the fallback guarantees a response. The mode and circuit make
-degradation observable (NFR-016).
+degradation observable (NFR-016). AI response quality and error counts for the
+live intent and FAQ paths are on `GET /internal/v1/ai/quality` (NFR-008 first
+slice; see [nfr-008-quality-monitoring.md](nfr-008-quality-monitoring.md)).
 
 ## Latency bound (NFR-004 related)
 

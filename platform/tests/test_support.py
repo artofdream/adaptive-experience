@@ -60,12 +60,15 @@ class SupportServiceTests(unittest.TestCase):
 
     def test_records_governed_answer_at_context_version(self):
         store = FakeSupportStore()
-        SupportService(store, new_id=lambda: "m").answer(
+        service = SupportService(store, new_id=lambda: "m")
+        service.answer(
             session_id="s", question="delivery time?", correlation_id="c",
             subject_reference="subj", context_version=3)
         self.assertEqual("s", store.recorded["session_id"])
         self.assertEqual(3, store.recorded["context_version"])
         self.assertIn("policy:delivery", store.recorded["approved_source_references"])
+        self.assertEqual("ok", service.quality.store.events[-1]["outcome"])
+        self.assertTrue(service.quality.store.events[-1]["matched"])
 
     def test_invalid_question_is_rejected(self):
         with self.assertRaises(SupportValidationError):

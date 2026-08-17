@@ -19,10 +19,16 @@ def main() -> None:
             "FROM orchestration.message_audit"
         )
         audit_records, failed_outcomes = cursor.fetchone()
+        cursor.execute(
+            "SELECT count(*) FILTER (WHERE outcome IN ('error', 'fallback')) "
+            "FROM orchestration.ai_quality_event"
+        )
+        quality_failures = cursor.fetchone()[0]
     metadata = AdminClient({"bootstrap.servers": os.environ.get("AEA_KAFKA_BOOTSTRAP", "localhost:9092")}).list_topics(timeout=10)
     print({"migration_version": version, "pending_outbox": pending,
            "expired_outbox_claims": expired_claims, "audit_records": audit_records,
-           "failed_outcomes": failed_outcomes, "kafka_topics": len(metadata.topics)})
+           "failed_outcomes": failed_outcomes, "quality_failures": quality_failures,
+           "kafka_topics": len(metadata.topics)})
 
 
 if __name__ == "__main__":
