@@ -364,16 +364,24 @@ class PsycopgOrderStore:
         }
 
     def request_checkout(self, *, session_id, order_id, total, payment_reference, message_id,
-                         correlation_id, subject_reference, published_at, context_version) -> bool:
+                         correlation_id, subject_reference, published_at, context_version,
+                         product=None, delivery=None) -> bool:
         with self.connection.transaction():
             row = self.connection.execute(
                 "SELECT status FROM orchestration.customer_order WHERE session_id=%s FOR UPDATE",
                 (session_id,)).fetchone()
             if row is None or row[0] not in ("created", "submitted"):
                 return False
-            self.connection.execute(
-                "UPDATE orchestration.customer_order SET status='submitted', "
-                "updated_at=clock_timestamp() WHERE session_id=%s", (session_id,))
+            if isinstance(product, dict) and isinstance(delivery, dict):
+                self.connection.execute(
+                    "UPDATE orchestration.customer_order SET status='submitted', "
+                    "product=%s::jsonb, delivery=%s::jsonb, context_version=%s, "
+                    "updated_at=clock_timestamp() WHERE session_id=%s",
+                    (json.dumps(product), json.dumps(delivery), context_version, session_id))
+            else:
+                self.connection.execute(
+                    "UPDATE orchestration.customer_order SET status='submitted', "
+                    "updated_at=clock_timestamp() WHERE session_id=%s", (session_id,))
             self.connection.execute(
                 "INSERT INTO orchestration.checkout_intent "
                 "(order_id,session_id,payment_reference,total,correlation_id,"
