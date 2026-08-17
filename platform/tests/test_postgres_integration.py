@@ -530,6 +530,29 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         self.assertIsNone(app.order.session_prior_product_id(str(second)))
         self.assertEqual("classic-rose-dozen", app.order.prior_product_id(str(second)))
 
+    def test_browser_session_get_binds_to_experience_session(self):
+        import asyncio
+        from aea_platform.internal_api import InternalOrchestrationApp
+
+        app = InternalOrchestrationApp(self.connection, "internal-token")
+        missing = uuid.uuid4()
+        self.assertEqual(404, asyncio.run(self._invoke_internal(
+            app, "GET", f"/internal/v1/sessions/{missing}"))[0])
+        session_id = self.create_session()
+        status, body = asyncio.run(self._invoke_internal(
+            app, "GET", f"/internal/v1/sessions/{session_id}"))
+        self.assertEqual(200, status)
+        self.assertEqual(str(session_id), body["session_id"])
+        self.assertNotIn("state", body)
+        recall_id = str(uuid.uuid4())
+        self.assertEqual(204, asyncio.run(self._invoke_internal(
+            app, "PUT", f"/internal/v1/sessions/{session_id}",
+            json.dumps({"recall_id": recall_id}).encode()))[0])
+        status, body = asyncio.run(self._invoke_internal(
+            app, "GET", f"/internal/v1/sessions/{session_id}"))
+        self.assertEqual(200, status)
+        self.assertEqual(recall_id, body["recall_id"])
+
     def test_checkout_decline_leaves_order_submitted(self):
         import asyncio
         from aea_platform.internal_api import InternalOrchestrationApp

@@ -23,6 +23,7 @@ def create_app() -> BffApp:
         StaticTokenAuthenticator(token),
         allowed_origin=os.environ.get("AEA_ALLOWED_ORIGIN", "https://localhost:8443"),
         florist_operator_enabled=florist_operator_enabled,
+        session_signing_key=orchestration_token,
     )
 
 

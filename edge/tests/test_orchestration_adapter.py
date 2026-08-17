@@ -85,6 +85,19 @@ class HttpOrchestrationTests(unittest.TestCase):
         self.assertTrue(calls[0][1].endswith("/sessions/s1"))
         self.assertEqual("11111111-1111-4111-8111-111111111111", calls[0][2]["recall_id"])
 
+    def test_load_session_gets_internal_experience_session(self):
+        calls = []
+        def transport(method, url, headers, payload, timeout):
+            calls.append((method, url, headers))
+            return 200, '{"session_id":"s1","recall_id":"r1"}'
+        adapter = HttpOrchestration("http://orchestration:8081", "internal", transport=transport)
+        loaded = adapter.load_session(session_id="s1", subject="user1")
+        self.assertEqual("GET", calls[0][0])
+        self.assertTrue(calls[0][1].endswith("/sessions/s1"))
+        self.assertEqual("user1", calls[0][2]["x-subject-reference"])
+        self.assertEqual("s1", loaded["session_id"])
+        self.assertEqual("r1", loaded["recall_id"])
+
     def test_request_escalation_posts_to_internal_support_escalation(self):
         from edge.bff.aea_bff.ports import EscalationResult
         calls = []

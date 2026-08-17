@@ -14,9 +14,20 @@ class FakeOrchestration:
     def __init__(self):
         self.messages = []
         self.intent = {"occasion": "birthday", "secret": "omit"}
+        self.known_sessions = {}
 
     def ensure_session(self, **kwargs):
         self.session = kwargs
+        self.known_sessions[kwargs["session_id"]] = kwargs
+
+    def load_session(self, **kwargs):
+        found = self.known_sessions.get(kwargs["session_id"])
+        if found is None:
+            return {"status": 404, "code": "session_not_found"}
+        payload = {"status": 200, "session_id": kwargs["session_id"]}
+        if found.get("recall_id"):
+            payload["recall_id"] = found["recall_id"]
+        return payload
 
     def accept_command(self, **kwargs):
         return CommandResult(True, "accepted")
@@ -245,6 +256,36 @@ class PerimeterTests(unittest.TestCase):
         minted_id = minted_recall.split(";", 1)[0].split("=", 1)[1]
         self.assertNotEqual("not-a-uuid", minted_id)
         self.assertEqual(minted_id, self.app.orchestration.session["recall_id"])
+
+    def test_correction_rebinds_cookie_to_orchestration_after_bff_memory_loss(self):
+        orchestration = FakeOrchestration()
+        auth = StaticTokenAuthenticator("good")
+        origin = "https://localhost:8443"
+        app_a = BffApp(orchestration, auth, allowed_origin=origin)
+        status, headers, body = asyncio.run(invoke(app_a, "POST", "/api/v1/session", self.auth))
+        self.assertEqual(201, status)
+        cookie = headers["set-cookie"].split(";", 1)[0]
+        csrf = json.loads(body)["csrf_token"]
+        self.assertNotIn("Max-Age", headers["set-cookie"])
+        mutating = {**self.auth, "cookie": cookie, "x-csrf-token": csrf,
+                    "content-type": "application/json"}
+        self.assertEqual(202, asyncio.run(invoke(
+            app_a, "POST", "/api/v1/conversation/messages", mutating,
+            json.dumps({"message_text": "hi", "observed_context_version": 0}).encode()))[0])
+
+        app_b = BffApp(orchestration, auth, allowed_origin=origin)
+        self.assertIsNone(app_b.sessions.get(cookie.split("=", 1)[1]))
+        status, _, body = asyncio.run(invoke(
+            app_b, "PATCH", "/api/v1/shared-understanding", mutating,
+            json.dumps({"corrections": {"recipient": "Mum"},
+                        "observed_context_version": 1}).encode()))
+        self.assertEqual(202, status)
+        self.assertTrue(json.loads(body)["accepted"])
+        reused = asyncio.run(invoke(app_b, "POST", "/api/v1/session",
+                                    {**self.auth, "cookie": cookie}))
+        self.assertEqual(201, reused[0])
+        self.assertEqual(csrf, json.loads(reused[2])["csrf_token"])
+        self.assertEqual(cookie, reused[1]["set-cookie"].split(";", 1)[0])
 
     def test_command_contract_and_least_data_projection(self):
         cookie, csrf = self.session()

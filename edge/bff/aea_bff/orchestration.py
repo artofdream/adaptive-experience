@@ -68,6 +68,10 @@ class HttpOrchestration:
         self._call("PUT", f"/internal/v1/sessions/{kwargs['session_id']}",
                    subject=kwargs["subject"], payload=payload)
 
+    def load_session(self, **kwargs):
+        return self._call("GET", f"/internal/v1/sessions/{kwargs['session_id']}",
+                          subject=kwargs["subject"])
+
     def conversation_projection(self, **kwargs):
         return self._call("GET", f"/internal/v1/sessions/{kwargs['session_id']}/conversation",
                           subject=kwargs["subject"])
