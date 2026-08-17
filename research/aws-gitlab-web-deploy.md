@@ -64,7 +64,7 @@ ADR-012 production proof.
 - [ ] GitLab runners with Docker-in-Docker (needed when CI jobs land)
 - [x] Pilot access: open to everyone (`pilot_ingress_cidrs = ["0.0.0.0/0"]`)
 - [x] Secrets strategy: AWS Secrets Manager (Terraform `app` secret)
-- [ ] Operator: `AEA_AI_ENDPOINT`, `AEA_AI_API_KEY`, `AEA_AI_MODEL` in Secrets Manager (LiteLLM / OpenAI-compatible URL). Not in git. Not injected by this recover MR.
+- [x] Operator: `AEA_AI_ENDPOINT`, `AEA_AI_API_KEY`, `AEA_AI_MODEL` in Secrets Manager (LiteLLM OpenAI-compatible URL + proxy bearer). Not in git. Injected into orchestration together (#208).
 
 ### Phase 1 — GitLab builds images → ECR (cloud-only)
 
