@@ -74,6 +74,14 @@ class BrowserUiTests(unittest.TestCase):
         self.assertIn("overflow-wrap: anywhere", self.css)
         self.assertIn("width: 100%", self.css)
         self.assertIn('name="viewport"', self.html)
+        self.assertIn("viewport-fit=cover", self.html)
+        self.assertIn("overflow-x: clip", self.css)
+        self.assertIn("env(safe-area-inset-bottom", self.css)
+        self.assertIn("width: min(calc(100% - 2rem), 1440px)", self.css)
+        self.assertIn('class="help-button"', self.html)
+        self.assertIn('class="aso"', self.html)
+        # Duplicate ASO FAB is hidden on narrow viewports; header Help remains.
+        self.assertIn(".aso { display: none; }", self.css)
 
     def test_platform_preferences_remain_usable(self):
         self.assertIn("prefers-reduced-motion: reduce", self.css)
