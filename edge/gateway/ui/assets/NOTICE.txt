@@ -1,0 +1,59 @@
+Lily's Florist — T-03 / T-04 product photo credits
+====================================================
+
+These stills are vendored into /assets/ for Path A (https://localhost:8443)
+and Path B (https://aea.artof.link/). Do not hotlink the sources.
+
+Photos are category likenesses of the FR-007 ranking SKU flower type. They
+are not photographs of this shop's cooler and do not mean stock is available.
+
+CC BY-SA (and CC BY) apply to the named photos only, not the rest of this
+repository.
+
+SKU map (product_id → species/category → vendored file)
+-------------------------------------------------------
+
+classic-rose-dozen
+  Category: roses (dozen / spray likeness)
+  File: sku-classic-rose-dozen.jpg
+  Title: Red Roses bouquet spray
+  Photographer: Nancy Wong
+  Licence: CC BY-SA 4.0
+  Licence URL: https://creativecommons.org/licenses/by-sa/4.0/
+  Source: https://commons.wikimedia.org/wiki/File:Red_Roses_bouquet_spray.jpg
+
+lilac-bouquet
+  Category: lilac (Syringa vulgaris)
+  File: sku-lilac-bouquet.jpg
+  Title: Lilac bouquet 2017 G1
+  Photographer: George Chernilevsky
+  Licence: Public domain (PD-self)
+  Source: https://commons.wikimedia.org/wiki/File:Lilac_bouquet_2017_G1.jpg
+
+budget-mixed-bunch
+  Category: mixed bunch (mixed / carnations likeness)
+  File: sku-budget-mixed-bunch.jpg
+  Title: COLORFUL SPRING BOUQUET
+  Photographer: BEST Bud's for Life
+  Licence: CC BY-SA 4.0
+  Licence URL: https://creativecommons.org/licenses/by-sa/4.0/
+  Source: https://commons.wikimedia.org/wiki/File:COLORFUL_SPRING_BOUQUET.jpg
+
+pink-flower-vase
+  Category: pink flowers in a vase (roses / mixed likeness)
+  File: sku-pink-flower-vase.jpg
+  Title: Rose flowers vase by FnP
+  Photographer: Soumendra Kumar Sahoo
+  Licence: CC BY-SA 4.0
+  Licence URL: https://creativecommons.org/licenses/by-sa/4.0/
+  Source: https://commons.wikimedia.org/wiki/File:Rose_flowers_vase_by_FnP.jpg
+
+premium-orchid
+  Category: orchid (Phalaenopsis)
+  File: sku-premium-orchid.jpg
+  Title: Phalaenopsis Maki Watanabe at the Pacific Orchid Exposition 2010
+  Photographer: Guillaume Paumier
+  Credit: Guillaume Paumier, CC-BY (https://guillaumepaumier.com)
+  Licence: CC BY-SA 3.0
+  Licence URL: https://creativecommons.org/licenses/by-sa/3.0/
+  Source: https://commons.wikimedia.org/wiki/File:Phalaenopsis_Maki_Watanabe_at_the_Pacific_Orchid_Exposition_2010.jpg
