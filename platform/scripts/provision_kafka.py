@@ -5,6 +5,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from aea_platform.kafka_config import kafka_security_config
 from aea_platform.policy import KafkaPolicy
 
 
@@ -34,16 +35,7 @@ def replication_from_env(defaults: dict, environ: dict | None = None) -> int:
 def admin_client_config(environ: dict | None = None) -> dict:
     env = os.environ if environ is None else environ
     conf = {"bootstrap.servers": env.get("AEA_KAFKA_BOOTSTRAP", "localhost:9092")}
-    security = env.get("AEA_KAFKA_SECURITY")
-    if security:
-        conf["security.protocol"] = security
-        conf["sasl.mechanism"] = env.get("AEA_KAFKA_SASL_MECHANISM", "SCRAM-SHA-512")
-        username = env.get("AEA_KAFKA_SASL_USERNAME")
-        password = env.get("AEA_KAFKA_SASL_PASSWORD")
-        if username:
-            conf["sasl.username"] = username
-        if password:
-            conf["sasl.password"] = password
+    conf.update(kafka_security_config(env))
     return conf
 
 

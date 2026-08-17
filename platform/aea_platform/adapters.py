@@ -4,6 +4,7 @@ import json
 from copy import deepcopy
 from datetime import datetime, timedelta, timezone
 
+from .kafka_config import kafka_producer_config
 from .outbox import OutboxRecord
 from .policy import KafkaPolicy
 from .state import StatePatch
@@ -922,15 +923,10 @@ class PsycopgAuditReader:
 
 
 class KafkaAcknowledgedPublisher:
-    def __init__(self, bootstrap_servers: str, client_id: str):
+    def __init__(self, bootstrap_servers: str, client_id: str, environ=None):
         from confluent_kafka import Producer
-        self.producer = Producer({
-            "bootstrap.servers": bootstrap_servers,
-            "client.id": client_id,
-            "acks": "all",
-            "enable.idempotence": True,
-            "max.in.flight.requests.per.connection": 5,
-        })
+        self.producer = Producer(
+            kafka_producer_config(bootstrap_servers, client_id, environ))
 
     def publish(self, topic: str, key: str, message: dict) -> None:
         result: dict = {}
