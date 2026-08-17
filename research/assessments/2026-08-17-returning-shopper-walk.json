@@ -1,0 +1,226 @@
+{
+  "url": "https://localhost:8443/",
+  "path": "A",
+  "scenario": "returning-shopper",
+  "payment_included": true,
+  "issue": "#195",
+  "related": [
+    "#27",
+    "#190",
+    "#193"
+  ],
+  "nfr_007_012_proof": false,
+  "steps": [
+    {
+      "tile": "T-01 Enter / Discovery",
+      "expected": "Welcome + composer; no login; customer can type freely",
+      "actual": "Assistant: 'Hello! What occasion are you shopping for today?'. Composer visible.",
+      "result": "pass"
+    },
+    {
+      "tile": "T-01 thought completion",
+      "expected": "Partial thought; chips optional; typing always allowed",
+      "actual": "Notice: 'Thanks \u2014 your message is in the conversation. Review Shared Understanding and correct anything that looks wrong.'. Chips: ['for Mom', 'for a birthday', 'under $75'].",
+      "result": "pass"
+    },
+    {
+      "tile": "T-01 Send + T-02 Shared Understanding",
+      "expected": "Occasion / recipient / budget appear; Review and correct exists",
+      "actual": "Intent: 'T-02 \u00b7 PERSISTENT\\n\\nIntent Summary (Shared Understanding)\\nOccasion\\nbirthday Edit\\nBudget\\n75 Edit\\nRecipient\\nmother Edit\\n\\nNothing is final until you review the order.\\n\\nReview and correct'. Review: True. csrf=False. dump=''",
+      "result": "pass"
+    },
+    {
+      "tile": "T-03 Curated Recommendations",
+      "expected": "Validated options; Path A Available+Select; Path B unknown Select is xfail",
+      "actual": "Cards (2): ['Budget Mixed Bunch |  | $35.00 |  | Available | Select', 'Classic Rose Dozen |  | $70.00 |  | Available | Select']. at least one Select enabled",
+      "result": "pass"
+    },
+    {
+      "tile": "T-04 Select + customize",
+      "expected": "Select arrangement; size; physical card message; optional colour/ribbon",
+      "actual": "Arrangement='Budget Mixed Bunch'",
+      "result": "pass"
+    },
+    {
+      "tile": "T-05 Delivery",
+      "expected": "Date + named window; confirm saved destination reference (not a street address)",
+      "actual": "Date 2026-08-24, dest 'home', street_fields=0, banner='Delivery details confirmed for this session.' error=''",
+      "result": "pass"
+    },
+    {
+      "tile": "T-06 Order Summary",
+      "expected": "Itemized charges update after selection and delivery",
+      "actual": "Summary: 'T-06 \u00b7 STEPS 5\u20136\\n\\nOrder Summary\\n\\nproduct\\n$35.00\\n\\ncustomization\\n$0.00\\n\\ndelivery\\n$12.00\\n\\ntax\\n$0.00\\n\\ndiscount\\n$0.00\\n\\nTotal $47.00'",
+      "result": "pass"
+    },
+    {
+      "tile": "T-07 Checkout",
+      "expected": "Confirm session payment reference; ack; Create order. No PAN fields.",
+      "actual": "status=202 body={'accepted': True, 'pending': True, 'confirmed': False, 'code': 'accepted', 'order_id': '3ef207a0-dea0-47d0-bfd3-9b4588c51c0e', 'status': 'submitted', 'decline_code': None, 'correlation_id': 'd7d05526-af11-4900-87ba-d69a2744eddb'}",
+      "result": "pass"
+    },
+    {
+      "tile": "M8 same-session recall",
+      "expected": "Ordered earlier in this session on T-03 after accepted order",
+      "actual": "Ordered earlier in this session visible on T-03. cards=['Budget Mixed Bunch |  | $35.00 |  | Available |  | Ordered earlier in this session |  | Select', 'Classic Rose Dozen |  | $70.00 |  | Available | Select']",
+      "result": "pass"
+    },
+    {
+      "tile": "M8 reorder",
+      "expected": "Select recalled product; confirm destination reference (ADR-013)",
+      "actual": "selected recalled product and confirmed destination reference",
+      "result": "pass"
+    },
+    {
+      "tile": "ASO Help",
+      "expected": "Help available without leaving the workspace; labeled as not a person",
+      "actual": "Help: 'How it works\\n\\nAutomated answers from approved shop information. This is not a person.\\n\\nDescribe what you need in your own words.\\nCheck and correct what the assistant understood.\\nChoose flowers, delivery, and review before paying.\\nAsk from a'. Answer: 'From this session: Delivery is scheduled for 2026-08-24 (morning) to destination home.'",
+      "result": "pass"
+    },
+    {
+      "tile": "M8 durable recall",
+      "expected": "Prior order offered in a new browser without login (#193)",
+      "actual": "durable prior-order recall is not implemented until #193",
+      "result": "blocked"
+    }
+  ],
+  "api": {
+    "suggestions": [],
+    "csrf_rejected": false,
+    "posts": [
+      {
+        "url": "/api/v1/session",
+        "status": 201,
+        "method": "POST",
+        "error": null
+      },
+      {
+        "url": "/api/v1/session",
+        "status": 201,
+        "method": "POST",
+        "error": null,
+        "code": null,
+        "accepted": null,
+        "order_id": null,
+        "confirmed": null,
+        "order_status": null
+      },
+      {
+        "url": "/api/v1/conversation/messages",
+        "status": 202,
+        "method": "POST",
+        "error": null,
+        "code": "accepted",
+        "accepted": true,
+        "order_id": null,
+        "confirmed": null,
+        "order_status": null
+      },
+      {
+        "url": "/api/v1/conversation/messages",
+        "status": 202,
+        "method": "POST",
+        "error": null,
+        "code": "accepted",
+        "accepted": true,
+        "order_id": null,
+        "confirmed": null,
+        "order_status": null
+      },
+      {
+        "url": "/api/v1/selection",
+        "status": 202,
+        "method": "POST",
+        "error": null,
+        "code": "accepted",
+        "accepted": true,
+        "order_id": null,
+        "confirmed": null,
+        "order_status": null
+      },
+      {
+        "url": "/api/v1/selection",
+        "status": 202,
+        "method": "POST",
+        "error": null,
+        "code": "accepted",
+        "accepted": true,
+        "order_id": null,
+        "confirmed": null,
+        "order_status": null
+      },
+      {
+        "url": "/api/v1/delivery",
+        "status": 202,
+        "method": "POST",
+        "error": null,
+        "code": "accepted",
+        "accepted": true,
+        "order_id": null,
+        "confirmed": null,
+        "order_status": null
+      },
+      {
+        "url": "/api/v1/checkout",
+        "status": 202,
+        "method": "POST",
+        "error": null,
+        "code": "accepted",
+        "accepted": true,
+        "order_id": "3ef207a0-dea0-47d0-bfd3-9b4588c51c0e",
+        "confirmed": false,
+        "order_status": "submitted"
+      },
+      {
+        "url": "/api/v1/selection",
+        "status": 202,
+        "method": "POST",
+        "error": null,
+        "code": "accepted",
+        "accepted": true,
+        "order_id": null,
+        "confirmed": null,
+        "order_status": null
+      },
+      {
+        "url": "/api/v1/delivery",
+        "status": 202,
+        "method": "POST",
+        "error": null,
+        "code": "accepted",
+        "accepted": true,
+        "order_id": null,
+        "confirmed": null,
+        "order_status": null
+      },
+      {
+        "url": "/api/v1/support",
+        "status": 200,
+        "method": "POST",
+        "error": null,
+        "code": "answered",
+        "accepted": null,
+        "order_id": null,
+        "confirmed": null,
+        "order_status": null
+      }
+    ],
+    "errors": [],
+    "last_workspace": {
+      "context_version": 9,
+      "rec_count": 2,
+      "prior_order_hints": [
+        "budget-mixed-bunch"
+      ],
+      "order": {
+        "order_id": "3ef207a0-dea0-47d0-bfd3-9b4588c51c0e",
+        "status": "submitted",
+        "authoritative_status": "submitted",
+        "delayed": false
+      }
+    }
+  },
+  "notes": [],
+  "florist_opened": false,
+  "browser": "playwright channel=msedge"
+}

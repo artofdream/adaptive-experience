@@ -103,9 +103,27 @@ If Send or Confirm Delivery shows
 - Record as blocker; mention possible `!165` regression.
 - Do not change BFF/cookie code unless the user asked this skill to fix it.
 
+## Returning shopper (M8 / #195)
+
+Operate from `implementations/florist/journeys/returning-shopper-journey.md`.
+Walker: `python scripts/walk_returning_shopper.py` (add `--payment` to observe
+the same-session T-03 hint after an accepted order).
+
+| Step | Tile | Expected | Result notes |
+|---|---|---|---|
+| 1–7 | T-01…T-06 | First order follows mother-birthday | Path A Compose is the full path |
+| 8 | T-07 | Optional; session payment reference only | Needed for same-session hint |
+| 9 | T-03 hint | `Ordered earlier in this session` | Thin FR-008 (#190); blocked if pay skipped |
+| 10 | Durable recall | Prior order in a **new** browser, no login | **blocked** until #193 — not a product fail |
+| 11 | Reorder | Select recalled SKU; confirm destination **reference** (ADR-013) | blocked if recall is blocked |
+| — | Path B Select | `https://aea.artof.link/` unknown availability | **xfail / skip** Select; do not invent a seeder |
+
+Do not treat Path A Compose as NFR-007 / NFR-012 proof. Do not open `/florist`.
+
 ## Environment notes
 
 - URL: `https://localhost:8443` — ephemeral self-signed cert.
 - Inventory seeder runs with edge Compose so T-03 Select can succeed locally.
   Unknown/disabled Select on every card after a healthy boot may be a **fail**
   (availability), not a reason to edit seeders during an assessment-only run.
+  On Path B the same disabled Select is **xfail**, not fail.
