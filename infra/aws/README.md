@@ -36,7 +36,7 @@ fail-closed auth.
 - MSK Kafka **3.9.x** with TLS + SASL/SCRAM, **2 brokers / RF=2 / MinISR=1** (pilot; AWS Health 3.6.0 EOL — upgrade before 8 Sep 2026; MinISR = RF-1)
 - Secrets Manager app secret (`AEA_*` including Kafka SASL)
 - GitLab OIDC IAM role for CI push/deploy (main branch only)
-- ECS services: gateway, bff, orchestration, relay, consumer-workspace, litellm (private; no ALB)
+- ECS services: gateway, bff, orchestration, relay, consumer-workspace, litellm, lily-reference-live-test (private; no ALB)
 
 Do not commit `terraform.tfvars`, `.env`, vault credentials, or `AEA_AI_API_KEY`.
 `.gitignore` already excludes `*.tfvars` (exception: `*.tfvars.example`).
@@ -115,7 +115,8 @@ Gateway task defs set `AEA_GATEWAY_MODE=alb`. The gateway image uses
 
 ## Fail-closed flags
 
-- `AEA_ENVIRONMENT=production` on orchestration, BFF, relay, and consumer
+- `AEA_ENVIRONMENT=production` on orchestration, BFF, relay, consumer, and
+  `lily-reference-live-test`
 - Do **not** set `AEA_SEED_INVENTORY` (production seeder raises)
 - Florist operator: generic production 404s even if `AEA_FLORIST_OPERATOR=1`.
   Named **aea-pilot** exception only: when Terraform `local.prefix` is
@@ -124,8 +125,11 @@ Gateway task defs set `AEA_GATEWAY_MODE=alb`. The gateway image uses
   those vars. Inbox is least-data reads; it does not seed inventory or
   enable T-03 Select. Do not open `/florist` beside the customer shop
   (CSRF class !165 / #171).
-- Prefer a live-test inventory feed into `inventory.product_availability`;
-  do not invent a warehouse in this stack
+- Named live-test feed: ECS service `lily-reference-live-test`
+  (`AEA_INVENTORY_FEED=lily-reference-live-test`, 30s loop) writes the five
+  Lily `REFERENCE_CATALOG` SKUs into `inventory.product_availability` via
+  `InventoryAvailabilityService.record()`. That is not a warehouse and not
+  the Compose seeder.
 
 ## Soft launch
 

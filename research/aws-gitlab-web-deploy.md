@@ -86,7 +86,9 @@ ADR-012 production proof.
 - [x] Documented in `infra/aws/BOOTSTRAP.md`
 - [ ] Operator: migrations + `provision_kafka.py` + ACL apply
 - [ ] Confirm relay/consumers drain outbox
-- [ ] Live-test inventory feed (not `AEA_SEED_INVENTORY`)
+- [x] Live-test inventory feed (not `AEA_SEED_INVENTORY`): named
+      `lily-reference-live-test` heartbeat (#210). Merge then apply the ECS
+      service. In-VPC RunTask of the same writer is allowed after the MR exists.
 
 ### Phase 4 — GitLab deploy
 

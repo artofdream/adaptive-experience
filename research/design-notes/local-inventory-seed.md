@@ -20,6 +20,14 @@ one-shot INSERT at boot is not enough: the freshness window is one minute.
 This seeder does **not** replace inventory authority and must not run when
 `AEA_ENVIRONMENT=production`.
 
+Path B (`aea-pilot`) uses a **different** named feed,
+[`lily-reference-live-test`](https://gitlab.com/artof-group/adaptive-experience-architecture/-/issues/210):
+`AEA_INVENTORY_FEED=lily-reference-live-test`, never `AEA_SEED_INVENTORY`,
+never a bypass of `assert_local_seed_allowed`. It writes the same five
+FR-007 ranking SKUs through `InventoryAvailabilityService.record()` and
+refreshes every 30 seconds so T-03 Select can enable inside the one-minute
+freshness window. That feed is not a warehouse and not florist `/florist`.
+
 ## Our World in Data is not a florist catalog
 
 [Our World in Data](https://ourworldindata.org/) publishes global development,

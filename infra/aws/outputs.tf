@@ -46,12 +46,13 @@ output "msk_bootstrap_sasl_scram" {
 
 output "service_names" {
   value = {
-    gateway       = aws_ecs_service.gateway.name
-    bff           = aws_ecs_service.bff.name
-    orchestration = aws_ecs_service.orchestration.name
-    relay         = aws_ecs_service.relay.name
-    consumer      = aws_ecs_service.consumer_workspace.name
-    litellm       = aws_ecs_service.litellm.name
+    gateway                  = aws_ecs_service.gateway.name
+    bff                      = aws_ecs_service.bff.name
+    orchestration            = aws_ecs_service.orchestration.name
+    relay                    = aws_ecs_service.relay.name
+    consumer                 = aws_ecs_service.consumer_workspace.name
+    litellm                  = aws_ecs_service.litellm.name
+    lily_reference_live_test = aws_ecs_service.lily_reference_live_test.name
   }
 }
 

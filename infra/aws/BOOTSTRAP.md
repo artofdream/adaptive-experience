@@ -25,9 +25,15 @@ export AEA_KAFKA_REPLICATION_PROFILE=pilot
 Or run the orchestration image with those secrets injected (same as the relay task).
 
 Do **not** export `AEA_SEED_INVENTORY=1`. Production fail-closed forbids the
-local seeder. Inventory for a live test must come from an operator feed into
-`inventory.product_availability` (POS/export or curated fixture load), not
-this Terraform.
+local Compose seeder (`assert_local_seed_allowed`). The SM-authorized Path B
+feed is the named heartbeat **`lily-reference-live-test`**: ECS service
+`lily-reference-live-test` loops every 30s and writes the five
+`REFERENCE_CATALOG` SKUs through `InventoryAvailabilityService.record()`.
+Gate is `AEA_INVENTORY_FEED=lily-reference-live-test`. EventBridge
+`rate(1 minute)` is too tight for the one-minute freshness window, so this
+is a long-running task, not a scheduled one-shot. Prefer merge-then-apply
+for that service. A one-off in-VPC RunTask of the same named writer is
+allowed after the issue/MR exists.
 
 Live intent: merge `ANTHROPIC_API_KEY`, `LITELLM_MASTER_KEY`,
 `AEA_AI_ENDPOINT`, `AEA_AI_API_KEY`, and `AEA_AI_MODEL` into `${prefix}/app`
@@ -91,3 +97,18 @@ secrets are injected there). Worker task defs set
 `AEA_KAFKA_REPLICATION_PROFILE=pilot` so new topics get RF=2 MinISR=1, not
 production RF=3. Prefer a documented runbook ticket when changing production
 schema.
+
+Named live-test inventory (after the `lily-reference-live-test` image tag
+includes `platform/scripts/lily_reference_live_test.py`):
+
+```bash
+aws ecs run-task \
+  --cluster "$AEA_ECS_CLUSTER" \
+  --launch-type FARGATE \
+  --task-definition "${AEA_ECS_CLUSTER}-lily-reference-live-test" \
+  --network-configuration "awsvpcConfiguration={subnets=[subnet-xxx,subnet-yyy],securityGroups=[sg-orch],assignPublicIp=DISABLED}"
+```
+
+Or override the orchestration family with `AEA_INVENTORY_FEED=lily-reference-live-test`
+and `python platform/scripts/lily_reference_live_test.py --loop`. Do not set
+`AEA_SEED_INVENTORY`. Keep `AEA_ENVIRONMENT=production`.
