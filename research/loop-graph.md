@@ -58,7 +58,7 @@ flowchart TD
 
     TRACE["check_traceability.py<br/>(FR/NFR -> issue -> milestone -> closure, advisory)"]
     EVIDENCE["check_requirement_evidence.py<br/>(FR/NFR -> ADR + code/test citations, advisory)"]
-    DOCKER["docker-integration-before-mr.mdc<br/>(attested in MR; zero CI coverage for edge)"]
+    DOCKER["docker-integration-before-mr.mdc<br/>(local attestation + Edge CI evidence)"]
     MRC["aea-mr-coordinator<br/>(merge gate)"]
     MAIN[("main<br/>(protected)")]
     ROADMAP[("roadmap.md / requirements.md")]
@@ -70,7 +70,7 @@ flowchart TD
     PC -. advisory only .-> MRC
     PU -- constrain --> MRC
     LINT -. advisory only .-> MRC
-    DOCKER -. manual attestation .-> MRC
+    DOCKER -- "Edge CI constrains" --> MRC
     ROADMAP -- feed --> TRACE
     ISSUES -- feed --> TRACE
     TRACE -. advisory only .-> MRC
@@ -167,12 +167,12 @@ flowchart TD
 | `generate_codex_stakeholder_skills.py --check` | guard | CI, on skill-file changes + every MR/main | script | automated |
 | `check_daily_brief_freshness.py` | guard | CI, schedule only (04:00 UTC) | `aea-coherence-guardian` | automated |
 | `generate_daily_brief.py` | producer | CI, schedule only (04:00 UTC) | `aea-coherence-guardian` | automated, **unverified end-to-end** |
-| `platform-foundation-unit` / `edge-perimeter-unit` / `platform-foundation-integration` | guard | CI, on `platform/`/`edge/` changes | script | automated |
+| `platform-foundation-unit` / `edge-perimeter-unit` / `platform-foundation-integration` / `edge-docker-integration` | guard | CI, on relevant `platform/`/`edge/` changes | script | automated |
 | `check_traceability.py` | guard | CI, on `requirements.md`/`roadmap.md`/self changes + every MR/main | `aea-senior-software-engineer` | automated, advisory (see gap 1) |
 | `check_process_coherence.py` | guard | every MR/main + scheduled daily-brief evidence | `aea-project-manager` | automated, advisory; semantic focus remains manual |
 | `check_requirement_evidence.py` | guard | CI, on requirements/ADR/platform/edge/evidence changes + every MR/main | `aea-senior-software-engineer` | automated, advisory citation evidence |
 | `markdownlint` / `linkcheck` | guard | CI, on `.md` changes, MR only | script | automated, advisory only |
-| `docker-integration-before-mr.mdc` | guard | manual, attested per-MR | every specialist role | **manual for edge** (no CI job runs `edge/scripts/run_integration_tests.py`); **partially automated for platform** (`platform-foundation-integration` runs equivalent Postgres+Kafka coverage via CI `services:`, not the literal script) |
+| `docker-integration-before-mr.mdc` | guard | local attestation per MR; Edge runner repeated in CI | every specialist role / `aea-devsecops-platform` | **automated for edge** by `edge-docker-integration`; **partially automated for platform** (`platform-foundation-integration` runs equivalent Postgres+Kafka coverage via CI `services:`, not the literal script) |
 | `research/coherence-findings-loop.md` | remediation cycle | on-demand / `aea-coherence-guardian` invocation | `aea-coherence-guardian` | manual trigger, disciplined procedure |
 | `aea-project-manager` | role loop | on-demand / cadence (08:00/12:00/16:00/20:00, **no automated trigger**) | human or AI session acting as PM | manual trigger |
 | `aea-product-owner` | role loop | on-demand | human or AI session | manual trigger |
@@ -217,13 +217,14 @@ recurring blind spot outranks an expensive fix for a rare one.
    platform, edge, or infra paths change. It runs advisory in CI and in the
    scheduled daily brief. Semantic focus, justified exceptions, and whether
    evidence is substantively adequate remain PM-SM review responsibilities.
-3. **`docker-integration-before-mr.mdc` is attested, not verified —
-   confirmed precisely.** No CI job invokes `edge/scripts/run_integration_tests.py`
-   or `platform/scripts/run_integration_tests.py` at all; `aea-mr-coordinator`
-   trusts the MR description's claim. `platform-foundation-integration`
-   gives *equivalent* platform coverage (real Postgres+Kafka via CI
-   `services:`), narrowing the gap to edge specifically, which has zero
-   automated Docker-integration coverage.
+3. **Edge Docker integration evidence — closed by #228.**
+   `edge-docker-integration` invokes `edge/scripts/run_integration_tests.py`
+   against the repository Compose stack in GitLab Docker-in-Docker. It checks
+   gateway/BFF/orchestration health, the customer path, and the assistant SLO,
+   then cleans up Compose resources. The local SOP remains required before an
+   MR; CI now independently constrains Edge-impacting merges. Platform remains
+   equivalent rather than literal runner coverage through
+   `platform-foundation-integration` (real PostgreSQL and Kafka services).
 4. **`session-start-briefing.mdc` compliance is unverifiable
    mechanically.** No loop watches whether a session actually read the
    brief before acting — this is inherent to the mechanism (you can't

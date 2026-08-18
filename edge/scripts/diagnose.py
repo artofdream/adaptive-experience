@@ -1,7 +1,25 @@
 import json
+import os
 import ssl
 import urllib.error
 import urllib.request
+import urllib.parse
+
+
+DEFAULT_BASE_URL = "https://localhost:8443"
+
+
+def configured_endpoints(environ=None):
+    environ = os.environ if environ is None else environ
+    base_url = environ.get("AEA_EDGE_BASE_URL", DEFAULT_BASE_URL).rstrip("/")
+    origin = environ.get("AEA_EDGE_ORIGIN", DEFAULT_BASE_URL).rstrip("/")
+    for name, value in (("AEA_EDGE_BASE_URL", base_url), ("AEA_EDGE_ORIGIN", origin)):
+        parsed = urllib.parse.urlsplit(value)
+        if (parsed.scheme != "https" or not parsed.hostname or parsed.username
+                or parsed.password or parsed.query or parsed.fragment
+                or parsed.path not in ("", "/")):
+            raise ValueError(f"{name} must be an HTTPS origin without credentials or a path")
+    return base_url, origin
 
 
 def disclosure_is_honest(payload):
@@ -18,8 +36,9 @@ def disclosure_is_honest(payload):
     return False
 
 
+base_url, origin = configured_endpoints()
 context = ssl._create_unverified_context()
-with urllib.request.urlopen("https://localhost:8443/", context=context, timeout=5) as response:
+with urllib.request.urlopen(f"{base_url}/", context=context, timeout=5) as response:
     page = response.read().decode()
     if (response.status != 200 or 'id="message-form"' not in page
             or 'id="understanding-title"' not in page
@@ -33,7 +52,7 @@ with urllib.request.urlopen("https://localhost:8443/", context=context, timeout=
         raise SystemExit("guided browser interface is unavailable")
 print("guided browser interface is available")
 
-with urllib.request.urlopen("https://localhost:8443/healthz", context=context, timeout=5) as response:
+with urllib.request.urlopen(f"{base_url}/healthz", context=context, timeout=5) as response:
     payload = json.load(response)
     if response.status != 200 or payload != {"status": "ok"}:
         raise SystemExit("edge health check returned an unexpected response")
@@ -41,10 +60,10 @@ print("edge gateway and BFF are healthy")
 
 base_headers = {
     "Authorization": "Bearer local-browser-token",
-    "Origin": "https://localhost:8443",
+    "Origin": origin,
 }
 session_request = urllib.request.Request(
-    "https://localhost:8443/api/v1/session", method="POST", headers=base_headers)
+    f"{base_url}/api/v1/session", method="POST", headers=base_headers)
 with urllib.request.urlopen(session_request, context=context, timeout=5) as response:
     session = json.load(response)
     cookie = response.headers["Set-Cookie"].split(";", 1)[0]
@@ -52,7 +71,7 @@ with urllib.request.urlopen(session_request, context=context, timeout=5) as resp
         raise SystemExit("browser session did not reach orchestration")
 
 reuse_request = urllib.request.Request(
-    "https://localhost:8443/api/v1/session", method="POST",
+    f"{base_url}/api/v1/session", method="POST",
     headers={**base_headers, "Cookie": cookie})
 with urllib.request.urlopen(reuse_request, context=context, timeout=5) as response:
     reused = json.load(response)
@@ -61,7 +80,7 @@ with urllib.request.urlopen(reuse_request, context=context, timeout=5) as respon
 print("session reuse preserves CSRF across a second boot")
 
 projection_request = urllib.request.Request(
-    "https://localhost:8443/api/v1/shared-understanding",
+    f"{base_url}/api/v1/shared-understanding",
     headers={**base_headers, "Cookie": cookie})
 with urllib.request.urlopen(projection_request, context=context, timeout=5) as response:
     projection = json.load(response)
@@ -73,7 +92,7 @@ with urllib.request.urlopen(projection_request, context=context, timeout=5) as r
 print("authenticated Edge-to-Orchestration Shared Understanding path is healthy")
 
 message_request = urllib.request.Request(
-    "https://localhost:8443/api/v1/conversation/messages", method="POST",
+    f"{base_url}/api/v1/conversation/messages", method="POST",
     data=json.dumps({"message_text": "birthday roses",
                      "observed_context_version": 0}).encode(),
     headers={**base_headers, "Cookie": cookie, "X-CSRF-Token": session["csrf_token"],
@@ -93,7 +112,7 @@ with urllib.request.urlopen(projection_request, context=context, timeout=5) as r
 print("24/7 assistant analysis and fallback path is healthy")
 
 workspace_request = urllib.request.Request(
-    "https://localhost:8443/api/v1/workspace",
+    f"{base_url}/api/v1/workspace",
     headers={**base_headers, "Cookie": cookie})
 with urllib.request.urlopen(workspace_request, context=context, timeout=5) as response:
     workspace = json.load(response)
@@ -107,7 +126,7 @@ with urllib.request.urlopen(workspace_request, context=context, timeout=5) as re
 print("T-01 thought-completion suggestions match Shared Understanding API")
 
 selection_request = urllib.request.Request(
-    "https://localhost:8443/api/v1/selection", method="POST",
+    f"{base_url}/api/v1/selection", method="POST",
     data=json.dumps({"product_id": available["product_id"],
                      "observed_context_version": workspace["context_version"]}).encode(),
     headers={**base_headers, "Cookie": cookie, "X-CSRF-Token": session["csrf_token"],
