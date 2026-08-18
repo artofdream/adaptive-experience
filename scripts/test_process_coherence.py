@@ -1,6 +1,6 @@
 import unittest
 
-from check_process_coherence import evaluate
+from check_process_coherence import changed_paths, evaluate
 
 
 class ProcessCoherenceTests(unittest.TestCase):
@@ -43,6 +43,19 @@ class ProcessCoherenceTests(unittest.TestCase):
     def test_unknown_exception_fails(self):
         mr = self.mr("Process-Exception: skip-all\n\nValidation: none")
         self.assertTrue(any("unknown" in finding for finding in evaluate(mr, [])))
+
+    def test_deleted_code_path_still_requires_integration_evidence(self):
+        mr = self.mr("Closes #10\n\nValidation: unit tests")
+        mr["changes"] = [{"old_path": "platform/removed.py", "new_path": "platform/removed.py"}]
+        findings = evaluate(mr, changed_paths(mr))
+        self.assertTrue(any("integration" in finding for finding in findings))
+
+    def test_rename_out_of_code_path_still_requires_integration_evidence(self):
+        mr = self.mr("Closes #10\n\nValidation: docs")
+        mr["changes"] = [{"old_path": "edge/legacy.py", "new_path": "docs/legacy.md"}]
+        self.assertIn("edge/legacy.py", changed_paths(mr))
+        findings = evaluate(mr, changed_paths(mr))
+        self.assertTrue(any("integration" in finding for finding in findings))
 
 
 if __name__ == "__main__":

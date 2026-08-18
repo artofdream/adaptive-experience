@@ -40,9 +40,16 @@ def gitlab_api(path: str, params: dict | None = None) -> object:
 
 def changed_paths(mr: dict) -> list[str]:
     if "changes" in mr:
-        return [change.get("new_path", "") for change in mr["changes"]]
-    details = gitlab_api(f"merge_requests/{mr['iid']}/changes")
-    return [change.get("new_path", "") for change in details.get("changes", [])]
+        changes = mr["changes"]
+    else:
+        details = gitlab_api(f"merge_requests/{mr['iid']}/changes")
+        changes = details.get("changes", [])
+    return sorted({
+        path
+        for change in changes
+        for path in (change.get("old_path", ""), change.get("new_path", ""))
+        if path
+    })
 
 
 def evaluate(mr: dict, paths: list[str]) -> list[str]:
