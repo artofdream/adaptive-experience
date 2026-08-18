@@ -27,6 +27,11 @@ GitLab: `artof-group/adaptive-experience-architecture` (`glab`, not `gh`).
 
 This skill **does not merge**. Only `@aea-mr-coordinator` may set auto-merge.
 
+The activity/status brief this role writes to `research/daily-briefs/` is
+not just a report — every new session, in any tool, is required to read the
+latest one before acting (`.cursor/rules/session-start-briefing.mdc`). Keep
+it genuinely current; a stale brief undermines that SOP for every tool.
+
 ## Why this role exists
 
 `research/coherence-findings-loop.md` has processed 47+ findings

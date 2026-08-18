@@ -5,6 +5,14 @@ Lily's Florist as the reference design. Canonical requirements and design live
 under `docs/` and `implementations/`; product-neutral runtime foundations live
 under `platform/` and `edge/`.
 
+## Session start
+
+Before acting, read the most recent `research/daily-briefs/*.md` (sort by
+filename date) if one exists — it's the fastest way to pick up state from
+other tools/sessions working this repo concurrently. If it's more than a day
+or two old, say so; don't treat it as current. Full SOP:
+`.cursor/rules/session-start-briefing.mdc`.
+
 ## Source of truth
 
 - Requirements counts and mapping: `archive/Quantic_Project_Consolidated_Coherence_Validated.xlsx`

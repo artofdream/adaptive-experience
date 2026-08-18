@@ -1,4 +1,4 @@
-# Claude — Adaptive Experience Architecture
+# Codex — Adaptive Experience Architecture
 
 Architecture and executable reference-foundation repository for AEA, with
 Lily's Florist as the reference design. Canonical requirements and design live
@@ -23,21 +23,20 @@ Do not invent BG/US/FR/NFR IDs. Prefer citing existing IDs; archive changes are 
 
 ## Stakeholder skills
 
-Discover AEA stakeholder roles under `.claude/skills/`. Their canonical role
-definitions live under `.cursor/skills/`; read the referenced canonical skill
-completely whenever a stakeholder skill triggers. Follow
-`.cursor/rules/stakeholder-skills-sync-sop.mdc` for every role change so Cursor,
-Codex, and Claude remain semantically portable.
+This repo runs a 10-role AEA stakeholder team (`aea-project-manager`,
+`aea-product-owner`, `aea-ux-designer`, `aea-customer-journey`,
+`aea-support-coordinator`, `aea-ai-engineer`, `aea-devsecops-platform`,
+`aea-senior-software-engineer`, `aea-mr-coordinator`,
+`aea-coherence-guardian`). Canonical role definitions live under
+`.cursor/skills/aea-*/`. Discovery adapters for Codex live under
+`.agents/skills/aea-*/` — each is a thin pointer back to the canonical role;
+read the referenced canonical file completely before acting as that
+stakeholder. Interpret `@aea-<role>` handoffs as the corresponding
+`$aea-<role>` Codex skill.
 
-## Claude ↔ Obsidian loop
-
-Full SOP: `research/claude-obsidian-loop.md`
-
-1. Capture in Obsidian → `research/inbox/` (or private vault notes).
-2. Triage/synthesize here → promotion candidates under `research/`.
-3. Promote tightly into `docs/` / `implementations/` when asked.
-4. Coherence inconsistencies/gaps → `.cursor/rules/coherence-findings-sop.mdc`
-   (one finding → one issue → one branch → one MR).
+Follow `.cursor/rules/stakeholder-skills-sync-sop.mdc` for every role change
+so Cursor, Codex, Claude, and Copilot stay semantically portable. Regenerate
+adapters with `python scripts/generate_codex_stakeholder_skills.py`.
 
 ## Edit style
 
@@ -47,3 +46,5 @@ Full SOP: `research/claude-obsidian-loop.md`
   integration tests for every impacted component
   (`.cursor/rules/docker-integration-before-mr.mdc`).
 - Do not commit `.obsidian/` or secrets.
+- Use `glab`, not GitHub CLI/PR tooling — this repository's tracker is
+  GitLab, not GitHub.

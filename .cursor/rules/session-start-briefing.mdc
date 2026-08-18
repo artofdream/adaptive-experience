@@ -1,0 +1,59 @@
+---
+description: Every new session reads the latest coherence daily brief before acting
+globs:
+alwaysApply: true
+---
+
+# Session-start briefing SOP
+
+Before taking any repo action in a new session — Cursor, Codex, Claude Code,
+or Copilot — read the most recent file in `research/daily-briefs/` (sort by
+filename date, open the latest `YYYY-MM-DD.md`).
+
+## Why
+
+Cursor, Codex, Claude Code, and Copilot all work this repo, sometimes
+concurrently, with no live channel between them. The daily brief is the
+durable, git-versioned handoff point — commits/MRs merged, coherence queue
+movement, milestone movement, guard status — produced by
+`@aea-coherence-guardian`. Reading it first is cheaper and more reliable
+than re-deriving the same state from `git log` / `glab` from scratch every
+session, and it lowers the odds of branching from a stale understanding of
+`main` (this happened at least once on this repo: a session branched a
+coherence finding from a `main` that had already advanced past what it had
+fetched).
+
+## What "read first" means
+
+1. `ls research/daily-briefs/*.md`, sort by date, open the most recent.
+2. If today's brief does not exist, read the most recent one available and
+   treat anything after its date as **unknown** — verify against `git log`
+   / `glab` directly for that gap rather than assuming nothing happened
+   since. A brief more than ~1 day old is stale; say so if you're relying
+   on one that old.
+3. The brief is an onboarding accelerant, not a source of truth for
+   right-now. Still verify live state yourself before an irreversible
+   action (merge, `terraform apply`, force-push) — do not skip that
+   verification because the brief said something was fine as of its date.
+
+## Who keeps it fresh
+
+`@aea-coherence-guardian` owns writing `research/daily-briefs/YYYY-MM-DD.md`
+(`.cursor/skills/aea-coherence-guardian/SKILL.md`). If the latest brief is
+stale when a session starts, either invoke `@aea-coherence-guardian` to
+produce a fresh one, or explicitly note in your own work that you're
+operating without current cross-session state. Do not silently proceed as
+if a stale brief were current.
+
+## Enforcement across tools
+
+Each tool's always-loaded context file points here rather than restating
+this procedure:
+
+- Claude Code: `CLAUDE.md` → "Session start"
+- Cursor: this rule (`alwaysApply: true`)
+- Codex: `AGENTS.md` → "Session start"
+- Copilot: `.github/copilot-instructions.md` → "Session start"
+
+Do not duplicate this procedure in each of those files — point to this one,
+so a change here does not require four edits to stay consistent.
