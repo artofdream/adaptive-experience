@@ -56,6 +56,7 @@ flowchart TD
     end
 
     TRACE["check_traceability.py<br/>(FR/NFR -> issue -> milestone -> closure, advisory)"]
+    EVIDENCE["check_requirement_evidence.py<br/>(FR/NFR -> ADR + code/test citations, advisory)"]
     DOCKER["docker-integration-before-mr.mdc<br/>(attested in MR; zero CI coverage for edge)"]
     MRC["aea-mr-coordinator<br/>(merge gate)"]
     MAIN[("main<br/>(protected)")]
@@ -71,6 +72,7 @@ flowchart TD
     ROADMAP -- feed --> TRACE
     ISSUES -- feed --> TRACE
     TRACE -. advisory only .-> MRC
+    EVIDENCE -. advisory only .-> MRC
     MRC -- merge --> MAIN
     MAIN -- feed --> CC
     MAIN -- feed --> TS
@@ -165,6 +167,7 @@ flowchart TD
 | `generate_daily_brief.py` | producer | CI, schedule only (04:00 UTC) | `aea-coherence-guardian` | automated, **unverified end-to-end** |
 | `platform-foundation-unit` / `edge-perimeter-unit` / `platform-foundation-integration` | guard | CI, on `platform/`/`edge/` changes | script | automated |
 | `check_traceability.py` | guard | CI, on `requirements.md`/`roadmap.md`/self changes + every MR/main | `aea-senior-software-engineer` | automated, advisory (see gap 1) |
+| `check_requirement_evidence.py` | guard | CI, on requirements/ADR/platform/edge/evidence changes + every MR/main | `aea-senior-software-engineer` | automated, advisory citation evidence |
 | `markdownlint` / `linkcheck` | guard | CI, on `.md` changes, MR only | script | automated, advisory only |
 | `docker-integration-before-mr.mdc` | guard | manual, attested per-MR | every specialist role | **manual for edge** (no CI job runs `edge/scripts/run_integration_tests.py`); **partially automated for platform** (`platform-foundation-integration` runs equivalent Postgres+Kafka coverage via CI `services:`, not the literal script) |
 | `research/coherence-findings-loop.md` | remediation cycle | on-demand / `aea-coherence-guardian` invocation | `aea-coherence-guardian` | manual trigger, disciplined procedure |
@@ -191,21 +194,19 @@ flowchart TD
 Ordered by leverage, not just severity — a cheap fix that removes a
 recurring blind spot outranks an expensive fix for a rare one.
 
-1. **Requirements→issue→milestone→closure traceability — partially
-   closed.** `scripts/check_traceability.py` (CI, `aea-senior-software-engineer`)
+1. **Requirements→issue→milestone→closure and citation traceability —
+   partially closed.** `scripts/check_traceability.py` (CI,
+   `aea-senior-software-engineer`)
    now continuously checks, for all 40 canonical FR/NFR IDs: a canonical
    GitLab issue exists (no orphans), its milestone matches what
    `roadmap.md` claims (the CF-039 class of drift, now caught
    automatically instead of by hand), and a closed issue was actually
-   closed by a merged MR. **Still open, deliberately not attempted**: FR/NFR
-   → ADR linkage (ADRs are prose with no structured, parseable citation
-   convention — enforcing this would need that convention established
-   first) and FR/NFR → code/test linkage (existing code/test FR-ID
-   citations are too inconsistent across the codebase to check reliably
-   without a high false-negative rate). Everything else in this graph
-   watches the *team's process*; this loop is the first one watching
-   whether the *product* stays honest, but only for the issue-tracking
-   half of the chain, not the code/test half.
+   closed by a merged MR. The v2 `requirement-evidence.json` inventory and
+   `check_requirement_evidence.py` add explicit ADR, implementation, and test
+   citation dispositions for all 40 IDs. They reject false paths and ADR
+   declarations and expose `unclaimed` debt. They deliberately do not equate a
+   source comment or test citation with proof that behavior is sufficient;
+   substantive coverage remains a specialist/reviewer judgment.
 2. **PM-SM's process-coherence check is manual.** Nothing scheduled
    verifies specialists actually followed one-issue-one-branch-one-MR;
    it only happens when someone invokes the PM persona. Could fold into

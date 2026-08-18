@@ -16,14 +16,11 @@ This is a read-only report, like check_coherence.py: it does not write to
 research/coherence-findings-loop.md or open anything. A human or
 aea-coherence-guardian promotes a real finding into the CF queue.
 
-## What this does not check (out of scope for v1, not silently assumed)
+## Companion evidence guard
 
-- FR/NFR -> ADR linkage. ADRs are prose; there is no structured,
-  parseable convention citing which FR/NFR each ADR governs. Enforcing
-  this would need that convention established first, not guessed at.
-- FR/NFR -> code/test linkage. Code comments and test names cite FR/NFR
-  IDs inconsistently across the codebase; a checker built on that
-  inconsistency would produce more false negatives than signal.
+- FR/NFR -> ADR and code/test citation evidence is validated separately by
+  `check_requirement_evidence.py` against the explicit committed inventory.
+  Citation evidence does not by itself prove behavioral sufficiency.
 - Any issue outside the original 40 canonical requirement issues
   (bugs, infra tickets, UX findings, etc.) -- those are downstream
   implementation work, not the canonical requirement tickets themselves,
