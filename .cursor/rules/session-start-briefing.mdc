@@ -31,6 +31,16 @@ fetched).
    / `glab` directly for that gap rather than assuming nothing happened
    since. A brief more than ~1 day old is stale; say so if you're relying
    on one that old.
+3. **Verify the brief you're reading is actually committed**, not a local
+   file: `git log --oneline -- research/daily-briefs/<file>`. This is not
+   paranoia — it happened. Four briefs (2026-08-11, 2026-08-12, 2026-08-14,
+   2026-08-18) were written to disk across multiple sessions and never
+   `git add`ed, so a fresh clone or a different machine had zero visibility
+   into any of them despite this SOP telling every session to read them. A
+   brief that exists only in one local working tree is not shared memory —
+   treat an uncommitted brief the same as a missing one for the purpose of
+   this SOP, and separately flag it as an incident (someone ran
+   `@aea-coherence-guardian` and didn't finish the job).
 3. The brief is an onboarding accelerant, not a source of truth for
    right-now. Still verify live state yourself before an irreversible
    action (merge, `terraform apply`, force-push) — do not skip that

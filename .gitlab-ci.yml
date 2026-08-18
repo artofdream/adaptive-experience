@@ -57,6 +57,14 @@ stakeholder-skill-sync:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_COMMIT_BRANCH == "main"'
 
+daily-brief-freshness:
+  stage: verify
+  image: python:3.12-alpine
+  script:
+    - python scripts/check_daily_brief_freshness.py
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+
 platform-foundation-unit:
   stage: verify
   image: python:3.12-alpine

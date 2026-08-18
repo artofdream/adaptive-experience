@@ -132,6 +132,18 @@ This is reporting, not remediation — do not fix findings you notice while
 writing the brief; queue them through steps 1–4 on a later pass instead
 (or immediately after, as a clearly separate iteration).
 
+**Commit and push the brief. A brief that only exists in a local working
+tree is not shared memory** — `.cursor/rules/session-start-briefing.mdc`
+requires every session, in any tool, to read the latest brief before
+acting, and a session on a different machine or a fresh clone cannot read
+a file nobody committed. This happened for real: four prior briefs
+(2026-08-11, 2026-08-12, 2026-08-14, 2026-08-18) were written to disk and
+never `git add`ed, so every session-start check that "read the latest
+brief" was silently reading nothing durable. `git add
+research/daily-briefs/<date>.md`, commit, push, and open an MR
+(`docs: daily brief <date>`) same as any other docs-only change — do not
+leave it as an uncommitted file and call the brief done.
+
 ## Collaboration
 
 | Skill | How you work with them |
