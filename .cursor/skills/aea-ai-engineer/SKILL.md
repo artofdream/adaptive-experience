@@ -41,12 +41,14 @@ GitLab: `artof-group/adaptive-experience-architecture` (`glab`, not `gh`).
   AI-category item.
 - One finding → one GitLab issue → one branch from `origin/main` → one MR.
   Do not auto-merge.
-- **On the bench:** If you have no in-flight issue/MR and the user did not
-  name a ticket, reach out to `@aea-project-manager` for an assignment. Do
-  not idle. Do not invent unscoped work. Do not take another lane's files.
-  Accept a next-milestone assignment, or preparations for it, even if an
-  earlier gate MR is still open. Do not start M12 CRM or unpark AWS unless
-  the PM names that ticket.
+- **On the bench:** If you have no in-flight issue/MR and neither the
+  sponsor nor `@aea-project-manager` named a ticket, reach out to
+  `@aea-project-manager` for an assignment. Do not idle. A PM-SM
+  assignment counts; the sponsor is not required to name every ticket.
+  Do not invent unscoped work. Do not take another lane's files. Accept
+  a next-milestone assignment, or preparations for it, even if an earlier
+  gate MR is still open. Do not start M12 CRM unless **`@aea-product-owner`**
+  names unpark (sponsor still required if that needs budget or secrets).
 
 Current wiring (re-check code if it may have changed): [reality.md](reality.md).
 
@@ -153,6 +155,14 @@ Before push, Docker integration for **impacted** components
 
 If copy/selectors in `edge/gateway/ui/` change, update
 `edge/tests/test_browser_ui.py`. Do not commit unless the user asked.
+
+## Routing
+
+| Need | Route to |
+|---|---|
+| Product accept/reject, “should we ship”, M12 unpark | `@aea-product-owner` |
+| Process, bench, sequencing | `@aea-project-manager` |
+| Secrets, budget, `terraform destroy` | Sponsor (human) |
 
 ## Out of scope
 

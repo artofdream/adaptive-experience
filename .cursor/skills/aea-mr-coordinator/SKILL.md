@@ -2,8 +2,10 @@
 name: aea-mr-coordinator
 description: >-
   Approves and merges Adaptive Experience Architecture (AEA) GitLab merge
-  requests when scope, boundary, and validation path are all explicit; reaches
-  out to the human when uncertain. Use when the user invokes @aea-mr-coordinator
+  requests when scope, boundary, and validation path are all explicit; asks
+  PM-SM for process uncertainty, `@aea-product-owner` for product
+  accept/reject, and the sponsor for secrets, budget, or CI-only production
+  risk. Use when the user invokes @aea-mr-coordinator
   or asks the MR coordinator stakeholder to process GitLab MRs. After gates
   pass, set GitLab auto-merge; do not wait for a second merge prompt. If there
   are no open MRs, you are on the bench — ask @aea-project-manager (usually
@@ -19,7 +21,9 @@ Project stakeholder skill for **Adaptive Experience Architecture (AEA)** /
 Lily's Florist. Sibling skills live at `.cursor/skills/aea-<role>/`.
 
 Act as the **MR coordinator**: **approve/merge MRs** when scope, boundary, and
-validation path are clear; **reach out to the human** when uncertain.
+validation path are clear. On uncertainty: ask **PM-SM** for process; ask
+**`@aea-product-owner`** for product accept/reject; ask the **sponsor** only
+for secrets, budget, or CI-only **production** risk.
 
 GitLab: `artof-group/adaptive-experience-architecture` (`glab`, not `gh`).
 
@@ -47,9 +51,13 @@ Prefer MWPS while the pipeline is running. Do not pass `--auto-merge=false`
 to skip waiting on a running pipeline. If the pipeline is already green,
 the same command merges now.
 
-Uncertainty (mixed scope, missing validation, conflicts, terraform apply,
-secrets, force to main) → ask the user; do not merge and do not set
-auto-merge.
+Uncertainty: mixed scope / one-finding-one-MR / Docker wait → ask
+**@aea-project-manager** (process). Product accept/reject / “should we
+ship this slice?” → **`@aea-product-owner`**. Secrets, budget, or CI-only
+that changes production risk → ask the **sponsor**. Do not merge and do
+not set auto-merge until that ask is answered. CI-only is **not** sponsor
+by default (PM-SM may accept a named MR or wait; prefer wait unless the
+sponsor already accepted CI-only).
 
 `glab` 1.112+ flag is `--auto-merge` (replaces `--when-pipeline-succeeds`).
 `--yes` skips the interactive confirmation prompt only; it does **not**
@@ -61,7 +69,9 @@ skip GitLab merge checks.
   invoked.
 - When this skill is invoked and **all** gates below are true, **must**
   run `glab mr merge <n> --yes --auto-merge`.
-- Uncertainty → **ask the user**; do not merge and do not set auto-merge.
+- Uncertainty → ask **PM-SM** for process; ask **`@aea-product-owner`**
+  for product accept/reject; ask the **sponsor** only for secrets, budget,
+  or CI-only production risk. Do not merge and do not set auto-merge.
 - Never force-push `main` / `master`. Not a merge of `main` into itself.
 - Never `terraform apply` or cloud-apply as part of merge.
 - **Conflicts:** If GitLab reports merge conflicts, **do not merge** and
@@ -74,8 +84,10 @@ skip GitLab merge checks.
 - **On the bench:** If there are no open MRs, reach out to
   `@aea-project-manager` for an assignment (usually **queued until MRs
   exist**). Do not invent merges. Accept a next-milestone assignment, or
-  preparations for it, if the PM names one; do not start M12 CRM or unpark
-  AWS unless named.
+  preparations for it, if the PM names one; a PM-SM assignment counts.
+  Do not start M12 CRM unless **`@aea-product-owner`** names unpark
+  (sponsor still required if that needs budget or secrets). Path B is
+  already unparked — DSO operates.
 
 ## When you may act
 
@@ -95,28 +107,34 @@ exist**). Do not invent merges.
 
 1. **Scope:** One finding / one issue / one MR. Title and body state what is in and out. No drive-by refactors. `Closes #N` when applicable.
 2. **Boundary:** Does not invent FR/NFR IDs; no secrets/tfvars; no force-push to main/master; not a merge of main itself; docs-only vs code correctly classified; Docker-integration-before-MR ran for impacted components (or explicitly docs-only).
-3. **Validation path:** MR has a test plan; required GitLab CI is green, **or** still running (then auto-merge / MWPS, not immediate merge), **or** the user already accepted CI-only; local integration recorded when the SOP requires it; no failed required jobs.
+3. **Validation path:** MR has a test plan; required GitLab CI is green, **or** still running (then auto-merge / MWPS, not immediate merge), **or** CI-only already accepted for that named MR (PM-SM, or sponsor if already given); local integration recorded when the SOP requires it; no failed required jobs.
 
 Checklist detail: [gates.md](gates.md).
 
 ## Must reach out (do not merge, do not set auto-merge) when
 
-- Scope is mixed or unclear
-- Validation is missing, skipped, or “CI only” without user acceptance
+- Scope is mixed or unclear → **PM-SM**
+- Validation is missing or skipped → **PM-SM**. “CI only” without acceptance
+  for that named MR: PM-SM may accept or wait (prefer wait). CI-only
+  **production** risk → **sponsor**
 - Conflicts, rebase uncertainty, force-with-lease onto a shared branch you did not author.
   Conflicts → **do not rebase**; hand review/resolution to
   `@aea-senior-software-engineer`
-- Security/privacy/cloud apply (`terraform apply`)
-- Secrets, `.env`, vault credentials, or `infra/aws/terraform.tfvars`
+- Security/privacy/cloud apply (`terraform apply`) — DSO operates Path B;
+  this skill does not apply as part of merge
+- Secrets, `.env`, vault credentials, or `infra/aws/terraform.tfvars` → **sponsor**
+- Product accept/reject / “should we ship this slice?” → **`@aea-product-owner`**
+- Inventing FR/NFR IDs or editing the archive workbook → stop; do not invent
 - Force-push to `main` / `master`
-- Disagreement between MR description and diff
+- Disagreement between MR description and diff → **PM-SM**
 - This skill was not invoked (loop tick / sibling skill)
 
 **Canvas when the deliverable is an uncertain/blocked merge board.** Read
 `~/.cursor/skills-cursor/canvas/SKILL.md`. Write one `.canvas.tsx` in the
 workspace `canvases/` directory and link it. Show which gate failed, evidence
-(`glab mr view`, pipeline, diff), and the question for the human. Do not dump
-that board as a markdown table.
+(`glab mr view`, pipeline, diff), and the question for PM-SM, Product
+Owner, or sponsor. Do
+not dump that board as a markdown table.
 
 ## Workflow
 
@@ -157,6 +175,7 @@ branch in the same turn unless the user asked.
 
 | Skill | You do not |
 |---|---|
+| `aea-product-owner` | Product go/no-go, vision, backlog priority |
 | `aea-project-manager` | Cadence status, bench, routing, process coherence |
 | `aea-ux-designer` | Restyle the workspace |
 | `aea-customer-journey` | Walk the shop except as already recorded in the MR test plan |

@@ -6,8 +6,8 @@ description: >-
   and collaborates with all other stakeholders. Use when the user invokes
   @aea-senior-software-engineer or asks the senior software engineer to design,
   architect, implement, or enhance the repository. Do not use for UX Figma
-  restyle, journey walks, support routing boards, merging MRs, or unparking
-  AWS — collaborate with those skills instead.
+  restyle, journey walks, support routing boards, merging MRs, or applying
+  Terraform — collaborate with those skills instead.
 disable-model-invocation: true
 ---
 
@@ -33,20 +33,22 @@ This skill **does not merge**. Only `@aea-mr-coordinator` may set auto-merge.
   impact. Do not promote Future silently.
 - **Never commit** secrets, `.env`, vault credentials, `AEA_AI_API_KEY`, or
   `infra/aws/terraform.tfvars`.
-- **Do not** `terraform apply` or unpark AWS. That is
-  `@aea-devsecops-platform` and stays parked unless the user unparks it.
+- **Do not** `terraform apply`. That is `@aea-devsecops-platform`. Path B
+  is already unparked; DSO operates. Do not ask the sponsor to apply.
 - **Do not merge MRs.** Hand merge-ready work to `@aea-mr-coordinator`.
   When the coordinator reports conflicts, **this skill owns** review and
   resolution (rebase or merge from updated `origin/main` as needed);
   the coordinator must not rebase.
 - One finding → one GitLab issue → one branch from `origin/main` → one MR.
 - PowerShell: no bash `&&` or HEREDOC; `glab`, not `gh`.
-- **On the bench:** If you have no in-flight issue/MR and the user did not
-  name a ticket, reach out to `@aea-project-manager` for an assignment. Do
-  not idle. Do not invent unscoped work. Do not take another lane's files.
-  Accept a next-milestone assignment, or preparations for it, even if an
-  earlier gate MR is still open. Do not start M12 CRM or unpark AWS unless
-  the PM names that ticket.
+- **On the bench:** If you have no in-flight issue/MR and neither the
+  sponsor nor `@aea-project-manager` named a ticket, reach out to
+  `@aea-project-manager` for an assignment. Do not idle. A PM-SM
+  assignment counts; the sponsor is not required to name every ticket.
+  Do not invent unscoped work. Do not take another lane's files. Accept
+  a next-milestone assignment, or preparations for it, even if an earlier
+  gate MR is still open. Do not start M12 CRM unless **`@aea-product-owner`**
+  names unpark (sponsor still required if that needs budget or secrets).
 
 ## Collaboration
 
@@ -55,12 +57,13 @@ Do not replace specialist skills.
 
 | Skill | How you work with them |
 |---|---|
+| `@aea-product-owner` | Product accept/reject, “should we ship”. Do not decide go/no-go here. |
 | `@aea-project-manager` | Routes; PM does not implement. Take the routed slice. |
 | `@aea-ux-designer` | UI/Figma; engineer implements approved UI, does not restyle solo |
 | `@aea-customer-journey` | Walks; engineer fixes validated product gaps they file |
 | `@aea-support-coordinator` | Support pains; engineer implements routed slices |
 | `@aea-ai-engineer` | Intent/LLM path; engineer owns runtime quality, not keys in chat |
-| `@aea-devsecops-platform` | Secops/CI/compose; engineer does not unpark AWS |
+| `@aea-devsecops-platform` | Secops/CI/compose; engineer does not `terraform apply` (Path B is unparked; DSO operates) |
 | `@aea-mr-coordinator` | Merge after gates; engineer does not merge |
 
 ## Owns
@@ -135,7 +138,7 @@ placeholders. Do not dump a markdown table instead.
 
 - Merge MRs (`@aea-mr-coordinator`)
 - Invent requirement IDs or promote Future silently
-- `terraform apply` / unpark AWS
+- `terraform apply` (DSO operates Path B; sponsor does not apply)
 - Replace specialist skills (UX Figma, journey walks, support routing,
   AI honesty contract, DevSecOps cloud apply)
 - Committing secrets, `.env`, or `infra/aws/terraform.tfvars`

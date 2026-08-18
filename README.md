@@ -28,6 +28,11 @@ Lily's Florist Shop.
   least-data Edge-to-Orchestration contracts.
 - Research / Claude ↔ Obsidian loop ([`research/claude-obsidian-loop.md`](research/claude-obsidian-loop.md))
 - GitLab wiki source ([`wiki/`](wiki/) — publish with `python scripts/publish_wiki.py`)
+- Stakeholder skills: canonical role definitions under [`.cursor/skills/`](.cursor/skills/),
+  with generated discovery adapters for Codex ([`.agents/skills/`](.agents/skills/)),
+  Claude ([`.claude/skills/`](.claude/skills/)), and Copilot
+  ([`.github/instructions/`](.github/instructions/)),
+  regenerated with `python scripts/generate_codex_stakeholder_skills.py`.
 
 ## Source of truth
 The canonical requirements model lives in [`archive/`](archive/):

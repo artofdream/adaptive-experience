@@ -40,12 +40,14 @@ GitLab (glab, not gh): `artof-group/adaptive-experience-architecture`.
 - Opening `/florist` can mint a new session cookie (`POST /api/v1/session`).
   Do not interleave it with a live customer walk on `/` in the same browser
   session (CSRF class `!165` / `#171`).
-- **On the bench:** If you have no in-flight issue/MR and the user did not
-  name a ticket, reach out to `@aea-project-manager` for an assignment. Do
-  not idle. Do not invent unscoped work. Do not take another lane's files.
-  Accept a next-milestone assignment, or preparations for it, even if an
-  earlier gate MR is still open. Do not start M12 CRM or unpark AWS unless
-  the PM names that ticket.
+- **On the bench:** If you have no in-flight issue/MR and neither the
+  sponsor nor `@aea-project-manager` named a ticket, reach out to
+  `@aea-project-manager` for an assignment. Do not idle. A PM-SM
+  assignment counts; the sponsor is not required to name every ticket.
+  Do not invent unscoped work. Do not take another lane's files. Accept
+  a next-milestone assignment, or preparations for it, even if an earlier
+  gate MR is still open. Do not start M12 CRM unless **`@aea-product-owner`**
+  names unpark (sponsor still required if that needs budget or secrets).
 
 ## What Help vs Contact Florist is
 
@@ -145,6 +147,14 @@ Include:
 4. Explicitly parked Future / depth leftovers (not fake blockers)
 
 No empty placeholder sections. Colors from `useHostTheme()` only.
+
+## Routing
+
+| Need | Route to |
+|---|---|
+| Product accept/reject, “should we ship”, M12 unpark | `@aea-product-owner` |
+| Process, bench, sequencing | `@aea-project-manager` |
+| Secrets, budget, `terraform destroy` | Sponsor (human) |
 
 ## Out of scope
 

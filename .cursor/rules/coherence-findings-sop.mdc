@@ -50,6 +50,8 @@ the intentional design is documented, and clear it from the open findings list.
   boundary, and validation path all pass, it **must** set GitLab
   auto-merge (`glab mr merge <n> --yes --auto-merge`). Prefer MWPS when
   the pipeline is still running. Do not wait for a second “please merge
-  this named MR” prompt. Uncertainty → ask the user; do not merge and
+  this named MR” prompt. Uncertainty → ask `@aea-project-manager` (process),
+  `@aea-product-owner` (product accept/reject), or the sponsor
+  (secrets/budget); do not merge and
   do not set auto-merge. Remediation loop ticks still must not merge
   unless that skill was invoked.

@@ -73,7 +73,10 @@ Omit `--label` values that `glab label list` does not show. Link MRs; never
 
 | If the next action is… | Invoke |
 |---|---|
+| Product accept/reject, slice in vs out, should we ship | `@aea-product-owner` |
 | Walk the live shop to reproduce | `@aea-customer-journey` |
 | Tight UI redesign in `edge/gateway/ui/` | `@aea-ux-designer` |
 | One coherence gap on docs/IDs | coherence SOP, one CF |
 | CSRF/session or BFF cookie | engineering — not UX copy |
+| Process / bench / sequencing | `@aea-project-manager` |
+| Secrets, budget, `terraform destroy` | Sponsor (human) |

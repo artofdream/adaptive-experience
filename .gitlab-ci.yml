@@ -40,6 +40,31 @@ topic-schema-guard:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_COMMIT_BRANCH == "main"'
 
+stakeholder-skill-sync:
+  stage: verify
+  image: python:3.12-alpine
+  script:
+    - python scripts/generate_codex_stakeholder_skills.py --check
+  rules:
+    - changes:
+        - ".cursor/skills/**/*"
+        - ".agents/skills/**/*"
+        - ".claude/skills/**/*"
+        - ".github/instructions/**/*"
+        - ".github/copilot-instructions.md"
+        - ".cursor/rules/stakeholder-skills-sync-sop.mdc"
+        - "scripts/generate_codex_stakeholder_skills.py"
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+daily-brief-freshness:
+  stage: verify
+  image: python:3.12-alpine
+  script:
+    - python scripts/check_daily_brief_freshness.py
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+
 platform-foundation-unit:
   stage: verify
   image: python:3.12-alpine
