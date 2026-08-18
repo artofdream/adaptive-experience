@@ -75,8 +75,14 @@ def gitlab_api_post(path: str, body: dict) -> object:
         url, data=data, method="POST",
         headers={"JOB-TOKEN": os.environ["CI_JOB_TOKEN"], "Content-Type": "application/json"},
     )
-    with urllib.request.urlopen(req, timeout=30) as resp:
-        return json.loads(resp.read().decode("utf-8"))
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            return json.loads(resp.read().decode("utf-8"))
+    except urllib.error.HTTPError as exc:
+        # Surface GitLab's actual error body (e.g. the specific reason a job
+        # token was rejected) instead of just the generic "HTTP Error 401".
+        detail = exc.read().decode("utf-8", errors="replace")
+        raise urllib.error.HTTPError(exc.url, exc.code, f"{exc.reason}: {detail}", exc.headers, None)
 
 
 def run(cmd: list[str]) -> tuple[int, str]:
