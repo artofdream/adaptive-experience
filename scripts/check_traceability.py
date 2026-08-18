@@ -93,12 +93,11 @@ def fetch_canonical_issues() -> dict[str, list[dict]]:
     by_req: dict[str, list[dict]] = {}
     page = 1
     while True:
-        # No "scope" param here: valid for the global /issues endpoint,
-        # not the project-scoped one used here (that returned every
-        # project issue already, live-tested confirmed).
-        issues = gitlab_api("issues", {
-            "per_page": 100, "page": page, "order_by": "iid", "sort": "asc",
-        })
+        # No "scope" param (valid on the global /issues endpoint, not this
+        # project-scoped one) and no order_by="iid" (not a valid order_by
+        # value for this endpoint -- both confirmed live, not guessed).
+        # Order doesn't matter here: every page is processed regardless.
+        issues = gitlab_api("issues", {"per_page": 100, "page": page})
         if not issues:
             break
         for issue in issues:
