@@ -55,9 +55,12 @@ flowchart TD
         LINT["markdownlint / linkcheck<br/>(advisory only)"]
     end
 
-    DOCKER["docker-integration-before-mr.mdc<br/>(attested in MR, NOT CI-checked)"]
+    TRACE["check_traceability.py<br/>(FR/NFR -> issue -> milestone -> closure, advisory)"]
+    DOCKER["docker-integration-before-mr.mdc<br/>(attested in MR; zero CI coverage for edge)"]
     MRC["aea-mr-coordinator<br/>(merge gate)"]
     MAIN[("main<br/>(protected)")]
+    ROADMAP[("roadmap.md / requirements.md")]
+    ISSUES[("GitLab issues + milestones")]
 
     CC -- constrain --> MRC
     TS -- constrain --> MRC
@@ -65,6 +68,9 @@ flowchart TD
     PU -- constrain --> MRC
     LINT -. advisory only .-> MRC
     DOCKER -. manual attestation .-> MRC
+    ROADMAP -- feed --> TRACE
+    ISSUES -- feed --> TRACE
+    TRACE -. advisory only .-> MRC
     MRC -- merge --> MAIN
     MAIN -- feed --> CC
     MAIN -- feed --> TS
@@ -158,8 +164,9 @@ flowchart TD
 | `check_daily_brief_freshness.py` | guard | CI, schedule only (04:00 UTC) | `aea-coherence-guardian` | automated |
 | `generate_daily_brief.py` | producer | CI, schedule only (04:00 UTC) | `aea-coherence-guardian` | automated, **unverified end-to-end** |
 | `platform-foundation-unit` / `edge-perimeter-unit` / `platform-foundation-integration` | guard | CI, on `platform/`/`edge/` changes | script | automated |
+| `check_traceability.py` | guard | CI, on `requirements.md`/`roadmap.md`/self changes + every MR/main | `aea-senior-software-engineer` | automated, advisory (see gap 1) |
 | `markdownlint` / `linkcheck` | guard | CI, on `.md` changes, MR only | script | automated, advisory only |
-| `docker-integration-before-mr.mdc` | guard | manual, attested per-MR | every specialist role | **manual, not CI-enforced** |
+| `docker-integration-before-mr.mdc` | guard | manual, attested per-MR | every specialist role | **manual for edge** (no CI job runs `edge/scripts/run_integration_tests.py`); **partially automated for platform** (`platform-foundation-integration` runs equivalent Postgres+Kafka coverage via CI `services:`, not the literal script) |
 | `research/coherence-findings-loop.md` | remediation cycle | on-demand / `aea-coherence-guardian` invocation | `aea-coherence-guardian` | manual trigger, disciplined procedure |
 | `aea-project-manager` | role loop | on-demand / cadence (08:00/12:00/16:00/20:00, **no automated trigger**) | human or AI session acting as PM | manual trigger |
 | `aea-product-owner` | role loop | on-demand | human or AI session | manual trigger |
@@ -184,21 +191,33 @@ flowchart TD
 Ordered by leverage, not just severity — a cheap fix that removes a
 recurring blind spot outranks an expensive fix for a rare one.
 
-1. **No requirements→code traceability loop.** FR/NFR → ADR → Milestone →
-   Issue → MR → Code → Test has no loop watching the whole chain
-   continuously — only piecemeal catches via individual coherence
-   findings when someone happens to notice (CF-044 taxes/discounts,
-   CF-045 encryption-at-rest claims). This is the biggest remaining gap:
-   everything else in this graph watches the *team's process*; nothing
-   watches whether the *product* stays honest end to end.
+1. **Requirements→issue→milestone→closure traceability — partially
+   closed.** `scripts/check_traceability.py` (CI, `aea-senior-software-engineer`)
+   now continuously checks, for all 40 canonical FR/NFR IDs: a canonical
+   GitLab issue exists (no orphans), its milestone matches what
+   `roadmap.md` claims (the CF-039 class of drift, now caught
+   automatically instead of by hand), and a closed issue was actually
+   closed by a merged MR. **Still open, deliberately not attempted**: FR/NFR
+   → ADR linkage (ADRs are prose with no structured, parseable citation
+   convention — enforcing this would need that convention established
+   first) and FR/NFR → code/test linkage (existing code/test FR-ID
+   citations are too inconsistent across the codebase to check reliably
+   without a high false-negative rate). Everything else in this graph
+   watches the *team's process*; this loop is the first one watching
+   whether the *product* stays honest, but only for the issue-tracking
+   half of the chain, not the code/test half.
 2. **PM-SM's process-coherence check is manual.** Nothing scheduled
    verifies specialists actually followed one-issue-one-branch-one-MR;
    it only happens when someone invokes the PM persona. Could fold into
    `generate_daily_brief.py`'s evidence-gathering cheaply, since that
    loop already reads recent MRs.
-3. **`docker-integration-before-mr.mdc` is attested, not verified.**
-   `aea-mr-coordinator` trusts the MR description's claim that Docker
-   integration ran; nothing checks it's true.
+3. **`docker-integration-before-mr.mdc` is attested, not verified —
+   confirmed precisely.** No CI job invokes `edge/scripts/run_integration_tests.py`
+   or `platform/scripts/run_integration_tests.py` at all; `aea-mr-coordinator`
+   trusts the MR description's claim. `platform-foundation-integration`
+   gives *equivalent* platform coverage (real Postgres+Kafka via CI
+   `services:`), narrowing the gap to edge specifically, which has zero
+   automated Docker-integration coverage.
 4. **`session-start-briefing.mdc` compliance is unverifiable
    mechanically.** No loop watches whether a session actually read the
    brief before acting — this is inherent to the mechanism (you can't
