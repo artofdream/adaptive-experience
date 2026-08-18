@@ -232,7 +232,13 @@ def push_and_open_mr(today: datetime.date, path: Path) -> dict:
 
 
 def main() -> None:
-    today = datetime.datetime.now(datetime.timezone.utc).date()
+    # DAILY_BRIEF_DATE_OVERRIDE exists only for testing the full generate ->
+    # push -> open-MR path without waiting for a real day boundary or
+    # colliding with an existing brief. It does not bypass idempotency --
+    # it only changes which date's file the idempotency check looks at.
+    override = os.environ.get("DAILY_BRIEF_DATE_OVERRIDE")
+    today = datetime.date.fromisoformat(override) if override else \
+        datetime.datetime.now(datetime.timezone.utc).date()
     today_file = BRIEFS_DIR / f"{today.isoformat()}.md"
     if today_file.is_file():
         print(json.dumps({"wrote_brief": False, "reason": f"{today_file} already exists"}))
