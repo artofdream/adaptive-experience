@@ -308,6 +308,7 @@ class BrowserUiTests(unittest.TestCase):
         self.assertIn("if (f.selection && f.selection.product_id) return 4;", self.script)
         self.assertIn("prior_order_hint", self.script)
         self.assertIn("Ordered earlier in this browser", self.script)
+        self.assertIn('item.prior_order_hint ? "Reorder" : "Select"', self.script)  # FR-008
 
     def test_shell_uses_edge_apis_without_data_plane_secrets(self):
         for path in ("/api/v1/session", "/api/v1/conversation/messages",

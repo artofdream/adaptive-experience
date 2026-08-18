@@ -409,16 +409,21 @@ class PsycopgOrderStore:
             return True
 
     def remember_browser_product(self, session_id: str) -> None:
-        """Persist last accepted catalog SKU for this browser token. Not CRM."""
+        """Persist the least-data accepted-order projection for FR-008 reorder."""
         self.connection.execute(
-            "INSERT INTO orchestration.browser_order_recall (recall_id, product_id) "
-            "SELECT s.recall_id, btrim(o.product->>'product_id') "
+            "INSERT INTO orchestration.browser_order_recall "
+            "(recall_id, product_id, order_id, expires_at) "
+            "SELECT s.recall_id, btrim(o.product->>'product_id'), o.order_id, "
+            "clock_timestamp() + interval '30 days' "
             "FROM orchestration.experience_session s "
             "JOIN orchestration.customer_order o ON o.session_id = s.session_id "
             "WHERE s.session_id=%s AND s.recall_id IS NOT NULL "
+            "AND o.status IN ('submitted','confirmed','preparing','dispatched',"
+            "'delivered','completed') "
             "AND COALESCE(btrim(o.product->>'product_id'), '') <> '' "
             "ON CONFLICT (recall_id) DO UPDATE SET "
-            "product_id=EXCLUDED.product_id, updated_at=clock_timestamp()",
+            "product_id=EXCLUDED.product_id, order_id=EXCLUDED.order_id, "
+            "expires_at=EXCLUDED.expires_at, updated_at=clock_timestamp()",
             (session_id,),
         )
 
@@ -426,7 +431,11 @@ class PsycopgOrderStore:
         row = self.connection.execute(
             "SELECT r.product_id FROM orchestration.experience_session s "
             "JOIN orchestration.browser_order_recall r ON r.recall_id = s.recall_id "
-            "WHERE s.session_id=%s",
+            "JOIN orchestration.customer_order o ON o.order_id = r.order_id "
+            "WHERE s.session_id=%s AND s.lifecycle_status='active' "
+            "AND r.expires_at > clock_timestamp() "
+            "AND o.status IN ('submitted','confirmed','preparing','dispatched',"
+            "'delivered','completed')",
             (session_id,),
         ).fetchone()
         if row is None or not isinstance(row[0], str) or not row[0].strip():
