@@ -405,7 +405,6 @@ class PsycopgOrderStore:
                 "(message_id,session_id,context_version,topic,aggregate_key,envelope) "
                 "VALUES (%s,%s,%s,'order.checkout.requested',%s,%s::jsonb)",
                 (message_id, session_id, context_version, order_id, json.dumps(envelope)))
-            self.remember_browser_product(session_id)
             return True
 
     def remember_browser_product(self, session_id: str) -> None:
@@ -418,7 +417,7 @@ class PsycopgOrderStore:
             "FROM orchestration.experience_session s "
             "JOIN orchestration.customer_order o ON o.session_id = s.session_id "
             "WHERE s.session_id=%s AND s.recall_id IS NOT NULL "
-            "AND o.status IN ('submitted','confirmed','preparing','dispatched',"
+            "AND o.status IN ('confirmed','preparing','dispatched',"
             "'delivered','completed') "
             "AND COALESCE(btrim(o.product->>'product_id'), '') <> '' "
             "ON CONFLICT (recall_id) DO UPDATE SET "
@@ -434,7 +433,7 @@ class PsycopgOrderStore:
             "JOIN orchestration.customer_order o ON o.order_id = r.order_id "
             "WHERE s.session_id=%s AND s.lifecycle_status='active' "
             "AND r.expires_at > clock_timestamp() "
-            "AND o.status IN ('submitted','confirmed','preparing','dispatched',"
+            "AND o.status IN ('confirmed','preparing','dispatched',"
             "'delivered','completed')",
             (session_id,),
         ).fetchone()
@@ -506,6 +505,9 @@ class PsycopgOrderStore:
             self.connection.execute(
                 "UPDATE orchestration.customer_order SET status='confirmed', "
                 "updated_at=clock_timestamp() WHERE session_id=%s", (session_id,))
+            # FR-008 history becomes eligible only after payment authorization and
+            # the authoritative order transition succeed in this transaction.
+            self.remember_browser_product(session_id)
             envelope = self._checkout_envelope(
                 message_id=message_id, topic="order.confirmed", source="order",
                 session_id=session_id, order_id=order_id, context_version=context_version,

@@ -611,11 +611,19 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
 
     def test_checkout_decline_leaves_order_submitted(self):
         import asyncio
+        from aea_platform.adapters import (PsycopgExperienceStateStore,
+                                           PsycopgInventoryAvailabilityStore)
         from aea_platform.internal_api import InternalOrchestrationApp
+        from aea_platform.inventory import AvailabilitySnapshot, InventoryAvailabilityService
         from aea_platform.pricing import REFERENCE_DELIVERY_FEE
+        from aea_platform.state import StatePatch
 
         app = InternalOrchestrationApp(self.connection, "internal-token")
         session_id = self._order_ready_for_checkout(app)
+        recall_id = str(uuid.uuid4())
+        self.assertEqual(204, asyncio.run(self._invoke_internal(
+            app, "PUT", f"/internal/v1/sessions/{session_id}",
+            json.dumps({"recall_id": recall_id}).encode()))[0])
         total = round(70.0 + REFERENCE_DELIVERY_FEE, 2)
 
         status, result = asyncio.run(self._invoke_internal(
@@ -638,6 +646,30 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         self.assertEqual("submitted", self.connection.execute(
             "SELECT status FROM orchestration.customer_order WHERE session_id=%s",
             (session_id,)).fetchone()[0])
+        self.assertEqual(0, self.connection.execute(
+            "SELECT count(*) FROM orchestration.browser_order_recall WHERE recall_id=%s",
+            (recall_id,)).fetchone()[0])
+
+        # FR-008: a declined checkout is not purchase history in a later session.
+        now = datetime.now(timezone.utc)
+        inventory = InventoryAvailabilityService(
+            PsycopgInventoryAvailabilityStore(self.connection), now=lambda: now)
+        inventory.record(AvailabilitySnapshot("classic-rose-dozen", 5, 1, now))
+        later = uuid.uuid4()
+        self.assertEqual(204, asyncio.run(self._invoke_internal(
+            app, "PUT", f"/internal/v1/sessions/{later}",
+            json.dumps({"recall_id": recall_id}).encode()))[0])
+        store = PsycopgExperienceStateStore(self.connection)
+        with self.connection.transaction():
+            store.apply_patch(
+                str(later), 0, 1,
+                StatePatch.create(
+                    {"shared_understanding": {"occasion": "birthday", "budget": 100}},
+                    ["shared_understanding.occasion", "shared_understanding.budget"]), [])
+        _, workspace = asyncio.run(self._invoke_internal(
+            app, "GET", f"/internal/v1/sessions/{later}/workspace"))
+        self.assertFalse(any(item.get("prior_order_hint") for item in
+                             workspace["facets"]["recommendations"]["items"]))
 
     def test_checkout_creates_order_from_assembled_decisions(self):
         import asyncio
