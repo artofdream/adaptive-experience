@@ -1,0 +1,854 @@
+{
+  "schema_version": 1,
+  "meaning": "Citation evidence only; a citation does not by itself prove behavior.",
+  "records": [
+    {
+      "requirement_id": "FR-001",
+      "scope": "MVP",
+      "adr": {
+        "disposition": "evidenced",
+        "paths": [
+          "docs/06-adr/ADR-016-agentic-ai-boundary.md"
+        ]
+      },
+      "implementation": {
+        "disposition": "evidenced",
+        "paths": [
+          "platform/aea_platform/conversation.py"
+        ]
+      },
+      "test": {
+        "disposition": "unclaimed",
+        "paths": []
+      }
+    },
+    {
+      "requirement_id": "FR-002",
+      "scope": "MVP",
+      "adr": {
+        "disposition": "evidenced",
+        "paths": [
+          "docs/06-adr/ADR-014-postgresql-pgvector.md",
+          "docs/06-adr/ADR-015-rag-hybrid-retrieval.md",
+          "docs/06-adr/ADR-016-agentic-ai-boundary.md"
+        ]
+      },
+      "implementation": {
+        "disposition": "evidenced",
+        "paths": [
+          "platform/aea_platform/intent.py"
+        ]
+      },
+      "test": {
+        "disposition": "unclaimed",
+        "paths": []
+      }
+    },
+    {
+      "requirement_id": "FR-003",
+      "scope": "MVP",
+      "adr": {
+        "disposition": "evidenced",
+        "paths": [
+          "docs/06-adr/ADR-006-mvp-customization-boundary.md"
+        ]
+      },
+      "implementation": {
+        "disposition": "evidenced",
+        "paths": [
+          "edge/bff/aea_bff/app.py",
+          "edge/gateway/ui/assets/app.js",
+          "platform/aea_platform/internal_api.py",
+          "platform/aea_platform/pricing.py",
+          "platform/aea_platform/selection.py"
+        ]
+      },
+      "test": {
+        "disposition": "evidenced",
+        "paths": [
+          "edge/tests/test_perimeter.py",
+          "platform/tests/test_postgres_integration.py"
+        ]
+      }
+    },
+    {
+      "requirement_id": "FR-004",
+      "scope": "MVP",
+      "adr": {
+        "disposition": "evidenced",
+        "paths": [
+          "docs/06-adr/ADR-016-agentic-ai-boundary.md"
+        ]
+      },
+      "implementation": {
+        "disposition": "unclaimed",
+        "paths": []
+      },
+      "test": {
+        "disposition": "unclaimed",
+        "paths": []
+      }
+    },
+    {
+      "requirement_id": "FR-005",
+      "scope": "MVP",
+      "adr": {
+        "disposition": "evidenced",
+        "paths": [
+          "docs/06-adr/ADR-014-postgresql-pgvector.md",
+          "docs/06-adr/ADR-015-rag-hybrid-retrieval.md",
+          "docs/06-adr/ADR-016-agentic-ai-boundary.md"
+        ]
+      },
+      "implementation": {
+        "disposition": "evidenced",
+        "paths": [
+          "edge/gateway/ui/florist.html",
+          "platform/aea_platform/retrieval.py",
+          "platform/aea_platform/support.py"
+        ]
+      },
+      "test": {
+        "disposition": "unclaimed",
+        "paths": []
+      }
+    },
+    {
+      "requirement_id": "FR-006",
+      "scope": "Future",
+      "adr": {
+        "disposition": "unclaimed",
+        "paths": []
+      },
+      "implementation": {
+        "disposition": "evidenced",
+        "paths": [
+          "edge/gateway/ui/florist.html",
+          "platform/aea_platform/internal_api.py",
+          "platform/aea_platform/support.py"
+        ]
+      },
+      "test": {
+        "disposition": "planned",
+        "paths": []
+      }
+    },
+    {
+      "requirement_id": "FR-007",
+      "scope": "MVP",
+      "adr": {
+        "disposition": "evidenced",
+        "paths": [
+          "docs/06-adr/ADR-014-postgresql-pgvector.md",
+          "docs/06-adr/ADR-015-rag-hybrid-retrieval.md",
+          "docs/06-adr/ADR-016-agentic-ai-boundary.md"
+        ]
+      },
+      "implementation": {
+        "disposition": "evidenced",
+        "paths": [
+          "edge/gateway/ui/assets/app.js",
+          "platform/aea_platform/order.py",
+          "platform/aea_platform/recommendation.py"
+        ]
+      },
+      "test": {
+        "disposition": "unclaimed",
+        "paths": []
+      }
+    },
+    {
+      "requirement_id": "FR-008",
+      "scope": "Future",
+      "adr": {
+        "disposition": "evidenced",
+        "paths": [
+          "docs/06-adr/ADR-013-confirmation-driven-experience.md",
+          "docs/06-adr/ADR-014-postgresql-pgvector.md",
+          "docs/06-adr/ADR-015-rag-hybrid-retrieval.md"
+        ]
+      },
+      "implementation": {
+        "disposition": "evidenced",
+        "paths": [
+          "platform/aea_platform/order.py",
+          "platform/aea_platform/recommendation.py"
+        ]
+      },
+      "test": {
+        "disposition": "planned",
+        "paths": []
+      }
+    },
+    {
+      "requirement_id": "FR-009",
+      "scope": "MVP",
+      "adr": {
+        "disposition": "unclaimed",
+        "paths": []
+      },
+      "implementation": {
+        "disposition": "evidenced",
+        "paths": [
+          "edge/gateway/ui/florist.html",
+          "platform/aea_platform/retrieval.py",
+          "platform/aea_platform/support.py"
+        ]
+      },
+      "test": {
+        "disposition": "unclaimed",
+        "paths": []
+      }
+    },
+    {
+      "requirement_id": "FR-010",
+      "scope": "Future",
+      "adr": {
+        "disposition": "evidenced",
+        "paths": [
+          "docs/06-adr/ADR-014-postgresql-pgvector.md",
+          "docs/06-adr/ADR-015-rag-hybrid-retrieval.md"
+        ]
+      },
+      "implementation": {
+        "disposition": "evidenced",
+        "paths": [
+          "platform/aea_platform/internal_api.py",
+          "platform/aea_platform/support.py"
+        ]
+      },
+      "test": {
+        "disposition": "planned",
+        "paths": []
+      }
+    },
+    {
+      "requirement_id": "FR-011",
+      "scope": "MVP",
+      "adr": {
+        "disposition": "unclaimed",
+        "paths": []
+      },
+      "implementation": {
+        "disposition": "evidenced",
+        "paths": [
+          "edge/gateway/ui/florist.html",
+          "platform/aea_platform/internal_api.py",
+          "platform/aea_platform/inventory.py",
+          "platform/aea_platform/recommendation.py"
+        ]
+      },
+      "test": {
+        "disposition": "evidenced",
+        "paths": [
+          "platform/tests/test_postgres_integration.py"
+        ]
+      }
+    },
+    {
+      "requirement_id": "FR-012",
+      "scope": "Future",
+      "adr": {
+        "disposition": "unclaimed",
+        "paths": []
+      },
+      "implementation": {
+        "disposition": "evidenced",
+        "paths": [
+          "edge/gateway/ui/florist.html",
+          "platform/aea_platform/adapters.py",
+          "platform/aea_platform/internal_api.py",
+          "platform/aea_platform/inventory.py"
+        ]
+      },
+      "test": {
+        "disposition": "evidenced",
+        "paths": [
+          "edge/tests/test_browser_ui.py"
+        ]
+      }
+    },
+    {
+      "requirement_id": "FR-013",
+      "scope": "MVP",
+      "adr": {
+        "disposition": "evidenced",
+        "paths": [
+          "docs/06-adr/ADR-006-mvp-customization-boundary.md"
+        ]
+      },
+      "implementation": {
+        "disposition": "evidenced",
+        "paths": [
+          "platform/aea_platform/adapters.py",
+          "platform/aea_platform/internal_api.py",
+          "platform/aea_platform/order.py",
+          "platform/aea_platform/selection.py",
+          "platform/migrations/008_order_aggregate.sql"
+        ]
+      },
+      "test": {
+        "disposition": "unclaimed",
+        "paths": []
+      }
+    },
+    {
+      "requirement_id": "FR-014",
+      "scope": "MVP",
+      "adr": {
+        "disposition": "evidenced",
+        "paths": [
+          "docs/06-adr/ADR-013-confirmation-driven-experience.md"
+        ]
+      },
+      "implementation": {
+        "disposition": "evidenced",
+        "paths": [
+          "edge/bff/aea_bff/app.py",
+          "platform/aea_platform/delivery.py",
+          "platform/aea_platform/internal_api.py"
+        ]
+      },
+      "test": {
+        "disposition": "unclaimed",
+        "paths": []
+      }
+    },
+    {
+      "requirement_id": "FR-015",
+      "scope": "MVP",
+      "adr": {
+        "disposition": "unclaimed",
+        "paths": []
+      },
+      "implementation": {
+        "disposition": "evidenced",
+        "paths": [
+          "platform/aea_platform/internal_api.py",
+          "platform/aea_platform/order.py",
+          "platform/migrations/009_order_status_lifecycle.sql"
+        ]
+      },
+      "test": {
+        "disposition": "unclaimed",
+        "paths": []
+      }
+    },
+    {
+      "requirement_id": "FR-016",
+      "scope": "Future",
+      "adr": {
+        "disposition": "evidenced",
+        "paths": [
+          "docs/06-adr/ADR-013-confirmation-driven-experience.md"
+        ]
+      },
+      "implementation": {
+        "disposition": "evidenced",
+        "paths": [
+          "edge/gateway/ui/florist.html",
+          "platform/aea_platform/order.py",
+          "platform/migrations/015_browser_order_recall.sql"
+        ]
+      },
+      "test": {
+        "disposition": "evidenced",
+        "paths": [
+          "edge/tests/test_browser_ui.py"
+        ]
+      }
+    },
+    {
+      "requirement_id": "FR-017",
+      "scope": "Future",
+      "adr": {
+        "disposition": "evidenced",
+        "paths": [
+          "docs/06-adr/ADR-013-confirmation-driven-experience.md"
+        ]
+      },
+      "implementation": {
+        "disposition": "evidenced",
+        "paths": [
+          "edge/gateway/ui/florist.html",
+          "platform/aea_platform/order.py"
+        ]
+      },
+      "test": {
+        "disposition": "planned",
+        "paths": []
+      }
+    },
+    {
+      "requirement_id": "FR-018",
+      "scope": "MVP",
+      "adr": {
+        "disposition": "evidenced",
+        "paths": [
+          "docs/06-adr/ADR-006-mvp-customization-boundary.md",
+          "docs/06-adr/ADR-013-confirmation-driven-experience.md"
+        ]
+      },
+      "implementation": {
+        "disposition": "evidenced",
+        "paths": [
+          "platform/aea_platform/order.py",
+          "platform/aea_platform/pricing.py"
+        ]
+      },
+      "test": {
+        "disposition": "unclaimed",
+        "paths": []
+      }
+    },
+    {
+      "requirement_id": "FR-019",
+      "scope": "MVP",
+      "adr": {
+        "disposition": "evidenced",
+        "paths": [
+          "docs/06-adr/ADR-013-confirmation-driven-experience.md",
+          "docs/06-adr/ADR-016-agentic-ai-boundary.md"
+        ]
+      },
+      "implementation": {
+        "disposition": "evidenced",
+        "paths": [
+          "platform/aea_platform/order.py",
+          "platform/aea_platform/payment.py"
+        ]
+      },
+      "test": {
+        "disposition": "unclaimed",
+        "paths": []
+      }
+    },
+    {
+      "requirement_id": "FR-020",
+      "scope": "MVP",
+      "adr": {
+        "disposition": "evidenced",
+        "paths": [
+          "docs/06-adr/ADR-006-mvp-customization-boundary.md",
+          "docs/06-adr/ADR-009-experience-state-ownership.md",
+          "docs/06-adr/ADR-010-command-event-boundaries.md",
+          "docs/06-adr/ADR-011-experience-state-datastore.md",
+          "docs/06-adr/ADR-013-confirmation-driven-experience.md"
+        ]
+      },
+      "implementation": {
+        "disposition": "unclaimed",
+        "paths": []
+      },
+      "test": {
+        "disposition": "evidenced",
+        "paths": [
+          "platform/tests/test_postgres_integration.py"
+        ]
+      }
+    },
+    {
+      "requirement_id": "FR-021",
+      "scope": "MVP",
+      "adr": {
+        "disposition": "evidenced",
+        "paths": [
+          "docs/06-adr/ADR-009-experience-state-ownership.md",
+          "docs/06-adr/ADR-011-experience-state-datastore.md",
+          "docs/06-adr/ADR-016-agentic-ai-boundary.md"
+        ]
+      },
+      "implementation": {
+        "disposition": "evidenced",
+        "paths": [
+          "platform/aea_platform/intent.py"
+        ]
+      },
+      "test": {
+        "disposition": "unclaimed",
+        "paths": []
+      }
+    },
+    {
+      "requirement_id": "FR-022",
+      "scope": "MVP",
+      "adr": {
+        "disposition": "evidenced",
+        "paths": [
+          "docs/06-adr/ADR-008-contract-first-messaging.md",
+          "docs/06-adr/ADR-009-experience-state-ownership.md",
+          "docs/06-adr/ADR-010-command-event-boundaries.md",
+          "docs/06-adr/ADR-011-experience-state-datastore.md",
+          "docs/06-adr/ADR-012-external-message-broker.md"
+        ]
+      },
+      "implementation": {
+        "disposition": "unclaimed",
+        "paths": []
+      },
+      "test": {
+        "disposition": "unclaimed",
+        "paths": []
+      }
+    },
+    {
+      "requirement_id": "FR-023",
+      "scope": "MVP",
+      "adr": {
+        "disposition": "unclaimed",
+        "paths": []
+      },
+      "implementation": {
+        "disposition": "evidenced",
+        "paths": [
+          "platform/aea_platform/adapters.py",
+          "platform/aea_platform/order.py",
+          "platform/migrations/010_order_tracking.sql"
+        ]
+      },
+      "test": {
+        "disposition": "unclaimed",
+        "paths": []
+      }
+    },
+    {
+      "requirement_id": "NFR-001",
+      "scope": "MVP",
+      "adr": {
+        "disposition": "unclaimed",
+        "paths": []
+      },
+      "implementation": {
+        "disposition": "unclaimed",
+        "paths": []
+      },
+      "test": {
+        "disposition": "unclaimed",
+        "paths": []
+      }
+    },
+    {
+      "requirement_id": "NFR-002",
+      "scope": "MVP",
+      "adr": {
+        "disposition": "unclaimed",
+        "paths": []
+      },
+      "implementation": {
+        "disposition": "unclaimed",
+        "paths": []
+      },
+      "test": {
+        "disposition": "unclaimed",
+        "paths": []
+      }
+    },
+    {
+      "requirement_id": "NFR-003",
+      "scope": "MVP",
+      "adr": {
+        "disposition": "evidenced",
+        "paths": [
+          "docs/06-adr/ADR-007-initial-deployment-topology.md"
+        ]
+      },
+      "implementation": {
+        "disposition": "unclaimed",
+        "paths": []
+      },
+      "test": {
+        "disposition": "evidenced",
+        "paths": [
+          "platform/tests/test_generative_ai.py"
+        ]
+      }
+    },
+    {
+      "requirement_id": "NFR-004",
+      "scope": "MVP",
+      "adr": {
+        "disposition": "evidenced",
+        "paths": [
+          "docs/06-adr/ADR-007-initial-deployment-topology.md",
+          "docs/06-adr/ADR-010-command-event-boundaries.md"
+        ]
+      },
+      "implementation": {
+        "disposition": "evidenced",
+        "paths": [
+          "edge/scripts/check_assistant_slo.py"
+        ]
+      },
+      "test": {
+        "disposition": "unclaimed",
+        "paths": []
+      }
+    },
+    {
+      "requirement_id": "NFR-005",
+      "scope": "MVP",
+      "adr": {
+        "disposition": "evidenced",
+        "paths": [
+          "docs/06-adr/ADR-016-agentic-ai-boundary.md"
+        ]
+      },
+      "implementation": {
+        "disposition": "evidenced",
+        "paths": [
+          "edge/scripts/diagnose.py",
+          "platform/aea_platform/generative_ai.py",
+          "platform/aea_platform/internal_api.py"
+        ]
+      },
+      "test": {
+        "disposition": "unclaimed",
+        "paths": []
+      }
+    },
+    {
+      "requirement_id": "NFR-006",
+      "scope": "MVP",
+      "adr": {
+        "disposition": "evidenced",
+        "paths": [
+          "docs/06-adr/ADR-014-postgresql-pgvector.md",
+          "docs/06-adr/ADR-015-rag-hybrid-retrieval.md",
+          "docs/06-adr/ADR-016-agentic-ai-boundary.md"
+        ]
+      },
+      "implementation": {
+        "disposition": "evidenced",
+        "paths": [
+          "platform/aea_platform/recommendation.py"
+        ]
+      },
+      "test": {
+        "disposition": "unclaimed",
+        "paths": []
+      }
+    },
+    {
+      "requirement_id": "NFR-007",
+      "scope": "MVP",
+      "adr": {
+        "disposition": "evidenced",
+        "paths": [
+          "docs/06-adr/ADR-009-experience-state-ownership.md",
+          "docs/06-adr/ADR-011-experience-state-datastore.md"
+        ]
+      },
+      "implementation": {
+        "disposition": "unclaimed",
+        "paths": []
+      },
+      "test": {
+        "disposition": "unclaimed",
+        "paths": []
+      }
+    },
+    {
+      "requirement_id": "NFR-008",
+      "scope": "Future",
+      "adr": {
+        "disposition": "unclaimed",
+        "paths": []
+      },
+      "implementation": {
+        "disposition": "evidenced",
+        "paths": [
+          "platform/aea_platform/adapters.py",
+          "platform/aea_platform/quality.py"
+        ]
+      },
+      "test": {
+        "disposition": "planned",
+        "paths": []
+      }
+    },
+    {
+      "requirement_id": "NFR-009",
+      "scope": "MVP",
+      "adr": {
+        "disposition": "unclaimed",
+        "paths": []
+      },
+      "implementation": {
+        "disposition": "unclaimed",
+        "paths": []
+      },
+      "test": {
+        "disposition": "unclaimed",
+        "paths": []
+      }
+    },
+    {
+      "requirement_id": "NFR-010",
+      "scope": "Future",
+      "adr": {
+        "disposition": "unclaimed",
+        "paths": []
+      },
+      "implementation": {
+        "disposition": "planned",
+        "paths": []
+      },
+      "test": {
+        "disposition": "planned",
+        "paths": []
+      }
+    },
+    {
+      "requirement_id": "NFR-011",
+      "scope": "MVP",
+      "adr": {
+        "disposition": "unclaimed",
+        "paths": []
+      },
+      "implementation": {
+        "disposition": "evidenced",
+        "paths": [
+          "platform/aea_platform/adapters.py",
+          "platform/aea_platform/workspace_handlers.py"
+        ]
+      },
+      "test": {
+        "disposition": "evidenced",
+        "paths": [
+          "platform/tests/test_kafka_integration.py",
+          "platform/tests/test_postgres_integration.py"
+        ]
+      }
+    },
+    {
+      "requirement_id": "NFR-012",
+      "scope": "MVP",
+      "adr": {
+        "disposition": "evidenced",
+        "paths": [
+          "docs/06-adr/ADR-009-experience-state-ownership.md",
+          "docs/06-adr/ADR-011-experience-state-datastore.md",
+          "docs/06-adr/ADR-013-confirmation-driven-experience.md"
+        ]
+      },
+      "implementation": {
+        "disposition": "unclaimed",
+        "paths": []
+      },
+      "test": {
+        "disposition": "unclaimed",
+        "paths": []
+      }
+    },
+    {
+      "requirement_id": "NFR-013",
+      "scope": "MVP",
+      "adr": {
+        "disposition": "unclaimed",
+        "paths": []
+      },
+      "implementation": {
+        "disposition": "evidenced",
+        "paths": [
+          "edge/bff/aea_bff/app.py",
+          "edge/gateway/ui/index.html",
+          "platform/aea_platform/payment.py",
+          "platform/migrations/012_checkout_intent.sql"
+        ]
+      },
+      "test": {
+        "disposition": "evidenced",
+        "paths": [
+          "platform/tests/test_postgres_integration.py",
+          "platform/tests/test_privacy.py"
+        ]
+      }
+    },
+    {
+      "requirement_id": "NFR-014",
+      "scope": "Future",
+      "adr": {
+        "disposition": "evidenced",
+        "paths": [
+          "docs/06-adr/ADR-007-initial-deployment-topology.md"
+        ]
+      },
+      "implementation": {
+        "disposition": "planned",
+        "paths": []
+      },
+      "test": {
+        "disposition": "evidenced",
+        "paths": [
+          "platform/tests/test_generative_ai.py"
+        ]
+      }
+    },
+    {
+      "requirement_id": "NFR-015",
+      "scope": "MVP",
+      "adr": {
+        "disposition": "evidenced",
+        "paths": [
+          "docs/06-adr/ADR-008-contract-first-messaging.md",
+          "docs/06-adr/ADR-012-external-message-broker.md"
+        ]
+      },
+      "implementation": {
+        "disposition": "unclaimed",
+        "paths": []
+      },
+      "test": {
+        "disposition": "unclaimed",
+        "paths": []
+      }
+    },
+    {
+      "requirement_id": "NFR-016",
+      "scope": "MVP",
+      "adr": {
+        "disposition": "evidenced",
+        "paths": [
+          "docs/06-adr/ADR-008-contract-first-messaging.md",
+          "docs/06-adr/ADR-012-external-message-broker.md"
+        ]
+      },
+      "implementation": {
+        "disposition": "unclaimed",
+        "paths": []
+      },
+      "test": {
+        "disposition": "unclaimed",
+        "paths": []
+      }
+    },
+    {
+      "requirement_id": "NFR-017",
+      "scope": "MVP",
+      "adr": {
+        "disposition": "evidenced",
+        "paths": [
+          "docs/06-adr/ADR-008-contract-first-messaging.md",
+          "docs/06-adr/ADR-011-experience-state-datastore.md",
+          "docs/06-adr/ADR-012-external-message-broker.md",
+          "docs/06-adr/ADR-013-confirmation-driven-experience.md"
+        ]
+      },
+      "implementation": {
+        "disposition": "evidenced",
+        "paths": [
+          "edge/gateway/ui/florist.html",
+          "edge/gateway/ui/index.html",
+          "platform/aea_platform/privacy.py",
+          "platform/aea_platform/support.py"
+        ]
+      },
+      "test": {
+        "disposition": "evidenced",
+        "paths": [
+          "platform/tests/test_privacy.py"
+        ]
+      }
+    }
+  ]
+}

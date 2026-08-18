@@ -21,6 +21,7 @@ Lily's Florist Shop.
 - [UX design guide](docs/05-ux-design-guide/ux-design-guide.md)
 - [Architecture Decision Records](docs/06-adr/ADR-001-shared-understanding.md)
 - [Roadmap](docs/07-roadmap/roadmap.md)
+- [Requirement evidence convention](docs/08-traceability/requirement-evidence.md)
 - [Florist reference design](implementations/florist/README.md)
 - [Platform foundation](platform/README.md) — product-neutral PostgreSQL,
   outbox, Kafka, governance, and orchestration services.
