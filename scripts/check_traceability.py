@@ -212,9 +212,9 @@ def main() -> None:
         print("\nok: all canonical FR/NFR IDs have a traceable issue, "
               "matching roadmap milestone, and evidenced closure")
     else:
-        print("\nSee the module docstring for what this guard does not check "
-              "(ADR linkage, code/test linkage) -- those are known-out-of-scope, "
-              "not silently passing.")
+        print("\nADR and code/test citation evidence is checked separately by "
+              "check_requirement_evidence.py; this failure is limited to the "
+              "live issue/milestone/closure checks above.")
         sys.exit(1)
 
 
