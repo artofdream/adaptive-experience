@@ -114,22 +114,43 @@ def fetch_canonical_issues() -> dict[str, list[dict]]:
     return by_req
 
 
-def check_closed_by_merged_mr(issue_iid: int) -> bool:
-    try:
-        closed_by = gitlab_api(f"issues/{issue_iid}/closed_by")
-    except (urllib.error.URLError, KeyError, json.JSONDecodeError):
-        return False  # can't verify -> treat as unverified, not as passing
-    return any(mr.get("state") == "merged" for mr in closed_by)
+CLOSES_RE = re.compile(r"[Cc]loses?\s+#(\d+)")
+
+
+def fetch_issues_closed_by_merged_mr() -> set[int]:
+    """Issue IIDs referenced as 'Closes #N' in any merged MR's description.
+
+    Deliberately not per-issue GET .../closed_by calls: live-tested and
+    found that endpoint returns empty via CI_JOB_TOKEN for every single
+    issue checked, including one (#32) independently confirmed via a
+    full-scope session to have a real merged closing MR -- the same class
+    of job-token API-scope restriction found earlier building
+    generate_daily_brief.py (MR creation, not just this read). One
+    paginated merge_requests fetch, filtered by this repo's own
+    established 'Closes #N' convention, sidesteps it entirely and is
+    fewer API calls besides."""
+    closed_iids: set[int] = set()
+    page = 1
+    while True:
+        mrs = gitlab_api("merge_requests", {"state": "merged", "per_page": 100, "page": page})
+        if not mrs:
+            break
+        for mr in mrs:
+            for match in CLOSES_RE.finditer(mr.get("description") or ""):
+                closed_iids.add(int(match.group(1)))
+        page += 1
+    return closed_iids
 
 
 def main() -> None:
     req_ids = canonical_requirement_ids()
     try:
         issues_by_req = fetch_canonical_issues()
+        closed_by_merged_mr = fetch_issues_closed_by_merged_mr()
     except (urllib.error.URLError, KeyError, json.JSONDecodeError) as exc:
         # Report a clean, honest failure -- not a raw traceback -- and
         # make it distinguishable from a genuine traceability finding.
-        print(f"UNVERIFIED: could not fetch issues from the GitLab API: {exc}")
+        print(f"UNVERIFIED: could not fetch data from the GitLab API: {exc}")
         print("This is a data-gathering failure, not a traceability finding "
               "-- do not treat it as evidence the 40 requirements are untraceable.")
         sys.exit(2)
@@ -161,8 +182,8 @@ def main() -> None:
                 "GitLab has no milestone set"
             )
 
-        if issue["state"] == "closed" and not check_closed_by_merged_mr(issue["iid"]):
-            unevidenced_closures.append(f"{req_id} (#{issue['iid']}): closed, no merged MR on record")
+        if issue["state"] == "closed" and issue["iid"] not in closed_by_merged_mr:
+            unevidenced_closures.append(f"{req_id} (#{issue['iid']}): closed, no 'Closes #{issue['iid']}' found in any merged MR")
 
     print(f"Canonical requirement IDs checked: {len(req_ids)}")
     print(f"Canonical issues found: {sum(len(v) for v in issues_by_req.values())}")
