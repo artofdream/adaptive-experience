@@ -51,6 +51,7 @@ flowchart TD
         CC["check_coherence.py<br/>(workbook/docs ID+scope)"]
         TS["check_topic_schemas.py<br/>(governed payload schemas)"]
         SS["generate_codex_stakeholder_skills.py --check<br/>(4-way skill sync)"]
+        PC["check_process_coherence.py<br/>(MR delivery evidence, advisory)"]
         PU["platform/edge unit + integration tests"]
         LINT["markdownlint / linkcheck<br/>(advisory only)"]
     end
@@ -65,6 +66,7 @@ flowchart TD
     CC -- constrain --> MRC
     TS -- constrain --> MRC
     SS -- constrain --> MRC
+    PC -. advisory only .-> MRC
     PU -- constrain --> MRC
     LINT -. advisory only .-> MRC
     DOCKER -. manual attestation .-> MRC
@@ -165,6 +167,7 @@ flowchart TD
 | `generate_daily_brief.py` | producer | CI, schedule only (04:00 UTC) | `aea-coherence-guardian` | automated, **unverified end-to-end** |
 | `platform-foundation-unit` / `edge-perimeter-unit` / `platform-foundation-integration` | guard | CI, on `platform/`/`edge/` changes | script | automated |
 | `check_traceability.py` | guard | CI, on `requirements.md`/`roadmap.md`/self changes + every MR/main | `aea-senior-software-engineer` | automated, advisory (see gap 1) |
+| `check_process_coherence.py` | guard | every MR/main + scheduled daily-brief evidence | `aea-project-manager` | automated, advisory; semantic focus remains manual |
 | `markdownlint` / `linkcheck` | guard | CI, on `.md` changes, MR only | script | automated, advisory only |
 | `docker-integration-before-mr.mdc` | guard | manual, attested per-MR | every specialist role | **manual for edge** (no CI job runs `edge/scripts/run_integration_tests.py`); **partially automated for platform** (`platform-foundation-integration` runs equivalent Postgres+Kafka coverage via CI `services:`, not the literal script) |
 | `research/coherence-findings-loop.md` | remediation cycle | on-demand / `aea-coherence-guardian` invocation | `aea-coherence-guardian` | manual trigger, disciplined procedure |
@@ -206,11 +209,13 @@ recurring blind spot outranks an expensive fix for a rare one.
    watches the *team's process*; this loop is the first one watching
    whether the *product* stays honest, but only for the issue-tracking
    half of the chain, not the code/test half.
-2. **PM-SM's process-coherence check is manual.** Nothing scheduled
-   verifies specialists actually followed one-issue-one-branch-one-MR;
-   it only happens when someone invokes the PM persona. Could fold into
-   `generate_daily_brief.py`'s evidence-gathering cheaply, since that
-   loop already reads recent MRs.
+2. **PM-SM process coherence is partially automated.**
+   `scripts/check_process_coherence.py` now checks falsifiable MR evidence:
+   one closing issue (or the allowlisted recurring-report exception), branch
+   discipline, a validation section, and integration/CI-only evidence when
+   platform, edge, or infra paths change. It runs advisory in CI and in the
+   scheduled daily brief. Semantic focus, justified exceptions, and whether
+   evidence is substantively adequate remain PM-SM review responsibilities.
 3. **`docker-integration-before-mr.mdc` is attested, not verified —
    confirmed precisely.** No CI job invokes `edge/scripts/run_integration_tests.py`
    or `platform/scripts/run_integration_tests.py` at all; `aea-mr-coordinator`

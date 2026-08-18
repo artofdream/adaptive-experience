@@ -110,6 +110,8 @@ def gather_guard_results(notes: MethodNote) -> dict:
         ("check_topic_schemas.py", [sys.executable, "scripts/check_topic_schemas.py"]),
         ("generate_codex_stakeholder_skills.py --check",
          [sys.executable, "scripts/generate_codex_stakeholder_skills.py", "--check"]),
+        ("check_process_coherence.py",
+         [sys.executable, "scripts/check_process_coherence.py"]),
         ("check_daily_brief_freshness.py",
          [sys.executable, "scripts/check_daily_brief_freshness.py"]),
     ):
@@ -238,6 +240,8 @@ def push_and_open_mr(today: datetime.date, path: Path) -> dict:
                 "(no tool access); guard output and git/MR actions are plain "
                 "script code, not model-driven. Not merged automatically -- "
                 "see .cursor/skills/aea-mr-coordinator/SKILL.md."
+                "\n\nProcess-Exception: recurring-report"
+                "\n\nValidation: deterministic scheduled report generation"
             ),
             "remove_source_branch": True,
         })

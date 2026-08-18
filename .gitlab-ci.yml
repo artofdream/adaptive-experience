@@ -72,6 +72,17 @@ traceability-guard:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_COMMIT_BRANCH == "main"'
 
+process-coherence-guard:
+  stage: verify
+  image: python:3.12-alpine
+  allow_failure: true  # semantic focus and justified exceptions still require PM-SM review
+  script:
+    - python scripts/test_process_coherence.py -v
+    - python scripts/check_process_coherence.py
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
 daily-brief-generate:
   stage: report
   image: python:3.12-alpine
