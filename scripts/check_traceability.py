@@ -93,8 +93,11 @@ def fetch_canonical_issues() -> dict[str, list[dict]]:
     by_req: dict[str, list[dict]] = {}
     page = 1
     while True:
+        # No "scope" param here: valid for the global /issues endpoint,
+        # not the project-scoped one used here (that returned every
+        # project issue already, live-tested confirmed).
         issues = gitlab_api("issues", {
-            "scope": "all", "per_page": 100, "page": page, "order_by": "iid", "sort": "asc",
+            "per_page": 100, "page": page, "order_by": "iid", "sort": "asc",
         })
         if not issues:
             break
@@ -122,7 +125,15 @@ def check_closed_by_merged_mr(issue_iid: int) -> bool:
 
 def main() -> None:
     req_ids = canonical_requirement_ids()
-    issues_by_req = fetch_canonical_issues()
+    try:
+        issues_by_req = fetch_canonical_issues()
+    except (urllib.error.URLError, KeyError, json.JSONDecodeError) as exc:
+        # Report a clean, honest failure -- not a raw traceback -- and
+        # make it distinguishable from a genuine traceability finding.
+        print(f"UNVERIFIED: could not fetch issues from the GitLab API: {exc}")
+        print("This is a data-gathering failure, not a traceability finding "
+              "-- do not treat it as evidence the 40 requirements are untraceable.")
+        sys.exit(2)
 
     orphans, milestone_mismatches, unevidenced_closures = [], [], []
 
