@@ -74,6 +74,7 @@ Copy this checklist:
 
 ```
 Coherence guardian:
+- [ ] 0. If this run adds/removes/changes a loop (CI job, role, schedule): update research/loop-graph.md in the same MR
 - [ ] 1. Fetch/pull origin/main
 - [ ] 2. Reconcile queue Status/Issue-MR columns against live GitLab
 - [ ] 3. If queued/regressed exists: one remediation iteration (issue -> branch -> fix -> MR)
@@ -81,6 +82,20 @@ Coherence guardian:
 - [ ] 5. If a status/activity brief is due: write research/daily-briefs/YYYY-MM-DD.md
 - [ ] 6. Report mode, finding ID, MR URL if any, next queued item, stop condition if hit
 ```
+
+### 0. Keep the loop graph current
+
+`research/loop-graph.md` catalogs every loop in this repo (guards, this
+role's own reporting cycle, the other stakeholder roles, SOPs) and the
+watch/feed/constrain/correct edges between them. When intake or
+remediation adds, removes, or changes a loop's trigger — a new CI job,
+a new role, a schedule change — update the relevant diagram and both
+catalog tables in the same MR. Treat a stale loop-graph.md (drifted from
+actual `.gitlab-ci.yml` / `.cursor/skills/` / `.cursor/rules/` contents)
+as a coherence finding during intake, the same as any other doc/code
+drift — it exists specifically so a missing edge is visible by
+inspection instead of discovered by hitting it, which only works if it
+stays accurate.
 
 ### 1–4. Run the coherence loop
 
