@@ -53,15 +53,27 @@ class MethodNote(list):
         self.append(text)
 
 
+def gitlab_auth_headers() -> dict:
+    """Prefer the scoped GITLAB_MR_TOKEN (api scope) when present -- job
+    tokens cover git push but not every API endpoint (confirmed live: MR
+    creation via JOB-TOKEN returns a bare 401 regardless of the project's
+    "allow job tokens to push" setting). Fall back to the job token for
+    read-only calls if no PAT has been configured yet."""
+    pat = os.environ.get("GITLAB_MR_TOKEN")
+    if pat:
+        return {"PRIVATE-TOKEN": pat}
+    return {"JOB-TOKEN": os.environ["CI_JOB_TOKEN"]}
+
+
 def gitlab_api(path: str, params: dict | None = None) -> object:
-    """GET against this project's GitLab API using the CI job token."""
+    """GET against this project's GitLab API."""
     base = os.environ["CI_SERVER_URL"].rstrip("/")
     project_id = os.environ["CI_PROJECT_ID"]
     url = f"{base}/api/v4/projects/{project_id}/{path}"
     if params:
         query = "&".join(f"{k}={urllib.request.quote(str(v))}" for k, v in params.items())
         url = f"{url}?{query}"
-    req = urllib.request.Request(url, headers={"JOB-TOKEN": os.environ["CI_JOB_TOKEN"]})
+    req = urllib.request.Request(url, headers=gitlab_auth_headers())
     with urllib.request.urlopen(req, timeout=30) as resp:
         return json.loads(resp.read().decode("utf-8"))
 
@@ -71,10 +83,8 @@ def gitlab_api_post(path: str, body: dict) -> object:
     project_id = os.environ["CI_PROJECT_ID"]
     url = f"{base}/api/v4/projects/{project_id}/{path}"
     data = json.dumps(body).encode("utf-8")
-    req = urllib.request.Request(
-        url, data=data, method="POST",
-        headers={"JOB-TOKEN": os.environ["CI_JOB_TOKEN"], "Content-Type": "application/json"},
-    )
+    headers = {**gitlab_auth_headers(), "Content-Type": "application/json"}
+    req = urllib.request.Request(url, data=data, method="POST", headers=headers)
     try:
         with urllib.request.urlopen(req, timeout=30) as resp:
             return json.loads(resp.read().decode("utf-8"))
