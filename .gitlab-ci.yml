@@ -61,6 +61,8 @@ stakeholder-skill-sync:
 daily-brief-generate:
   stage: report
   image: python:3.12-alpine
+  before_script:
+    - apk add --no-cache git
   script:
     - python scripts/generate_daily_brief.py
   rules:
