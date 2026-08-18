@@ -3,6 +3,7 @@
 # - markdownlint / linkcheck (advisory): quality signals, non-blocking.
 
 stages:
+  - report
   - verify
   - integration
   - lint
@@ -56,6 +57,14 @@ stakeholder-skill-sync:
         - "scripts/generate_codex_stakeholder_skills.py"
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_COMMIT_BRANCH == "main"'
+
+daily-brief-generate:
+  stage: report
+  image: python:3.12-alpine
+  script:
+    - python scripts/generate_daily_brief.py
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
 
 daily-brief-freshness:
   stage: verify
