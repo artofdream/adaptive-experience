@@ -4,7 +4,12 @@ import json
 import re
 import sys
 
-from generate_requirement_evidence import OUTPUT, ROOT, canonical_requirements
+from generate_requirement_evidence import (
+    OUTPUT,
+    ROOT,
+    adr_related_ids,
+    canonical_requirements,
+)
 
 ID_RE = re.compile(r"\b(?:FR|NFR)-\d{3}\b")
 KINDS = ("adr", "implementation", "test")
@@ -45,8 +50,7 @@ def validate(data: dict) -> list[str]:
                 if req_id not in ID_RE.findall(text):
                     errors.append(f"{req_id}/{kind}: {relative} does not cite {req_id}")
                 if kind == "adr":
-                    header = "\n".join(text.splitlines()[:12])
-                    if req_id not in ID_RE.findall(header):
+                    if req_id not in adr_related_ids(text):
                         errors.append(f"{req_id}/adr: {relative} does not declare it in Related requirements")
     return errors
 

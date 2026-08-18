@@ -161,12 +161,8 @@
       "requirement_id": "FR-008",
       "scope": "Future",
       "adr": {
-        "disposition": "evidenced",
-        "paths": [
-          "docs/06-adr/ADR-013-confirmation-driven-experience.md",
-          "docs/06-adr/ADR-014-postgresql-pgvector.md",
-          "docs/06-adr/ADR-015-rag-hybrid-retrieval.md"
-        ]
+        "disposition": "unclaimed",
+        "paths": []
       },
       "implementation": {
         "disposition": "evidenced",
@@ -204,11 +200,8 @@
       "requirement_id": "FR-010",
       "scope": "Future",
       "adr": {
-        "disposition": "evidenced",
-        "paths": [
-          "docs/06-adr/ADR-014-postgresql-pgvector.md",
-          "docs/06-adr/ADR-015-rag-hybrid-retrieval.md"
-        ]
+        "disposition": "unclaimed",
+        "paths": []
       },
       "implementation": {
         "disposition": "evidenced",
@@ -338,10 +331,8 @@
       "requirement_id": "FR-016",
       "scope": "Future",
       "adr": {
-        "disposition": "evidenced",
-        "paths": [
-          "docs/06-adr/ADR-013-confirmation-driven-experience.md"
-        ]
+        "disposition": "unclaimed",
+        "paths": []
       },
       "implementation": {
         "disposition": "evidenced",
@@ -362,10 +353,8 @@
       "requirement_id": "FR-017",
       "scope": "Future",
       "adr": {
-        "disposition": "evidenced",
-        "paths": [
-          "docs/06-adr/ADR-013-confirmation-driven-experience.md"
-        ]
+        "disposition": "unclaimed",
+        "paths": []
       },
       "implementation": {
         "disposition": "evidenced",
@@ -407,8 +396,7 @@
       "adr": {
         "disposition": "evidenced",
         "paths": [
-          "docs/06-adr/ADR-013-confirmation-driven-experience.md",
-          "docs/06-adr/ADR-016-agentic-ai-boundary.md"
+          "docs/06-adr/ADR-013-confirmation-driven-experience.md"
         ]
       },
       "implementation": {

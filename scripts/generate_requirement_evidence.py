@@ -30,11 +30,29 @@ def cited_paths(root: Path, req_id: str, tests: bool) -> list[str]:
     return paths
 
 
+def adr_related_ids(text: str) -> set[str]:
+    """Parse only the labeled Related requirements field and continuations."""
+    captured: list[str] = []
+    collecting = False
+    for line in text.splitlines():
+        if line.startswith("Related requirements:"):
+            collecting = True
+            captured.append(line.split(":", 1)[1])
+            continue
+        if not collecting:
+            continue
+        stripped = line.strip()
+        if (not stripped or stripped.startswith("(") or
+                re.match(r"^[A-Z][A-Za-z /-]+:\s*", stripped)):
+            break
+        captured.append(stripped)
+    return set(ID_RE.findall("\n".join(captured)))
+
+
 def adr_paths(req_id: str) -> list[str]:
     paths = []
     for path in sorted((ROOT / "docs" / "06-adr").glob("ADR-*.md")):
-        header = "\n".join(path.read_text(encoding="utf-8").splitlines()[:12])
-        if req_id in ID_RE.findall(header):
+        if req_id in adr_related_ids(path.read_text(encoding="utf-8")):
             paths.append(path.relative_to(ROOT).as_posix())
     return paths
 
