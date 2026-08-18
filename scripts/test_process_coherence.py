@@ -1,6 +1,8 @@
 import unittest
+from unittest.mock import patch
+from urllib.error import HTTPError
 
-from check_process_coherence import changed_paths, evaluate
+from check_process_coherence import changed_paths, evaluate, evaluate_live
 
 
 class ProcessCoherenceTests(unittest.TestCase):
@@ -56,6 +58,43 @@ class ProcessCoherenceTests(unittest.TestCase):
         self.assertIn("edge/legacy.py", changed_paths(mr))
         findings = evaluate(mr, changed_paths(mr))
         self.assertTrue(any("integration" in finding for finding in findings))
+
+    def test_live_diffs_preserve_old_and_new_paths(self):
+        mr = self.mr("Closes #10\n\nValidation: unit tests")
+        diffs = [{"old_path": "edge/legacy.py", "new_path": "docs/legacy.md"}]
+        with patch("check_process_coherence.gitlab_api", return_value=diffs) as api:
+            paths = changed_paths(mr)
+        self.assertEqual(["docs/legacy.md", "edge/legacy.py"], paths)
+        api.assert_called_once_with(
+            "merge_requests/10/diffs", {"per_page": 100, "page": 1}
+        )
+
+    def test_live_diffs_404_is_an_explicit_finding_not_a_crash(self):
+        mr = self.mr("Closes #10\n\nValidation: unit tests")
+        error = HTTPError(
+            "https://gitlab.example/api/v4/projects/1/merge_requests/10/diffs",
+            404,
+            "Not Found",
+            None,
+            None,
+        )
+        with patch("check_process_coherence.gitlab_api", side_effect=error):
+            findings = evaluate_live(mr)
+        self.assertTrue(any("changed paths could not be verified" in value for value in findings))
+        self.assertTrue(any("integration evidence remains unknown" in value for value in findings))
+
+    def test_live_non_404_diffs_error_is_not_hidden(self):
+        mr = self.mr("Closes #10\n\nValidation: unit tests")
+        error = HTTPError(
+            "https://gitlab.example/api/v4/projects/1/merge_requests/10/diffs",
+            403,
+            "Forbidden",
+            None,
+            None,
+        )
+        with patch("check_process_coherence.gitlab_api", side_effect=error):
+            with self.assertRaises(HTTPError):
+                evaluate_live(mr)
 
 
 if __name__ == "__main__":

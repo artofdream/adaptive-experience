@@ -169,7 +169,7 @@ flowchart TD
 | `generate_daily_brief.py` | producer | CI, schedule only (04:00 UTC) | `aea-coherence-guardian` | automated, **unverified end-to-end** |
 | `platform-foundation-unit` / `edge-perimeter-unit` / `platform-foundation-integration` | guard | CI, on `platform/`/`edge/` changes | script | automated |
 | `check_traceability.py` | guard | CI, on `requirements.md`/`roadmap.md`/self changes + every MR/main | `aea-senior-software-engineer` | automated, advisory (see gap 1) |
-| `check_process_coherence.py` | guard | every MR/main + scheduled daily-brief evidence | `aea-project-manager` | automated, advisory; semantic focus remains manual |
+| `check_process_coherence.py` | guard | every MR/main + scheduled daily-brief evidence | `aea-project-manager` | automated, advisory; inaccessible MR change details become explicit findings instead of aborting the loop; semantic focus remains manual |
 | `check_requirement_evidence.py` | guard | CI, on requirements/ADR/platform/edge/evidence changes + every MR/main | `aea-senior-software-engineer` | automated, advisory citation evidence |
 | `markdownlint` / `linkcheck` | guard | CI, on `.md` changes, MR only | script | automated, advisory only |
 | `docker-integration-before-mr.mdc` | guard | manual, attested per-MR | every specialist role | **manual for edge** (no CI job runs `edge/scripts/run_integration_tests.py`); **partially automated for platform** (`platform-foundation-integration` runs equivalent Postgres+Kafka coverage via CI `services:`, not the literal script) |

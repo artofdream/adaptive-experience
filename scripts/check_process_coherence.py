@@ -11,6 +11,7 @@ import re
 import sys
 import urllib.parse
 import urllib.request
+from urllib.error import HTTPError
 from pathlib import Path
 
 
@@ -42,8 +43,20 @@ def changed_paths(mr: dict) -> list[str]:
     if "changes" in mr:
         changes = mr["changes"]
     else:
-        details = gitlab_api(f"merge_requests/{mr['iid']}/changes")
-        changes = details.get("changes", [])
+        # The legacy /changes endpoint returns 404 to CI_JOB_TOKEN in scheduled
+        # pipelines even when the MR list is readable. The current /diffs
+        # endpoint exposes the same old/new path evidence as a plain list.
+        changes = []
+        page = 1
+        while True:
+            batch = gitlab_api(
+                f"merge_requests/{mr['iid']}/diffs",
+                {"per_page": 100, "page": page},
+            )
+            changes.extend(batch)
+            if len(batch) < 100:
+                break
+            page += 1
     return sorted({
         path
         for change in changes
@@ -83,6 +96,22 @@ def evaluate(mr: dict, paths: list[str]) -> list[str]:
     return findings
 
 
+def evaluate_live(mr: dict) -> list[str]:
+    """Evaluate an MR conservatively when CI cannot read its detailed changes."""
+    try:
+        paths = changed_paths(mr)
+    except HTTPError as exc:
+        if exc.code != 404:
+            raise
+        findings = evaluate(mr, [])
+        findings.append(
+            f"!{mr.get('iid', '?')}: changed paths could not be verified "
+            "(GitLab API HTTP 404); code/infra integration evidence remains unknown"
+        )
+        return findings
+    return evaluate(mr, paths)
+
+
 def load_merge_requests(fixture: Path | None) -> list[dict]:
     if fixture:
         data = json.loads(fixture.read_text(encoding="utf-8"))
@@ -101,7 +130,10 @@ def main() -> None:
     merge_requests = load_merge_requests(args.fixture)
     findings: list[str] = []
     for mr in merge_requests:
-        findings.extend(evaluate(mr, changed_paths(mr)))
+        if args.fixture:
+            findings.extend(evaluate(mr, changed_paths(mr)))
+        else:
+            findings.extend(evaluate_live(mr))
         if not args.fixture:
             description = mr.get("description") or ""
             for issue_id in CLOSE_RE.findall(description):
