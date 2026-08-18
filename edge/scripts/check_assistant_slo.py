@@ -1,13 +1,28 @@
 import json
 import math
+import os
 import ssl
 import time
 import urllib.request
+import urllib.parse
 
 
-BASE_URL = "https://localhost:8443"
+DEFAULT_BASE_URL = "https://localhost:8443"
 SLO_SECONDS = 3.0
 SAMPLE_COUNT = 10
+
+
+def configured_endpoints(environ=None):
+    environ = os.environ if environ is None else environ
+    base_url = environ.get("AEA_EDGE_BASE_URL", DEFAULT_BASE_URL).rstrip("/")
+    origin = environ.get("AEA_EDGE_ORIGIN", DEFAULT_BASE_URL).rstrip("/")
+    for name, value in (("AEA_EDGE_BASE_URL", base_url), ("AEA_EDGE_ORIGIN", origin)):
+        parsed = urllib.parse.urlsplit(value)
+        if (parsed.scheme != "https" or not parsed.hostname or parsed.username
+                or parsed.password or parsed.query or parsed.fragment
+                or parsed.path not in ("", "/")):
+            raise ValueError(f"{name} must be an HTTPS origin without credentials or a path")
+    return base_url, origin
 
 
 def nearest_rank_percentile(samples, percentile):
@@ -31,13 +46,14 @@ def post_json(url, payload, headers, context):
 
 
 def main():
+    base_url, origin = configured_endpoints()
     context = ssl._create_unverified_context()
     base_headers = {
         "Authorization": "Bearer local-browser-token",
-        "Origin": BASE_URL,
+        "Origin": origin,
     }
     status, session, response_headers, _ = post_json(
-        f"{BASE_URL}/api/v1/session", {}, base_headers, context)
+        f"{base_url}/api/v1/session", {}, base_headers, context)
     cookie = response_headers["Set-Cookie"].split(";", 1)[0]
     if status != 201 or not session.get("csrf_token") or not cookie:
         raise SystemExit("could not create an authenticated performance-test session")
@@ -58,7 +74,7 @@ def main():
     )
     for index in range(SAMPLE_COUNT):
         status, result, _, elapsed = post_json(
-            f"{BASE_URL}/api/v1/conversation/messages",
+            f"{base_url}/api/v1/conversation/messages",
             {"message_text": standard_queries[index % len(standard_queries)],
              "observed_context_version": context_version},
             headers, context,
