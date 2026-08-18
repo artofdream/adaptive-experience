@@ -36,12 +36,14 @@ then report what hurt.
   include payment. Do not invent card fields.
 - Destination is a **reference**, not a street address. Confirm the saved
   destination; do not type raw PII.
-- **On the bench:** If you have no in-flight issue/MR and the user did not
-  name a ticket, reach out to `@aea-project-manager` for an assignment. Do
-  not idle. Do not invent unscoped work. Do not take another lane's files.
-  Accept a next-milestone assignment, or preparations for it, even if an
-  earlier gate MR is still open. Do not start M12 CRM or unpark AWS unless
-  the PM names that ticket.
+- **On the bench:** If you have no in-flight issue/MR and neither the
+  sponsor nor `@aea-project-manager` named a ticket, reach out to
+  `@aea-project-manager` for an assignment. Do not idle. A PM-SM
+  assignment counts; the sponsor is not required to name every ticket.
+  Do not invent unscoped work. Do not take another lane's files. Accept
+  a next-milestone assignment, or preparations for it, even if an earlier
+  gate MR is still open. Do not start M12 CRM unless **`@aea-product-owner`**
+  names unpark (sponsor still required if that needs budget or secrets).
 
 ## Path source of truth
 
@@ -144,6 +146,14 @@ session. Fixed in GitLab `!165` — still **observe** if it regresses. If it
 appears **without** visiting `/florist`, report it as a regression/blocker.
 Do not implement CSRF repair unless the user explicitly asks this skill to
 fix something.
+
+## Routing
+
+| Need | Route to |
+|---|---|
+| Product accept/reject of the walk, “should we ship” | `@aea-product-owner` |
+| Process, bench, sequencing | `@aea-project-manager` |
+| Secrets, budget | Sponsor (human) |
 
 ## Out of scope
 

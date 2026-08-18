@@ -32,10 +32,13 @@ Fail-closed production flags (must hold in cloud task defs):
 ## Cloud track (prefer this; do not reinvent)
 
 AWS is **unparked**. `@aea-devsecops-platform` **operates** Path B
-(`plan`/`apply`/bootstrap/Secrets Manager/OIDC handoff). The scrum master
-does not run terraform. Path A stays local Compose. Wait tags: `none` while
-this skill applies; `user` for DNS/GitLab vars the SM must paste. Parked AWS
-is no longer a skip.
+(`plan`/`apply`/bootstrap/Secrets Manager/OIDC handoff). The human is
+**sponsor**, not Scrum Master: the human does not terraform. PM-SM also
+does not terraform. This skill still applies. Do not wait for the SM to
+apply. Escalate secrets and GitLab CI var paste to the **sponsor**. Path A
+stays local Compose. Wait tags: `none` while this skill applies; `user`
+for DNS/GitLab vars the **sponsor** must paste. Parked AWS is no longer a
+skip.
 
 Documented AWS GitLab web deploy (ECR, ECS Fargate, ALB+ACM TLS,
 `aea.artof.link`, RDS PostgreSQL 16, MSK, Secrets Manager, GitLab OIDC).

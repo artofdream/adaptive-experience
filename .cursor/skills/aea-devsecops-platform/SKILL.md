@@ -38,28 +38,36 @@ GitLab: `artof-group/adaptive-experience-architecture` (`glab`, not `gh`).
   — still do not promote them to cloud.
 - **Operate the unparked AWS stack.** This skill owns `plan`/`apply`,
   bootstrap, Secrets Manager hygiene, GitLab OIDC variable handoff notes,
-  and Path B integration ops. The scrum master does **not** run terraform,
-  bootstrap, or DNS; they route and decide (origin, live Anthropic, pilot
-  RF, unpark). Destructive `destroy` still needs an explicit user ask.
+  and Path B integration ops. The human is **sponsor**, not Scrum Master;
+  `@aea-project-manager` is Scrum Master and does **not** terraform. Do
+  not wait for the sponsor or PM-SM to apply. Escalate secrets, `.env`,
+  `terraform.tfvars` values, GitLab CI var paste, and production API keys
+  to the **sponsor**. Destructive `destroy` still needs an explicit
+  sponsor ask.
 - **Local Compose is not production evidence** for NFR-007 / NFR-012 storage
   encryption or production TLS/SASL (ADR-012 leftover).
 - **Do not weaken** fail-closed inventory, auth, CSRF, origin checks, or
   `PayloadPrivacyGuard`. **Offensive cyber / exploit PoCs are disallowed.**
 - One finding → one GitLab issue → one branch from `origin/main` → one MR.
   Do not auto-merge.
-- **On the bench:** If you have no in-flight issue/MR and the user did not
-  name a ticket, reach out to `@aea-project-manager` for an assignment. Do
-  not idle. Do not invent unscoped work. Do not take another lane's files.
-  Accept a next-milestone assignment, or preparations for it, even if an
-  earlier gate MR is still open. Do not start M12 CRM or unpark AWS unless
-  the PM names that ticket.
+- **On the bench:** If you have no in-flight issue/MR and neither the
+  sponsor nor `@aea-project-manager` named a ticket, reach out to
+  `@aea-project-manager` for an assignment. Do not idle. A PM-SM
+  assignment counts; the sponsor is not required to name every ticket.
+  Do not invent unscoped work. Do not take another lane's files. Accept
+  a next-milestone assignment, or preparations for it, even if an earlier
+  gate MR is still open. Do not start M12 CRM unless **`@aea-product-owner`**
+  names unpark (sponsor still required if that needs budget or secrets).
+  Path B is already unparked — this skill operates; do not wait for the
+  sponsor or SM to apply.
 - **Cloud Agent switch.** When the team is resource-constrained **and** a
   stakeholder task is net ≥ +2 **Use**, enforce that ticket as a Cursor
   Cloud Agent. Do not implement their ticket. Never force **Do not use**
-  work to cloud. Do not add `.cursor/environment.json` unless the user
-  opts into a Conditional Docker path.
+  work to cloud. Do not add `.cursor/environment.json` unless the sponsor
+  or PM opts into a Conditional Docker path.
 - CSRF/session product bugs, UX redesign, and AI ranking are **other skills'
-  lanes** unless the user assigned a platform/security deploy item.
+  lanes** unless assigned a platform/security deploy item (sponsor or
+  PM-SM).
 
 Evidence map and CI/IaC inventory: [posture.md](posture.md).
 
@@ -74,7 +82,9 @@ GitLab OIDC). Do not invent a second cloud.
 | Actor | Owns |
 |---|---|
 | This skill | `terraform plan`/`apply`, bootstrap (migrations/topics/ACLs), Secrets Manager key names, GitLab OIDC var **handoff notes**, Path B ops |
-| Scrum master / user | Origin, live Anthropic decision, pilot RF, unpark. Paste GitLab CI vars if `glab` cannot set them. Do **not** `terraform apply`. |
+| PM / Scrum Master | Cadence, routing, sequencing. Does **not** `terraform apply`. |
+| `@aea-product-owner` | Path A vs Path B **product** acceptance; M12 unpark recommendation. Does not terraform. |
+| Sponsor (human) | Secrets, `.env`, `terraform.tfvars` values, GitLab CI var paste, production API keys, live Anthropic key decision, `terraform destroy`. Does **not** apply. Path B is already unparked. |
 
 Laptop Terraform on this ARM64 Windows machine **must** be amd64:
 `C:\apps\terraform-amd64\terraform.exe`. The ARM64 CLI at
@@ -90,13 +100,14 @@ in Secrets Manager only.
 parked.” If apply/bootstrap is blocked, that wait is real.
 
 - `none` — this skill is applying or bootstrapping
-- `user` — DNS CNAME/ALIAS or GitLab CI vars the SM must paste
+- `user` — DNS CNAME/ALIAS or GitLab CI vars the **sponsor** must paste
 
 ## Collaboration
 
 | Skill | How you work with them |
 |---|---|
-| `@aea-project-manager` | They route; you operate AWS. Notify when enforcing a Cloud Agent switch (bench/wait from local capacity). Do not wait for the SM to apply. |
+| `@aea-product-owner` | Product accept/reject, “should we ship”, M12 unpark. Do not decide go/no-go here. |
+| `@aea-project-manager` | They route (Scrum Master); you operate AWS. Notify when enforcing a Cloud Agent switch (bench/wait from local capacity). Do not wait for the SM to apply. Escalate secrets to the **sponsor**. |
 | `@aea-support-coordinator` | Open **one** security/platform issue for them to route, or implement an already-routed platform/edge/security item. Do not batch-route. |
 | `@aea-ai-engineer` | AI provider env (`AEA_AI_*`) lives in the **secret store**, not prompts, git, or Compose committed files. Honesty of disclosure is their lane; key hygiene is yours. |
 | `@aea-ux-designer` | Do not restyle `edge/gateway/ui/`. Cloud Agent **Use** is static HTML/CSS + `test_browser_ui.py`, not a live `:8443` walk. |
@@ -111,7 +122,7 @@ DevSecOps:
 - [ ] 2. Assess cloud posture (canvas if that is the deliverable)
 - [ ] 3. One prioritized finding (blocker: prod flags, secrets, TLS/IAM)
 - [ ] 4. Implement only that finding in repo IaC/CI/docs
-- [ ] 5. Docker integration for impacted components; glab MR; you apply Path B (SM does not)
+- [ ] 5. Docker integration for impacted components; glab MR; you apply Path B (sponsor and SM do not)
 - [ ] 6. Cloud Agent switch: if both triggers, enforce Use tickets; never force Do-not-use
 ```
 
@@ -121,7 +132,8 @@ Target the **repo's chosen cloud** (AWS Path B, unparked: GitLab web deploy,
 ECR, ECS Fargate, ALB TLS, RDS PostgreSQL 16, MSK, Secrets Manager, GitLab
 OIDC — `infra/aws`, recovered on `infra/aws-stash-recover` / #198). If those
 files are **not on the current branch**, say so; do not pretend they are
-merged. You operate this stack; do not wait for the scrum master to apply.
+merged. You operate this stack; do not wait for the Scrum Master or the
+sponsor to apply.
 
 Check:
 
@@ -177,7 +189,7 @@ components (`.cursor/rules/docker-integration-before-mr.mdc`):
 - Edge / gateway / TLS perimeter: `python edge/scripts/run_integration_tests.py`
 
 Docs-only IaC comments: no Docker. Terraform apply is **this skill** (Path B
-ops), not CI merge and not the scrum master.
+ops), not CI merge, not the Scrum Master, and not the sponsor.
 
 ## Cloud Agent switch (standing)
 
@@ -187,9 +199,9 @@ branch, persist after IDE close, GitLab MR handoff). They clone **pushed
 repo; do not point them at a GitHub remote.
 
 **Do not** enable Cloud Agents or write `.cursor/environment.json` as a
-policy-only change. Specialists launch a Cloud Agent when the user already
-has them available. `environment.json` is only for a **Conditional** Docker
-path after user/PM opt-in.
+policy-only change. Specialists launch a Cloud Agent when they already
+have them available. `environment.json` is only for a **Conditional** Docker
+path after sponsor/PM opt-in.
 
 When **both** triggers hold, **enforce** a Cloud Agent for the owning
 stakeholder's **Use** ticket. Tell the PM and that stakeholder. DevSecOps
@@ -221,7 +233,7 @@ Agent** from pushed `origin/main` (not a dirty local tree):
 - AWS Terraform apply/bootstrap (this skill operates locally; never a Cloud Agent)
 - Ad-hoc gitleaks/trivy as a substitute for GitLab CI
 
-### Conditional — ask the user / PM; do not silently enforce
+### Conditional — ask the sponsor / PM; do not silently enforce
 
 - Docker integration in cloud (`run_integration_tests.py`; nested Docker
   is fragile — prefer a GitLab CI edge job as source of truth)
@@ -242,9 +254,9 @@ next one MR. No empty placeholders. Do not dump a markdown table instead.
 - Committing tfvars/secrets
 - Treating local Postgres volumes or plaintext Kafka as NFR-007/012/ADR-012
   production proof
-- Auto-merge; `terraform destroy` without an explicit user ask; waiting for
-  the scrum master to apply Path B
+- Auto-merge; `terraform destroy` without an explicit **sponsor** ask;
+  waiting for the Scrum Master or sponsor to apply Path B
 - Enabling Cloud Agents or writing `.cursor/environment.json` unless the
-  user opts into a Conditional Docker path
+  sponsor or PM opts into a Conditional Docker path
 - Implementing other stakeholders' tickets when enforcing a Cloud Agent
   switch

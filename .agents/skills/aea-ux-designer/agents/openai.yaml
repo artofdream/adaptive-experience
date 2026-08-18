@@ -1,0 +1,4 @@
+interface:
+  display_name: "AEA UX Designer"
+  short_description: "Assess and improve the adaptive workspace UX"
+  default_prompt: "Use $aea-ux-designer to assess and improve the AEA customer workspace UX."

@@ -1,0 +1,7 @@
+interface:
+  display_name: "AEA MR Coordinator"
+  short_description: "Gate and coordinate AEA merge requests"
+  default_prompt: "Use $aea-mr-coordinator to process the current AEA merge requests."
+
+policy:
+  allow_implicit_invocation: false

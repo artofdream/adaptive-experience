@@ -13,6 +13,14 @@ under `platform/` and `edge/`.
 
 Do not invent BG/US/FR/NFR IDs. Prefer citing existing IDs; archive changes are rare and explicit.
 
+## Stakeholder skills
+
+Discover AEA stakeholder roles under `.claude/skills/`. Their canonical role
+definitions live under `.cursor/skills/`; read the referenced canonical skill
+completely whenever a stakeholder skill triggers. Follow
+`.cursor/rules/stakeholder-skills-sync-sop.mdc` for every role change so Cursor,
+Codex, and Claude remain semantically portable.
+
 ## Claude ↔ Obsidian loop
 
 Full SOP: `research/claude-obsidian-loop.md`

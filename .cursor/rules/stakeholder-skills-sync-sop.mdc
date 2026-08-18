@@ -1,0 +1,147 @@
+---
+description: Keep canonical Cursor stakeholder skills and Codex, Claude, and Copilot adapters synchronized
+globs: .cursor/skills/**,.agents/skills/**,.claude/skills/**,.github/instructions/**,.github/copilot-instructions.md,scripts/generate_codex_stakeholder_skills.py
+alwaysApply: true
+---
+
+# Cursor/Codex/Claude/Copilot stakeholder-skill portability SOP
+
+Every AEA stakeholder role must remain available to Cursor, Codex, Claude, and
+Copilot with equivalent scope, authority, safety boundaries, routing, and
+trigger intent. There are currently **10 roles**: `aea-project-manager`,
+`aea-product-owner`, `aea-ux-designer`, `aea-customer-journey`,
+`aea-support-coordinator`, `aea-ai-engineer`, `aea-devsecops-platform`,
+`aea-senior-software-engineer`, `aea-mr-coordinator`, `aea-coherence-guardian`.
+
+Gemini and Grok are **not yet covered**. Their repo-level skill/instruction
+conventions were not confirmed against real documentation when Copilot was
+added — do not add adapters for them by guessing the format; confirm the
+convention first (see "Adding a new target tool" below).
+
+## Source and equivalent
+
+- `.cursor/skills/aea-*/` is the canonical role definition and owns companion
+  references such as `walk.md`, `routing.md`, or `posture.md`.
+- `.agents/skills/aea-*/SKILL.md` is the generated Codex discovery adapter.
+- `.agents/skills/aea-*/agents/openai.yaml` is Codex UI/invocation metadata.
+- `.claude/skills/aea-*/SKILL.md` is the generated Claude discovery adapter.
+- `.github/instructions/aea-*.instructions.md` is the generated Copilot
+  discovery adapter (`applyTo: '**'` — Copilot has no persona-switch, so
+  relevance is decided by the canonical skill's own triggers, applied at the
+  user's or Copilot's discretion, not by file-glob matching).
+- `.github/copilot-instructions.md` is the repo-wide Copilot context file
+  (hand-authored, analogous to `CLAUDE.md`) that points at the per-role
+  instructions.
+- Codex, Claude, and Copilot adapters reference the canonical role at
+  runtime; do not copy the full role body into `.agents`, `.claude`, or
+  `.github/instructions`.
+
+## Mandatory same-change workflow
+
+When a role update starts on any side:
+
+1. Apply the semantic role change to the canonical `.cursor` skill.
+2. Update the matching entry in
+   `scripts/generate_codex_stakeholder_skills.py` when its trigger,
+   adaptation, display behavior, or linked-reference instruction changes.
+   Avoid an unescaped `: ` (colon-space) inside the single-line `description`
+   string passed to `SKILLS` — the generated adapters render frontmatter as
+   `description: <text>` on one line, not the canonical skill's `>-` folded
+   block, and a bare colon there breaks frontmatter parsing (this happened
+   with the first `aea-coherence-guardian` description and showed up as the
+   Skill listing displaying the generated HTML comment instead of the real
+   description). Use an em dash or restructure the sentence instead.
+3. Regenerate all adapters:
+
+   `python scripts/generate_codex_stakeholder_skills.py`
+
+4. Update the matching `agents/openai.yaml` when display name, short
+   description, default prompt, dependency, or implicit-invocation policy
+   changes. The generator does not create this file — author it by hand
+   for any new role, matching the format of existing `openai.yaml` files.
+5. Validate the equivalent set:
+
+   `python scripts/generate_codex_stakeholder_skills.py --check`
+
+6. Run the official Codex skill validator for every affected `.agents` skill and
+   validate every affected Claude and Copilot adapter's frontmatter and
+   generated content.
+7. Commit Cursor, Codex, Claude, and Copilot changes in the same issue,
+   branch, and MR.
+
+Do not hand-edit a generated Codex, Claude, or Copilot file as the final
+change. Translate a tool-side proposal into the canonical role first,
+regenerate, then review each tool-specific adaptation. Do not merge a
+one-sided role change.
+
+## Adding or removing a role
+
+Any new or removed `aea-*` stakeholder must be added or removed in all four
+representations, including Codex metadata and the generator inventory. The
+synchronization check fails on inventory mismatch, canonical digest drift,
+missing adapters, or missing `openai.yaml` metadata
+(`python scripts/generate_codex_stakeholder_skills.py --check`).
+
+A role that only exists for one tool (e.g. was prototyped Claude-only before
+this SOP existed) is **not** equivalent and must be promoted to canonical
+`.cursor/skills/` status — written in Cursor idiom (canvas references,
+`@mention` routing) — before it counts as a real team member. This happened
+for `aea-coherence-guardian`: it started as a Claude-only addition, then was
+promoted to `.cursor/skills/aea-coherence-guardian/` and added to the
+generator so Codex and Claude both get a real adapter.
+
+## Equivalence boundary
+
+Equivalent means the same role purpose, authority, exclusions, safety rules,
+handoffs, and delivery SOP. Tool-surface translations are expected: Cursor
+browser/canvas/Cloud Agent instructions become the approved Codex or Claude
+browser, visualization/design, and delegation rules. Equivalence does not require
+byte-identical files.
+
+## Claude Code mechanic translations
+
+Claude Code has no `.cursor/skills/` scanner, no chat `@mention`
+agent-invocation, and no `.canvas.tsx` renderer, so the generated Claude
+adapter's "Claude adaptations" section plus this table are what make a
+Cursor-authored role actually usable in Claude Code:
+
+| Cursor mechanic | Claude Code translation |
+|---|---|
+| `@aea-<role>` mention routing | `Skill({skill: "aea-<role>"})` to continue as that persona in the current turn, or `Agent({subagent_type: "general-purpose", prompt: "..."})` briefed with the role's canonical `.cursor/skills/aea-<role>/SKILL.md` path for independent/parallel work |
+| `~/.cursor/skills-cursor/canvas/SKILL.md` → `.canvas.tsx` | Load the `artifact-design` skill and publish with the `Artifact` tool (HTML) |
+| `cursor-ide-browser` MCP (`browser_tabs`, `browser_navigate`, `browser_lock`, `browser_snapshot`) | `mcp__Claude_Browser__*` tools: `tabs_context`, `navigate`, `computer`, `read_page` (no `browser_lock` equivalent — nothing else shares that session's browser pane) |
+| Cursor Cloud Agents | Claude Code background `Agent` execution, optionally `isolation: "worktree"` or `"remote"` |
+| `disable-model-invocation: true` | No Claude Code frontmatter equivalent — the canonical role's own text states when it should only be explicitly invoked; honor it by convention, same as every other hard constraint |
+| `.cursor/rules/*.mdc` with `alwaysApply: true` | Not auto-injected in Claude Code — `Read` the referenced `.mdc` file at the point of use instead of assuming prior injection |
+
+Codex has its own equivalents (installed browser/visualization skills,
+`$aea-<role>` invocation, Codex task/thread delegation policy) captured
+directly in each Codex adapter's "Codex adaptations" section — this table is
+Claude-specific because Claude Code's adaptation notes live in one shared
+place (this SOP) rather than being fully rebuilt per role in
+`scripts/generate_codex_stakeholder_skills.py`. Copilot's own translation
+(no persona-switch, `applyTo: '**'`, explicit-ask activation) lives in each
+generated `.github/instructions/aea-*.instructions.md` file's "Copilot
+adaptations" section.
+
+## Adding a new target tool (e.g. Gemini, Grok)
+
+Before adding a fifth representation, confirm the tool's actual repo-level
+skill or instruction-file convention against real documentation or a working
+example — do not invent a plausible-looking format. A fabricated convention
+produces files that look authoritative but do not actually integrate with
+that tool, which is worse than not adding it. Once confirmed:
+
+1. Add a `<TOOL>_TARGET` path and a `render_<tool>` function to
+   `scripts/generate_codex_stakeholder_skills.py`, following the existing
+   `render_codex` / `render_claude` / `render_copilot` pattern (thin pointer
+   to the canonical `.cursor/skills/{name}/SKILL.md`, tool-specific
+   adaptations section, canonical-sha256 comment if the format supports
+   comments).
+2. Wire it into `main()`'s per-role loop and inventory-mismatch check, same
+   as the three existing targets.
+3. Update this SOP's frontmatter `globs`, the role/tool count above, and add
+   a row set (or its own translation table) documenting that tool's
+   mechanic differences from Cursor.
+4. Regenerate, `--check`, and commit alongside the other four
+   representations per the same-change workflow above.

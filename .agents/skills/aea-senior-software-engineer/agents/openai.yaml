@@ -1,0 +1,7 @@
+interface:
+  display_name: "AEA Senior Software Engineer"
+  short_description: "Architect and implement AEA platform and edge"
+  default_prompt: "Use $aea-senior-software-engineer to design and implement the routed AEA issue."
+
+policy:
+  allow_implicit_invocation: false

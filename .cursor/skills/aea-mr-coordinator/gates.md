@@ -23,7 +23,7 @@ but `edge/` or `platform/` changed.
 ## 2. Boundary
 
 - No invented BG/US/FR/NFR IDs; archive xlsx untouched unless the issue is
-  explicitly that (rare, human-confirmed).
+  explicitly that (rare, **sponsor**-confirmed).
 - No secrets, `.env`, vault credentials, `infra/aws/terraform.tfvars`.
 - No force-push to `main` / `master`.
 - Not merging `main` into itself.
@@ -36,8 +36,10 @@ but `edge/` or `platform/` changed.
     `python edge/scripts/run_integration_tests.py`
   - Docs-only, Cursor-rule, or research-note → no Docker required
     (must be explicit in the MR).
-- If Docker was skipped, that is **CI-only** — merge only if the **user
-  already accepted** CI-only in this session.
+- If Docker was skipped, that is **CI-only** — merge only if **PM-SM
+  accepted CI-only for that named MR**, or the **sponsor** already
+  accepted CI-only. Prefer wait. CI-only that changes production risk
+  still needs the sponsor.
 
 ## 3. Validation path
 
@@ -46,24 +48,30 @@ but `edge/` or `platform/` changed.
   running (set auto-merge / MWPS; do not merge immediately). Failed
   required jobs are a fail.
 - No failed **required** jobs. Advisory `markdownlint` / `linkcheck`
-  `allow_failure: true` are not blockers unless the user treats them as such.
+  `allow_failure: true` are not blockers unless PM-SM treats them as such.
 - Local integration recorded when the SOP requires it (command + outcome in
   MR, chat, or CI job that is the same runner).
-- User already accepted CI-only **only** when local Docker was unavailable
-  and they said so.
+- CI-only: **not** sponsor by default. PM-SM may accept it for a named MR
+  **or** wait when local Docker was unavailable. Prefer wait unless the
+  sponsor already accepted CI-only. Production-risk CI-only → sponsor.
 
 ## Reach-out (do not merge, do not set auto-merge)
 
-- Scope is mixed or unclear
-- Validation is missing, skipped, or “CI only” without user acceptance
+- Scope is mixed or unclear → **PM-SM**
+- Validation is missing or skipped → **PM-SM**. “CI only” without
+  acceptance for that named MR: PM-SM may accept or wait (prefer wait).
+  CI-only **production** risk → **sponsor**
 - Conflicts, rebase uncertainty, force-with-lease onto a shared branch you
   did not author. Conflicts → **do not merge** and **do not rebase**.
   Hand review/resolution to `@aea-senior-software-engineer` (comment /
   assign). Do not invent a rebase unless SSE owns it.
-- Security/privacy/cloud apply (`terraform apply`)
-- Secrets, `.env`, vault credentials, or `infra/aws/terraform.tfvars`
+- Security/privacy/cloud apply (`terraform apply`) — DSO operates; this
+  skill does not apply as part of merge
+- Secrets, `.env`, vault credentials, or `infra/aws/terraform.tfvars` →
+  **sponsor**
+- Canonical scope / new FR-NFR IDs / archive workbook → **sponsor**
 - Force-push to `main` / `master`
-- Disagreement between MR description and diff
+- Disagreement between MR description and diff → **PM-SM**
 - This skill was not invoked (loop tick / sibling skill)
 
 ## Commands
