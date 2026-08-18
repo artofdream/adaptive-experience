@@ -58,6 +58,20 @@ stakeholder-skill-sync:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_COMMIT_BRANCH == "main"'
 
+traceability-guard:
+  stage: verify
+  image: python:3.12-alpine
+  allow_failure: true  # advisory until a first clean run confirms no pre-existing gaps
+  script:
+    - python scripts/check_traceability.py
+  rules:
+    - changes:
+        - "docs/02-business-analysis/requirements.md"
+        - "docs/07-roadmap/roadmap.md"
+        - "scripts/check_traceability.py"
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
 daily-brief-generate:
   stage: report
   image: python:3.12-alpine
