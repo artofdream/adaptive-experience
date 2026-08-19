@@ -724,11 +724,16 @@ class PerimeterTests(unittest.TestCase):
         self.assertNotIn("ssl_certificate", alb)
         self.assertIn("location = /healthz", alb)
         self.assertIn("__BFF_UPSTREAM__", alb)
+        self.assertIn("__AGENT_UPSTREAM__", alb)
+        self.assertIn("location /webhooks/", alb)
+        self.assertIn("location /cloud/", alb)
         self.assertIn("proxy_set_header X-Internal-Identity \"\";", alb)
         self.assertIn("add_header Content-Security-Policy", alb)
         self.assertIn("frame-ancestors 'none'", alb)
         self.assertIn("COPY nginx-alb.conf", dockerfile)
         self.assertIn('AEA_GATEWAY_MODE:-}" = "alb"', entrypoint)
+        self.assertIn("AEA_AGENT_UPSTREAM", entrypoint)
+        self.assertIn("__AGENT_UPSTREAM__", entrypoint)
         self.assertIn("openssl req", entrypoint)
 
 
