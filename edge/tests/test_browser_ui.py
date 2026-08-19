@@ -58,9 +58,11 @@ class BrowserUiTests(unittest.TestCase):
         self.assertIn("include /etc/nginx/mime.types;", nginx)
         self.assertIn("location = / {", nginx)
         self.assertIn("location /api/ {", nginx)
+        self.assertIn("location /webhooks/ {", nginx)
         self.assertIn('proxy_set_header X-Internal-Identity "";', nginx)
         self.assertIn("location = / {", alb)
         self.assertIn("location /api/ {", alb)
+        self.assertIn("location /webhooks/ {", alb)
         self.assertIn('proxy_set_header X-Internal-Identity "";', alb)
 
     def test_layout_has_explicit_desktop_tablet_and_mobile_contracts(self):
