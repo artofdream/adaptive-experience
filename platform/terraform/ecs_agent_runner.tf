@@ -60,14 +60,9 @@ resource "aws_iam_role_policy_attachment" "ecs_execution_role_policy" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicySupport"
 }
 
-# ECS Cluster
-resource "aws_ecs_cluster" "aea_cluster" {
-  name = "aea-cluster"
-
-  setting {
-    name  = "containerInsights"
-    value = "enabled"
-  }
+# ECS Cluster Target (Aligns with existing active AWS ECS cluster: aea-pilot)
+data "aws_ecs_cluster" "aea_pilot" {
+  cluster_name = "aea-pilot"
 }
 
 # ECS Task Definition
