@@ -516,7 +516,7 @@ function renderRecommendations(items) {
     const select = document.createElement("button");
     select.className = "primary";
     select.type = "button";
-    select.textContent = "Select";
+    select.textContent = item.prior_order_hint ? "Reorder" : "Select";
     select.disabled = item.available === false;
     select.addEventListener("click", () => selectProduct(item.product_id));
     card.append(select);

@@ -480,6 +480,7 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         self.assertTrue(hinted[0]["prior_order_hint"])
 
     def test_workspace_hints_durable_browser_recall_on_new_session(self):
+        """FR-008 recall is isolated, least-data, and starts normal selection."""
         import asyncio
         from aea_platform.adapters import (PsycopgExperienceStateStore,
                                            PsycopgInventoryAvailabilityStore)
@@ -527,8 +528,63 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         items = workspace["facets"]["recommendations"]["items"]
         self.assertEqual("classic-rose-dozen", items[0]["product_id"])
         self.assertTrue(items[0]["prior_order_hint"])
+        self.assertEqual(70.0, items[0]["price"])  # current catalog price, not history
         self.assertIsNone(app.order.session_prior_product_id(str(second)))
         self.assertEqual("classic-rose-dozen", app.order.prior_product_id(str(second)))
+
+        recall_row = self.connection.execute(
+            "SELECT product_id,order_id IS NOT NULL,expires_at > clock_timestamp() "
+            "FROM orchestration.browser_order_recall WHERE recall_id=%s",
+            (recall_id,)).fetchone()
+        self.assertEqual(("classic-rose-dozen", True, True), tuple(recall_row))
+        columns = {row[0] for row in self.connection.execute(
+            "SELECT column_name FROM information_schema.columns "
+            "WHERE table_schema='orchestration' AND table_name='browser_order_recall'")}
+        self.assertEqual(
+            {"recall_id", "product_id", "order_id", "expires_at", "updated_at"}, columns)
+
+        # Reorder initiation is the normal selection command: inventory is
+        # revalidated and no historical options, delivery, card, or payment return.
+        status, selected = asyncio.run(self._invoke_internal(
+            app, "POST", f"/internal/v1/sessions/{second}/selection",
+            json.dumps({"product_id": "classic-rose-dozen", "options": {},
+                        "observed_context_version": 1,
+                        "correlation_id": "reorder-select"}).encode()))
+        self.assertEqual(202, status)
+        self.assertEqual(2, selected["context_version"])
+        _, selected_workspace = asyncio.run(self._invoke_internal(
+            app, "GET", f"/internal/v1/sessions/{second}/workspace"))
+        self.assertEqual(
+            {"product_id": "classic-rose-dozen", "options": {}},
+            selected_workspace["facets"]["selection"])
+        self.assertNotIn("delivery", selected_workspace["facets"])
+        self.assertNotIn("order", selected_workspace["facets"])
+
+        # Another opaque recall ID cannot see this browser's history.
+        isolated = uuid.uuid4()
+        self.assertEqual(204, asyncio.run(self._invoke_internal(
+            app, "PUT", f"/internal/v1/sessions/{isolated}",
+            json.dumps({"recall_id": str(uuid.uuid4())}).encode()))[0])
+        with self.connection.transaction():
+            store.apply_patch(
+                str(isolated), 0, 1,
+                StatePatch.create(
+                    {"shared_understanding": {"occasion": "birthday", "budget": 100}},
+                    ["shared_understanding.occasion", "shared_understanding.budget"]), [])
+        _, isolated_workspace = asyncio.run(self._invoke_internal(
+            app, "GET", f"/internal/v1/sessions/{isolated}/workspace"))
+        self.assertFalse(any(item.get("prior_order_hint") for item in
+                             isolated_workspace["facets"]["recommendations"]["items"]))
+
+        # Expired server-side history fails closed even if a stale cookie is replayed.
+        self.connection.execute(
+            "UPDATE orchestration.browser_order_recall "
+            "SET expires_at=clock_timestamp() - interval '1 second' WHERE recall_id=%s",
+            (recall_id,))
+        _, expired_workspace = asyncio.run(self._invoke_internal(
+            app, "GET", f"/internal/v1/sessions/{second}/workspace"))
+        self.assertFalse(any(item.get("prior_order_hint") for item in
+                             expired_workspace["facets"]["recommendations"]["items"]))
 
     def test_browser_session_get_binds_to_experience_session(self):
         import asyncio
@@ -555,11 +611,19 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
 
     def test_checkout_decline_leaves_order_submitted(self):
         import asyncio
+        from aea_platform.adapters import (PsycopgExperienceStateStore,
+                                           PsycopgInventoryAvailabilityStore)
         from aea_platform.internal_api import InternalOrchestrationApp
+        from aea_platform.inventory import AvailabilitySnapshot, InventoryAvailabilityService
         from aea_platform.pricing import REFERENCE_DELIVERY_FEE
+        from aea_platform.state import StatePatch
 
         app = InternalOrchestrationApp(self.connection, "internal-token")
         session_id = self._order_ready_for_checkout(app)
+        recall_id = str(uuid.uuid4())
+        self.assertEqual(204, asyncio.run(self._invoke_internal(
+            app, "PUT", f"/internal/v1/sessions/{session_id}",
+            json.dumps({"recall_id": recall_id}).encode()))[0])
         total = round(70.0 + REFERENCE_DELIVERY_FEE, 2)
 
         status, result = asyncio.run(self._invoke_internal(
@@ -582,6 +646,30 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         self.assertEqual("submitted", self.connection.execute(
             "SELECT status FROM orchestration.customer_order WHERE session_id=%s",
             (session_id,)).fetchone()[0])
+        self.assertEqual(0, self.connection.execute(
+            "SELECT count(*) FROM orchestration.browser_order_recall WHERE recall_id=%s",
+            (recall_id,)).fetchone()[0])
+
+        # FR-008: a declined checkout is not purchase history in a later session.
+        now = datetime.now(timezone.utc)
+        inventory = InventoryAvailabilityService(
+            PsycopgInventoryAvailabilityStore(self.connection), now=lambda: now)
+        inventory.record(AvailabilitySnapshot("classic-rose-dozen", 5, 1, now))
+        later = uuid.uuid4()
+        self.assertEqual(204, asyncio.run(self._invoke_internal(
+            app, "PUT", f"/internal/v1/sessions/{later}",
+            json.dumps({"recall_id": recall_id}).encode()))[0])
+        store = PsycopgExperienceStateStore(self.connection)
+        with self.connection.transaction():
+            store.apply_patch(
+                str(later), 0, 1,
+                StatePatch.create(
+                    {"shared_understanding": {"occasion": "birthday", "budget": 100}},
+                    ["shared_understanding.occasion", "shared_understanding.budget"]), [])
+        _, workspace = asyncio.run(self._invoke_internal(
+            app, "GET", f"/internal/v1/sessions/{later}/workspace"))
+        self.assertFalse(any(item.get("prior_order_hint") for item in
+                             workspace["facets"]["recommendations"]["items"]))
 
     def test_checkout_creates_order_from_assembled_decisions(self):
         import asyncio

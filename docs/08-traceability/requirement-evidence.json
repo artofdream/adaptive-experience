@@ -167,13 +167,18 @@
       "implementation": {
         "disposition": "evidenced",
         "paths": [
+          "platform/aea_platform/adapters.py",
           "platform/aea_platform/order.py",
-          "platform/aea_platform/recommendation.py"
+          "platform/aea_platform/recommendation.py",
+          "platform/migrations/017_browser_reorder_history.sql"
         ]
       },
       "test": {
-        "disposition": "planned",
-        "paths": []
+        "disposition": "evidenced",
+        "paths": [
+          "edge/tests/test_browser_ui.py",
+          "platform/tests/test_postgres_integration.py"
+        ]
       }
     },
     {

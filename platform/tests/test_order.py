@@ -127,11 +127,10 @@ class OrderServiceTests(unittest.TestCase):
             OrderService(FakeOrderStore(exists=False)).set_delay(
                 session_id="s", delayed=True, correlation_id="c", subject_reference="subj")
 
-    def test_session_prior_product_id_only_after_accepted_order(self):
+    def test_session_prior_product_id_only_after_confirmed_order(self):
         self.assertIsNone(OrderService(FakeOrderStore(current="created"))
                           .session_prior_product_id("s"))
-        self.assertEqual(
-            "lilac-bouquet",
+        self.assertIsNone(
             OrderService(FakeOrderStore(current="submitted", product_id="lilac-bouquet"))
             .session_prior_product_id("s"))
         self.assertEqual(
@@ -154,8 +153,7 @@ class OrderServiceTests(unittest.TestCase):
         store = RecallingStore(current="created")
         self.assertEqual("lilac-bouquet", self._service(store).prior_product_id("s2"))
         self.assertEqual("s2", store.looked_up)
-        self.assertEqual(
-            "classic-rose-dozen",
+        self.assertIsNone(
             OrderService(FakeOrderStore(current="submitted")).prior_product_id("s"))
         self.assertIsNone(OrderService(FakeOrderStore(current="created")).prior_product_id("s"))
         self.assertIsNone(self._service().prior_product_id("  "))

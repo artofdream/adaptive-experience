@@ -10,9 +10,10 @@ from typing import Callable
 ORDER_STATUS_SEQUENCE = ("created", "submitted", "confirmed", "preparing",
                          "dispatched", "delivered", "completed")
 
-# Accepted checkout or later. Draft ``created`` rows do not hint T-03.
+# Authoritatively confirmed payment/order or later. Draft and merely submitted
+# rows do not qualify as purchase history for FR-008 reorder.
 PRIOR_ORDER_HINT_STATUSES = frozenset(
-    ORDER_STATUS_SEQUENCE[ORDER_STATUS_SEQUENCE.index("submitted"):])
+    ORDER_STATUS_SEQUENCE[ORDER_STATUS_SEQUENCE.index("confirmed"):])
 
 
 class OrderIncompleteError(RuntimeError):
@@ -81,7 +82,7 @@ class OrderService:
         """Same-session accepted-order product for the thin FR-008 T-03 hint.
 
         Returns a catalog product_id only when this session already has an
-        order at submitted or later. Draft ``created`` rows, missing views,
+        order at confirmed or later. Draft/submitted rows, missing views,
         and malformed product payloads return None. Not cross-session CRM.
         """
         if not isinstance(session_id, str) or not session_id.strip():
