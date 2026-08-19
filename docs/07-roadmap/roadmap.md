@@ -43,7 +43,7 @@ Backlog:
 | **M7** | MVP Hardening | End-to-end integration, availability and performance optimization, security audit, reference deployment validation, and final verification of the governance, auditability, and privacy controls introduced in M1 | NFR-003; final validation and hardening of NFR-015, NFR-016, NFR-017 |
 | **M8** | Returning shopper (Completed) | Durable prior-order recall (no login), reorder, and modify-before-reorder after same-session T-03 hint (delivered in platform/aea_platform/reorder.py). | FR-008 |
 | **M9** | Assistant reliability | AI response quality monitoring, automated CI SLO guard, and error tracking. | NFR-008 |
-| **M10** | Compositional T-04 | Free-form bouquet composition beyond thin FR-003 option keys (ADR-006 remainder). | FR-003 (free-form only; thin keys already MVP) |
+| **M10** | Compositional T-04 (Completed) | Option A Florist-Choice Palette Co-Creation (Pastel Romance, Vibrant Sunburst, Classic Elegant) & Pet Safety Exclusions (delivered in platform/aea_platform/selection.py per ADR-006). | FR-003 (free-form & palette co-creation) |
 | **M11** | Inventory analytics depth | Forecasting and analytics beyond the thin `/florist` snapshot trends. | FR-012, NFR-010 |
 | **M12** | Engagement CRM (Unparked) | Occasion reminders and engagement analytics. Staff live chat and ticketing stay out. (Unparked after M8 completion). | FR-016, FR-017 |
 | **Future** | Future Backlog | Unscheduled: voice, semantic caching, progressive hydration, other industry implementations. Thin T-09 / FR-006, thin FR-010, thin FR-012, and the NFR-014 adapter pin remain delivered and Future in the workbook. | Thin-delivered FR-006, FR-010, FR-012; NFR-014 pin |

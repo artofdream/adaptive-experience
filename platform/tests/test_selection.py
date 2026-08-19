@@ -68,8 +68,22 @@ class CardMessageContractTests(unittest.TestCase):
                 {"flower_type": "tulips"}, product_id="classic-rose-dozen")
         with self.assertRaises(SelectionValidationError):
             normalize_selection_options({"flower_type": "roses"})
+    def test_m10_compositional_selection_palette_and_safety_exclusions(self):
+        opts = {
+            "palette": "pastel_romance",
+            "safety_exclusions": ["pet_safe_cat", "lily_free"]
+        }
+        res = normalize_selection_options(opts)
+        self.assertEqual(res["palette"], "pastel_romance")
+        self.assertEqual(res["safety_exclusions"], ["pet_safe_cat", "lily_free"])
+
+    def test_m10_compositional_selection_invalid_palette(self):
         with self.assertRaises(SelectionValidationError):
-            normalize_selection_options("not-a-dict")
+            normalize_selection_options({"palette": "neon_glow"})
+
+    def test_m10_compositional_selection_invalid_safety_exclusion(self):
+        with self.assertRaises(SelectionValidationError):
+            normalize_selection_options({"safety_exclusions": ["invalid_allergen"]})
 
 
 if __name__ == "__main__":
