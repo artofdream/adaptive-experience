@@ -1,0 +1,8 @@
+interface:
+  display_name: "AEA AppSec Auditor"
+  short_description: "Audit AEA application security, prompt injection defenses, API perimeter security, and data sanitization."
+  default_prompt: "Audit application security boundaries and prompt injection defenses across edge, gateway, and platform services."
+
+policy:
+  allow_implicit_invocation: false
+  dependencies: []
