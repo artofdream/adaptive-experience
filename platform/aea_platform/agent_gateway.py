@@ -27,6 +27,19 @@ class AutonomousAgentGateway:
         flag = os.environ.get("AEA_AUTONOMOUS_LOOP_ENABLED", "true").lower()
         return flag in ("true", "1", "yes")
 
+    def get_cloud_deployment_status(self) -> Dict[str, Any]:
+        """Return 24/7 autonomous cloud agent deployment status (AWS ECS us-east-1)."""
+        enabled = self.is_autonomous_loop_enabled()
+        region = os.environ.get("AWS_REGION", "us-east-1")
+        return {
+            "autonomous_loop_enabled": enabled,
+            "aws_region": region,
+            "secret_name": "aea/gitlab-token",
+            "cluster": "aea-cluster",
+            "service": "aea-agent-runner",
+            "status": "active" if enabled else "paused",
+        }
+
     def run_preflight_guards(self) -> Dict[str, Any]:
         """Execute the unified pre-flight guard runner."""
         if not self.is_autonomous_loop_enabled():
