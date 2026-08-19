@@ -58,6 +58,18 @@ stakeholder-skill-sync:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_COMMIT_BRANCH == "main"'
 
+stakeholder-cadence-guard:
+  stage: verify
+  image: python:3.12-alpine
+  allow_failure: true
+  script:
+    - python scripts/check_stakeholder_cadence.py
+    - python scripts/test_stakeholder_cadence.py -v
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
 traceability-guard:
   stage: verify
   image: python:3.12-alpine
