@@ -27,7 +27,7 @@ Discover AEA stakeholder roles under `.claude/skills/`. Their canonical role
 definitions live under `.cursor/skills/`; read the referenced canonical skill
 completely whenever a stakeholder skill triggers. Follow
 `.cursor/rules/stakeholder-skills-sync-sop.mdc` for every role change so Cursor,
-Codex, and Claude remain semantically portable.
+Codex, Claude, Copilot, and Gemini remain semantically portable.
 
 ## Claude ↔ Obsidian loop
 
