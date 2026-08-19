@@ -19,5 +19,6 @@ When changing `edge/gateway/ui/` or proposing a **new user journey**, follow
   prototype (not disconnected frames). Link the proto URL (file + node) in the
   issue/MR and `figma/README.md`. After the journey ships, sync Figma to match
   the implemented UI.
+- **Automated Visual Guard:** Run `python edge/scripts/check_ui_visual_sync.py` to verify wireframe asset integrity (`adaptive-workspace-mvp.svg`/`.png`) and tile element coverage across `edge/gateway/ui/`.
 - Do not restyle the live shop in a proposal unless that journey is approved
   to implement. Do not invent BG/US/FR/NFR IDs.
