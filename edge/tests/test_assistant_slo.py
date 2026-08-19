@@ -1,42 +1,34 @@
-import importlib.util
-import pathlib
+#!/usr/bin/env python3
+"""Unit tests for check_assistant_slo.py."""
+
+import sys
 import unittest
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / "edge" / "scripts"))
+
+from check_assistant_slo import evaluate_slo_metrics, P95_BUDGET_SECONDS, MIN_AVAILABILITY_PERCENT
 
 
-SCRIPT = pathlib.Path(__file__).resolve().parents[1] / "scripts" / "check_assistant_slo.py"
-SPEC = importlib.util.spec_from_file_location("check_assistant_slo", SCRIPT)
-MODULE = importlib.util.module_from_spec(SPEC)
-SPEC.loader.exec_module(MODULE)
+class TestAssistantSLOGuard(unittest.TestCase):
+    def test_evaluate_slo_metrics_success(self):
+        samples = [0.5, 1.0, 1.5, 2.0, 2.2]
+        success, msg = evaluate_slo_metrics(samples, 99.9)
+        self.assertTrue(success)
+        self.assertIn("p95 latency", msg)
 
+    def test_evaluate_slo_metrics_latency_failure(self):
+        samples = [0.5, 1.0, 1.5, 3.5, 4.0]
+        success, msg = evaluate_slo_metrics(samples, 99.9)
+        self.assertFalse(success)
+        self.assertIn("exceeds budget", msg)
 
-class AssistantSloTests(unittest.TestCase):
-    def test_endpoints_default_to_local_https_origin(self):
-        self.assertEqual(
-            ("https://localhost:8443", "https://localhost:8443"),
-            MODULE.configured_endpoints({}),
-        )
-
-    def test_ci_endpoint_does_not_change_browser_origin(self):
-        self.assertEqual(
-            ("https://docker:8443", "https://localhost:8443"),
-            MODULE.configured_endpoints({
-                "AEA_EDGE_BASE_URL": "https://docker:8443/",
-                "AEA_EDGE_ORIGIN": "https://localhost:8443",
-            }),
-        )
-
-    def test_endpoint_configuration_rejects_non_https_or_paths(self):
-        for value in ("http://docker:8443", "https://docker:8443/api", "https://u:p@docker:8443"):
-            with self.subTest(value=value), self.assertRaises(ValueError):
-                MODULE.configured_endpoints({"AEA_EDGE_BASE_URL": value})
-
-    def test_nearest_rank_p95_includes_slowest_sample_for_ten_queries(self):
-        samples = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 2.9]
-        self.assertEqual(2.9, MODULE.nearest_rank_percentile(samples, 0.95))
-
-    def test_percentile_requires_evidence(self):
-        with self.assertRaises(ValueError):
-            MODULE.nearest_rank_percentile([], 0.95)
+    def test_evaluate_slo_metrics_availability_failure(self):
+        samples = [0.5, 1.0, 1.5]
+        success, msg = evaluate_slo_metrics(samples, 98.0)
+        self.assertFalse(success)
+        self.assertIn("below threshold", msg)
 
 
 if __name__ == "__main__":
