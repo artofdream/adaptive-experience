@@ -70,6 +70,20 @@ stakeholder-cadence-guard:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
     - if: '$CI_COMMIT_BRANCH == "main"'
 
+ui-visual-sync-guard:
+  stage: verify
+  image: python:3.12-alpine
+  script:
+    - python edge/scripts/check_ui_visual_sync.py
+    - python edge/tests/test_ui_visual_sync.py -v
+  rules:
+    - changes:
+        - "edge/gateway/ui/**/*"
+        - "implementations/florist/wireframes/**/*"
+        - "edge/scripts/check_ui_visual_sync.py"
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
 traceability-guard:
   stage: verify
   image: python:3.12-alpine
