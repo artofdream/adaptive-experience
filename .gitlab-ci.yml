@@ -148,6 +148,19 @@ assistant-slo-guard:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_COMMIT_BRANCH == "main"'
 
+unified-guard-runner:
+  stage: verify
+  image: python:3.12-alpine
+  script:
+    - python scripts/run_all_guards.py
+    - python scripts/test_run_all_guards.py -v
+  rules:
+    - changes:
+        - "scripts/run_all_guards.py"
+        - "scripts/test_run_all_guards.py"
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
 process-coherence-guard:
   stage: verify
   image: python:3.12-alpine
