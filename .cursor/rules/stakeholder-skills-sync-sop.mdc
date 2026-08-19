@@ -1,23 +1,18 @@
 ---
-description: Keep canonical Cursor stakeholder skills and Codex, Claude, and Copilot adapters synchronized
-globs: .cursor/skills/**,.agents/skills/**,.claude/skills/**,.github/instructions/**,.github/copilot-instructions.md,scripts/generate_codex_stakeholder_skills.py
+description: Keep canonical Cursor stakeholder skills and Codex, Claude, Copilot, Gemini, and Grok adapters synchronized
+globs: .cursor/skills/**,.agents/skills/**,.claude/skills/**,.gemini/skills/**,.grok/skills/**,.github/instructions/**,.github/copilot-instructions.md,scripts/generate_codex_stakeholder_skills.py
 alwaysApply: true
 ---
 
-# Cursor/Codex/Claude/Copilot stakeholder-skill portability SOP
+# Cursor/Codex/Claude/Copilot/Gemini/Grok stakeholder-skill portability SOP
 
 Every AEA stakeholder role must remain available to Cursor, Codex, Claude,
-Copilot, and Gemini with equivalent scope, authority, safety boundaries,
+Copilot, Gemini, and Grok with equivalent scope, authority, safety boundaries,
 routing, and trigger intent. There are currently **11 roles**:
 `aea-project-manager`, `aea-product-owner`, `aea-ux-designer`,
 `aea-customer-journey`, `aea-support-coordinator`, `aea-ai-engineer`,
 `aea-appsec-auditor`, `aea-devsecops-platform`, `aea-senior-software-engineer`,
 `aea-mr-coordinator`, `aea-coherence-guardian`.
-
-Gemini and Grok are **not yet covered**. Their repo-level skill/instruction
-conventions were not confirmed against real documentation when Copilot was
-added — do not add adapters for them by guessing the format; confirm the
-convention first (see "Adding a new target tool" below).
 
 ## Source and equivalent
 
@@ -26,16 +21,18 @@ convention first (see "Adding a new target tool" below).
 - `.agents/skills/aea-*/SKILL.md` is the generated Codex discovery adapter.
 - `.agents/skills/aea-*/agents/openai.yaml` is Codex UI/invocation metadata.
 - `.claude/skills/aea-*/SKILL.md` is the generated Claude discovery adapter.
+- `.gemini/skills/aea-*/SKILL.md` is the generated Gemini discovery adapter.
+- `.grok/skills/aea-*/SKILL.md` is the generated Grok discovery adapter.
 - `.github/instructions/aea-*.instructions.md` is the generated Copilot
   discovery adapter (`applyTo: '**'` — Copilot has no persona-switch, so
   relevance is decided by the canonical skill's own triggers, applied at the
   user's or Copilot's discretion, not by file-glob matching).
 - `.github/copilot-instructions.md` is the repo-wide Copilot context file
-  (hand-authored, analogous to `CLAUDE.md`) that points at the per-role
-  instructions.
-- Codex, Claude, and Copilot adapters reference the canonical role at
-  runtime; do not copy the full role body into `.agents`, `.claude`, or
-  `.github/instructions`.
+  (hand-authored, analogous to `CLAUDE.md` and `AGENTS.md`) that points at the
+  per-role instructions.
+- Codex, Claude, Copilot, Gemini, and Grok adapters reference the canonical role
+  at runtime; do not copy the full role body into `.agents`, `.claude`,
+  `.gemini`, `.grok`, or `.github/instructions`.
 
 ## Mandatory same-change workflow
 

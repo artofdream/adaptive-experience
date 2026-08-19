@@ -234,10 +234,9 @@ recurring blind spot outranks an expensive fix for a rare one.
    `scripts/check_stakeholder_cadence.py` and `stakeholder-cadence-guard`
    CI job continuously monitor role activity windows, active issue owners,
    and daily brief freshness across all AEA stakeholder roles.
-6. **Gemini and Grok have no adapters**, deliberately — their real
-   instruction-file conventions were never confirmed against
-   documentation. See `stakeholder-skills-sync-sop.mdc` → "Adding a new
-   target tool."
+6. **Gemini and Grok adapters — closed by #232 and #237.**
+   `scripts/generate_codex_stakeholder_skills.py` now enforces 6-way skill
+   synchronization across Cursor, Codex, Claude, Copilot, Gemini, and Grok.
 7. **A disabled Claude Code cloud routine
    (`aea-coherence-guardian-daily-brief`) is dead weight.** Superseded by
    `generate_daily_brief.py`'s CI-native approach after the routine's
