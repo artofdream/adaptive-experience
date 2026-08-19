@@ -51,6 +51,8 @@ stakeholder-skill-sync:
         - ".cursor/skills/**/*"
         - ".agents/skills/**/*"
         - ".claude/skills/**/*"
+        - ".gemini/skills/**/*"
+        - ".grok/skills/**/*"
         - ".github/instructions/**/*"
         - ".github/copilot-instructions.md"
         - ".cursor/rules/stakeholder-skills-sync-sop.mdc"

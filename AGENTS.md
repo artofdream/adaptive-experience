@@ -35,7 +35,7 @@ stakeholder. Interpret `@aea-<role>` handoffs as the corresponding
 `$aea-<role>` Codex skill.
 
 Follow `.cursor/rules/stakeholder-skills-sync-sop.mdc` for every role change
-so Cursor, Codex, Claude, and Copilot stay semantically portable. Regenerate
+so Cursor, Codex, Claude, Copilot, Gemini, and Grok stay semantically portable. Regenerate
 adapters with `python scripts/generate_codex_stakeholder_skills.py`.
 
 ## Edit style
