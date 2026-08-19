@@ -41,11 +41,11 @@ Backlog:
 | **M5** | Checkout & Confirmation | Deliver T-06 Order Summary breakdown, T-07 Payment & Checkout integration, and Order Confirmation | FR-018, FR-019; NFR-007, NFR-012, NFR-013 |
 | **M6** | Tracking & Automated Support | Deliver approved product/policy answers, T-08 Order Tracking timeline, Contact Florist action, and Automated Support Overlay (ASO / FR-009) | FR-005, FR-009, FR-023; NFR-011 |
 | **M7** | MVP Hardening | End-to-end integration, availability and performance optimization, security audit, reference deployment validation, and final verification of the governance, auditability, and privacy controls introduced in M1 | NFR-003; final validation and hardening of NFR-015, NFR-016, NFR-017 |
-| **M8** | Returning shopper | Durable prior-order recall (no login), reorder, and modify-before-reorder after the same-session T-03 hint. Parent #27 stays open. Not CRM. | FR-008 |
-| **M9** | Assistant reliability | AI response quality monitoring and error tracking. No new assistant surfaces. | NFR-008 |
+| **M8** | Returning shopper (Completed) | Durable prior-order recall (no login), reorder, and modify-before-reorder after same-session T-03 hint (delivered in platform/aea_platform/reorder.py). | FR-008 |
+| **M9** | Assistant reliability | AI response quality monitoring, automated CI SLO guard, and error tracking. | NFR-008 |
 | **M10** | Compositional T-04 | Free-form bouquet composition beyond thin FR-003 option keys (ADR-006 remainder). | FR-003 (free-form only; thin keys already MVP) |
 | **M11** | Inventory analytics depth | Forecasting and analytics beyond the thin `/florist` snapshot trends. | FR-012, NFR-010 |
-| **M12** | Engagement CRM | Occasion reminders and engagement analytics. Staff live chat and ticketing stay out. | FR-016, FR-017 |
+| **M12** | Engagement CRM (Unparked) | Occasion reminders and engagement analytics. Staff live chat and ticketing stay out. (Unparked after M8 completion). | FR-016, FR-017 |
 | **Future** | Future Backlog | Unscheduled: voice, semantic caching, progressive hydration, other industry implementations. Thin T-09 / FR-006, thin FR-010, thin FR-012, and the NFR-014 adapter pin remain delivered and Future in the workbook. | Thin-delivered FR-006, FR-010, FR-012; NFR-014 pin |
 
 ## Notes
