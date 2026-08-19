@@ -1,17 +1,41 @@
 from __future__ import annotations
 
-# T-04 selection options (ADR-006 amended for thin FR-003). Size and card message
-# remain MVP basics; flower_type, colour, and ribbon are accepted thin
-# compositional keys. Free-form bouquet composition and stored-value gift cards
-# remain out of scope.
+# T-04 selection options (ADR-006 amended for thin FR-003 and M10 Compositional Selection).
+# Supports catalog size, card message, thin compositional keys (flower_type, colour, ribbon),
+# and Option A Florist-Choice Palette Co-Creation (palette, safety_exclusions).
 from .recommendation import REFERENCE_CATALOG
 
 CARD_MESSAGE_MAX_LENGTH = 280
 SIZE_MAX_LENGTH = 40
 OPTION_TOKEN_MAX_LENGTH = 40
-ALLOWED_OPTION_KEYS = ("size", "card_message", "flower_type", "colour", "ribbon")
+
+ALLOWED_OPTION_KEYS = (
+    "size",
+    "card_message",
+    "flower_type",
+    "colour",
+    "ribbon",
+    "palette",
+    "safety_exclusions",
+)
+
 ALLOWED_COLOURS = frozenset({"red", "pink", "white", "yellow", "purple", "mixed"})
 ALLOWED_RIBBONS = frozenset({"none", "satin", "organza", "kraft"})
+
+ALLOWED_PALETTES = frozenset({
+    "pastel_romance",
+    "vibrant_sunburst",
+    "classic_elegant",
+    "sunset_warmth",
+    "white_green_sophistication",
+})
+
+ALLOWED_SAFETY_EXCLUSIONS = frozenset({
+    "pet_safe_cat",
+    "pet_safe_dog",
+    "fragrance_free",
+    "lily_free",
+})
 
 
 class SelectionValidationError(ValueError):
@@ -19,14 +43,7 @@ class SelectionValidationError(ValueError):
 
 
 def normalize_card_message(value):
-    """Normalize the optional physical card message (ADR-006).
-
-    Optional: ``None`` or a blank string means no card message and returns
-    ``None``. Otherwise the message is plain text: trimmed, control characters
-    other than newline and tab are rejected, and at most
-    ``CARD_MESSAGE_MAX_LENGTH`` characters. The card and its message are order
-    content fulfilled with the product, never payment or stored value.
-    """
+    """Normalize the optional physical card message (ADR-006)."""
     if value is None:
         return None
     if not isinstance(value, str):
@@ -42,12 +59,7 @@ def normalize_card_message(value):
 
 
 def normalize_size(value):
-    """Normalize the optional eligible catalog size token.
-
-    Authoritative size eligibility against catalog and inventory is FR-013; this
-    validates only the contract field shape (optional, bounded, control-free) so
-    it is distinct from card-message content.
-    """
+    """Normalize the optional eligible catalog size token."""
     if value is None:
         return None
     if not isinstance(value, str):
@@ -61,7 +73,7 @@ def normalize_size(value):
 
 
 def normalize_option_token(value, *, field: str):
-    """Normalize an optional bounded option token (flower_type, colour, ribbon)."""
+    """Normalize an optional bounded option token (flower_type, colour, ribbon, palette)."""
     if value is None:
         return None
     if not isinstance(value, str):
@@ -74,6 +86,26 @@ def normalize_option_token(value, *, field: str):
     return text
 
 
+def normalize_safety_exclusions(value) -> list[str]:
+    """Normalize safety and allergen exclusions for M10 Florist-Choice Palette Co-Creation."""
+    if value is None:
+        return []
+    if isinstance(value, str):
+        value = [value]
+    if not isinstance(value, (list, tuple, set)):
+        raise SelectionValidationError("safety_exclusions must be a list or array")
+    
+    normalized = []
+    for item in value:
+        token = normalize_option_token(item, field="safety_exclusions")
+        if token is not None:
+            if token not in ALLOWED_SAFETY_EXCLUSIONS:
+                raise SelectionValidationError(f"unsupported safety exclusion: {token}")
+            if token not in normalized:
+                normalized.append(token)
+    return normalized
+
+
 def flowers_for_product(product_id: str) -> frozenset[str]:
     """Return reference-catalog flower tags for a product id."""
     for product in REFERENCE_CATALOG:
@@ -83,13 +115,10 @@ def flowers_for_product(product_id: str) -> frozenset[str]:
 
 
 def normalize_selection_options(options, product_id: str | None = None) -> dict:
-    """Return explicit T-04 option fields, including thin FR-003 keys.
+    """Return explicit T-04 option fields, including M10 Compositional Palette keys.
 
-    Accepts ``size``, ``card_message``, ``flower_type``, ``colour``, and
-    ``ribbon``. ``flower_type`` must match the selected product's reference
-    catalog flower tags when provided. ``colour`` and ``ribbon`` use fixed
-    reference vocabularies until a Catalog SoT exists. Stored-value gift cards
-    and other unknown keys are rejected. Omitted or blank fields are dropped.
+    Accepts ``size``, ``card_message``, ``flower_type``, ``colour``, ``ribbon``,
+    ``palette``, and ``safety_exclusions``.
     """
     if options is None:
         options = {}
@@ -126,5 +155,16 @@ def normalize_selection_options(options, product_id: str | None = None) -> dict:
         if ribbon not in ALLOWED_RIBBONS:
             raise SelectionValidationError("ribbon is not allowed")
         normalized["ribbon"] = ribbon
+
+    # M10 Option A: Florist-Choice Palette & Safety Exclusions
+    palette = normalize_option_token(options.get("palette"), field="palette")
+    if palette is not None:
+        if palette not in ALLOWED_PALETTES:
+            raise SelectionValidationError("palette is not allowed")
+        normalized["palette"] = palette
+
+    safety_exclusions = normalize_safety_exclusions(options.get("safety_exclusions"))
+    if safety_exclusions:
+        normalized["safety_exclusions"] = safety_exclusions
 
     return normalized
