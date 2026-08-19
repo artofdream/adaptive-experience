@@ -146,6 +146,20 @@ process-coherence-guard:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_COMMIT_BRANCH == "main"'
 
+loop-graph-guard:
+  stage: verify
+  image: python:3.12-alpine
+  script:
+    - python scripts/check_loop_graph.py
+    - python scripts/test_loop_graph.py -v
+  rules:
+    - changes:
+        - "research/loop-graph.md"
+        - "scripts/check_loop_graph.py"
+        - "scripts/test_loop_graph.py"
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
 daily-brief-generate:
   stage: report
   image: python:3.12-alpine
