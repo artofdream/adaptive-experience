@@ -17,6 +17,11 @@ SKILLS = {
         "Read the linked `reality.md` when the canonical skill routes to it.",
         "Use Codex visualization when useful; ignore Cursor canvas paths. Do not start subagents or tasks unless the user explicitly requests delegation.",
     ),
+    "aea-appsec-auditor": (
+        "Audit AEA application security, prompt injection defenses, API perimeter authentication, CORS, rate limiting, OWASP Top 10 vulnerabilities, and data sanitization across edge, gateway, and platform services. Use for application security audits, penetration testing, prompt injection reviews, API security, or the AEA appsec auditor stakeholder.",
+        "Read the canonical skill completely before auditing application security boundaries.",
+        "Audit application threat surfaces, LLM prompt injection defenses, and perimeter security. Do not replace devsecops platform infrastructure authority.",
+    ),
     "aea-customer-journey": (
         "Walk the live Lily's Florist AEA customer Adaptive Workspace as a first-time shopper, verify the documented end-to-end journey, and report blockers and friction. Use for live customer journey walks, E2E shop assessments, journey pain points, or the mother-birthday scenario on localhost.",
         "Read the linked `walk.md` for every live walk.",
