@@ -86,6 +86,16 @@ ui-visual-sync-guard:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_COMMIT_BRANCH == "main"'
 
+secrets-posture-guard:
+  stage: verify
+  image: python:3.12-alpine
+  script:
+    - python scripts/check_secrets_posture.py
+    - python scripts/test_secrets_posture.py -v
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
 traceability-guard:
   stage: verify
   image: python:3.12-alpine

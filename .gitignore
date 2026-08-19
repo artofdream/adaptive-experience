@@ -14,8 +14,10 @@ __pycache__/
 .env
 .env.*
 !.env.example
+*.pem
+*.key
 *.tfvars
-!*.tfvars.example
+!.*.tfvars.example
 
 # Terraform plugin cache / working directory (never commit)
 .terraform/
