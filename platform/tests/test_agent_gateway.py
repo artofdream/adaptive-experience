@@ -36,6 +36,14 @@ class TestAutonomousAgentGateway(unittest.TestCase):
         self.assertTrue(res["processed"])
         self.assertEqual(res["action"], "triaged")
 
+    def test_cloud_deployment_status(self):
+        os.environ["AEA_AUTONOMOUS_LOOP_ENABLED"] = "true"
+        os.environ["AWS_REGION"] = "us-east-1"
+        status = self.gateway.get_cloud_deployment_status()
+        self.assertEqual(status["status"], "active")
+        self.assertEqual(status["aws_region"], "us-east-1")
+        self.assertEqual(status["secret_name"], "aea/gitlab-token")
+
 
 if __name__ == "__main__":
     unittest.main()
