@@ -1,0 +1,222 @@
+```mermaid
+flowchart TD
+    classDef bg fill:#1f77b4,stroke:#fff,stroke-width:2px,color:#fff;
+    classDef ep fill:#ff7f0e,stroke:#fff,stroke-width:2px,color:#fff;
+    classDef story fill:#2ca02c,stroke:#fff,stroke-width:2px,color:#fff;
+    classDef req fill:#d62728,stroke:#fff,stroke-width:2px,color:#fff;
+
+    BG-001[BG-001]:::bg
+    EP-001[EP-001]:::ep
+    US-001[US-001]:::story
+    FR-001[FR-001]:::req
+    BG-001 --> EP-001
+    EP-001 --> US-001
+    US-001 --> FR-001
+    US-002[US-002]:::story
+    FR-002[FR-002]:::req
+    BG-001 --> EP-001
+    EP-001 --> US-002
+    US-002 --> FR-002
+    US-003[US-003]:::story
+    FR-003[FR-003]:::req
+    BG-001 --> EP-001
+    EP-001 --> US-003
+    US-003 --> FR-003
+    BG-002[BG-002]:::bg
+    EP-002[EP-002]:::ep
+    US-004[US-004]:::story
+    FR-004[FR-004]:::req
+    BG-002 --> EP-002
+    EP-002 --> US-004
+    US-004 --> FR-004
+    US-005[US-005]:::story
+    FR-005[FR-005]:::req
+    BG-002 --> EP-002
+    EP-002 --> US-005
+    US-005 --> FR-005
+    US-006[US-006]:::story
+    FR-006[FR-006]:::req
+    BG-002 --> EP-002
+    EP-002 --> US-006
+    US-006 --> FR-006
+    BG-003[BG-003]:::bg
+    EP-003[EP-003]:::ep
+    US-007[US-007]:::story
+    FR-007[FR-007]:::req
+    BG-003 --> EP-003
+    EP-003 --> US-007
+    US-007 --> FR-007
+    US-008[US-008]:::story
+    FR-008[FR-008]:::req
+    BG-003 --> EP-003
+    EP-003 --> US-008
+    US-008 --> FR-008
+    BG-004[BG-004]:::bg
+    EP-004[EP-004]:::ep
+    US-009[US-009]:::story
+    FR-009[FR-009]:::req
+    BG-004 --> EP-004
+    EP-004 --> US-009
+    US-009 --> FR-009
+    US-010[US-010]:::story
+    FR-010[FR-010]:::req
+    BG-004 --> EP-004
+    EP-004 --> US-010
+    US-010 --> FR-010
+    BG-005[BG-005]:::bg
+    EP-005[EP-005]:::ep
+    US-011[US-011]:::story
+    FR-011[FR-011]:::req
+    BG-005 --> EP-005
+    EP-005 --> US-011
+    US-011 --> FR-011
+    US-012[US-012]:::story
+    FR-012[FR-012]:::req
+    BG-005 --> EP-005
+    EP-005 --> US-012
+    US-012 --> FR-012
+    BG-006[BG-006]:::bg
+    EP-006[EP-006]:::ep
+    US-013[US-013]:::story
+    FR-013[FR-013]:::req
+    BG-006 --> EP-006
+    EP-006 --> US-013
+    US-013 --> FR-013
+    US-014[US-014]:::story
+    FR-014[FR-014]:::req
+    BG-006 --> EP-006
+    EP-006 --> US-014
+    US-014 --> FR-014
+    US-015[US-015]:::story
+    FR-015[FR-015]:::req
+    BG-006 --> EP-006
+    EP-006 --> US-015
+    US-015 --> FR-015
+    BG-007[BG-007]:::bg
+    EP-007[EP-007]:::ep
+    US-016[US-016]:::story
+    FR-016[FR-016]:::req
+    BG-007 --> EP-007
+    EP-007 --> US-016
+    US-016 --> FR-016
+    US-017[US-017]:::story
+    FR-017[FR-017]:::req
+    BG-007 --> EP-007
+    EP-007 --> US-017
+    US-017 --> FR-017
+    NFR-US-001[NFR-US-001]:::story
+    NFR-001[NFR-001]:::req
+    BG-001 --> EP-001
+    EP-001 --> NFR-US-001
+    NFR-US-001 --> NFR-001
+    NFR-US-002[NFR-US-002]:::story
+    NFR-002[NFR-002]:::req
+    BG-001 --> EP-001
+    EP-001 --> NFR-US-002
+    NFR-US-002 --> NFR-002
+    NFR-US-003[NFR-US-003]:::story
+    NFR-003[NFR-003]:::req
+    BG-002 --> EP-002
+    EP-002 --> NFR-US-003
+    NFR-US-003 --> NFR-003
+    NFR-US-004[NFR-US-004]:::story
+    NFR-004[NFR-004]:::req
+    BG-002 --> EP-002
+    EP-002 --> NFR-US-004
+    NFR-US-004 --> NFR-004
+    NFR-US-005[NFR-US-005]:::story
+    NFR-005[NFR-005]:::req
+    BG-002 --> EP-002
+    EP-002 --> NFR-US-005
+    NFR-US-005 --> NFR-005
+    NFR-US-006[NFR-US-006]:::story
+    NFR-006[NFR-006]:::req
+    BG-003 --> EP-003
+    EP-003 --> NFR-US-006
+    NFR-US-006 --> NFR-006
+    NFR-US-007[NFR-US-007]:::story
+    NFR-007[NFR-007]:::req
+    BG-003 --> EP-003
+    EP-003 --> NFR-US-007
+    NFR-US-007 --> NFR-007
+    NFR-US-008[NFR-US-008]:::story
+    NFR-008[NFR-008]:::req
+    BG-004 --> EP-004
+    EP-004 --> NFR-US-008
+    NFR-US-008 --> NFR-008
+    NFR-US-009[NFR-US-009]:::story
+    NFR-009[NFR-009]:::req
+    BG-005 --> EP-005
+    EP-005 --> NFR-US-009
+    NFR-US-009 --> NFR-009
+    NFR-US-010[NFR-US-010]:::story
+    NFR-010[NFR-010]:::req
+    BG-005 --> EP-005
+    EP-005 --> NFR-US-010
+    NFR-US-010 --> NFR-010
+    NFR-US-011[NFR-US-011]:::story
+    NFR-011[NFR-011]:::req
+    BG-006 --> EP-006
+    EP-006 --> NFR-US-011
+    NFR-US-011 --> NFR-011
+    NFR-US-012[NFR-US-012]:::story
+    NFR-012[NFR-012]:::req
+    BG-006 --> EP-006
+    EP-006 --> NFR-US-012
+    NFR-US-012 --> NFR-012
+    NFR-US-013[NFR-US-013]:::story
+    NFR-013[NFR-013]:::req
+    BG-007 --> EP-007
+    EP-007 --> NFR-US-013
+    NFR-US-013 --> NFR-013
+    NFR-US-014[NFR-US-014]:::story
+    NFR-014[NFR-014]:::req
+    BG-007 --> EP-007
+    EP-007 --> NFR-US-014
+    NFR-US-014 --> NFR-014
+    US-018[US-018]:::story
+    FR-018[FR-018]:::req
+    BG-006 --> EP-006
+    EP-006 --> US-018
+    US-018 --> FR-018
+    US-019[US-019]:::story
+    FR-019[FR-019]:::req
+    BG-006 --> EP-006
+    EP-006 --> US-019
+    US-019 --> FR-019
+    US-020[US-020]:::story
+    FR-020[FR-020]:::req
+    BG-001 --> EP-001
+    EP-001 --> US-020
+    US-020 --> FR-020
+    US-021[US-021]:::story
+    FR-021[FR-021]:::req
+    BG-001 --> EP-001
+    EP-001 --> US-021
+    US-021 --> FR-021
+    US-022[US-022]:::story
+    FR-022[FR-022]:::req
+    BG-001 --> EP-001
+    EP-001 --> US-022
+    US-022 --> FR-022
+    US-023[US-023]:::story
+    FR-023[FR-023]:::req
+    BG-006 --> EP-006
+    EP-006 --> US-023
+    US-023 --> FR-023
+    NFR-US-015[NFR-US-015]:::story
+    NFR-015[NFR-015]:::req
+    BG-001 --> EP-001
+    EP-001 --> NFR-US-015
+    NFR-US-015 --> NFR-015
+    NFR-US-016[NFR-US-016]:::story
+    NFR-016[NFR-016]:::req
+    BG-001 --> EP-001
+    EP-001 --> NFR-US-016
+    NFR-US-016 --> NFR-016
+    NFR-US-017[NFR-US-017]:::story
+    NFR-017[NFR-017]:::req
+    BG-001 --> EP-001
+    EP-001 --> NFR-US-017
+    NFR-US-017 --> NFR-017
+```
