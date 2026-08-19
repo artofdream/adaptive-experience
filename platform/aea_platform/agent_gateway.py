@@ -35,7 +35,7 @@ class AutonomousAgentGateway:
             "autonomous_loop_enabled": enabled,
             "aws_region": region,
             "secret_name": "aea/gitlab-token",
-            "cluster": "aea-cluster",
+            "cluster": "aea-pilot",
             "service": "aea-agent-runner",
             "status": "active" if enabled else "paused",
         }

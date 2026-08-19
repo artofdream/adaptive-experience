@@ -42,6 +42,7 @@ class TestAutonomousAgentGateway(unittest.TestCase):
         status = self.gateway.get_cloud_deployment_status()
         self.assertEqual(status["status"], "active")
         self.assertEqual(status["aws_region"], "us-east-1")
+        self.assertEqual(status["cluster"], "aea-pilot")
         self.assertEqual(status["secret_name"], "aea/gitlab-token")
 
 
