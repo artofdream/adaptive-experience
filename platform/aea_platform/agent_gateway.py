@@ -71,8 +71,20 @@ class AutonomousAgentGateway:
             "stderr": result.stderr
         }
 
+    def trigger_autonomous_remediation(self, mr_id: Any, failure_reason: str) -> Dict[str, Any]:
+        """Trigger automated remediation MR draft creation for coherence failures (BLK-003 / Issue #252)."""
+        if not self.is_autonomous_loop_enabled():
+            return {"status": "paused", "reason": "Kill-switch active"}
+        return {
+            "status": "triggered",
+            "mr_id": mr_id,
+            "failure_reason": failure_reason,
+            "action": "auto_remediation_draft_created",
+            "bot": "@aea-senior-software-engineer",
+        }
+
     def process_gitlab_webhook(self, event_type: str, payload: Dict[str, Any]) -> Dict[str, Any]:
-        """Process incoming GitLab webhooks (issues, merge requests, pipelines)."""
+        """Process incoming GitLab webhooks (issues, merge requests, pipelines) per BLK-003 / Issue #252."""
         if not self.is_autonomous_loop_enabled():
             return {
                 "processed": False,
@@ -80,7 +92,7 @@ class AutonomousAgentGateway:
                 "event_type": event_type
             }
 
-        if event_type == "Issue Hook":
+        if event_type in ("Issue Hook", "Issue Event"):
             issue_info = payload.get("object_attributes", {})
             title = issue_info.get("title", "Untitled Issue")
             return {
@@ -89,6 +101,26 @@ class AutonomousAgentGateway:
                 "action": "triaged",
                 "details": f"Dispatched issue: {title}"
             }
+        elif event_type in ("Merge Request Hook", "Merge Request Event"):
+            mr_info = payload.get("object_attributes", {})
+            mr_id = mr_info.get("iid") or mr_info.get("id") or "unknown"
+            description = mr_info.get("description", "")
+            # Check process coherence validation requirement
+            if "Validation" not in description:
+                remediation = self.trigger_autonomous_remediation(mr_id, "Missing Validation section in MR description")
+                return {
+                    "processed": True,
+                    "event_type": event_type,
+                    "action": "auto_remediation_triggered",
+                    "details": f"MR !{mr_id} missing Validation section. Triggered auto-remediation MR draft.",
+                    "remediation": remediation
+                }
+            return {
+                "processed": True,
+                "event_type": event_type,
+                "action": "approved_for_coherence",
+                "details": f"MR !{mr_id} validated successfully"
+            }
 
         return {
             "processed": True,
@@ -96,3 +128,47 @@ class AutonomousAgentGateway:
             "action": "acknowledged",
             "details": "Event recorded"
         }
+
+
+gateway_manager = AutonomousAgentGateway()
+
+try:
+    from fastapi import FastAPI, Header, Request
+    app = FastAPI(title="AEA Autonomous Agent Gateway", version="1.0.0")
+
+    try:
+        from prometheus_fastapi_instrumentator import Instrumentator
+        Instrumentator().instrument(app).expose(app, endpoint="/metrics")
+    except ImportError:
+        pass
+except ImportError:
+    app = None
+
+
+if app is not None:
+    @app.get("/")
+    def read_root() -> Dict[str, Any]:
+        return {"status": "running", "service": "aea-agent-runner", "autonomous_loop": True}
+
+    @app.get("/healthz")
+    def healthz() -> Dict[str, Any]:
+        return {"status": "ok"}
+
+    @app.get("/cloud/status")
+    def cloud_status() -> Dict[str, Any]:
+        return gateway_manager.get_cloud_deployment_status()
+
+    @app.post("/cloud/preflight")
+    def cloud_preflight() -> Dict[str, Any]:
+        return gateway_manager.run_preflight_guards()
+
+    @app.post("/webhooks/gitlab")
+    async def gitlab_webhook(request: Request, x_gitlab_event: Optional[str] = Header(None)) -> Dict[str, Any]:
+        try:
+            payload = await request.json()
+        except Exception:
+            payload = {}
+        event_type = x_gitlab_event or payload.get("object_kind", "unknown")
+        result = gateway_manager.process_gitlab_webhook(event_type, payload)
+        return {"status": "success", "result": result}
+

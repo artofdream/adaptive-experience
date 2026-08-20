@@ -48,6 +48,17 @@ Backlog:
 | **M12** | Engagement CRM (Unparked) | Occasion reminders and engagement analytics. Staff live chat and ticketing stay out. (Unparked after M8 completion). | FR-016, FR-017 |
 | **Future** | Future Backlog | Unscheduled: voice, semantic caching, progressive hydration, other industry implementations. Thin T-09 / FR-006, thin FR-010, thin FR-012, and the NFR-014 adapter pin remain delivered and Future in the workbook. | Thin-delivered FR-006, FR-010, FR-012; NFR-014 pin |
 
+## Key Reference Journeys & Persona Mapping
+
+To validate requirement execution across active tiles (T-01 through T-09), the delivery pipeline evaluates four primary customer journeys mapped to key personas:
+
+| Journey | Primary Persona | Core Requirements Covered | Target Milestone Alignment |
+|---|---|---|---|
+| **J1: High-Urgency Same-Day Delivery** | **Urgent Sam** *(Persona 1: Last-minute giver)* | FR-001, FR-007, FR-011, FR-013, FR-019, NFR-003, NFR-006 | **M3, M4, M5 & M7 Hardening** (Availability-aware stock, immediate slot planning, express checkout) |
+| **J2: Planned Family Gift & Customization** | **Planner Sarah** *(Persona 2: Thoughtful planner)* | FR-001..004, FR-013..015, FR-018, FR-019 | **M2, M4, M5** (Canonical MVP baseline: birthday card message, bouquet size, ribbon choice, named slot) |
+| **J3: Accountless Instant Reorder & Recall** | **Loyal Alex** *(Persona 3: Returning buyer)* | FR-008, FR-007, ADR-013 | **M8** (Same-browser recall, prior-order T-03 hint, destination reference re-confirmation without login) |
+| **J4: Post-Purchase Status & Safety Inquiry** | **Tracker Chris & Selective Taylor** *(Personas 4 & 5)* | FR-005, FR-009, FR-023, FR-003 (Palette/Pet Safety) | **M6 & M10** (T-08 order tracking, ASO FAQ overlay, pet-safety exclusions, Contact Florist escalation) |
+
 ## Notes
 - Secure Payment / Checkout (FR-019) and the itemized Order Summary (FR-018) are
   MVP, not deferred.
@@ -77,4 +88,5 @@ Backlog:
   T-03 hint, #193 durable same-browser recall) may land before the rest of
   FR-008. Do not start M12 while M8 is open. AWS stays parked and is not a
   milestone.
+
 

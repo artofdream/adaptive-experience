@@ -562,8 +562,15 @@ function renderSelection(selection) {
     thumb.alt = productLabel(selection.product_id);
     thumb.hidden = false;
   }
-  document.querySelector("#arrangement").value = productLabel(selection.product_id);
+  let arrangementLabel = productLabel(selection.product_id);
+  if (Array.isArray(selection.items) && selection.items.length > 0) {
+    const labels = selection.items.map(i => productLabel(i.product_id));
+    arrangementLabel = labels.join(", ");
+  }
+  document.querySelector("#arrangement").value = arrangementLabel;
   document.querySelector("#size").value = options.size || "";
+  const quantityInput = document.querySelector("#quantity");
+  if (quantityInput) quantityInput.value = options.quantity || 1;
   fillSelect(
     document.querySelector("#flower-type"),
     PRODUCT_FLOWERS[selection.product_id] || [],
@@ -582,7 +589,8 @@ function renderSummary(summary) {
     const row = document.createElement("p");
     row.className = "charge";
     const label = document.createElement("span");
-    label.textContent = charge.label || charge.product_id || "Item";
+    const qtyLabel = charge.quantity && charge.quantity > 1 ? ` (${charge.quantity}x)` : "";
+    label.textContent = (charge.label || charge.product_id || "Item") + qtyLabel;
     const amount = document.createElement("span");
     amount.textContent = charge.amount != null ? `$${Number(charge.amount).toFixed(2)}` : "";
     row.append(label, amount);
@@ -799,15 +807,65 @@ async function pullStream() {
 }
 
 async function selectProduct(productId) {
+  const selection = (state.workspace && state.workspace.facets || {}).selection || {};
+  let currentItems = [];
+  if (Array.isArray(selection.items) && selection.items.length > 0) {
+    currentItems = selection.items.map(item => ({ ...item }));
+  } else if (selection.product_id) {
+    currentItems = [{
+      product_id: selection.product_id,
+      quantity: selection.options?.quantity || 1,
+      options: { ...(selection.options || {}) }
+    }];
+  }
+
+  const existing = currentItems.find(i => i.product_id === productId);
+  if (existing) {
+    existing.quantity = Math.min(10, (existing.quantity || 1) + 1);
+    if (!existing.options) existing.options = {};
+    existing.options.quantity = existing.quantity;
+  } else {
+    currentItems.push({
+      product_id: productId,
+      quantity: 1,
+      options: { quantity: 1 }
+    });
+  }
+
+  const options = {};
+  const size = document.querySelector("#size")?.value.trim();
+  const quantityVal = Number(document.querySelector("#quantity")?.value) || 1;
+  const flowerType = document.querySelector("#flower-type")?.value.trim();
+  const colour = document.querySelector("#colour")?.value.trim();
+  const ribbon = document.querySelector("#ribbon")?.value.trim();
+  const card = document.querySelector("#card-message")?.value.trim();
+  if (size) options.size = size;
+  if (quantityVal) options.quantity = quantityVal;
+  if (flowerType) options.flower_type = flowerType;
+  if (colour) options.colour = colour;
+  if (ribbon) options.ribbon = ribbon;
+  if (card) options.card_message = card;
+
+  const intent = ((state.workspace && state.workspace.facets || {}).shared_understanding || {}).structured_intent || {};
+  const budget = intent.budget;
+
   const result = await api("/api/v1/selection", {
     method: "POST",
-    body: { product_id: productId, observed_context_version: state.contextVersion },
+    body: { product_id: productId, items: currentItems, options, observed_context_version: state.contextVersion },
   });
   state.contextVersion = result.context_version;
   await refreshWorkspace();
   await pullStream();
   setJourneyStep(4);
-  showNotice("Product selected. You can set size, flower type, colour, ribbon, and a card message next.");
+
+  const totalProductSum = (state.workspace?.facets?.order_summary?.total) || 0;
+  let noticeMsg = `Added ${productLabel(productId)} to your cart (${currentItems.length} product SKU(s) selected).`;
+  if (budget && totalProductSum > budget) {
+    noticeMsg += ` Warning: Order total ($${totalProductSum.toFixed(2)}) exceeds your budget of $${Number(budget).toFixed(2)}.`;
+  } else if (budget) {
+    noticeMsg += ` Cart Total: $${totalProductSum.toFixed(2)} (within $${Number(budget).toFixed(2)} budget).`;
+  }
+  showNotice(noticeMsg);
 }
 
 function openHelp() {
@@ -917,11 +975,13 @@ document.querySelector("#selection-form").addEventListener("submit", async (even
   if (!selection.product_id) return;
   const options = {};
   const size = document.querySelector("#size").value.trim();
+  const quantityVal = Number(document.querySelector("#quantity")?.value) || 1;
   const flowerType = document.querySelector("#flower-type").value.trim();
   const colour = document.querySelector("#colour").value.trim();
   const ribbon = document.querySelector("#ribbon").value.trim();
   const card = document.querySelector("#card-message").value.trim();
   if (size) options.size = size;
+  if (quantityVal) options.quantity = quantityVal;
   if (flowerType) options.flower_type = flowerType;
   if (colour) options.colour = colour;
   if (ribbon) options.ribbon = ribbon;

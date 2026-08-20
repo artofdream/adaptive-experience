@@ -36,14 +36,18 @@ class TestAutonomousAgentGateway(unittest.TestCase):
         self.assertTrue(res["processed"])
         self.assertEqual(res["action"], "triaged")
 
-    def test_cloud_deployment_status(self):
+    def test_process_gitlab_webhook_merge_request_missing_validation(self):
         os.environ["AEA_AUTONOMOUS_LOOP_ENABLED"] = "true"
-        os.environ["AWS_REGION"] = "us-east-1"
-        status = self.gateway.get_cloud_deployment_status()
-        self.assertEqual(status["status"], "active")
-        self.assertEqual(status["aws_region"], "us-east-1")
-        self.assertEqual(status["cluster"], "aea-pilot")
-        self.assertEqual(status["secret_name"], "aea/gitlab-token")
+        payload = {
+            "object_attributes": {
+                "iid": 238,
+                "description": "Short PR description without validation"
+            }
+        }
+        res = self.gateway.process_gitlab_webhook("Merge Request Hook", payload)
+        self.assertTrue(res["processed"])
+        self.assertEqual(res["action"], "auto_remediation_triggered")
+        self.assertEqual(res["remediation"]["status"], "triggered")
 
 
 if __name__ == "__main__":

@@ -336,12 +336,12 @@ class PerimeterTests(unittest.TestCase):
             json.dumps({"product_id": "", "observed_context_version": 7}).encode())[0])
         self.assertEqual(422, self.call("POST", "/api/v1/selection", headers,
             json.dumps({"product_id": "x", "observed_context_version": -1}).encode())[0])
-        # T-04 options (ADR-006 amended): size + card message + thin FR-003 keys.
+        # T-04 options (ADR-006 amended): size + card message + thin FR-003 keys + quantity.
         self.assertEqual(202, self.call("POST", "/api/v1/selection", headers,
             json.dumps({"product_id": "classic-rose-dozen",
                         "options": {"size": "large", "card_message": "hi",
                                     "flower_type": "roses", "colour": "red",
-                                    "ribbon": "satin"},
+                                    "ribbon": "satin", "quantity": 10},
                         "observed_context_version": 7}).encode())[0])
         # Gift-card value and unknown keys remain rejected at the edge.
         for control in ({"gift_card_value": "50"}, {"composition": "free-form"}):

@@ -48,11 +48,42 @@ resource "aws_service_discovery_service" "litellm" {
   }
 }
 
+resource "aws_service_discovery_service" "agent_runner" {
+  name = "agent-runner"
+  dns_config {
+    namespace_id = aws_service_discovery_private_dns_namespace.main.id
+    dns_records {
+      ttl  = 10
+      type = "A"
+    }
+    routing_policy = "MULTIVALUE"
+  }
+  health_check_custom_config {
+    failure_threshold = 1
+  }
+}
+
+resource "aws_service_discovery_service" "grafana" {
+  name = "grafana"
+  dns_config {
+    namespace_id = aws_service_discovery_private_dns_namespace.main.id
+    dns_records {
+      ttl  = 10
+      type = "A"
+    }
+    routing_policy = "MULTIVALUE"
+  }
+  health_check_custom_config {
+    failure_threshold = 1
+  }
+}
+
 resource "aws_cloudwatch_log_group" "ecs" {
-  for_each          = toset(["gateway", "bff", "orchestration", "relay", "consumer", "litellm", "lily-reference-live-test"])
+  for_each          = toset(["gateway", "bff", "orchestration", "relay", "consumer", "litellm", "lily-reference-live-test", "agent-runner", "grafana"])
   name              = "/aea/${local.prefix}/${each.key}"
   retention_in_days = 30
 }
+
 
 resource "aws_iam_role" "ecs_execution" {
   name               = "${local.prefix}-ecs-execution"
@@ -82,6 +113,12 @@ resource "aws_iam_role" "ecs_task" {
   assume_role_policy = data.aws_iam_policy_document.ecs_task_assume.json
 }
 
+resource "aws_iam_role_policy_attachment" "ecs_task_cloudwatch" {
+  role       = aws_iam_role.ecs_task.name
+  policy_arn = "arn:aws:iam::aws:policy/CloudWatchReadOnlyAccess"
+}
+
+
 resource "aws_ecs_cluster" "main" {
   name = local.prefix
   setting {
@@ -98,6 +135,7 @@ locals {
   discovery_bff_host     = "bff.${local.prefix}.internal"
   discovery_orch_host    = "orchestration.${local.prefix}.internal"
   discovery_litellm_host = "litellm.${local.prefix}.internal"
+  discovery_agent_host   = "agent-runner.${local.prefix}.internal"
   # Same aliases as Path A. Do not duplicate; keep edge/litellm.yaml the SoT.
   litellm_config_yaml = file("${path.module}/../../edge/litellm.yaml")
   # Named aea-pilot exception only. Generic production BFF still 404s florist.
@@ -195,6 +233,7 @@ resource "aws_ecs_task_definition" "gateway" {
     environment = [
       { name = "AEA_GATEWAY_MODE", value = "alb" },
       { name = "AEA_BFF_UPSTREAM", value = "http://${local.discovery_bff_host}:8080" },
+      { name = "AEA_AGENT_UPSTREAM", value = "http://${local.discovery_agent_host}:8080" },
     ]
     logConfiguration = {
       logDriver = "awslogs"
@@ -472,3 +511,100 @@ resource "aws_ecs_service" "litellm" {
   }
   tags = { Project = "adaptive-experience" }
 }
+
+resource "aws_ecs_task_definition" "agent_runner" {
+  family                   = "${local.prefix}-agent-runner"
+  requires_compatibilities = ["FARGATE"]
+  network_mode             = "awsvpc"
+  cpu                      = "512"
+  memory                   = "1024"
+  execution_role_arn       = aws_iam_role.ecs_execution.arn
+  task_role_arn            = aws_iam_role.ecs_task.arn
+  container_definitions = jsonencode([{
+    name         = "agent-runner"
+    image        = "${aws_ecr_repository.agent_runner.repository_url}:${var.container_image_tag}"
+    essential    = true
+    portMappings = [{ containerPort = 8080, protocol = "tcp" }]
+    environment = [
+      { name = "AEA_AUTONOMOUS_LOOP_ENABLED", value = "true" },
+      { name = "AEA_AGENT_PORT", value = "8080" },
+      { name = "PYTHONPATH", value = "/app/platform" },
+      { name = "AWS_REGION", value = var.aws_region }
+    ]
+    logConfiguration = {
+      logDriver = "awslogs"
+      options = {
+        "awslogs-group"         = aws_cloudwatch_log_group.ecs["agent-runner"].name
+        "awslogs-region"        = var.aws_region
+        "awslogs-stream-prefix" = "ecs"
+      }
+    }
+  }])
+  tags = { Project = "adaptive-experience" }
+}
+
+resource "aws_ecs_service" "agent_runner" {
+  name            = "agent-runner"
+  cluster         = aws_ecs_cluster.main.id
+  task_definition = aws_ecs_task_definition.agent_runner.arn
+  desired_count   = 1
+  launch_type     = "FARGATE"
+  network_configuration {
+    subnets          = aws_subnet.private[*].id
+    security_groups  = [aws_security_group.agent_runner.id]
+    assign_public_ip = false
+  }
+  service_registries {
+    registry_arn = aws_service_discovery_service.agent_runner.arn
+  }
+  tags = { Project = "adaptive-experience" }
+}
+
+resource "aws_ecs_task_definition" "grafana" {
+  family                   = "${local.prefix}-grafana"
+  requires_compatibilities = ["FARGATE"]
+  network_mode             = "awsvpc"
+  cpu                      = "256"
+  memory                   = "512"
+  execution_role_arn       = aws_iam_role.ecs_execution.arn
+  task_role_arn            = aws_iam_role.ecs_task.arn
+  container_definitions = jsonencode([{
+    name         = "grafana"
+    image        = "grafana/grafana:10.4.0"
+    essential    = true
+    portMappings = [{ containerPort = 3000, protocol = "tcp" }]
+    environment = [
+      { name = "GF_SECURITY_ADMIN_USER", value = "admin" },
+      { name = "GF_SECURITY_ADMIN_PASSWORD", value = "admin" },
+      { name = "GF_SERVER_SERVE_FROM_SUB_PATH", value = "true" },
+      { name = "GF_SERVER_ROOT_URL", value = "https://aea.artof.link/grafana/" }
+    ]
+    logConfiguration = {
+      logDriver = "awslogs"
+      options = {
+        "awslogs-group"         = aws_cloudwatch_log_group.ecs["grafana"].name
+        "awslogs-region"        = var.aws_region
+        "awslogs-stream-prefix" = "ecs"
+      }
+    }
+  }])
+  tags = { Project = "adaptive-experience" }
+}
+
+resource "aws_ecs_service" "grafana" {
+  name            = "grafana"
+  cluster         = aws_ecs_cluster.main.id
+  task_definition = aws_ecs_task_definition.grafana.arn
+  desired_count   = 1
+  launch_type     = "FARGATE"
+  network_configuration {
+    subnets          = aws_subnet.private[*].id
+    security_groups  = [aws_security_group.grafana.id]
+    assign_public_ip = false
+  }
+  service_registries {
+    registry_arn = aws_service_discovery_service.grafana.arn
+  }
+  tags = { Project = "adaptive-experience" }
+}
+

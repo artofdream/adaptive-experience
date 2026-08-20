@@ -99,13 +99,16 @@ class HttpOrchestration:
         return CommandResult(False, "orchestration_unavailable")
 
     def select_product(self, **kwargs):
+        payload = {
+            "product_id": kwargs["product_id"],
+            "options": kwargs["options"],
+            "observed_context_version": kwargs["observed_context_version"],
+            "correlation_id": kwargs["correlation_id"],
+        }
+        if "items" in kwargs and kwargs["items"] is not None:
+            payload["items"] = kwargs["items"]
         data = self._call("POST", f"/internal/v1/sessions/{kwargs['session_id']}/selection",
-                          subject=kwargs["subject"], payload={
-                              "product_id": kwargs["product_id"],
-                              "options": kwargs["options"],
-                              "observed_context_version": kwargs["observed_context_version"],
-                              "correlation_id": kwargs["correlation_id"],
-                          })
+                          subject=kwargs["subject"], payload=payload)
         return SelectionResult(data["status"] == 202, data.get("code", "rejected"),
                                int(data.get("context_version", 0)), data.get("message_id"))
 

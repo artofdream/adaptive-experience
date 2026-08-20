@@ -1,0 +1,8 @@
+FROM grafana/grafana:10.4.0
+
+COPY platform/docker/grafana/grafana.ini /etc/grafana/grafana.ini
+COPY platform/docker/grafana/provisioning/datasources/datasources.yml /etc/grafana/provisioning/datasources/datasources.yml
+COPY platform/docker/grafana/provisioning/dashboards/dashboards.yml /etc/grafana/provisioning/dashboards/dashboards.yml
+COPY platform/docker/grafana/provisioning/dashboards/aea_unified_dashboard.json /etc/grafana/provisioning/dashboards/aea_unified_dashboard.json
+
+EXPOSE 3000

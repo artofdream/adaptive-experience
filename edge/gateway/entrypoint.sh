@@ -2,8 +2,8 @@
 set -eu
 
 if [ "${AEA_GATEWAY_MODE:-}" = "alb" ]; then
-  RESOLVER=$(awk '/^nameserver/{print $2; exit}' /etc/resolv.conf)
-  : "${RESOLVER:=169.254.169.253}"
+  RESOLVER_FOUND=$(awk '/^nameserver/{print $2; exit}' /etc/resolv.conf || true)
+  RESOLVER="${AEA_RESOLVER:-${RESOLVER_FOUND:-10.40.0.2 169.254.169.253}}"
   : "${AEA_BFF_UPSTREAM:=http://bff:8080}"
   : "${AEA_AGENT_UPSTREAM:=http://agent-runner:8080}"
   sed -e "s|__RESOLVER__|${RESOLVER}|g" \
