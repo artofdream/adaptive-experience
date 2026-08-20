@@ -67,6 +67,8 @@ class BrowserUiTests(unittest.TestCase):
         self.assertIn("location /api/ {", alb)
         self.assertIn("location /webhooks/ {", alb)
         self.assertIn("location /cloud/ {", alb)
+        self.assertNotIn("<<<<<<<", alb)
+        self.assertNotIn(">>>>>>>", alb)
         self.assertIn("set $agent_upstream __AGENT_UPSTREAM__;", alb)
         self.assertIn('proxy_set_header X-Internal-Identity "";', alb)
 
