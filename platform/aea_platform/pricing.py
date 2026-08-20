@@ -51,24 +51,52 @@ class PricingService:
     def summarize(self, decisions) -> dict | None:
         if not isinstance(decisions, dict):
             return None
+        items = decisions.get("items")
         product = decisions.get("product")
-        if not isinstance(product, dict) or not isinstance(product.get("product_id"), str):
-            return None
-        base = self.prices.get(product["product_id"])
-        if base is None:
-            # Unknown product; authoritative catalog owns eligibility.
+        if not items and isinstance(product, dict) and isinstance(product.get("items"), list):
+            items = product["items"]
+
+        item_list = []
+        if isinstance(items, list) and len(items) > 0:
+            item_list = [i for i in items if isinstance(i, dict) and isinstance(i.get("product_id"), str)]
+        elif isinstance(product, dict) and isinstance(product.get("product_id"), str):
+            item_list = [product]
+
+        if not item_list:
             return None
 
-        product_amount = round(float(base), 2)
-        customization_amount = round(self.customization_amount, 2)
-        charges = [
-            {
+        total_product_amount = 0.0
+        charges = []
+
+        for item in item_list:
+            pid = item.get("product_id")
+            base = self.prices.get(pid)
+            if base is None:
+                continue
+            options = item.get("options") if isinstance(item.get("options"), dict) else {}
+            raw_qty = item.get("quantity", options.get("quantity", 1))
+            try:
+                qty = int(raw_qty)
+                if qty < 1:
+                    qty = 1
+            except (ValueError, TypeError):
+                qty = 1
+
+            line_amount = round(float(base) * qty, 2)
+            total_product_amount += line_amount
+            charges.append({
                 "label": "product",
-                "product_id": product["product_id"],
-                "amount": product_amount,
-            },
-            {"label": "customization", "amount": customization_amount},
-        ]
+                "product_id": pid,
+                "quantity": qty,
+                "unit_price": round(float(base), 2),
+                "amount": line_amount,
+            })
+
+        if not charges:
+            return None
+
+        customization_amount = round(self.customization_amount, 2)
+        charges.append({"label": "customization", "amount": customization_amount})
 
         delivery_amount = 0.0
         delivery = decisions.get("delivery")
@@ -76,7 +104,7 @@ class PricingService:
             delivery_amount = round(self.delivery_fee, 2)
             charges.append({"label": "delivery", "amount": delivery_amount})
 
-        taxable = product_amount + customization_amount + delivery_amount
+        taxable = total_product_amount + customization_amount + delivery_amount
         tax_amount = round(taxable * self.tax_rate, 2)
         discount_amount = round(self.discount_amount, 2)
         charges.append({"label": "tax", "amount": tax_amount})

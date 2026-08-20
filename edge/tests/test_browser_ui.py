@@ -127,6 +127,7 @@ class BrowserUiTests(unittest.TestCase):
 
     def test_t04_exposes_thin_fr003_fields(self):
         self.assertIn('id="size"', self.html)
+        self.assertIn('id="quantity"', self.html)
         self.assertIn('id="card-message"', self.html)
         self.assertIn('id="flower-type"', self.html)
         self.assertIn('id="colour"', self.html)
@@ -138,6 +139,7 @@ class BrowserUiTests(unittest.TestCase):
         self.assertIn('"Classic Rose Dozen"', self.script)
         self.assertIn('"Budget Mixed Bunch"', self.script)
         self.assertIn("if (PRODUCT_NAMES[id]) return PRODUCT_NAMES[id];", self.script)
+        self.assertIn("items: currentItems", self.script)
         self.assertNotIn('return String(productId || "").replace(/-/g, " ");', self.script)
         self.assertNotIn("gift card", self.html.lower())
         self.assertNotIn("gift_card", self.script.lower())

@@ -79,5 +79,19 @@ class PricingServiceTests(unittest.TestCase):
         self.assertEqual(round(taxable + by_label["tax"] - 5.0, 2), summary["total"])
 
 
+    def test_quantity_and_multi_item_pricing(self):
+        summary = self.pricing.summarize({
+            "product": {
+                "product_id": "classic-rose-dozen",
+                "options": {"quantity": 2},
+            },
+            "delivery": {"destination_reference": "addr-1"},
+        })
+        product_charge = [c for c in summary["itemized_charges"] if c["label"] == "product"][0]
+        self.assertEqual(2, product_charge["quantity"])
+        self.assertEqual(round(self.price * 2, 2), product_charge["amount"])
+        self.assertEqual(round(self.price * 2 + REFERENCE_DELIVERY_FEE, 2), summary["total"])
+
+
 if __name__ == "__main__":
     unittest.main()

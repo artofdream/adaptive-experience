@@ -9,6 +9,9 @@ CARD_MESSAGE_MAX_LENGTH = 280
 SIZE_MAX_LENGTH = 40
 OPTION_TOKEN_MAX_LENGTH = 40
 
+QUANTITY_MIN = 1
+QUANTITY_MAX = 10
+
 ALLOWED_OPTION_KEYS = (
     "size",
     "card_message",
@@ -17,6 +20,7 @@ ALLOWED_OPTION_KEYS = (
     "ribbon",
     "palette",
     "safety_exclusions",
+    "quantity",
 )
 
 ALLOWED_COLOURS = frozenset({"red", "pink", "white", "yellow", "purple", "mixed"})
@@ -114,11 +118,26 @@ def flowers_for_product(product_id: str) -> frozenset[str]:
     raise SelectionValidationError("unknown product for flower type")
 
 
+def normalize_quantity(value) -> int:
+    """Normalize item selection quantity (ADR-006 / FR-003 quantity)."""
+    if value is None:
+        return 1
+    if isinstance(value, str):
+        if not value.strip().isdigit():
+            raise SelectionValidationError("quantity must be a positive integer")
+        value = int(value.strip())
+    if not isinstance(value, int) or isinstance(value, bool):
+        raise SelectionValidationError("quantity must be a positive integer")
+    if value < QUANTITY_MIN or value > QUANTITY_MAX:
+        raise SelectionValidationError(f"quantity must be between {QUANTITY_MIN} and {QUANTITY_MAX}")
+    return value
+
+
 def normalize_selection_options(options, product_id: str | None = None) -> dict:
     """Return explicit T-04 option fields, including M10 Compositional Palette keys.
 
     Accepts ``size``, ``card_message``, ``flower_type``, ``colour``, ``ribbon``,
-    ``palette``, and ``safety_exclusions``.
+    ``palette``, ``safety_exclusions``, and ``quantity``.
     """
     if options is None:
         options = {}
@@ -167,4 +186,34 @@ def normalize_selection_options(options, product_id: str | None = None) -> dict:
     if safety_exclusions:
         normalized["safety_exclusions"] = safety_exclusions
 
+    if options.get("quantity") is not None:
+        quantity = normalize_quantity(options.get("quantity"))
+        normalized["quantity"] = quantity
+
+    return normalized
+
+
+def normalize_selection_items(items) -> list[dict]:
+    """Normalize a multi-product selection items array for cart basket selection."""
+    if items is None:
+        return []
+    if not isinstance(items, (list, tuple)):
+        raise SelectionValidationError("items must be an array")
+    if len(items) > 20:
+        raise SelectionValidationError("maximum 20 distinct items allowed per cart")
+    normalized = []
+    for item in items:
+        if not isinstance(item, dict) or not isinstance(item.get("product_id"), str) or not item["product_id"].strip():
+            raise SelectionValidationError("item must contain product_id")
+        pid = item["product_id"].strip()
+        opts = item.get("options", {}) if isinstance(item.get("options"), dict) else {}
+        norm_opts = normalize_selection_options(opts, product_id=pid)
+        qty = item.get("quantity")
+        if qty is not None:
+            norm_opts["quantity"] = normalize_quantity(qty)
+        normalized.append({
+            "product_id": pid,
+            "quantity": norm_opts.get("quantity", 1),
+            "options": norm_opts,
+        })
     return normalized

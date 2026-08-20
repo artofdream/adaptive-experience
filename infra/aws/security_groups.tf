@@ -81,6 +81,58 @@ resource "aws_security_group" "orchestration" {
   tags = { Name = "${local.prefix}-orchestration" }
 }
 
+resource "aws_security_group" "agent_runner" {
+  name        = "${local.prefix}-agent-runner"
+  description = "Autonomous agent runner service"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    from_port       = 8080
+    to_port         = 8080
+    protocol        = "tcp"
+    security_groups = [aws_security_group.gateway.id]
+  }
+
+  ingress {
+    from_port       = 8080
+    to_port         = 8080
+    protocol        = "tcp"
+    security_groups = [aws_security_group.grafana.id]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = { Name = "${local.prefix}-agent-runner" }
+}
+
+resource "aws_security_group" "grafana" {
+  name        = "${local.prefix}-grafana"
+  description = "Grafana dashboard service"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    from_port       = 3000
+    to_port         = 3000
+    protocol        = "tcp"
+    security_groups = [aws_security_group.gateway.id]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = { Name = "${local.prefix}-grafana" }
+}
+
+
 resource "aws_security_group" "litellm" {
   name        = "${local.prefix}-litellm"
   description = "LiteLLM proxy private (orchestration only)"

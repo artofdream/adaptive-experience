@@ -19,11 +19,19 @@ resource "aws_ecr_repository" "gateway" {
   image_scanning_configuration { scan_on_push = true }
 }
 
+resource "aws_ecr_repository" "agent_runner" {
+  name                 = "${local.prefix}/agent-runner"
+  image_tag_mutability = "MUTABLE"
+  force_delete         = true
+  image_scanning_configuration { scan_on_push = true }
+}
+
 resource "aws_ecr_lifecycle_policy" "keep_last_20" {
   for_each   = {
     orchestration = aws_ecr_repository.orchestration.name
     bff           = aws_ecr_repository.bff.name
     gateway       = aws_ecr_repository.gateway.name
+    agent_runner  = aws_ecr_repository.agent_runner.name
   }
   repository = each.value
   policy = jsonencode({

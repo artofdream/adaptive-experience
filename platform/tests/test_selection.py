@@ -86,5 +86,16 @@ class CardMessageContractTests(unittest.TestCase):
             normalize_selection_options({"safety_exclusions": ["invalid_allergen"]})
 
 
+    def test_quantity_validation(self):
+        self.assertEqual({"quantity": 2}, normalize_selection_options({"quantity": 2}))
+        self.assertEqual({"quantity": 5}, normalize_selection_options({"quantity": "5"}))
+        with self.assertRaises(SelectionValidationError):
+            normalize_selection_options({"quantity": 0})
+        with self.assertRaises(SelectionValidationError):
+            normalize_selection_options({"quantity": 11})
+        with self.assertRaises(SelectionValidationError):
+            normalize_selection_options({"quantity": -1})
+
+
 if __name__ == "__main__":
     unittest.main()

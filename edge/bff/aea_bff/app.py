@@ -236,32 +236,51 @@ class BffApp:
             except (UnicodeDecodeError, json.JSONDecodeError):
                 return await self._error(send, 400, "invalid_json", correlation_id)
             if (not isinstance(selection, dict)
-                    or set(selection) - {"product_id", "options", "observed_context_version"}
-                    or "product_id" not in selection
+                    or set(selection) - {"product_id", "items", "options", "observed_context_version"}
                     or "observed_context_version" not in selection):
                 return await self._error(send, 422, "invalid_selection_shape", correlation_id)
-            product_id = selection["product_id"]
+            product_id = selection.get("product_id")
+            items = selection.get("items")
             options = selection.get("options", {})
             observed = selection["observed_context_version"]
-            if (not isinstance(product_id, str) or not product_id.strip()
-                    or len(product_id.strip()) > 120 or not isinstance(options, dict)
+            if items is not None:
+                if not isinstance(items, (list, tuple)) or len(items) > 20:
+                    return await self._error(send, 422, "invalid_selection_shape", correlation_id)
+            elif not isinstance(product_id, str) or not product_id.strip() or len(product_id.strip()) > 120:
+                return await self._error(send, 422, "invalid_selection_shape", correlation_id)
+
+            if (not isinstance(options, dict)
                     or not isinstance(observed, int) or isinstance(observed, bool) or observed < 0):
                 return await self._error(send, 422, "invalid_selection_shape", correlation_id)
-            # T-04 options (ADR-006 amended): size, card message, and thin FR-003
-            # keys. Orchestration re-validates tokens and flower_type eligibility.
-            allowed = {"size", "card_message", "flower_type", "colour", "ribbon"}
-            if (set(options) - allowed
-                    or any(not isinstance(value, str) for value in options.values())
-                    or len(options.get("card_message", "")) > 280
-                    or len(options.get("size", "")) > 40
-                    or len(options.get("flower_type", "")) > 40
-                    or len(options.get("colour", "")) > 40
-                    or len(options.get("ribbon", "")) > 40):
+            # T-04 options (ADR-006 amended): size, card message, thin FR-003,
+            # M10 compositional palette keys, and quantity.
+            # Orchestration re-validates tokens and flower_type eligibility authoritatively.
+            allowed = {"size", "card_message", "flower_type", "colour", "ribbon", "palette", "safety_exclusions", "quantity"}
+            if set(options) - allowed:
+                return await self._error(send, 422, "invalid_selection_shape", correlation_id)
+
+            for key, value in options.items():
+                if key in {"size", "card_message", "flower_type", "colour", "ribbon", "palette"}:
+                    if not isinstance(value, str):
+                        return await self._error(send, 422, "invalid_selection_shape", correlation_id)
+                elif key == "quantity":
+                    if isinstance(value, bool) or not isinstance(value, (int, str)):
+                        return await self._error(send, 422, "invalid_selection_shape", correlation_id)
+                elif key == "safety_exclusions":
+                    if not isinstance(value, (list, tuple)):
+                        return await self._error(send, 422, "invalid_selection_shape", correlation_id)
+
+            if (len(str(options.get("card_message", ""))) > 280
+                    or len(str(options.get("size", ""))) > 40
+                    or len(str(options.get("flower_type", ""))) > 40
+                    or len(str(options.get("colour", ""))) > 40
+                    or len(str(options.get("ribbon", ""))) > 40
+                    or len(str(options.get("palette", ""))) > 40):
                 return await self._error(send, 422, "invalid_selection_shape", correlation_id)
             try:
                 result = self.orchestration.select_product(
-                    session_id=session.session_id, subject=subject, product_id=product_id.strip(),
-                    options=options, observed_context_version=observed, correlation_id=correlation_id)
+                    session_id=session.session_id, subject=subject, product_id=product_id.strip() if product_id else "",
+                    options=options, items=items, observed_context_version=observed, correlation_id=correlation_id)
             except OrchestrationUnavailable:
                 return await self._error(send, 503, "orchestration_unavailable", correlation_id)
             status = 202 if result.accepted else (

@@ -22,7 +22,7 @@ from .pricing import PricingService
 from .support import SupportService, SupportValidationError
 from .quality import QualityMonitor, QualityTrackingError
 from .recommendation import RecommendationService
-from .selection import SelectionValidationError, normalize_selection_options
+from .selection import SelectionValidationError, normalize_selection_options, normalize_selection_items
 from .state import StatePatch
 
 
@@ -403,8 +403,13 @@ class InternalOrchestrationApp:
             "security_context": {"classification": "confidential", "subject_reference": subject},
             "payload": {"product_id": product_id.strip(), "options": options}, "outcome": {},
         }
+        items_body = body.get("items")
+        product_decision = {"product_id": product_id.strip() if product_id else "", "options": options}
+        if isinstance(items_body, list) and len(items_body) > 0:
+            product_decision["items"] = normalize_selection_items(items_body)
+
         patch = StatePatch.create(
-            {"decisions": {"product": {"product_id": product_id.strip(), "options": options}}},
+            {"decisions": {"product": product_decision}},
             ["decisions.product"])
         try:
             new_version = self.store.apply_patch(
