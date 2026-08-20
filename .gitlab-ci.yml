@@ -72,6 +72,16 @@ stakeholder-cadence-guard:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
     - if: '$CI_COMMIT_BRANCH == "main"'
 
+scheduled-email-brief:
+  stage: report
+  image: python:3.12-alpine
+  allow_failure: true
+  script:
+    - python scripts/send_email_brief.py --recipient claude.tsarafidy@gmail.com
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    - if: '$CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "web"'
+
 ui-visual-sync-guard:
   stage: verify
   image: python:3.12-alpine
