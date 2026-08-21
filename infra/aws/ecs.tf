@@ -136,6 +136,7 @@ locals {
   discovery_orch_host    = "orchestration.${local.prefix}.internal"
   discovery_litellm_host = "litellm.${local.prefix}.internal"
   discovery_agent_host   = "agent-runner.${local.prefix}.internal"
+  discovery_grafana_host = "grafana.${local.prefix}.internal"
   # Same aliases as Path A. Do not duplicate; keep edge/litellm.yaml the SoT.
   litellm_config_yaml = file("${path.module}/../../edge/litellm.yaml")
   # Named aea-pilot exception only. Generic production BFF still 404s florist.
@@ -234,6 +235,7 @@ resource "aws_ecs_task_definition" "gateway" {
       { name = "AEA_GATEWAY_MODE", value = "alb" },
       { name = "AEA_BFF_UPSTREAM", value = "http://${local.discovery_bff_host}:8080" },
       { name = "AEA_AGENT_UPSTREAM", value = "http://${local.discovery_agent_host}:8080" },
+      { name = "AEA_GRAFANA_UPSTREAM", value = "http://${local.discovery_grafana_host}:3000" },
     ]
     logConfiguration = {
       logDriver = "awslogs"
