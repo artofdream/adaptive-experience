@@ -45,6 +45,16 @@ class TestCatalogKnowledgeGraph(unittest.TestCase):
         self.assertIn("@graph", json_ld)
         self.assertEqual(len(json_ld["@graph"]), 1)
 
+    def test_export_obsidian_markdown(self):
+        p1 = self.kg.add_node("p:classic-rose", "Product", "Classic Rose Dozen")
+        occ = self.kg.add_node("occ:birthday", "Occasion", "Mother Birthday")
+        self.kg.add_relation(p1.id, occ.id, "SUITABLE_FOR")
+        md = self.kg.export_obsidian_markdown()
+        self.assertIn("# Runtime Catalog Knowledge Graph", md)
+        self.assertIn("[[p:classic-rose]]", md)
+        self.assertIn("[[occ:birthday]]", md)
+        self.assertIn("SUITABLE_FOR", md)
+
 
 if __name__ == "__main__":
     unittest.main()

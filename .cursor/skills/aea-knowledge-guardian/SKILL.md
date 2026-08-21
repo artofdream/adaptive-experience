@@ -19,6 +19,7 @@ The **AEA Knowledge Guardian** owns repository knowledge management, Second Brai
 
 3. **Cross-Agent Knowledge Handoff**:
    * Enforce session-start briefing rules in `AGENTS.md` and `.cursor/rules/session-start-briefing.mdc`.
+   * Receive closed Coherence Findings (CF) from `$aea-coherence-guardian` and extract lesson-learned memory nodes into `research/random-thoughts/`.
    * Ensure Codex, Cursor, Claude Code, Copilot, Gemini, and Grok read `research/daily-briefs/` and `research/random-thoughts/` upon session start.
 
 4. **6-Way Stakeholder Skill Portability**:

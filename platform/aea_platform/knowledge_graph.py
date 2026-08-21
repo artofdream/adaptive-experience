@@ -77,3 +77,22 @@ class CatalogKnowledgeGraph:
             },
             "@graph": graph_nodes
         }
+
+    def export_obsidian_markdown(self) -> str:
+        """Export runtime knowledge graph topology as Obsidian Second Brain wikilink note."""
+        lines = [
+            "# Runtime Catalog Knowledge Graph",
+            "",
+            "> **Tags**: #aea #runtime-knowledge-graph #catalog-ontology",
+            "",
+            "## Taxonomy Nodes",
+            "",
+        ]
+        for node in self.nodes.values():
+            lines.append(f"- **[[{node.id}]]** (`{node.type}`): {node.name}")
+        lines.append("")
+        lines.append("## Ontology Relationships")
+        lines.append("")
+        for rel in self.relations:
+            lines.append(f"- **[[{rel.source_id}]]** --`{rel.relation}`--> **[[{rel.target_id}]]**")
+        return "\n".join(lines)

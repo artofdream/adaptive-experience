@@ -31,6 +31,8 @@ The activity/status brief this role writes to `research/daily-briefs/` is
 not just a report — every new session, in any tool, is required to read the
 latest one before acting (`.cursor/rules/session-start-briefing.mdc`). Keep
 it genuinely current; a stale brief undermines that SOP for every tool.
+Whenever a Coherence Finding (CF) is remediated or closed, hand off to `$aea-knowledge-guardian`
+to record a Second Brain lesson-learned memory node under `research/random-thoughts/`.
 
 ## Why this role exists
 
