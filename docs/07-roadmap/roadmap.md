@@ -46,6 +46,8 @@ Backlog:
 | **M10** | Compositional T-04 (Completed) | Option A Florist-Choice Palette Co-Creation (Pastel Romance, Vibrant Sunburst, Classic Elegant) & Pet Safety Exclusions (delivered in platform/aea_platform/selection.py per ADR-006). | FR-003 (free-form & palette co-creation) |
 | **M11** | Inventory analytics depth | Forecasting and analytics beyond the thin `/florist` snapshot trends. | FR-012, NFR-010 |
 | **M12** | Engagement CRM (Unparked) | Occasion reminders and engagement analytics. Staff live chat and ticketing stay out. (Unparked after M8 completion). | FR-016, FR-017 |
+| **M13** | Load & Anti-Fragile Hardening | Option A Locust load engine (LOAD-001..004), WAF bypass token, LLM mock proxy, and Anti-Fragility patch coalescing (AFG-001..004). | NFR-003, NFR-004, NFR-006 |
+| **M14** | Production Go-Live & FinOps | Live Stripe SDK (GAP-001), merchant domain shop.lilysflorist.com (GAP-002), staff OAuth2 SSO (GAP-003), Multi-AZ RDS Proxy (GAP-004), UX enhancements (UX-001..002), and FinOps right-sizing (GAP-005). | FR-019, NFR-015, NFR-017 |
 | **Future** | Future Backlog | Unscheduled: voice, semantic caching, progressive hydration, other industry implementations. Thin T-09 / FR-006, thin FR-010, thin FR-012, and the NFR-014 adapter pin remain delivered and Future in the workbook. | Thin-delivered FR-006, FR-010, FR-012; NFR-014 pin |
 
 ## Key Reference Journeys & Persona Mapping
