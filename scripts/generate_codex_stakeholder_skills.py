@@ -39,6 +39,11 @@ SKILLS = {
         "Read the linked `posture.md` whenever the canonical workflow requires posture or AWS state.",
         "Cursor Cloud Agent policy is informational only. Do not create Codex tasks, threads, or subagents unless the user explicitly requests delegation. Use applicable Codex AWS skills without replacing the established Terraform architecture.",
     ),
+    "aea-knowledge-guardian": (
+        "Own AEA repository knowledge management, Second Brain Obsidian Vault curation under research/random-thoughts/, session building history extraction, bi-directional wikilink mapping, and cross-agent context handoffs. Use for knowledge management, Second Brain curation, Obsidian indexing, project history, session memory extraction, or the AEA knowledge guardian stakeholder.",
+        "Read the canonical skill completely before curating project knowledge nodes or Second Brain studies.",
+        "Maintain bi-directional wikilinks and graph tags. Do not replace devsecops, senior software engineer, or product owner domain authority.",
+    ),
     "aea-mr-coordinator": (
         "Review and process AEA GitLab merge requests when explicitly invoked, applying scope, boundary, validation, conflict, and pipeline gates before enabling auto-merge. Use only when the user invokes the AEA MR coordinator or explicitly asks that stakeholder to process GitLab MRs.",
         "Read the linked `gates.md` completely before any MR action.",
@@ -251,6 +256,9 @@ def main() -> None:
                 drift.append(str(metadata.relative_to(ROOT)))
         else:
             path.write_text(expected, encoding="utf-8")
+            metadata = path.parent / "agents" / "openai.yaml"
+            metadata.parent.mkdir(parents=True, exist_ok=True)
+            metadata.write_text(f"display_name: '{name}'\n", encoding="utf-8")
 
         claude_path = CLAUDE_TARGET / name / "SKILL.md"
         claude_expected = render_claude(name, *values)
