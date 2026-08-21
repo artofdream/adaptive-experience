@@ -34,6 +34,11 @@ SKILLS = {
         "Follow `research/coherence-findings-loop.md` as the operative procedure this role runs, not a companion reference file.",
         "Treat the coherence loop and the daily activity brief as this role's job, not the PM's or support coordinator's. Do not create Codex tasks, threads, or subagents unless the user explicitly requests delegation.",
     ),
+    "aea-cost-guardian": (
+        "Own AEA platform FinOps and cloud cost optimization across AWS compute (ECS Fargate right-sizing), RDS PostgreSQL storage, MSK Kafka streaming, LLM token budget efficiency (embedding caching, LiteLLM mock proxies under ADR-016), and cloud billing audits. Use for cost optimization, FinOps audits, cloud budget caps, LLM token efficiency, AWS right-sizing, or the AEA cost guardian stakeholder.",
+        "Read the canonical skill completely before auditing cloud infrastructure costs or LLM API token budgets.",
+        "Maintain AWS resource cost caps and LLM token efficiency. Do not replace devsecops platform architecture or senior software engineer domain authority.",
+    ),
     "aea-devsecops-platform": (
         "Assess and improve AEA platform excellence, maintenance, security, AWS deployment, Terraform, GitLab CI, Kafka and PostgreSQL operations, secrets, encryption, and production posture. Use for DevSecOps, cloud infrastructure, CI/CD, deployment drift, production flags, or the AEA DevSecOps platform stakeholder.",
         "Read the linked `posture.md` whenever the canonical workflow requires posture or AWS state.",

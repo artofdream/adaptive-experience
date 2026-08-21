@@ -23,11 +23,11 @@ Do not invent BG/US/FR/NFR IDs. Prefer citing existing IDs; archive changes are 
 
 ## Stakeholder skills
 
-This repo runs a 12-role AEA stakeholder team (`aea-project-manager`,
+This repo runs a 13-role AEA stakeholder team (`aea-project-manager`,
 `aea-product-owner`, `aea-ux-designer`, `aea-customer-journey`,
 `aea-support-coordinator`, `aea-ai-engineer`, `aea-appsec-auditor`,
 `aea-devsecops-platform`, `aea-senior-software-engineer`, `aea-mr-coordinator`,
-`aea-coherence-guardian`, `aea-knowledge-guardian`). Canonical role definitions live under
+`aea-coherence-guardian`, `aea-knowledge-guardian`, `aea-cost-guardian`). Canonical role definitions live under
 `.cursor/skills/aea-*/`. Discovery adapters for Codex live under
 `.agents/skills/aea-*/` — each is a thin pointer back to the canonical role;
 read the referenced canonical file completely before acting as that
