@@ -1,0 +1,60 @@
+---
+description: Anti-fragility cornerstone SOP governing code, architecture, AI boundaries, and self-healing loops
+globs: "**/*"
+alwaysApply: true
+---
+
+# AEA Anti-Fragility Cornerstone SOP
+
+Anti-fragility is a foundational governing cornerstone of the **Adaptive Experience Architecture (AEA)**.
+
+Unlike fragile systems (which break under stress) or robust systems (which merely resist stress), an **anti-fragile system grows stronger, safer, and more capable from stress, friction, unexpected user inputs, process failures, and operational chaos**.
+
+---
+
+## The 5 Pillars of AEA Anti-Fragility
+
+```mermaid
+flowchart TD
+    subgraph 5 Pillars of AEA Anti-Fragility
+        P1["1. Dynamic Workspace Re-Binding (ADR-005)<br/>User corrections refine context without state loss"]
+        P2["2. Fail-Closed AI Degraded Fallbacks (ADR-016)<br/>LLM provider failures degrade safely to reference knowledge"]
+        P3["3. Autonomous Webhook Self-Healing Engine<br/>Process failures trigger automated MR draft remediation"]
+        P4["4. Immutable Pre-Flight Guard Network (run_all_guards.py)<br/>14+ guards prevent regressions before code merges"]
+        P5["5. Second Brain Memory Ingestion Loop<br/>Every incident & post-mortem strengthens repo knowledge"]
+    end
+
+    style P1 fill:#1b4332,stroke:#2d6a4f,color:#fff
+    style P2 fill:#1b4332,stroke:#2d6a4f,color:#fff
+    style P3 fill:#1d3557,stroke:#457b9d,color:#fff
+    style P4 fill:#1d3557,stroke:#457b9d,color:#fff
+    style P5 fill:#2b2d42,stroke:#8d99ae,color:#fff
+```
+
+### 1. Dynamic Workspace Re-Binding (`ADR-005` / `FR-021`)
+* When a customer corrects an intent attribute (e.g. changing budget from $75 to $150 or recipient from "Mom" to "Mum"), the system must **rebind downstream workspace tiles dynamically** without crashing, dropping cart items, or forcing a page reload.
+
+### 2. Fail-Closed AI Boundaries & Degraded Fallbacks (`ADR-016` / `quality.py`)
+* If an LLM provider fails, times out, or produces unapproved facets, `QualityMonitor` catches the error fail-closed.
+* The system gracefully degrades to reference intent interpreters (`ReferenceIntentInterpreter`) or approved policy text—**zero unapproved fabrications ever escape to the customer**.
+
+### 3. Autonomous Webhook Self-Healing Engine (`agent_gateway.py` / #252)
+* Pipeline or process failures trigger automated webhook POSTs (`/webhooks/gitlab`).
+* The system acknowledges the event, analyzes root cause, and drafts an auto-remediation MR—converting operational failure into automated self-healing.
+
+### 4. Non-Degrading Pre-Flight Guard Network (`scripts/run_all_guards.py`)
+* Every bug fix or architecture change must add or strengthen an automated guard (now 14/14 guards).
+* Guard standards can only ratchet tighter over time; no guard may ever be bypassed, commented out, or weakened.
+
+### 5. Second Brain Continuous Learning Loop (`research/random-thoughts/`)
+* Every incident, bug, or post-mortem is extracted into a git-versioned memory node under `research/random-thoughts/`.
+* `@aea-knowledge-guardian` links memory nodes to canonical ADRs via `[[wikilinks]]` so the system never repeats a past failure.
+
+---
+
+## Operating Rule for All Stakeholders & Agents
+
+Before submitting code, opening MRs, or modifying architecture:
+1. **Stress-Test Failure Modes**: Ensure new code handles missing fields, database disconnects, or LLM timeouts cleanly.
+2. **Never Swallow Errors**: Record error telemetry to `orchestration.ai_quality_event` or outbox logs.
+3. **Ratchet Guards**: Run `python scripts/run_all_guards.py` to verify all 14 guards pass cleanly.
