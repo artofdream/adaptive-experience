@@ -1,4 +1,1 @@
-interface:
-  display_name: "AEA Product Owner"
-  short_description: "Own AEA product mission, vision, and go/no-go"
-  default_prompt: "Use $aea-product-owner to decide product go/no-go, backlog priority among existing IDs, and whether a slice should ship."
+display_name: 'aea-product-owner'

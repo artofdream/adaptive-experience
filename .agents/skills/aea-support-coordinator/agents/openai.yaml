@@ -1,4 +1,1 @@
-interface:
-  display_name: "AEA Support Coordinator"
-  short_description: "Route AEA support items to accountable owners"
-  default_prompt: "Use $aea-support-coordinator to triage and route current customer and operator issues."
+display_name: 'aea-support-coordinator'

@@ -1,4 +1,1 @@
-interface:
-  display_name: "AEA Coherence Guardian"
-  short_description: "Own the coherence findings loop and activity briefs"
-  default_prompt: "Use $aea-coherence-guardian to run the coherence findings loop against research/coherence-findings-loop.md and produce the activity brief."
+display_name: 'aea-coherence-guardian'

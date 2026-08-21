@@ -1,4 +1,1 @@
-interface:
-  display_name: "AEA DevSecOps Platform"
-  short_description: "Operate AEA cloud, CI, and security"
-  default_prompt: "Use $aea-devsecops-platform to assess and improve AEA platform operations."
+display_name: 'aea-devsecops-platform'

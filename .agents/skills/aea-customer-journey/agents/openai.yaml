@@ -1,4 +1,1 @@
-interface:
-  display_name: "AEA Customer Journey"
-  short_description: "Walk and assess the live shopper journey"
-  default_prompt: "Use $aea-customer-journey to walk the live customer journey and report pain points."
+display_name: 'aea-customer-journey'

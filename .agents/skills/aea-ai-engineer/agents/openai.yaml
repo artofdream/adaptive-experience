@@ -1,4 +1,1 @@
-interface:
-  display_name: "AEA AI Engineer"
-  short_description: "Build and audit honest AEA AI paths"
-  default_prompt: "Use $aea-ai-engineer to assess and implement one honest AI gap."
+display_name: 'aea-ai-engineer'

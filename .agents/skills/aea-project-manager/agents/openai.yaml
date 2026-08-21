@@ -1,4 +1,1 @@
-interface:
-  display_name: "AEA Project Manager / Scrum Master"
-  short_description: "Own AEA Scrum flow, owners, and blockers"
-  default_prompt: "Use $aea-project-manager to run the AEA Scrum delivery review, remove blockers, and assign next work."
+display_name: 'aea-project-manager'
