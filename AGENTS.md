@@ -7,11 +7,11 @@ under `platform/` and `edge/`.
 
 ## Session start
 
-Before acting, read the most recent `research/daily-briefs/*.md` (sort by
-filename date) if one exists — it's the fastest way to pick up state from
-other tools/sessions working this repo concurrently. If it's more than a day
-or two old, say so; don't treat it as current. Full SOP:
-`.cursor/rules/session-start-briefing.mdc`.
+Before acting:
+1. Read the most recent `research/daily-briefs/*.md` (sort by filename date) — it's the fastest way to pick up state from other tools/sessions working this repo concurrently.
+2. Read `research/random-thoughts/*.md` (specifically the strategic architecture studies and session memory logs) to inherit the Second Brain project history, decisions, trade-offs, and lessons learned.
+3. If reviewing transcript history or cross-agent context, feed prior session memory logs from `research/random-thoughts/` into context to build upon the continuous knowledge base.
+Full SOP: `.cursor/rules/session-start-briefing.mdc`.
 
 ## Source of truth
 

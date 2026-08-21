@@ -26,7 +26,9 @@ fetched).
 ## What "read first" means
 
 1. `ls research/daily-briefs/*.md`, sort by date, open the most recent.
-2. If today's brief does not exist, read the most recent one available and
+2. Read `research/random-thoughts/*.md` (specifically the strategic architecture studies and session memory logs) to inherit the Second Brain project history, decisions, trade-offs, and lessons learned.
+3. If reviewing transcript history or cross-agent context, feed prior session memory logs from `research/random-thoughts/` into context to build upon the continuous knowledge base.
+4. If today's brief does not exist, read the most recent one available and
    treat anything after its date as **unknown** — verify against `git log`
    / `glab` directly for that gap rather than assuming nothing happened
    since. A brief more than ~1 day old is stale; say so if you're relying
