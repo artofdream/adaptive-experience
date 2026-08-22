@@ -235,7 +235,7 @@ resource "aws_ecs_task_definition" "gateway" {
       { name = "AEA_GATEWAY_MODE", value = "alb" },
       { name = "AEA_BFF_UPSTREAM", value = "http://${local.discovery_bff_host}:8080" },
       { name = "AEA_AGENT_UPSTREAM", value = "http://${local.discovery_agent_host}:8080" },
-      { name = "AEA_GRAFANA_UPSTREAM", value = "http://${local.discovery_grafana_host}:3000" },
+      { name = "AEA_GRAFANA_UPSTREAM", value = "http://127.0.0.1:3000" },
     ]
     logConfiguration = {
       logDriver = "awslogs"
