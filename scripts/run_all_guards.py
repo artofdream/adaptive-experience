@@ -27,6 +27,7 @@ GUARDS: List[Tuple[str, List[str]]] = [
     ("Session Property Graph Unit Tests", [sys.executable, "platform/tests/test_graph.py"]),
     ("Knowledge Graph Exporter Unit Tests", [sys.executable, "platform/tests/test_knowledge_graph.py"]),
     ("Reorder Service Unit Tests", [sys.executable, "platform/tests/test_reorder.py"]),
+    ("CRM Occasion Reminder Unit Tests", [sys.executable, "platform/tests/test_crm.py"]),
     ("Payment Simulation Engine Unit Tests", [sys.executable, "platform/tests/test_payment.py"]),
     ("Stakeholder Skills 6-Way Sync Guard", [sys.executable, "scripts/generate_codex_stakeholder_skills.py", "--check"]),
     ("Second Brain Knowledge Graph Guard", [sys.executable, "scripts/check_knowledge_graph.py"]),
