@@ -11,7 +11,8 @@ from .delivery import DeliveryValidationError, normalize_delivery_details
 from .intent import (IntentAnalysisService, IntentSessionNotFound, IntentValidationError,
                      ReferenceIntentInterpreter, SharedUnderstandingService,
                      is_stale_context_error)
-from .inventory import (InventoryAvailabilityService, InventoryForecastService,
+from .forecast import InventoryForecastService
+from .inventory import (InventoryAvailabilityService,
                         InventoryUnavailableError, InventoryValidationError)
 from .order import (ORDER_STATUS_SEQUENCE, CheckoutService, CheckoutStateError,
                     CheckoutTotalMismatch, OrderIncompleteError, OrderNotFound, OrderService,

@@ -9,10 +9,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from aea_platform.inventory import (
-    InventoryForecastService,
-    InventoryValidationError,
-)
+from aea_platform.forecast import InventoryForecastService
+from aea_platform.inventory import InventoryValidationError
 
 
 class FakeForecastStore:
@@ -115,6 +113,36 @@ class ForecastTests(unittest.TestCase):
                 subject_reference="s")
         with self.assertRaises(InventoryValidationError):
             self.recommend(product_ids=[])
+
+    def test_restock_then_decline_uses_post_restock_run(self):
+        self.store.observations = [
+            observation("classic-rose-dozen", 4, 1, self.now - timedelta(days=4)),
+            observation("classic-rose-dozen", 12, 2, self.now - timedelta(days=2)),
+            observation("classic-rose-dozen", 6, 3, self.now),
+        ]
+        item = self.recommend().items[0]
+        self.assertEqual("declining", item.trend)
+        self.assertIn("Plan a replenishment", item.recommendation)
+        self.assertIn("12", item.recommendation)
+        self.assertIn("6", item.recommendation)
+        self.assertEqual(
+            ("inventory:classic-rose-dozen:v2", "inventory:classic-rose-dozen:v3"),
+            item.fact_references,
+        )
+
+    def test_unvalidated_rows_do_not_invent_a_trend(self):
+        self.store.observations = [
+            {
+                "product_id": "classic-rose-dozen",
+                "available_quantity": -3,
+                "source_version": 1,
+                "observed_at": self.now - timedelta(days=1),
+            },
+            observation("classic-rose-dozen", 5, 2, self.now),
+        ]
+        item = self.recommend().items[0]
+        self.assertEqual("insufficient", item.trend)
+        self.assertIn("only one validated snapshot", item.recommendation)
 
 
 if __name__ == "__main__":
