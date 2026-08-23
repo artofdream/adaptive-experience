@@ -29,3 +29,14 @@ tfplan
 crash.log
 crash.*.log
 .terraform.tfstate.lock.info
+
+# Temporary workspace scratch & test artifacts
+artifacts/
+.worktrees/
+research/assessments/_walk_shots*/
+research/assessments/_florist_ux_shots/
+research/assessments/_florist_profile/
+docs/aea-system-documentation-rendered.html
+docs/aea-system-documentation.html
+docs/aea-system-documentation.pdf
+

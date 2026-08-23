@@ -189,3 +189,23 @@ class HttpOrchestration:
             path += f"?after={after}"
         data = self._call("GET", path, subject=kwargs["subject"])
         return data.get("events", [])
+
+    def list_crm_reminders(self, **kwargs):
+        return self._call(
+            "GET",
+            f"/internal/v1/crm/reminders?browser_hash={kwargs['browser_hash']}",
+            subject=kwargs["subject"])
+
+    def record_crm_occasion(self, **kwargs):
+        return self._call(
+            "POST",
+            "/internal/v1/crm/occasions",
+            subject=kwargs["subject"], payload={
+                "browser_hash": kwargs["browser_hash"],
+                "session_id": kwargs["session_id"],
+                "occasion_type": kwargs["occasion_type"],
+                "event_month": kwargs["event_month"],
+                "event_day": kwargs["event_day"],
+                "recipient_relation": kwargs.get("recipient_relation", "other"),
+            })
+

@@ -1,0 +1,1571 @@
+{
+  "url": "https://aea.artof.link/",
+  "scenario": "mother-birthday",
+  "payment_included": false,
+  "origin": "https://aea.artof.link",
+  "claimed_main": "b62ef96",
+  "assignment": "Path B T-02 Review and correct after !226 RDS session rebind (origin/main b62ef96). Confirm PATCH succeeds \u2014 no toast Correction failed (session_required). Desktop + phone-width. Through T-06. Skip T-07 Place Order. Do not open /florist.",
+  "healthz": {
+    "status": 200,
+    "body": "{\"status\": \"ok\"}",
+    "content_type": "application/json"
+  },
+  "mcp_browser": "cursor-ide-browser: tabs new created a tab then navigate failed (No browser tab available / Browser view not found). Playwright fallback.",
+  "florist_opened": false,
+  "viewports": {
+    "desktop": {
+      "name": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "steps": [
+        {
+          "tile": "T-01 Enter / Discovery",
+          "expected": "Welcome + composer; customer can describe the occasion in own words",
+          "actual": "Welcome visible. Assistant: 'Hello! What occasion are you shopping for today?'. Chips: []. innerWidth=1440. session_mint={'status': 201, 'error': None, 'has_session': True, 'correlation_id': None}. Track stepper present=True.",
+          "result": "pass"
+        },
+        {
+          "tile": "T-01 thought completion (ADR-003)",
+          "expected": "Partial 'I need flowers\u2026' yields evolving suggestions such as 'for Mom'; chips optional; typing always allowed",
+          "actual": "Notice: 'Thanks \u2014 your message is in the conversation. Review Shared Understanding and correct anything that looks wrong.'. Chips: ['for Mom', 'for a birthday', 'under $75']. Customer line in log: True. formError: ''.",
+          "result": "pass"
+        },
+        {
+          "tile": "T-01 Conversation Send + T-02 Shared Understanding",
+          "expected": "Message posts; occasion/recipient/budget appear; Review and correct exists",
+          "actual": "Intent panel: 'T-02 \u00b7 PERSISTENT\\n\\nIntent Summary (Shared Understanding)\\nBudget\\n75 Edit\\nRecipient\\nmother Edit\\nOccasion\\nbirthday Edit\\n\\nNothing is final until you review the order.\\n\\nReview and correct'. Review and correct: True. csrf_rejected=False. formError=''. session_required_seen=False.",
+          "result": "pass"
+        },
+        {
+          "tile": "T-02 Review and correct",
+          "expected": "Customer can correct a facet; PATCH /api/v1/shared-understanding succeeds; no toast Correction failed (session_required)",
+          "actual": "PATCH responses=[{'path': '/api/v1/shared-understanding', 'status': 202, 'method': 'PATCH', 'error': 'accepted', 'code': 'accepted', 'viewport': 'desktop', 'context_version': 5}]. notice='Shared Understanding updated.' correct_form_error='' toast_session_required=False patch_2xx=True api_session_required=False. Panel: 'T-02 \u00b7 PERSISTENT\\n\\nIntent Summary (Shared Understanding)\\nBudget\\n75 Edit\\nRecipient\\nMum Edit\\nOccasion\\nbirthday Edit\\n\\nNothing is final until you review the order.\\n\\nReview and correct'",
+          "result": "pass"
+        },
+        {
+          "tile": "T-03 Curated Recommendations",
+          "expected": "Validated options matching birthday / Mum / budget; available options selectable",
+          "actual": "Caption: 'Now \u00b7 Choose \u2014 recommendations stay visible after you pick'. Cards (2): ['Budget Mixed Bunch |  | $35.00 |  | Available | Select', 'Classic Rose Dozen |  | $70.00 |  | Available | Select']. badges=[{'title': 'Budget Mixed Bunch', 'badge': 'Available', 'selectDisabled': False}, {'title': 'Classic Rose Dozen', 'badge': 'Available', 'selectDisabled': False}]. select_enabled=2.",
+          "result": "pass"
+        },
+        {
+          "tile": "T-04 Select + customize",
+          "expected": "Select arrangement; size; physical card message; optional flower/colour/ribbon",
+          "actual": "Arrangement='Budget Mixed Bunch' size='Standard' card='Happy Birthday Mum \u2014 love you'",
+          "result": "pass"
+        },
+        {
+          "tile": "T-05 Delivery",
+          "expected": "Date + named window; confirm saved destination reference (not a street address)",
+          "actual": "Date 2026-08-24, window morning, destination ref 'home'. Street-address fields=0. Banner='Delivery details confirmed for this session.' error='' csrf=False",
+          "result": "pass"
+        },
+        {
+          "tile": "T-06 Order Summary",
+          "expected": "Itemized charges update after selection and delivery",
+          "actual": "Summary panel: 'T-06 \u00b7 STEPS 5\u20136\\n\\nOrder Summary\\n\\nproduct\\n$35.00\\n\\ncustomization\\n$0.00\\n\\ndelivery\\n$12.00\\n\\ntax\\n$0.00\\n\\ndiscount\\n$0.00\\n\\nTotal $47.00\\n\\nContinue to checkout' checkoutError='' total_mismatch=False",
+          "result": "pass"
+        },
+        {
+          "tile": "T-07 Checkout",
+          "expected": "Stop before payment; do not Place Order",
+          "actual": "Checkout controls visible=3. PAN fields=0. session pay ref present=False. total_mismatch=False. Default skip Place Order.",
+          "result": "blocked"
+        },
+        {
+          "tile": "T-08 Tracking",
+          "expected": "Tracking after confirmed order",
+          "actual": "Skipped with payment. Track stepper present=True.",
+          "result": "blocked"
+        },
+        {
+          "tile": "ASO Help",
+          "expected": "Help available without leaving the workspace; labeled as not a person",
+          "actual": "Help dialog: 'How it works\\n\\nAutomated answers from approved shop information. This is not a person.\\n\\nDescribe what you need in your own words.\\nCheck and correct what the assistant understood.\\nChoose flowers, delivery, and review before paying.\\nAsk from approved information\\n Ask\\n\\nNeed a person?'. Answer: 'From this session: Delivery is scheduled for 2026-08-24 (morning) to destination home.'.",
+          "result": "pass"
+        }
+      ],
+      "api": {
+        "suggestions": [],
+        "csrf_rejected": false,
+        "session_required": false,
+        "total_mismatch": false,
+        "posts": [
+          {
+            "path": "/api/v1/session",
+            "status": 201,
+            "method": "POST",
+            "error": null,
+            "code": null,
+            "viewport": "desktop"
+          },
+          {
+            "path": "/api/v1/workspace",
+            "status": 200,
+            "method": "GET",
+            "error": null,
+            "code": null,
+            "viewport": "desktop",
+            "rec_count": 0,
+            "context_version": 0
+          },
+          {
+            "path": "/api/v1/stream",
+            "status": 200,
+            "method": "GET",
+            "error": null,
+            "code": null,
+            "viewport": "desktop"
+          },
+          {
+            "path": "/api/v1/conversation/messages",
+            "status": 202,
+            "method": "POST",
+            "error": "accepted",
+            "code": "accepted",
+            "viewport": "desktop",
+            "context_version": 2
+          },
+          {
+            "path": "/api/v1/workspace",
+            "status": 200,
+            "method": "GET",
+            "error": null,
+            "code": null,
+            "viewport": "desktop",
+            "rec_count": 0,
+            "context_version": 2
+          },
+          {
+            "path": "/api/v1/stream",
+            "status": 200,
+            "method": "GET",
+            "error": null,
+            "code": null,
+            "viewport": "desktop"
+          },
+          {
+            "path": "/api/v1/workspace",
+            "status": 200,
+            "method": "GET",
+            "error": null,
+            "code": null,
+            "viewport": "desktop",
+            "rec_count": 0,
+            "context_version": 2
+          },
+          {
+            "path": "/api/v1/workspace",
+            "status": 200,
+            "method": "GET",
+            "error": null,
+            "code": null,
+            "viewport": "desktop",
+            "rec_count": 0,
+            "context_version": 2
+          },
+          {
+            "path": "/api/v1/conversation/messages",
+            "status": 202,
+            "method": "POST",
+            "error": "accepted",
+            "code": "accepted",
+            "viewport": "desktop",
+            "context_version": 4
+          },
+          {
+            "path": "/api/v1/workspace",
+            "status": 200,
+            "method": "GET",
+            "error": null,
+            "code": null,
+            "viewport": "desktop",
+            "rec_count": 2,
+            "context_version": 4
+          },
+          {
+            "path": "/api/v1/stream",
+            "status": 200,
+            "method": "GET",
+            "error": null,
+            "code": null,
+            "viewport": "desktop"
+          },
+          {
+            "path": "/api/v1/workspace",
+            "status": 200,
+            "method": "GET",
+            "error": null,
+            "code": null,
+            "viewport": "desktop",
+            "rec_count": 2,
+            "context_version": 4
+          },
+          {
+            "path": "/api/v1/workspace",
+            "status": 200,
+            "method": "GET",
+            "error": null,
+            "code": null,
+            "viewport": "desktop",
+            "rec_count": 2,
+            "context_version": 4
+          },
+          {
+            "path": "/api/v1/shared-understanding",
+            "status": 202,
+            "method": "PATCH",
+            "error": "accepted",
+            "code": "accepted",
+            "viewport": "desktop",
+            "context_version": 5
+          },
+          {
+            "path": "/api/v1/workspace",
+            "status": 200,
+            "method": "GET",
+            "error": null,
+            "code": null,
+            "viewport": "desktop",
+            "rec_count": 2,
+            "context_version": 5
+          },
+          {
+            "path": "/api/v1/stream",
+            "status": 200,
+            "method": "GET",
+            "error": null,
+            "code": null,
+            "viewport": "desktop"
+          },
+          {
+            "path": "/api/v1/workspace",
+            "status": 200,
+            "method": "GET",
+            "error": null,
+            "code": null,
+            "viewport": "desktop",
+            "rec_count": 2,
+            "context_version": 5
+          },
+          {
+            "path": "/api/v1/selection",
+            "status": 202,
+            "method": "POST",
+            "error": "accepted",
+            "code": "accepted",
+            "viewport": "desktop",
+            "context_version": 6
+          },
+          {
+            "path": "/api/v1/workspace",
+            "status": 200,
+            "method": "GET",
+            "error": null,
+            "code": null,
+            "viewport": "desktop",
+            "rec_count": 2,
+            "context_version": 6
+          },
+          {
+            "path": "/api/v1/stream",
+            "status": 200,
+            "method": "GET",
+            "error": null,
+            "code": null,
+            "viewport": "desktop"
+          },
+          {
+            "path": "/api/v1/workspace",
+            "status": 200,
+            "method": "GET",
+            "error": null,
+            "code": null,
+            "viewport": "desktop",
+            "rec_count": 2,
+            "context_version": 6
+          },
+          {
+            "path": "/api/v1/selection",
+            "status": 202,
+            "method": "POST",
+            "error": "accepted",
+            "code": "accepted",
+            "viewport": "desktop",
+            "context_version": 7
+          },
+          {
+            "path": "/api/v1/workspace",
+            "status": 200,
+            "method": "GET",
+            "error": null,
+            "code": null,
+            "viewport": "desktop",
+            "rec_count": 2,
+            "context_version": 7
+          },
+          {
+            "path": "/api/v1/stream",
+            "status": 200,
+            "method": "GET",
+            "error": null,
+            "code": null,
+            "viewport": "desktop"
+          },
+          {
+            "path": "/api/v1/workspace",
+            "status": 200,
+            "method": "GET",
+            "error": null,
+            "code": null,
+            "viewport": "desktop",
+            "rec_count": 2,
+            "context_version": 7
+          },
+          {
+            "path": "/api/v1/delivery",
+            "status": 202,
+            "method": "POST",
+            "error": "accepted",
+            "code": "accepted",
+            "viewport": "desktop",
+            "context_version": 8
+          },
+          {
+            "path": "/api/v1/workspace",
+            "status": 200,
+            "method": "GET",
+            "error": null,
+            "code": null,
+            "viewport": "desktop",
+            "rec_count": 2,
+            "context_version": 8
+          },
+          {
+            "path": "/api/v1/stream",
+            "status": 200,
+            "method": "GET",
+            "error": null,
+            "code": null,
+            "viewport": "desktop"
+          },
+          {
+            "path": "/api/v1/workspace",
+            "status": 200,
+            "method": "GET",
+            "error": null,
+            "code": null,
+            "viewport": "desktop",
+            "rec_count": 2,
+            "context_version": 8
+          },
+          {
+            "path": "/api/v1/support",
+            "status": 200,
+            "method": "POST",
+            "error": "answered",
+            "code": "answered",
+            "viewport": "desktop"
+          }
+        ],
+        "patches": [
+          {
+            "path": "/api/v1/shared-understanding",
+            "status": 202,
+            "method": "PATCH",
+            "error": "accepted",
+            "code": "accepted",
+            "viewport": "desktop",
+            "context_version": 5
+          }
+        ],
+        "session_mint": {
+          "status": 201,
+          "error": null,
+          "has_session": true,
+          "correlation_id": null
+        },
+        "auth_errors": [],
+        "status_codes": [
+          {
+            "method": "GET",
+            "path": "/",
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "path": "/assets/styles.css",
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "path": "/assets/bouquet-hero.svg",
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "path": "/assets/florist-status.svg",
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "path": "/assets/app.js",
+            "status": 200
+          },
+          {
+            "method": "POST",
+            "path": "/api/v1/session",
+            "status": 201
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/workspace",
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/stream",
+            "status": 200
+          },
+          {
+            "method": "POST",
+            "path": "/api/v1/conversation/messages",
+            "status": 202
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/workspace",
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/stream",
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/workspace",
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/workspace",
+            "status": 200
+          },
+          {
+            "method": "POST",
+            "path": "/api/v1/conversation/messages",
+            "status": 202
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/workspace",
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "path": "/assets/sku-budget-mixed-bunch.jpg",
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "path": "/assets/sku-classic-rose-dozen.jpg",
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/stream",
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/workspace",
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/workspace",
+            "status": 200
+          },
+          {
+            "method": "PATCH",
+            "path": "/api/v1/shared-understanding",
+            "status": 202
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/workspace",
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/stream",
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/workspace",
+            "status": 200
+          },
+          {
+            "method": "POST",
+            "path": "/api/v1/selection",
+            "status": 202
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/workspace",
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/stream",
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/workspace",
+            "status": 200
+          },
+          {
+            "method": "POST",
+            "path": "/api/v1/selection",
+            "status": 202
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/workspace",
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/stream",
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/workspace",
+            "status": 200
+          },
+          {
+            "method": "POST",
+            "path": "/api/v1/delivery",
+            "status": 202
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/workspace",
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/stream",
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/workspace",
+            "status": 200
+          },
+          {
+            "method": "POST",
+            "path": "/api/v1/support",
+            "status": 200
+          }
+        ],
+        "ai_modes": [
+          {
+            "path": "/api/v1/workspace",
+            "mode": "primary"
+          },
+          {
+            "path": "/api/v1/conversation/messages",
+            "mode": "fallback"
+          },
+          {
+            "path": "/api/v1/workspace",
+            "mode": "fallback"
+          },
+          {
+            "path": "/api/v1/workspace",
+            "mode": "fallback"
+          },
+          {
+            "path": "/api/v1/workspace",
+            "mode": "fallback"
+          },
+          {
+            "path": "/api/v1/conversation/messages",
+            "mode": "fallback"
+          },
+          {
+            "path": "/api/v1/workspace",
+            "mode": "fallback"
+          },
+          {
+            "path": "/api/v1/workspace",
+            "mode": "fallback"
+          },
+          {
+            "path": "/api/v1/workspace",
+            "mode": "fallback"
+          },
+          {
+            "path": "/api/v1/workspace",
+            "mode": "fallback"
+          },
+          {
+            "path": "/api/v1/workspace",
+            "mode": "fallback"
+          },
+          {
+            "path": "/api/v1/workspace",
+            "mode": "fallback"
+          },
+          {
+            "path": "/api/v1/workspace",
+            "mode": "fallback"
+          },
+          {
+            "path": "/api/v1/workspace",
+            "mode": "fallback"
+          },
+          {
+            "path": "/api/v1/workspace",
+            "mode": "fallback"
+          },
+          {
+            "path": "/api/v1/workspace",
+            "mode": "fallback"
+          },
+          {
+            "path": "/api/v1/workspace",
+            "mode": "fallback"
+          }
+        ],
+        "select_enabled": true,
+        "availability_badges": [
+          {
+            "title": "Budget Mixed Bunch",
+            "badge": "Available",
+            "selectDisabled": false
+          },
+          {
+            "title": "Classic Rose Dozen",
+            "badge": "Available",
+            "selectDisabled": false
+          }
+        ],
+        "last_workspace": {
+          "context_version": 8,
+          "shared": {
+            "structured_intent": {
+              "budget": 75.0,
+              "recipient": "Mum",
+              "occasion": "birthday"
+            },
+            "suggestions": [
+              "What style or mood would you prefer?",
+              "Any flower preferences?",
+              "When should they arrive?"
+            ]
+          },
+          "rec_count": 2
+        }
+      },
+      "t02": {
+        "patches": [
+          {
+            "path": "/api/v1/shared-understanding",
+            "status": 202,
+            "method": "PATCH",
+            "error": "accepted",
+            "code": "accepted",
+            "viewport": "desktop",
+            "context_version": 5
+          }
+        ],
+        "notice": "Shared Understanding updated.",
+        "notice_is_error": false,
+        "correct_form_error": "",
+        "toast_session_required": false,
+        "patch_2xx": true,
+        "patch_session_required_status": false,
+        "recipient_shows_mum": true,
+        "understanding": "T-02 \u00b7 PERSISTENT\n\nIntent Summary (Shared Understanding)\nBudget\n75 Edit\nRecipient\nMum Edit\nOccasion\nbirthday Edit\n\nNothing is final until you review the order.\n\nReview and correct"
+      },
+      "workspace": {
+        "title": "Lily's Florist \u2014 Adaptive Workspace",
+        "url": "/",
+        "understanding": "T-02 \u00b7 PERSISTENT\n\nIntent Summary (Shared Understanding)\nBudget\n75 Edit\nRecipient\nMum Edit\nOccasion\nbirthday Edit\n\nNothing is final until you review the order.\n\nReview and correct",
+        "listHidden": false,
+        "listCount": 6,
+        "formError": "",
+        "notice": "Delivery details confirmed for this session.",
+        "noticeIsError": false,
+        "correctFormHidden": true,
+        "correctOpenVisible": true,
+        "correctFormError": "",
+        "chips": [
+          "romantic style",
+          "roses",
+          "this weekend"
+        ],
+        "messageForm": true,
+        "composer": true,
+        "cards": [
+          {
+            "text": "Budget Mixed Bunch |  | $35.00 |  | Available | Select",
+            "title": "Budget Mixed Bunch",
+            "badge": "Available",
+            "selectDisabled": false
+          },
+          {
+            "text": "Classic Rose Dozen |  | $70.00 |  | Available | Select",
+            "title": "Classic Rose Dozen",
+            "badge": "Available",
+            "selectDisabled": false
+          }
+        ],
+        "selectEnabledCount": 2,
+        "availabilityBadges": [
+          {
+            "title": "Budget Mixed Bunch",
+            "badge": "Available",
+            "selectDisabled": false
+          },
+          {
+            "title": "Classic Rose Dozen",
+            "badge": "Available",
+            "selectDisabled": false
+          }
+        ],
+        "stepCaption": "Now \u00b7 Deliver \u2014 confirm the saved destination, not an address",
+        "stepper": [
+          {
+            "step": "1",
+            "label": "Discover",
+            "current": false,
+            "disabled": false
+          },
+          {
+            "step": "2",
+            "label": "Understand",
+            "current": false,
+            "disabled": false
+          },
+          {
+            "step": "3",
+            "label": "Choose",
+            "current": false,
+            "disabled": false
+          },
+          {
+            "step": "4",
+            "label": "Customize",
+            "current": false,
+            "disabled": false
+          },
+          {
+            "step": "5",
+            "label": "Deliver",
+            "current": true,
+            "disabled": false
+          },
+          {
+            "step": "6",
+            "label": "Review & pay",
+            "current": false,
+            "disabled": false
+          },
+          {
+            "step": "7",
+            "label": "Track",
+            "current": false,
+            "disabled": true
+          }
+        ],
+        "trackStepPresent": true,
+        "checkoutVisible": true,
+        "hasCardNumber": false,
+        "checkoutError": "",
+        "sessionPayRef": "",
+        "innerWidth": 1440,
+        "innerHeight": 1100
+      },
+      "notes": [],
+      "crash": null
+    },
+    "phone": {
+      "name": "phone",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "steps": [
+        {
+          "tile": "T-01 Enter / Discovery",
+          "expected": "Welcome + composer; customer can describe the occasion in own words",
+          "actual": "Welcome visible. Assistant: 'Hello! What occasion are you shopping for today?'. Chips: []. innerWidth=390. session_mint={'status': 201, 'error': None, 'has_session': True, 'correlation_id': None}. Track stepper present=True.",
+          "result": "pass"
+        },
+        {
+          "tile": "T-01 thought completion (ADR-003)",
+          "expected": "Partial 'I need flowers\u2026' yields evolving suggestions such as 'for Mom'; chips optional; typing always allowed",
+          "actual": "Notice: 'Thanks \u2014 your message is in the conversation. Review Shared Understanding and correct anything that looks wrong.'. Chips: ['for Mom', 'for a birthday', 'under $75']. Customer line in log: True. formError: ''.",
+          "result": "pass"
+        },
+        {
+          "tile": "T-01 Conversation Send + T-02 Shared Understanding",
+          "expected": "Message posts; occasion/recipient/budget appear; Review and correct exists",
+          "actual": "Intent panel: 'T-02 \u00b7 PERSISTENT\\n\\nIntent Summary (Shared Understanding)\\nBudget\\n75 Edit\\nRecipient\\nmother Edit\\nOccasion\\nbirthday Edit\\n\\nNothing is final until you review the order.\\n\\nReview and correct'. Review and correct: True. csrf_rejected=False. formError=''. session_required_seen=False.",
+          "result": "pass"
+        },
+        {
+          "tile": "T-02 Review and correct",
+          "expected": "Customer can correct a facet; PATCH /api/v1/shared-understanding succeeds; no toast Correction failed (session_required)",
+          "actual": "PATCH responses=[{'path': '/api/v1/shared-understanding', 'status': 202, 'method': 'PATCH', 'error': 'accepted', 'code': 'accepted', 'viewport': 'phone', 'context_version': 5}]. notice='Shared Understanding updated.' correct_form_error='' toast_session_required=False patch_2xx=True api_session_required=False. Panel: 'T-02 \u00b7 PERSISTENT\\n\\nIntent Summary (Shared Understanding)\\nBudget\\n75 Edit\\nRecipient\\nMum Edit\\nOccasion\\nbirthday Edit\\n\\nNothing is final until you review the order.\\n\\nReview and correct'",
+          "result": "pass"
+        },
+        {
+          "tile": "T-03 Curated Recommendations",
+          "expected": "Validated options matching birthday / Mum / budget; available options selectable",
+          "actual": "Caption: 'Now \u00b7 Choose \u2014 recommendations stay visible after you pick'. Cards (2): ['Budget Mixed Bunch |  | $35.00 |  | Available | Select', 'Classic Rose Dozen |  | $70.00 |  | Available | Select']. badges=[{'title': 'Budget Mixed Bunch', 'badge': 'Available', 'selectDisabled': False}, {'title': 'Classic Rose Dozen', 'badge': 'Available', 'selectDisabled': False}]. select_enabled=2.",
+          "result": "pass"
+        },
+        {
+          "tile": "T-04 Select + customize",
+          "expected": "Select arrangement; size; physical card message; optional flower/colour/ribbon",
+          "actual": "Arrangement='Budget Mixed Bunch' size='Standard' card='Happy Birthday Mum \u2014 love you'",
+          "result": "pass"
+        },
+        {
+          "tile": "T-05 Delivery",
+          "expected": "Date + named window; confirm saved destination reference (not a street address)",
+          "actual": "Date 2026-08-24, window morning, destination ref 'home'. Street-address fields=0. Banner='Delivery details confirmed for this session.' error='' csrf=False",
+          "result": "pass"
+        },
+        {
+          "tile": "T-06 Order Summary",
+          "expected": "Itemized charges update after selection and delivery",
+          "actual": "Summary panel: 'T-06 \u00b7 STEPS 5\u20136\\n\\nOrder Summary\\n\\nproduct\\n$35.00\\n\\ncustomization\\n$0.00\\n\\ndelivery\\n$12.00\\n\\ntax\\n$0.00\\n\\ndiscount\\n$0.00\\n\\nTotal $47.00\\n\\nContinue to checkout' checkoutError='' total_mismatch=False",
+          "result": "pass"
+        },
+        {
+          "tile": "T-07 Checkout",
+          "expected": "Stop before payment; do not Place Order",
+          "actual": "Checkout controls visible=3. PAN fields=0. session pay ref present=False. total_mismatch=False. Default skip Place Order.",
+          "result": "blocked"
+        },
+        {
+          "tile": "T-08 Tracking",
+          "expected": "Tracking after confirmed order",
+          "actual": "Skipped with payment. Track stepper present=True.",
+          "result": "blocked"
+        }
+      ],
+      "api": {
+        "suggestions": [],
+        "csrf_rejected": false,
+        "session_required": false,
+        "total_mismatch": false,
+        "posts": [
+          {
+            "path": "/api/v1/session",
+            "status": 201,
+            "method": "POST",
+            "error": null,
+            "code": null,
+            "viewport": "phone"
+          },
+          {
+            "path": "/api/v1/workspace",
+            "status": 200,
+            "method": "GET",
+            "error": null,
+            "code": null,
+            "viewport": "phone",
+            "rec_count": 0,
+            "context_version": 0
+          },
+          {
+            "path": "/api/v1/stream",
+            "status": 200,
+            "method": "GET",
+            "error": null,
+            "code": null,
+            "viewport": "phone"
+          },
+          {
+            "path": "/api/v1/conversation/messages",
+            "status": 202,
+            "method": "POST",
+            "error": "accepted",
+            "code": "accepted",
+            "viewport": "phone",
+            "context_version": 2
+          },
+          {
+            "path": "/api/v1/workspace",
+            "status": 200,
+            "method": "GET",
+            "error": null,
+            "code": null,
+            "viewport": "phone",
+            "rec_count": 0,
+            "context_version": 2
+          },
+          {
+            "path": "/api/v1/stream",
+            "status": 200,
+            "method": "GET",
+            "error": null,
+            "code": null,
+            "viewport": "phone"
+          },
+          {
+            "path": "/api/v1/workspace",
+            "status": 200,
+            "method": "GET",
+            "error": null,
+            "code": null,
+            "viewport": "phone",
+            "rec_count": 0,
+            "context_version": 2
+          },
+          {
+            "path": "/api/v1/workspace",
+            "status": 200,
+            "method": "GET",
+            "error": null,
+            "code": null,
+            "viewport": "phone",
+            "rec_count": 0,
+            "context_version": 2
+          },
+          {
+            "path": "/api/v1/conversation/messages",
+            "status": 202,
+            "method": "POST",
+            "error": "accepted",
+            "code": "accepted",
+            "viewport": "phone",
+            "context_version": 4
+          },
+          {
+            "path": "/api/v1/workspace",
+            "status": 200,
+            "method": "GET",
+            "error": null,
+            "code": null,
+            "viewport": "phone",
+            "rec_count": 2,
+            "context_version": 4
+          },
+          {
+            "path": "/api/v1/stream",
+            "status": 200,
+            "method": "GET",
+            "error": null,
+            "code": null,
+            "viewport": "phone"
+          },
+          {
+            "path": "/api/v1/workspace",
+            "status": 200,
+            "method": "GET",
+            "error": null,
+            "code": null,
+            "viewport": "phone",
+            "rec_count": 2,
+            "context_version": 4
+          },
+          {
+            "path": "/api/v1/workspace",
+            "status": 200,
+            "method": "GET",
+            "error": null,
+            "code": null,
+            "viewport": "phone",
+            "rec_count": 2,
+            "context_version": 4
+          },
+          {
+            "path": "/api/v1/shared-understanding",
+            "status": 202,
+            "method": "PATCH",
+            "error": "accepted",
+            "code": "accepted",
+            "viewport": "phone",
+            "context_version": 5
+          },
+          {
+            "path": "/api/v1/workspace",
+            "status": 200,
+            "method": "GET",
+            "error": null,
+            "code": null,
+            "viewport": "phone",
+            "rec_count": 2,
+            "context_version": 5
+          },
+          {
+            "path": "/api/v1/stream",
+            "status": 200,
+            "method": "GET",
+            "error": null,
+            "code": null,
+            "viewport": "phone"
+          },
+          {
+            "path": "/api/v1/workspace",
+            "status": 200,
+            "method": "GET",
+            "error": null,
+            "code": null,
+            "viewport": "phone",
+            "rec_count": 2,
+            "context_version": 5
+          },
+          {
+            "path": "/api/v1/selection",
+            "status": 202,
+            "method": "POST",
+            "error": "accepted",
+            "code": "accepted",
+            "viewport": "phone",
+            "context_version": 6
+          },
+          {
+            "path": "/api/v1/workspace",
+            "status": 200,
+            "method": "GET",
+            "error": null,
+            "code": null,
+            "viewport": "phone",
+            "rec_count": 2,
+            "context_version": 6
+          },
+          {
+            "path": "/api/v1/stream",
+            "status": 200,
+            "method": "GET",
+            "error": null,
+            "code": null,
+            "viewport": "phone"
+          },
+          {
+            "path": "/api/v1/workspace",
+            "status": 200,
+            "method": "GET",
+            "error": null,
+            "code": null,
+            "viewport": "phone",
+            "rec_count": 2,
+            "context_version": 6
+          },
+          {
+            "path": "/api/v1/selection",
+            "status": 202,
+            "method": "POST",
+            "error": "accepted",
+            "code": "accepted",
+            "viewport": "phone",
+            "context_version": 7
+          },
+          {
+            "path": "/api/v1/workspace",
+            "status": 200,
+            "method": "GET",
+            "error": null,
+            "code": null,
+            "viewport": "phone",
+            "rec_count": 2,
+            "context_version": 7
+          },
+          {
+            "path": "/api/v1/stream",
+            "status": 200,
+            "method": "GET",
+            "error": null,
+            "code": null,
+            "viewport": "phone"
+          },
+          {
+            "path": "/api/v1/workspace",
+            "status": 200,
+            "method": "GET",
+            "error": null,
+            "code": null,
+            "viewport": "phone",
+            "rec_count": 2,
+            "context_version": 7
+          },
+          {
+            "path": "/api/v1/delivery",
+            "status": 202,
+            "method": "POST",
+            "error": "accepted",
+            "code": "accepted",
+            "viewport": "phone",
+            "context_version": 8
+          },
+          {
+            "path": "/api/v1/workspace",
+            "status": 200,
+            "method": "GET",
+            "error": null,
+            "code": null,
+            "viewport": "phone",
+            "rec_count": 2,
+            "context_version": 8
+          },
+          {
+            "path": "/api/v1/stream",
+            "status": 200,
+            "method": "GET",
+            "error": null,
+            "code": null,
+            "viewport": "phone"
+          },
+          {
+            "path": "/api/v1/workspace",
+            "status": 200,
+            "method": "GET",
+            "error": null,
+            "code": null,
+            "viewport": "phone",
+            "rec_count": 2,
+            "context_version": 8
+          }
+        ],
+        "patches": [
+          {
+            "path": "/api/v1/shared-understanding",
+            "status": 202,
+            "method": "PATCH",
+            "error": "accepted",
+            "code": "accepted",
+            "viewport": "phone",
+            "context_version": 5
+          }
+        ],
+        "session_mint": {
+          "status": 201,
+          "error": null,
+          "has_session": true,
+          "correlation_id": null
+        },
+        "auth_errors": [],
+        "status_codes": [
+          {
+            "method": "GET",
+            "path": "/",
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "path": "/assets/styles.css",
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "path": "/assets/bouquet-hero.svg",
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "path": "/assets/florist-status.svg",
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "path": "/assets/app.js",
+            "status": 200
+          },
+          {
+            "method": "POST",
+            "path": "/api/v1/session",
+            "status": 201
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/workspace",
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/stream",
+            "status": 200
+          },
+          {
+            "method": "POST",
+            "path": "/api/v1/conversation/messages",
+            "status": 202
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/workspace",
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/stream",
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/workspace",
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/workspace",
+            "status": 200
+          },
+          {
+            "method": "POST",
+            "path": "/api/v1/conversation/messages",
+            "status": 202
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/workspace",
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "path": "/assets/sku-budget-mixed-bunch.jpg",
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "path": "/assets/sku-classic-rose-dozen.jpg",
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/stream",
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/workspace",
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/workspace",
+            "status": 200
+          },
+          {
+            "method": "PATCH",
+            "path": "/api/v1/shared-understanding",
+            "status": 202
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/workspace",
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/stream",
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/workspace",
+            "status": 200
+          },
+          {
+            "method": "POST",
+            "path": "/api/v1/selection",
+            "status": 202
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/workspace",
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/stream",
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/workspace",
+            "status": 200
+          },
+          {
+            "method": "POST",
+            "path": "/api/v1/selection",
+            "status": 202
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/workspace",
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/stream",
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/workspace",
+            "status": 200
+          },
+          {
+            "method": "POST",
+            "path": "/api/v1/delivery",
+            "status": 202
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/workspace",
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/stream",
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/workspace",
+            "status": 200
+          }
+        ],
+        "ai_modes": [
+          {
+            "path": "/api/v1/workspace",
+            "mode": "fallback"
+          },
+          {
+            "path": "/api/v1/conversation/messages",
+            "mode": "fallback"
+          },
+          {
+            "path": "/api/v1/workspace",
+            "mode": "fallback"
+          },
+          {
+            "path": "/api/v1/workspace",
+            "mode": "fallback"
+          },
+          {
+            "path": "/api/v1/workspace",
+            "mode": "fallback"
+          },
+          {
+            "path": "/api/v1/conversation/messages",
+            "mode": "fallback"
+          },
+          {
+            "path": "/api/v1/workspace",
+            "mode": "fallback"
+          },
+          {
+            "path": "/api/v1/workspace",
+            "mode": "fallback"
+          },
+          {
+            "path": "/api/v1/workspace",
+            "mode": "fallback"
+          },
+          {
+            "path": "/api/v1/workspace",
+            "mode": "fallback"
+          },
+          {
+            "path": "/api/v1/workspace",
+            "mode": "fallback"
+          },
+          {
+            "path": "/api/v1/workspace",
+            "mode": "fallback"
+          },
+          {
+            "path": "/api/v1/workspace",
+            "mode": "fallback"
+          },
+          {
+            "path": "/api/v1/workspace",
+            "mode": "fallback"
+          },
+          {
+            "path": "/api/v1/workspace",
+            "mode": "fallback"
+          },
+          {
+            "path": "/api/v1/workspace",
+            "mode": "fallback"
+          },
+          {
+            "path": "/api/v1/workspace",
+            "mode": "fallback"
+          }
+        ],
+        "select_enabled": true,
+        "availability_badges": [
+          {
+            "title": "Budget Mixed Bunch",
+            "badge": "Available",
+            "selectDisabled": false
+          },
+          {
+            "title": "Classic Rose Dozen",
+            "badge": "Available",
+            "selectDisabled": false
+          }
+        ],
+        "last_workspace": {
+          "context_version": 8,
+          "shared": {
+            "structured_intent": {
+              "budget": 75.0,
+              "recipient": "Mum",
+              "occasion": "birthday"
+            },
+            "suggestions": [
+              "What style or mood would you prefer?",
+              "Any flower preferences?",
+              "When should they arrive?"
+            ]
+          },
+          "rec_count": 2
+        }
+      },
+      "t02": {
+        "patches": [
+          {
+            "path": "/api/v1/shared-understanding",
+            "status": 202,
+            "method": "PATCH",
+            "error": "accepted",
+            "code": "accepted",
+            "viewport": "phone",
+            "context_version": 5
+          }
+        ],
+        "notice": "Shared Understanding updated.",
+        "notice_is_error": false,
+        "correct_form_error": "",
+        "toast_session_required": false,
+        "patch_2xx": true,
+        "patch_session_required_status": false,
+        "recipient_shows_mum": true,
+        "understanding": "T-02 \u00b7 PERSISTENT\n\nIntent Summary (Shared Understanding)\nBudget\n75 Edit\nRecipient\nMum Edit\nOccasion\nbirthday Edit\n\nNothing is final until you review the order.\n\nReview and correct"
+      },
+      "workspace": {
+        "title": "Lily's Florist \u2014 Adaptive Workspace",
+        "url": "/",
+        "understanding": "T-02 \u00b7 PERSISTENT\n\nIntent Summary (Shared Understanding)\nBudget\n75 Edit\nRecipient\nMum Edit\nOccasion\nbirthday Edit\n\nNothing is final until you review the order.\n\nReview and correct",
+        "listHidden": false,
+        "listCount": 6,
+        "formError": "",
+        "notice": "Delivery details confirmed for this session.",
+        "noticeIsError": false,
+        "correctFormHidden": true,
+        "correctOpenVisible": true,
+        "correctFormError": "",
+        "chips": [
+          "romantic style",
+          "roses",
+          "this weekend"
+        ],
+        "messageForm": true,
+        "composer": true,
+        "cards": [
+          {
+            "text": "Budget Mixed Bunch |  | $35.00 |  | Available | Select",
+            "title": "Budget Mixed Bunch",
+            "badge": "Available",
+            "selectDisabled": false
+          },
+          {
+            "text": "Classic Rose Dozen |  | $70.00 |  | Available | Select",
+            "title": "Classic Rose Dozen",
+            "badge": "Available",
+            "selectDisabled": false
+          }
+        ],
+        "selectEnabledCount": 2,
+        "availabilityBadges": [
+          {
+            "title": "Budget Mixed Bunch",
+            "badge": "Available",
+            "selectDisabled": false
+          },
+          {
+            "title": "Classic Rose Dozen",
+            "badge": "Available",
+            "selectDisabled": false
+          }
+        ],
+        "stepCaption": "Now \u00b7 Deliver \u2014 confirm the saved destination, not an address",
+        "stepper": [
+          {
+            "step": "1",
+            "label": "Discover",
+            "current": false,
+            "disabled": false
+          },
+          {
+            "step": "2",
+            "label": "Understand",
+            "current": false,
+            "disabled": false
+          },
+          {
+            "step": "3",
+            "label": "Choose",
+            "current": false,
+            "disabled": false
+          },
+          {
+            "step": "4",
+            "label": "Customize",
+            "current": false,
+            "disabled": false
+          },
+          {
+            "step": "5",
+            "label": "Deliver",
+            "current": true,
+            "disabled": false
+          },
+          {
+            "step": "6",
+            "label": "Review & pay",
+            "current": false,
+            "disabled": false
+          },
+          {
+            "step": "7",
+            "label": "Track",
+            "current": false,
+            "disabled": true
+          }
+        ],
+        "trackStepPresent": true,
+        "checkoutVisible": true,
+        "hasCardNumber": false,
+        "checkoutError": "",
+        "sessionPayRef": "",
+        "innerWidth": 390,
+        "innerHeight": 844
+      },
+      "notes": [],
+      "crash": null
+    }
+  },
+  "notes": [],
+  "first_blocker": null,
+  "browser": "playwright channel=msedge"
+}

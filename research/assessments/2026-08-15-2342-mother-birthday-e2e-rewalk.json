@@ -1,0 +1,227 @@
+{
+  "url": "https://localhost:8443/",
+  "scenario": "mother-birthday",
+  "payment_included": false,
+  "walked_at": "2026-08-15T23:42:00+02:00",
+  "browser": "playwright (cursor-ide-browser MCP could not hold a tab)",
+  "steps": [
+    {
+      "tile": "T-01 Enter / Discovery",
+      "expected": "Welcome + composer; customer can describe the occasion in own words",
+      "actual": "Welcome visible. Assistant: 'Hello! What occasion are you shopping for today?'. Chips: []. Composer present.",
+      "result": "pass"
+    },
+    {
+      "tile": "T-01 thought completion (ADR-003)",
+      "expected": "Partial 'I need flowers\u2026' yields evolving suggestions such as 'for Mom'; chips optional; typing always allowed",
+      "actual": "Notice: 'Thanks \u2014 your message is in the conversation. Review Shared Understanding and correct anything that looks wrong.'. Chips: ['What is the occasion?', 'What budget should I work within?', 'Who are the flowers for?']. Customer line in log: True. FormError: ''. Messages: []. First message API: [{'url': '/api/v1/conversation/messages', 'status': 202, 'error': 'accepted'}]. API suggestions: [].",
+      "result": "fail"
+    },
+    {
+      "tile": "T-01 Conversation Send + T-02 Shared Understanding",
+      "expected": "Message posts; occasion/recipient/budget appear; Review and correct exists",
+      "actual": "Intent panel: 'T-02 \u00b7 PERSISTENT\\n\\nIntent Summary (Shared Understanding)\\nOccasion\\nbirthday Edit\\nRecipient\\nmother Edit\\nBudget\\n75 Edit\\n\\nNothing is final until you review the order.\\n\\nReview and correct'. Review and correct: True. csrf_rejected=False. dump={'understanding': 'T-02 \u00b7 PERSISTENT\\n\\nIntent Summary (Shared Understanding)\\nOccasion\\nbirthday Edit\\nRecipient\\nmother Edit\\nBudget\\n75 Edit\\n\\nNothing is final until you review the order.\\n\\nReview and correct', 'listHidden': False, 'formError': '', 'notice': 'Thanks \u2014 your message is in the conversation. Review Shared Understanding and correct anything that looks wrong.', 'continueDisabled': False, 'chips': [{'text': 'What style or mood would you prefer?', 'suggest': 'What style or mood would you prefer?'}, {'text': 'Any flower preferences?', 'suggest': 'Any flower preferences?'}, {'text': 'When should they arrive?', 'suggest': 'When should they arrive?'}], 'suggestionsHidden': False, 'messages': [], 'summary': '\\n            T-06 \u00b7 Steps 5\u20136\\n            Order Summary\\n            \\n            \\n            Continue to checkout\\n          ', 'recCards': ['budget mixed bunch\\n\\n$35.00\\n\\nAvailable\\nSelect', 'classic rose dozen\\n\\n$70.00\\n\\nAvailable\\nSelect']}",
+      "result": "pass"
+    },
+    {
+      "tile": "T-02 Review and correct",
+      "expected": "Customer can correct a wrong or incomplete facet (FR-021)",
+      "actual": "Saved recipient correction to 'Mum'. Panel now: 'T-02 \u00b7 PERSISTENT\\n\\nIntent Summary (Shared Understanding)\\nOccasion\\nbirthday Edit\\nRecipient\\nMum Edit\\nBudget\\n75 Edit\\n\\nNothing is final until you review the order.\\n\\nReview and correct'. corr_ui=''. stale_context=False. errors=[{'url': '/api/v1/conversation/messages', 'status': 202, 'error': 'accepted'}, {'url': '/api/v1/conversation/messages', 'status': 202, 'error': 'accepted'}, {'url': '/api/v1/shared-understanding', 'status': 202, 'error': 'accepted'}]",
+      "result": "pass"
+    },
+    {
+      "tile": "T-03 Curated Recommendations",
+      "expected": "Validated options matching birthday / Mum / budget; available options selectable",
+      "actual": "Caption: 'Now \u00b7 Choose \u2014 recommendations stay visible after you pick'. Cards (2): ['budget mixed bunch |  | $35.00 |  | Available | Select', 'classic rose dozen |  | $70.00 |  | Available | Select']. last_workspace={'context_version': 5, 'shared': {'structured_intent': {'occasion': 'birthday', 'recipient': 'Mum', 'budget': 75.0}, 'suggestions': ['What style or mood would you prefer?', 'Any flower preferences?', 'When should they arrive?']}, 'rec_count': 2}",
+      "result": "pass"
+    },
+    {
+      "tile": "T-04 Select + customize",
+      "expected": "Select arrangement; size; physical card message; optional flower/colour/ribbon",
+      "actual": "Arrangement='budget mixed bunch' size='Standard' colour='pink' ribbon='satin' card='Happy Birthday Mum \u2014 love you'",
+      "result": "pass"
+    },
+    {
+      "tile": "T-05 Delivery",
+      "expected": "Date + named window; confirm saved destination reference (not a street address); Confirm persists",
+      "actual": "Date 2026-08-23, window morning, labels=[{'value': 'morning', 'label': '10:00\u201312:00\\nAvailable'}, {'value': 'afternoon', 'label': '12:00\u201314:00\\nAvailable'}, {'value': 'evening', 'label': '14:00\u201316:00\\nAvailable'}], destination ref 'home'. Street-address fields=0. Banner='Delivery details confirmed for this session.' error='' csrf=False",
+      "result": "pass"
+    },
+    {
+      "tile": "T-06 Order Summary",
+      "expected": "Itemized charges update after selection and delivery",
+      "actual": "Summary panel: 'T-06 \u00b7 STEPS 5\u20136\\n\\nOrder Summary\\n\\nproduct\\n$35.00\\n\\ncustomization\\n$0.00\\n\\ndelivery\\n$12.00\\n\\ntax\\n$0.00\\n\\ndiscount\\n$0.00\\n\\nTotal $47.00\\n\\nContinue to checkout'",
+      "result": "pass"
+    },
+    {
+      "tile": "T-07 Checkout",
+      "expected": "Stop before payment unless asked",
+      "actual": "Payment not included. Did not Place Order or enter a card/token confirmation.",
+      "result": "blocked"
+    },
+    {
+      "tile": "T-08 Tracking",
+      "expected": "Tracking after confirmed order",
+      "actual": "Skipped with payment. Contact Florist lives on tracking (CF-009 intentional).",
+      "result": "blocked"
+    },
+    {
+      "tile": "ASO Help",
+      "expected": "Help available without leaving the workspace; labeled as not a person",
+      "actual": "Help dialog: 'How it works\\n\\nAutomated answers from approved shop information. This is not a person.\\n\\nDescribe what you need in your own words.\\nCheck and correct what the assistant understood.\\nChoose flowers, delivery, and review before paying.\\nAsk from approved information\\n Ask\\n\\nNeed a person? Close this and use Contact Florist from tracking.\\n\\nGot it'. Answer: 'From this session: Delivery is scheduled for 2026-08-23 (morning) to destination home.'. Contact Florist not in Help.",
+      "result": "pass"
+    }
+  ],
+  "api": {
+    "suggestions": [],
+    "csrf_rejected": false,
+    "posts": [
+      {
+        "url": "/api/v1/session",
+        "status": 201,
+        "method": "POST",
+        "error": null
+      },
+      {
+        "url": "/api/v1/conversation/messages",
+        "status": 202,
+        "method": "POST",
+        "error": "accepted"
+      },
+      {
+        "url": "/api/v1/conversation/messages",
+        "status": 202,
+        "method": "POST",
+        "error": "accepted"
+      },
+      {
+        "url": "/api/v1/shared-understanding",
+        "status": 202,
+        "method": "PATCH",
+        "error": "accepted"
+      },
+      {
+        "url": "/api/v1/selection",
+        "status": 202,
+        "method": "POST",
+        "error": "accepted"
+      },
+      {
+        "url": "/api/v1/selection",
+        "status": 202,
+        "method": "POST",
+        "error": "accepted"
+      },
+      {
+        "url": "/api/v1/delivery",
+        "status": 202,
+        "method": "POST",
+        "error": "accepted"
+      },
+      {
+        "url": "/api/v1/support",
+        "status": 200,
+        "method": "POST",
+        "error": "answered"
+      }
+    ],
+    "errors": [
+      {
+        "url": "/api/v1/conversation/messages",
+        "status": 202,
+        "error": "accepted"
+      },
+      {
+        "url": "/api/v1/conversation/messages",
+        "status": 202,
+        "error": "accepted"
+      },
+      {
+        "url": "/api/v1/shared-understanding",
+        "status": 202,
+        "error": "accepted"
+      },
+      {
+        "url": "/api/v1/selection",
+        "status": 202,
+        "error": "accepted"
+      },
+      {
+        "url": "/api/v1/selection",
+        "status": 202,
+        "error": "accepted"
+      },
+      {
+        "url": "/api/v1/delivery",
+        "status": 202,
+        "error": "accepted"
+      },
+      {
+        "url": "/api/v1/support",
+        "status": 200,
+        "error": "answered"
+      }
+    ],
+    "last_workspace": {
+      "context_version": 8,
+      "shared": {
+        "structured_intent": {
+          "occasion": "birthday",
+          "recipient": "Mum",
+          "budget": 75.0
+        },
+        "suggestions": [
+          "What style or mood would you prefer?",
+          "Any flower preferences?",
+          "When should they arrive?"
+        ]
+      },
+      "rec_count": 2
+    }
+  },
+  "workspace": {
+    "understanding": "T-02 \u00b7 PERSISTENT\n\nIntent Summary (Shared Understanding)\nOccasion\nbirthday Edit\nRecipient\nMum Edit\nBudget\n75 Edit\n\nNothing is final until you review the order.\n\nReview and correct",
+    "listHidden": false,
+    "formError": "",
+    "notice": "",
+    "continueDisabled": false,
+    "chips": [
+      {
+        "text": "What style or mood would you prefer?",
+        "suggest": "What style or mood would you prefer?"
+      },
+      {
+        "text": "Any flower preferences?",
+        "suggest": "Any flower preferences?"
+      },
+      {
+        "text": "When should they arrive?",
+        "suggest": "When should they arrive?"
+      }
+    ],
+    "suggestionsHidden": false,
+    "messages": [],
+    "summary": "T-06 \u00b7 STEPS 5\u20136\n\nOrder Summary\n\nproduct\n$35.00\n\ncustomization\n$0.00\n\ndelivery\n$12.00\n\ntax\n$0.00\n\ndiscount\n$0.00\n\nTotal $47.00\n\nContinue to checkout",
+    "recCards": [
+      "budget mixed bunch\n\n$35.00\n\nAvailable\nSelect",
+      "classic rose dozen\n\n$70.00\n\nAvailable\nSelect"
+    ]
+  },
+  "notes": [
+    "chrome channel failed: BrowserType.launch: Chromium distribution 'chrome' is not found at C:\\Users\\claud\\AppData\\Local\\Google\\Chrome\\Application\\chrome.exe\nRun \"playwright install chrome\"",
+    "T-03 names slug_like=False usd=True euro=False cards=['budget mixed bunch |  | $35.00 |  | Available | Select', 'classic rose dozen |  | $70.00 |  | Available | Select']"
+  ],
+  "boot": {
+    "understanding": "T-02 \u00b7 PERSISTENT\n\nIntent Summary (Shared Understanding)\n\nYour occasion, recipient, budget, style, flower preference, and timing will appear here. Review and correct anything that looks wrong.\n\nNothing is final until you review the order.\n\nReview and correct",
+    "listHidden": true,
+    "formError": "",
+    "notice": "",
+    "continueDisabled": true,
+    "chips": [],
+    "suggestionsHidden": true,
+    "messages": [],
+    "summary": "\n            T-06 \u00b7 Steps 5\u20136\n            Order Summary\n            \n            \n            Continue to checkout\n          ",
+    "recCards": []
+  },
+  "delivery_date": "2026-08-23"
+}

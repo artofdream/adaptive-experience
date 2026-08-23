@@ -252,18 +252,48 @@ function renderInbox(items) {
   inboxRows.replaceChildren();
   state.items = items;
   if (!items.length) {
-    inboxRows.append(emptyRow(3, "No Contact Florist requests yet. This inbox stays empty until a customer uses T-09."));
+    inboxRows.append(emptyRow(4, "No Contact Florist requests yet. This inbox stays empty until a customer uses T-09."));
     return;
   }
   for (const item of items) {
     const row = document.createElement("tr");
     if (item.session_id === state.selectedId) row.className = "is-selected";
     const sample = item.sample ? ' <span class="status">Sample</span>' : "";
+    const statusText = item.status || "Open";
     row.innerHTML = `<td>${formatRequested(item.requested_at)}</td>
       <td><button type="button" class="text-link" data-session="${item.session_id}">${reasonLabel(item.escalation_reason)}</button>${sample}</td>
-      <td><code>${shortRef(item.context_reference || item.session_id)}</code></td>`;
+      <td><code>${shortRef(item.context_reference || item.session_id)}</code></td>
+      <td>
+        <span class="badge ${statusText === 'Resolved' ? 'available' : 'unavailable'}">${statusText}</span>
+        <button type="button" class="text-link claim-btn" style="margin-left: 6px;" data-session="${item.session_id}">Claim</button>
+        <button type="button" class="text-link resolve-btn" style="margin-left: 6px;" data-session="${item.session_id}">Resolve</button>
+      </td>`;
     inboxRows.append(row);
   }
+
+  inboxRows.querySelectorAll(".claim-btn").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const sId = btn.dataset.session;
+      const target = state.items.find(i => i.session_id === sId);
+      if (target) {
+        target.status = "In Progress";
+        renderInbox(state.items);
+      }
+    });
+  });
+
+  inboxRows.querySelectorAll(".resolve-btn").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const sId = btn.dataset.session;
+      const target = state.items.find(i => i.session_id === sId);
+      if (target) {
+        target.status = "Resolved";
+        renderInbox(state.items);
+      }
+    });
+  });
 }
 
 function fact(term, value) {
@@ -395,6 +425,45 @@ function showEmptySession() {
     const answerEmpty = document.createElement("li");
     answerEmpty.textContent = "No ASO answers recorded for this session yet.";
     supportAnswers.append(answerEmpty);
+  }
+}
+
+function renderLiveChatConsole(sessionId) {
+  const container = document.querySelector("#operator-actions") || document.querySelector("#operator-panel");
+  if (!container) return;
+  
+  let chatBox = document.querySelector("#operator-live-chat-box");
+  if (!chatBox) {
+    chatBox = document.createElement("div");
+    chatBox.id = "operator-live-chat-box";
+    chatBox.style.cssText = "margin-top:15px; padding:12px; background:#f4f6f9; border:1px solid #dcdfe6; border-radius:6px;";
+    chatBox.innerHTML = `
+      <h4 style="margin:0 0 8px 0; color:#2c3e50;">Operator Live Chat Console</h4>
+      <div id="operator-chat-log" style="height:120px; overflow-y:auto; background:#fff; border:1px solid #dcdfe6; padding:6px; font-size:13px; margin-bottom:8px;">
+        <p style="margin:2px 0; color:#888;"><i>No active chat messages yet.</i></p>
+      </div>
+      <div style="display:flex; gap:6px;">
+        <input type="text" id="operator-chat-msg" placeholder="Type operator response..." style="flex:1; padding:6px; font-size:13px;" />
+        <button type="button" id="operator-chat-send" style="padding:6px 14px; font-size:13px; background:#27ae60; color:#fff; border:none; border-radius:4px; cursor:pointer;">Send Reply</button>
+      </div>
+    `;
+    container.appendChild(chatBox);
+    
+    const sendBtn = chatBox.querySelector("#operator-chat-send");
+    const msgInput = chatBox.querySelector("#operator-chat-msg");
+    const logBox = chatBox.querySelector("#operator-chat-log");
+    
+    sendBtn.addEventListener("click", () => {
+      const text = msgInput.value.trim();
+      if (text) {
+        const p = document.createElement("p");
+        p.style.margin = "3px 0";
+        p.innerHTML = `<strong style="color:#27ae60;">Florist:</strong> ${text}`;
+        logBox.appendChild(p);
+        msgInput.value = "";
+        logBox.scrollTop = logBox.scrollHeight;
+      }
+    });
   }
 }
 

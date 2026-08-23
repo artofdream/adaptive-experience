@@ -1,0 +1,38 @@
+{
+  "domain": "artisanal_bakery",
+  "version": "1.0.0",
+  "catalog_items": [
+    {
+      "product_id": "cake-velvet-signature",
+      "name": "Signature Red Velvet Layer Cake",
+      "category": "cakes",
+      "base_price_cents": 6500,
+      "allergen_tags": ["contains_gluten", "contains_dairy"],
+      "options": {
+        "tier_sizes": ["6-inch (8-10 servings)", "8-inch (14-16 servings)", "10-inch (22-26 servings)"],
+        "icing_inscription_max_len": 40
+      }
+    },
+    {
+      "product_id": "bakery-box-croissant-assorted",
+      "name": "Artisanal Croissant & Pastry Box (Dozen)",
+      "category": "pastry_boxes",
+      "base_price_cents": 4800,
+      "allergen_tags": ["contains_gluten", "contains_dairy", "contains_nuts"],
+      "options": {
+        "dietary_exclusion": "nut_free"
+      }
+    },
+    {
+      "product_id": "cake-vegan-chocolate-ganache",
+      "name": "Decadent Vegan Chocolate Ganache Cake",
+      "category": "cakes",
+      "base_price_cents": 7200,
+      "allergen_tags": ["gluten_free", "vegan", "nut_free"],
+      "options": {
+        "tier_sizes": ["8-inch (14-16 servings)"],
+        "icing_inscription_max_len": 40
+      }
+    }
+  ]
+}

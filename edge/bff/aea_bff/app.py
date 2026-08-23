@@ -13,7 +13,7 @@ from .security import (FixedWindowRateLimiter, Session, SessionStore,
 
 
 SECURITY_HEADERS = {
-    "content-security-policy": "default-src 'self'; frame-ancestors 'none'; object-src 'none'",
+    "content-security-policy": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:; script-src-elem 'self' 'unsafe-inline' 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline'; style-src-elem 'self' 'unsafe-inline'; style-src-attr 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' ws: wss: https:; worker-src 'self' blob:; child-src 'self' blob:; frame-ancestors 'none'; object-src 'none'",
     "referrer-policy": "no-referrer",
     "permissions-policy": "camera=(), microphone=(), geolocation=()",
     "x-content-type-options": "nosniff",
@@ -541,6 +541,44 @@ class BffApp:
             await self._send(send, 200, "".join(chunks).encode(), "text/event-stream", correlation_id,
                              {"x-accel-buffering": "no"})
             return
+
+        if path == "/api/v1/crm/reminders" and method == "GET":
+            query = parse_qs(scope.get("query_string", b"").decode())
+            browser_hash = (query.get("browser_hash") or [""])[0]
+            if not browser_hash or len(browser_hash) != 64:
+                return await self._error(send, 422, "invalid_browser_hash", correlation_id)
+            try:
+                raw = self.orchestration.list_crm_reminders(
+                    browser_hash=browser_hash, subject=subject)
+            except OrchestrationUnavailable:
+                return await self._error(send, 503, "orchestration_unavailable", correlation_id)
+            return await self._json(send, 200, {"items": raw.get("items", [])}, correlation_id)
+
+        if path == "/api/v1/crm/occasions" and method == "POST":
+            if headers.get("content-type", "").split(";", 1)[0].strip() != "application/json":
+                return await self._error(send, 415, "unsupported_media_type", correlation_id)
+            body = await self._body(receive, headers)
+            if isinstance(body, tuple):
+                return await self._error(send, body[0], body[1], correlation_id)
+            try:
+                payload = json.loads(body)
+            except (UnicodeDecodeError, json.JSONDecodeError):
+                return await self._error(send, 400, "invalid_json", correlation_id)
+            if not isinstance(payload, dict) or not payload.get("browser_hash") or not payload.get("occasion_type"):
+                return await self._error(send, 422, "invalid_occasion_shape", correlation_id)
+            try:
+                raw = self.orchestration.record_crm_occasion(
+                    browser_hash=payload["browser_hash"],
+                    session_id=session.session_id,
+                    occasion_type=payload["occasion_type"],
+                    event_month=payload.get("event_month", 1),
+                    event_day=payload.get("event_day", 1),
+                    recipient_relation=payload.get("recipient_relation", "other"),
+                    subject=subject,
+                )
+            except OrchestrationUnavailable:
+                return await self._error(send, 503, "orchestration_unavailable", correlation_id)
+            return await self._json(send, 201, raw, correlation_id)
 
         await self._error(send, 404, "not_found", correlation_id)
 
