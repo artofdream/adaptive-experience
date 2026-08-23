@@ -1,7 +1,7 @@
 # AEA Daily Executive & Governance Brief — 2026-08-23
 
 > **Tags**: #aea #daily-brief #governance #telemetry #second-brain #performance-guardian  
-> **Generated**: 2026-08-23T16:47:59.283767  
+> **Generated**: 2026-08-23T17:45:39.512250  
 > **Target Domain**: `https://aea.artof.link` (AWS ECS Fargate `aea-pilot`)  
 
 ---
@@ -33,11 +33,11 @@
 
 ## 3. Recent Second Brain Knowledge Curation Notes
 
-* [[2026-08-23-ai-powered-vs-traditional-engineering-roi-study]] — 2026-08-23-ai-powered-vs-traditional-engineering-roi-study.md
-* [[2026-08-23-customer-ux-audit-and-friction-map]] — 2026-08-23-customer-ux-audit-and-friction-map.md
-* [[2026-08-23-lessons-learned-telemetry-load-testing-and-api-key-rotation-sop]] — 2026-08-23-lessons-learned-telemetry-load-testing-and-api-key-rotation-sop.md
+* [[2026-08-23-session-memory-log-m15-m18-execution-and-mr269-merge]] — 2026-08-23-session-memory-log-m15-m18-execution-and-mr269-merge.md
+* [[2026-08-21-session-memory-building-process-and-lessons-learned]] — 2026-08-21-session-memory-building-process-and-lessons-learned.md
 * [[2026-08-23-m15-m16-milestone-completion-and-live-chat-architecture]] — 2026-08-23-m15-m16-milestone-completion-and-live-chat-architecture.md
 * [[2026-08-23-n1000-load-test-and-capacity-study]] — 2026-08-23-n1000-load-test-and-capacity-study.md
+* [[2026-08-23-repository-coherence-assessment-report]] — 2026-08-23-repository-coherence-assessment-report.md
 * [[2026-08-23-load-testing-results-and-capacity-study]] — 2026-08-23-load-testing-results-and-capacity-study.md
 
 ---
