@@ -365,6 +365,7 @@ RDS without the appropriate product/engineering/infrastructure authority.
 
 ## Related Second Brain nodes
 
+- [[2026-08-23-codex-view-repository-progression-study]] — chronological Codex view of evidence and repository maturity.
 - [[2026-08-21-kb-project-building-lessons]]
 - [[2026-08-21-session-memory-building-process-and-lessons-learned]]
 - [[2026-08-21-aea-strategic-architecture-study]]
@@ -377,4 +378,3 @@ RDS without the appropriate product/engineering/infrastructure authority.
 - [[2026-08-23-session-memory-log-repository-review-paper-complete-m14-m18]] — current correction
 - [[2026-08-23-antigravity-assessment-reconciliation]] — current correction
 - [[2026-08-23-repository-coherence-assessment-report]] — superseded outside its ID-inventory result
-
