@@ -4,9 +4,9 @@ set -eu
 if [ "${AEA_GATEWAY_MODE:-}" = "alb" ]; then
   RESOLVER_FOUND=$(awk '/^nameserver/{print $2; exit}' /etc/resolv.conf || true)
   RESOLVER="${AEA_RESOLVER:-${RESOLVER_FOUND:-10.40.0.2 169.254.169.253}}"
-  : "${AEA_BFF_UPSTREAM:=http://bff:8080}"
-  : "${AEA_AGENT_UPSTREAM:=http://agent-runner:8080}"
-  : "${AEA_GRAFANA_UPSTREAM:=http://grafana:3000}"
+  : "${AEA_BFF_UPSTREAM:=http://bff.aea-pilot.internal:8080}"
+  : "${AEA_AGENT_UPSTREAM:=http://agent-runner.aea-pilot.internal:8080}"
+  : "${AEA_GRAFANA_UPSTREAM:=http://grafana.aea-pilot.internal:3000}"
   sed -e "s|__RESOLVER__|${RESOLVER}|g" \
       -e "s|__BFF_UPSTREAM__|${AEA_BFF_UPSTREAM}|g" \
       -e "s|__AGENT_UPSTREAM__|${AEA_AGENT_UPSTREAM}|g" \

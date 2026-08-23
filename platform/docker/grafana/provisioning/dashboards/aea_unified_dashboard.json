@@ -4,153 +4,296 @@
   },
   "editable": true,
   "fiscalYearStartMonth": 0,
-  "graphTooltip": 0,
+  "graphTooltip": 1,
   "id": null,
   "links": [],
   "liveNow": false,
   "panels": [
     {
-      "gridPos": {
-        "h": 4,
-        "w": 6,
-        "x": 0,
-        "y": 0
-      },
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 100,
+      "title": "Golden Signals & System Health",
+      "type": "row"
+    },
+    {
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 1 },
       "id": 1,
-      "title": "System Status",
+      "title": "Gateway Uptime Status",
       "type": "stat",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "Prometheus"
-      },
+      "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
       "targets": [
         {
-          "expr": "up{job=\"agent-runner\"}",
-          "refId": "A"
+          "refId": "A",
+          "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
+          "queryMode": "Metrics",
+          "metricQueryType": 0,
+          "metricEditorMode": 0,
+          "region": "us-east-1",
+          "namespace": "AWS/ECS",
+          "metricName": "LiveTaskCount",
+          "dimensions": { "ClusterName": "aea-pilot", "ServiceName": "gateway" },
+          "statistic": "Maximum",
+          "period": "60"
         }
       ]
     },
     {
-      "gridPos": {
-        "h": 4,
-        "w": 6,
-        "x": 6,
-        "y": 0
-      },
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 1 },
       "id": 2,
-      "title": "HTTP Request Rate",
+      "title": "BFF Active Tasks",
       "type": "stat",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "Prometheus"
-      },
+      "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
       "targets": [
         {
-          "expr": "sum(rate(http_requests_total[5m]))",
-          "refId": "A"
+          "refId": "A",
+          "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
+          "queryMode": "Metrics",
+          "metricQueryType": 0,
+          "metricEditorMode": 0,
+          "region": "us-east-1",
+          "namespace": "AWS/ECS",
+          "metricName": "LiveTaskCount",
+          "dimensions": { "ClusterName": "aea-pilot", "ServiceName": "bff" },
+          "statistic": "Maximum",
+          "period": "60"
         }
       ]
     },
     {
-      "gridPos": {
-        "h": 4,
-        "w": 6,
-        "x": 12,
-        "y": 0
-      },
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 1 },
       "id": 3,
-      "title": "p95 Latency (Seconds)",
+      "title": "Gateway CPU Utilization (%)",
       "type": "stat",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "Prometheus"
-      },
+      "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
       "targets": [
         {
-          "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))",
-          "refId": "A"
-        }
-      ]
-    },
-    {
-      "gridPos": {
-        "h": 4,
-        "w": 6,
-        "x": 18,
-        "y": 0
-      },
-      "id": 4,
-      "title": "GitLab Webhook Throughput",
-      "type": "stat",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "Prometheus"
-      },
-      "targets": [
-        {
-          "expr": "sum(rate(http_requests_total{handler=\"/webhooks/gitlab\"}[5m]))",
-          "refId": "A"
-        }
-      ]
-    },
-    {
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 4
-      },
-      "id": 5,
-      "title": "FastAPI HTTP Request Throughput by Endpoint",
-      "type": "timeseries",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "Prometheus"
-      },
-      "targets": [
-        {
-          "expr": "sum(rate(http_requests_total[1m])) by (handler)",
-          "legendFormat": "{{handler}}",
-          "refId": "A"
-        }
-      ]
-    },
-    {
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 4
-      },
-      "id": 6,
-      "title": "AWS ECS Fargate Task CPU & Memory Utilization",
-      "type": "timeseries",
-      "datasource": {
-        "type": "cloudwatch",
-        "uid": "CloudWatch"
-      },
-      "targets": [
-        {
+          "refId": "A",
+          "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
+          "queryMode": "Metrics",
+          "metricQueryType": 0,
+          "metricEditorMode": 0,
+          "region": "us-east-1",
           "namespace": "AWS/ECS",
           "metricName": "CPUUtilization",
-          "dimensions": {
-            "ClusterName": "aea-pilot",
-            "ServiceName": "agent-runner"
-          },
+          "dimensions": { "ClusterName": "aea-pilot", "ServiceName": "gateway" },
           "statistic": "Average",
-          "period": 300,
-          "refId": "A"
-        },
+          "period": "60"
+        }
+      ]
+    },
+    {
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 1 },
+      "id": 4,
+      "title": "BFF Memory Utilization (%)",
+      "type": "stat",
+      "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
+      "targets": [
         {
+          "refId": "A",
+          "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
+          "queryMode": "Metrics",
+          "metricQueryType": 0,
+          "metricEditorMode": 0,
+          "region": "us-east-1",
           "namespace": "AWS/ECS",
           "metricName": "MemoryUtilization",
-          "dimensions": {
-            "ClusterName": "aea-pilot",
-            "ServiceName": "agent-runner"
-          },
+          "dimensions": { "ClusterName": "aea-pilot", "ServiceName": "bff" },
           "statistic": "Average",
-          "period": 300,
-          "refId": "B"
+          "period": "60"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+      "id": 101,
+      "title": "Edge Gateway Perimeter & BFF Traffic Analysis",
+      "type": "row"
+    },
+    {
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 6 },
+      "id": 5,
+      "title": "Fargate CPU Utilization by Service (%)",
+      "type": "timeseries",
+      "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
+          "queryMode": "Metrics",
+          "metricQueryType": 0,
+          "metricEditorMode": 0,
+          "region": "us-east-1",
+          "namespace": "AWS/ECS",
+          "metricName": "CPUUtilization",
+          "dimensions": { "ClusterName": "aea-pilot", "ServiceName": "gateway" },
+          "statistic": "Average",
+          "period": "60"
+        },
+        {
+          "refId": "B",
+          "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
+          "queryMode": "Metrics",
+          "metricQueryType": 0,
+          "metricEditorMode": 0,
+          "region": "us-east-1",
+          "namespace": "AWS/ECS",
+          "metricName": "CPUUtilization",
+          "dimensions": { "ClusterName": "aea-pilot", "ServiceName": "bff" },
+          "statistic": "Average",
+          "period": "60"
+        },
+        {
+          "refId": "C",
+          "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
+          "queryMode": "Metrics",
+          "metricQueryType": 0,
+          "metricEditorMode": 0,
+          "region": "us-east-1",
+          "namespace": "AWS/ECS",
+          "metricName": "CPUUtilization",
+          "dimensions": { "ClusterName": "aea-pilot", "ServiceName": "orchestration" },
+          "statistic": "Average",
+          "period": "60"
+        }
+      ]
+    },
+    {
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 6 },
+      "id": 6,
+      "title": "Fargate Memory Utilization by Service (%)",
+      "type": "timeseries",
+      "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
+          "queryMode": "Metrics",
+          "metricQueryType": 0,
+          "metricEditorMode": 0,
+          "region": "us-east-1",
+          "namespace": "AWS/ECS",
+          "metricName": "MemoryUtilization",
+          "dimensions": { "ClusterName": "aea-pilot", "ServiceName": "gateway" },
+          "statistic": "Average",
+          "period": "60"
+        },
+        {
+          "refId": "B",
+          "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
+          "queryMode": "Metrics",
+          "metricQueryType": 0,
+          "metricEditorMode": 0,
+          "region": "us-east-1",
+          "namespace": "AWS/ECS",
+          "metricName": "MemoryUtilization",
+          "dimensions": { "ClusterName": "aea-pilot", "ServiceName": "bff" },
+          "statistic": "Average",
+          "period": "60"
+        },
+        {
+          "refId": "C",
+          "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
+          "queryMode": "Metrics",
+          "metricQueryType": 0,
+          "metricEditorMode": 0,
+          "region": "us-east-1",
+          "namespace": "AWS/ECS",
+          "metricName": "MemoryUtilization",
+          "dimensions": { "ClusterName": "aea-pilot", "ServiceName": "orchestration" },
+          "statistic": "Average",
+          "period": "60"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 14 },
+      "id": 102,
+      "title": "Proactive Maintenance  -  Container Health & Task Scale",
+      "type": "row"
+    },
+    {
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 15 },
+      "id": 7,
+      "title": "Fargate Live Task Count by Service",
+      "type": "timeseries",
+      "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
+          "queryMode": "Metrics",
+          "metricQueryType": 0,
+          "metricEditorMode": 0,
+          "region": "us-east-1",
+          "namespace": "AWS/ECS",
+          "metricName": "LiveTaskCount",
+          "dimensions": { "ClusterName": "aea-pilot", "ServiceName": "gateway" },
+          "statistic": "Maximum",
+          "period": "60"
+        },
+        {
+          "refId": "B",
+          "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
+          "queryMode": "Metrics",
+          "metricQueryType": 0,
+          "metricEditorMode": 0,
+          "region": "us-east-1",
+          "namespace": "AWS/ECS",
+          "metricName": "LiveTaskCount",
+          "dimensions": { "ClusterName": "aea-pilot", "ServiceName": "bff" },
+          "statistic": "Maximum",
+          "period": "60"
+        },
+        {
+          "refId": "C",
+          "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
+          "queryMode": "Metrics",
+          "metricQueryType": 0,
+          "metricEditorMode": 0,
+          "region": "us-east-1",
+          "namespace": "AWS/ECS",
+          "metricName": "LiveTaskCount",
+          "dimensions": { "ClusterName": "aea-pilot", "ServiceName": "orchestration" },
+          "statistic": "Maximum",
+          "period": "60"
+        }
+      ]
+    },
+    {
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 15 },
+      "id": 8,
+      "title": "Fargate Task Memory Consumption Trend",
+      "type": "timeseries",
+      "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
+          "queryMode": "Metrics",
+          "metricQueryType": 0,
+          "metricEditorMode": 0,
+          "region": "us-east-1",
+          "namespace": "AWS/ECS",
+          "metricName": "MemoryUtilization",
+          "dimensions": { "ClusterName": "aea-pilot", "ServiceName": "relay" },
+          "statistic": "Average",
+          "period": "60"
+        },
+        {
+          "refId": "B",
+          "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
+          "queryMode": "Metrics",
+          "metricQueryType": 0,
+          "metricEditorMode": 0,
+          "region": "us-east-1",
+          "namespace": "AWS/ECS",
+          "metricName": "MemoryUtilization",
+          "dimensions": { "ClusterName": "aea-pilot", "ServiceName": "consumer-workspace" },
+          "statistic": "Average",
+          "period": "60"
         }
       ]
     }
@@ -158,14 +301,11 @@
   "refresh": "10s",
   "schemaVersion": 38,
   "style": "dark",
-  "tags": ["aea", "observability"],
-  "time": {
-    "from": "now-1h",
-    "to": "now"
-  },
+  "tags": ["aea", "observability", "proactive-maintenance"],
+  "time": { "from": "now-1h", "to": "now" },
   "timepicker": {},
   "timezone": "browser",
-  "title": "AEA Unified Observability Dashboard",
+  "title": "AEA Unified Observability & Proactive Maintenance Dashboard",
   "uid": "aea-unified-dashboard",
-  "version": 1
+  "version": 5
 }

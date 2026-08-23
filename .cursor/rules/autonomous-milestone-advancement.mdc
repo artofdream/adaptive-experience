@@ -1,0 +1,22 @@
+---
+description: Autonomous Milestone Advancement SOP for AEA Stakeholder Team
+globs: ["docs/07-roadmap/roadmap.md", "scripts/check_coherence.py", "research/daily-briefs/*.md"]
+---
+
+# Autonomous Milestone Advancement SOP
+
+> **Owner**: `@aea-project-manager`, `@aea-product-owner`, `@aea-coherence-guardian`  
+> **Rule**: When all requirements for an active milestone pass 100% unit tests and pre-flight quality guards, the team MUST autonomously advance to the next milestone without waiting for user prompt initiation.
+
+---
+
+## Autonomous Advancement Cadence
+
+1. **Completion Detection**:
+   * As soon as `@aea-senior-software-engineer` lands code and unit tests for the active milestone, `@aea-coherence-guardian` runs `python scripts/run_all_guards.py`.
+2. **Automatic Roadmap Promotion**:
+   * If all 14 quality guards pass, `@aea-coherence-guardian` updates `docs/07-roadmap/roadmap.md`, marking the milestone as `(Completed)`.
+3. **Immediate Backlog Promotion**:
+   * `@aea-project-manager` immediately opens the next queued milestone in `docs/07-roadmap/roadmap.md` and assigns execution tickets to Stream 1 (Platform & Infrastructure) and Stream 2 (Domain & Commercial Go-Live).
+4. **No Idle Pause**:
+   * The team shall not pause at milestone boundaries waiting for user intake prompts. Unparked and scheduled milestones within domain authority are executed continuously.

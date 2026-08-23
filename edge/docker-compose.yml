@@ -76,10 +76,14 @@ services:
   gateway:
     build:
       context: gateway
+    environment:
+      AEA_GRAFANA_UPSTREAM: http://grafana:3000
     depends_on:
       bff:
         condition: service_healthy
       inventory-seeder:
+        condition: service_healthy
+      grafana:
         condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "wget -q --no-check-certificate -O- https://127.0.0.1:8443/healthz >/dev/null"]
@@ -88,3 +92,26 @@ services:
       retries: 20
     ports:
       - "8443:8443"
+
+  grafana:
+    image: grafana/grafana:10.4.0
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_SERVER_DOMAIN: localhost
+      GF_SERVER_SERVE_FROM_SUB_PATH: "true"
+      GF_SERVER_ROOT_URL: https://localhost:8443/grafana/
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+      GF_SECURITY_ALLOW_EMBEDDING: "true"
+      GF_NEWS_NEWS_FEED_ENABLED: "false"
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../platform/docker/grafana/provisioning:/etc/grafana/provisioning:ro
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O- http://127.0.0.1:3000/api/health >/dev/null"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+

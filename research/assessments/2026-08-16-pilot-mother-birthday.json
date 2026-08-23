@@ -1,0 +1,275 @@
+{
+  "url": "https://aea.artof.link/",
+  "scenario": "mother-birthday",
+  "payment_included": false,
+  "origin": "https://aea.artof.link",
+  "steps": [
+    {
+      "tile": "T-01 Enter / Discovery",
+      "expected": "Welcome + composer; customer can describe the occasion in own words",
+      "actual": "Welcome visible. Assistant: 'Hello! What occasion are you shopping for today?'. Chips: []. Composer present. session_mint=None.",
+      "result": "pass"
+    },
+    {
+      "tile": "T-01 thought completion (ADR-003)",
+      "expected": "Partial 'I need flowers\u2026' yields evolving suggestions such as 'for Mom'; chips optional; typing always allowed",
+      "actual": "Notice: 'Something went wrong on our side. Try again in a moment.'. Chips: []. Customer line in log: False. formError: 'Something went wrong on our side. Try again in a moment.'. API suggestions: [].",
+      "result": "fail"
+    },
+    {
+      "tile": "T-01 Conversation Send + T-02 Shared Understanding",
+      "expected": "Message posts; occasion/recipient/budget appear; Review and correct exists",
+      "actual": "Intent panel: 'T-02 \u00b7 PERSISTENT\\n\\nIntent Summary (Shared Understanding)\\n\\nYour occasion, recipient, budget, style, flower preference, and timing will appear here. Review and correct anything that looks wrong.\\n\\nNothing is final until you review the order.\\n\\nReview and correct'. Review and correct: True. csrf_rejected=False. formError='Something went wrong on our side. Try again in a moment.'.",
+      "result": "fail"
+    },
+    {
+      "tile": "T-02 Review and correct",
+      "expected": "Customer can correct a wrong or incomplete facet (FR-021)",
+      "actual": "Saved recipient correction to 'Mum'. Panel now: 'T-02 \u00b7 PERSISTENT\\n\\nIntent Summary (Shared Understanding)\\n\\nYour occasion, recipient, budget, style, flower preference, and timing will appear here. Review and correct anything that looks wrong.\\n\\nNothing is final until you review the order.\\n\\nReview and correct\\nFacet\\nOccasion\\nRecipient\\nBudget\\nStyle\\nFlo'",
+      "result": "fail"
+    },
+    {
+      "tile": "T-03 Curated Recommendations",
+      "expected": "Validated options matching birthday / Mum / budget; available options selectable",
+      "actual": "Caption: 'Now \u00b7 Discover \u2014 earlier choices stay on this workspace'. Cards (0): []. empty='\\n            T-03 \u00b7 Step 3\\n            Curated Recommendations\\n            Recommended for your occasion\\n            \\n            \\n              No recommendations yet. Share occasion and budget in the conversation first.\\n            \\n     '. last_workspace=None",
+      "result": "fail"
+    },
+    {
+      "tile": "T-04 Select + customize",
+      "expected": "Select an available arrangement; size; physical card message; optional flower/colour/ribbon",
+      "actual": "No enabled Select button. card_count=0 copy=[]",
+      "result": "fail"
+    },
+    {
+      "tile": "T-07 Checkout",
+      "expected": "Stop before payment unless asked",
+      "actual": "Did not reach checkout. Payment not included. Did not Place Order.",
+      "result": "blocked"
+    },
+    {
+      "tile": "T-08 Tracking",
+      "expected": "Tracking after confirmed order",
+      "actual": "Skipped with payment. Contact Florist lives on tracking.",
+      "result": "blocked"
+    },
+    {
+      "tile": "ASO Help",
+      "expected": "Help available without leaving the workspace; labeled as not a person",
+      "actual": "Help dialog: 'How it works\\n\\nAutomated answers from approved shop information. This is not a person.\\n\\nDescribe what you need in your own words.\\nCheck and correct what the assistant understood.\\nChoose flowers, delivery, and review before paying.\\nAsk from approved information\\n Ask\\n\\nNeed a person?'. Answer: 'Something went wrong on our side. Try again in a moment.'.",
+      "result": "pass"
+    }
+  ],
+  "api": {
+    "suggestions": [],
+    "csrf_rejected": false,
+    "posts": [
+      {
+        "path": "/api/v1/session",
+        "status": 500,
+        "method": "POST",
+        "error": null,
+        "code": null
+      },
+      {
+        "path": "/api/v1/conversation/messages",
+        "status": 401,
+        "method": "POST",
+        "error": "session_required",
+        "code": null
+      },
+      {
+        "path": "/api/v1/session",
+        "status": 500,
+        "method": "POST",
+        "error": null,
+        "code": null
+      },
+      {
+        "path": "/api/v1/conversation/messages",
+        "status": 401,
+        "method": "POST",
+        "error": "session_required",
+        "code": null
+      },
+      {
+        "path": "/api/v1/session",
+        "status": 500,
+        "method": "POST",
+        "error": null,
+        "code": null
+      },
+      {
+        "path": "/api/v1/shared-understanding",
+        "status": 401,
+        "method": "PATCH",
+        "error": "session_required",
+        "code": null
+      },
+      {
+        "path": "/api/v1/session",
+        "status": 500,
+        "method": "POST",
+        "error": null,
+        "code": null
+      },
+      {
+        "path": "/api/v1/support",
+        "status": 401,
+        "method": "POST",
+        "error": "session_required",
+        "code": null
+      },
+      {
+        "path": "/api/v1/session",
+        "status": 500,
+        "method": "POST",
+        "error": null,
+        "code": null
+      }
+    ],
+    "session_mint": null,
+    "auth_errors": [
+      {
+        "path": "/api/v1/conversation/messages",
+        "status": 401,
+        "error": "session_required",
+        "correlation_id": "c056e332-498f-4151-a165-16dbda06009f"
+      },
+      {
+        "path": "/api/v1/conversation/messages",
+        "status": 401,
+        "error": "session_required",
+        "correlation_id": "777c6dec-14cb-4cfe-abed-2042c09749cb"
+      },
+      {
+        "path": "/api/v1/shared-understanding",
+        "status": 401,
+        "error": "session_required",
+        "correlation_id": "388fa1e7-4df7-4e53-8443-0b0dc96f9dd4"
+      },
+      {
+        "path": "/api/v1/support",
+        "status": 401,
+        "error": "session_required",
+        "correlation_id": "fd6f4157-4a5b-4584-9f98-fbd3898b1d2e"
+      }
+    ],
+    "status_codes": [
+      {
+        "method": "GET",
+        "path": "/",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/assets/styles.css",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/assets/bouquet-hero.svg",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/assets/florist-status.svg",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/assets/app.js",
+        "status": 200
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/session",
+        "status": 500
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/conversation/messages",
+        "status": 401
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/session",
+        "status": 500
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/conversation/messages",
+        "status": 401
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/session",
+        "status": 500
+      },
+      {
+        "method": "PATCH",
+        "path": "/api/v1/shared-understanding",
+        "status": 401
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/session",
+        "status": 500
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/support",
+        "status": 401
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/session",
+        "status": 500
+      }
+    ]
+  },
+  "workspace": {
+    "title": "Lily's Florist \u2014 Adaptive Workspace",
+    "understanding": "T-02 \u00b7 PERSISTENT\n\nIntent Summary (Shared Understanding)\n\nYour occasion, recipient, budget, style, flower preference, and timing will appear here. Review and correct anything that looks wrong.\n\nNothing is final until you review the order.\n\nReview and correct\nFacet\nOccasion\nRecipient\nBudget\nStyle\nFlower preference\nTiming\nCorrection\n\nSomething went wrong on our side. Try again in a moment.\n\nSave correction",
+    "listHidden": true,
+    "formError": "Something went wrong on our side. Try again in a moment.",
+    "notice": "Something went wrong on our side. Try again in a moment.",
+    "continueDisabled": true,
+    "chips": [],
+    "suggestionsHidden": true,
+    "messageForm": true,
+    "composer": true,
+    "cards": [],
+    "stepCaption": "Now \u00b7 Discover \u2014 earlier choices stay on this workspace",
+    "checkoutVisible": true,
+    "hasCardNumber": false,
+    "sessionPayRef": ""
+  },
+  "notes": [
+    "step 3 still locked: {'title': \"Lily's Florist \u2014 Adaptive Workspace\", 'understanding': 'T-02 \u00b7 PERSISTENT\\n\\nIntent Summary (Shared Understanding)\\n\\nYour occasion, recipient, budget, style, flower preference, and timing will appear here. Review and correct anything that looks wrong.\\n\\nNothing is final until you review the order.\\n\\nReview and correct\\nFacet\\nOccasion\\nRecipient\\nBudget\\nStyle\\nFlower preference\\nTiming\\nCorrection\\n\\nSomething went wrong on our side. Try again in a moment.\\n\\nSave correction', 'listHidden': True, 'formError': 'Something went wrong on our side. Try again in a moment.', 'notice': 'Something went wrong on our side. Try again in a moment.', 'continueDisabled': True, 'chips': [], 'suggestionsHidden': True, 'messageForm': True, 'composer': True, 'cards': [], 'stepCaption': 'Now \u00b7 Discover \u2014 earlier choices stay on this workspace', 'checkoutVisible': True, 'hasCardNumber': False, 'sessionPayRef': ''}",
+    "T-03 empty/unknown: inventory may be unseeded on Path B. Friction vs blocker: customer cannot Select if there are no cards."
+  ],
+  "first_blocker": {
+    "tile": "T-01 thought completion (ADR-003)",
+    "actual": "Notice: 'Something went wrong on our side. Try again in a moment.'. Chips: []. Customer line in log: False. formError: 'Something went wrong on our side. Try again in a moment.'. API suggestions: [].",
+    "result": "fail"
+  },
+  "browser": "playwright channel=msedge",
+  "boot": {
+    "title": "Lily's Florist \u2014 Adaptive Workspace",
+    "understanding": "T-02 \u00b7 PERSISTENT\n\nIntent Summary (Shared Understanding)\n\nYour occasion, recipient, budget, style, flower preference, and timing will appear here. Review and correct anything that looks wrong.\n\nNothing is final until you review the order.\n\nReview and correct",
+    "listHidden": true,
+    "formError": "",
+    "notice": "Something went wrong on our side. Try again in a moment.",
+    "continueDisabled": true,
+    "chips": [],
+    "suggestionsHidden": true,
+    "messageForm": true,
+    "composer": true,
+    "cards": [],
+    "stepCaption": "Now \u00b7 Discover \u2014 earlier choices stay on this workspace",
+    "checkoutVisible": true,
+    "hasCardNumber": false,
+    "sessionPayRef": ""
+  },
+  "delivery_date": "2026-08-23"
+}

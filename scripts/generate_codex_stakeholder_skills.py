@@ -54,6 +54,11 @@ SKILLS = {
         "Read the linked `gates.md` completely before any MR action.",
         "Use `glab`, not GitHub tooling. Do not delegate conflict resolution unless the user explicitly requests it; report the handoff to `$aea-senior-software-engineer`.",
     ),
+    "aea-performance-guardian": (
+        "Own AEA frontend performance, sub-100ms Largest Contentful Paint (LCP), Cumulative Layout Shift (CLS), DOM progressive hydration timing, Web Vitals telemetry, and client frame budget enforcement. Use for frontend performance optimization, LCP benchmarking, hydration timing, or the AEA performance guardian stakeholder.",
+        "Read the canonical skill completely before auditing frontend performance or LCP timing.",
+        "Enforce sub-100ms LCP and progressive hydration benchmarks. Do not replace UX designer or senior software engineer domain authority.",
+    ),
     "aea-product-owner": (
         "Own AEA / Lily's Florist product mission, vision, backlog priority among existing IDs, and product go/no-go (accept, defer, park), including M12 CRM unpark recommendation and Path A vs Path B product acceptance. Use for product mission, vision, backlog, priority, go/no-go, should we ship, acceptance, or M12 unpark.",
         "Treat the canonical skill as the authoritative product-owner role, vision SoT, and go/no-go rules.",

@@ -1,0 +1,54 @@
+---
+description: Verification SOP and troubleshooting checklist for Cloud Grafana and AWS CloudWatch telemetry on AWS ECS Fargate.
+globs: platform/docker/grafana/**/*, infra/aws/ecs.tf, edge/gateway/nginx-alb.conf
+---
+
+# Cloud Grafana & AWS CloudWatch Telemetry Verification SOP
+
+When configuring, deploying, or debugging Cloud Grafana or CloudWatch metrics in this repository, agents MUST follow this SOP and checklist to prevent empty panel errors (`"No data"`) or IAM authorization failures.
+
+## Canonical Knowledge Reference
+* Second Brain Vault Note: `research/random-thoughts/2026-08-22-cloud-grafana-cloudwatch-troubleshooting-sop.md`
+
+---
+
+## 1. Multi-Layer Diagnostic Protocol
+
+If Grafana panels show `"No data"` or a red error warning, perform these diagnostic steps in sequence:
+
+1. **Extract Container Logs via AWS CLI**:
+   ```bash
+   python -c "import subprocess, json; streams = json.loads(subprocess.check_output('aws logs describe-log-streams --log-group-name /aea/aea-pilot/grafana --order-by LastEventTime --descending --max-items 1 --region us-east-1', shell=True)); print(subprocess.check_output(f'aws logs get-log-events --log-group-name /aea/aea-pilot/grafana --log-stream-name \"{streams[\"logStreams\"][0][\"logStreamName\"]}\" --limit 40 --region us-east-1', shell=True).decode('utf-8', errors='ignore'))"
+   ```
+   Check for `ec2:DescribeRegions` 403 Forbidden errors or datasource UID resolution errors.
+
+2. **Verify AWS IAM Task Role Policy**:
+   Confirm `aws_iam_role.ecs_task` in `infra/aws/ecs.tf` includes both:
+   - Policy attachment: `arn:aws:iam::aws:policy/CloudWatchReadOnlyAccess`
+   - Statement: `ec2:DescribeRegions` on resource `*` (mandatory for Grafana CloudWatch region discovery).
+
+3. **Verify Server Datasource UID Mapping**:
+   Query Grafana API: `GET https://aea.artof.link/grafana/api/datasources`.
+   Confirm CloudWatch datasource has `uid: cloudwatch` and `isDefault: true`.
+
+4. **Verify Target JSON Schema**:
+   Grafana 10.4+ CloudWatch metric targets MUST specify:
+   - `"datasource": { "type": "cloudwatch", "uid": "cloudwatch" }`
+   - `"queryMode": "Metrics"`
+   - `"region": "us-east-1"`
+   - `"metricQueryType": 0`, `"metricEditorMode": 0`
+   - `"dimensions": { "ClusterName": "aea-pilot", "ServiceName": "<service>" }`
+
+5. **Verify Org Home Redirect**:
+   Ensure `homeDashboardUID` is set to `"aea-unified-dashboard"` via `PUT /api/org/preferences` so accessing `https://aea.artof.link/grafana/` redirects to the provisioned dashboard instead of the default blank Home view.
+
+---
+
+## 2. Pre-Flight Verification Command
+
+Before opening or merging PRs/MRs impacting Grafana or monitoring infrastructure, run:
+```bash
+python scripts/audit_grafana_cloud.py
+python scripts/run_all_guards.py
+```
+All 14 pre-flight quality guards must pass cleanly.

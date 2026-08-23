@@ -8,6 +8,12 @@ resource "aws_security_group" "alb" {
     protocol    = "tcp"
     cidr_blocks = var.pilot_ingress_cidrs
   }
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = var.pilot_ingress_cidrs
+  }
   egress {
     from_port   = 0
     to_port     = 0

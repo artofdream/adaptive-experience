@@ -217,3 +217,23 @@ def normalize_selection_items(items) -> list[dict]:
             "options": norm_opts,
         })
     return normalized
+
+
+STEM_PRICES_CENTS = {
+    "roses": 450,
+    "lilies": 650,
+    "carnations": 300,
+    "orchids": 850,
+    "eucalyptus": 250,
+}
+
+def calculate_stem_composition_price(stems: dict) -> int:
+    """Calculate dynamic price in cents for custom stem-by-stem bouquet composition (GAP-V01)."""
+    if not isinstance(stems, dict):
+        return 0
+    total = 0
+    for stem_type, count in stems.items():
+        if stem_type in STEM_PRICES_CENTS and isinstance(count, int) and count > 0:
+            total += STEM_PRICES_CENTS[stem_type] * min(count, 50)
+    return total
+

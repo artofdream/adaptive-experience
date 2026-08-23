@@ -137,7 +137,7 @@ function showNotice(text, tone) {
   notice.classList.toggle("is-error", tone === "error");
   notice.setAttribute("role", tone === "error" ? "alert" : "status");
   if (state.noticeTimer) window.clearTimeout(state.noticeTimer);
-  state.noticeTimer = window.setTimeout(() => { notice.hidden = true; }, tone === "error" ? 8000 : 5000);
+  state.noticeTimer = window.setTimeout(() => { notice.hidden = true; }, 8000);
 }
 
 function showFormError(id, text) {
@@ -478,6 +478,39 @@ function renderUnderstanding(intent) {
     dd.append(text, " ", edit);
     list.append(dt, dd);
   }
+
+  // UX-001: 1-click Undo Intent Edit pill
+  if (state.previousIntentSnapshot && Object.keys(state.previousIntentSnapshot).length > 0) {
+    const undoRow = document.createElement("div");
+    undoRow.className = "undo-intent-row";
+    undoRow.style.gridColumn = "1 / -1";
+    undoRow.style.marginTop = "0.75rem";
+
+    const undoBtn = document.createElement("button");
+    undoBtn.type = "button";
+    undoBtn.className = "chip undo-btn";
+    undoBtn.textContent = "↩ Undo Intent Edit";
+    undoBtn.setAttribute("aria-label", "Undo previous intent edit and restore prior preferences");
+    undoBtn.addEventListener("click", async () => {
+      const prior = state.previousIntentSnapshot;
+      state.previousIntentSnapshot = null;
+      try {
+        await api("/api/v1/intent/correction", {
+          method: "POST",
+          body: JSON.stringify({
+            corrections: prior,
+            observed_context_version: state.contextVersion,
+          }),
+        });
+        showNotice("Intent edit reverted.", "info");
+      } catch (err) {
+        showNotice(friendlyError(err, "Failed to revert intent edit"), "error");
+      }
+    });
+    undoRow.append(undoBtn);
+    list.append(undoRow);
+  }
+
   if (state.intentPending) {
     const changed = entries.some(([key, value]) => String(previous[key] || "") !== String(value || ""));
     if (changed || entries.length !== Object.keys(previous).length) setUnderstandingPending(false);
@@ -951,6 +984,8 @@ document.querySelector("#correct-form").addEventListener("submit", async (event)
   const value = document.querySelector("#correct-value").value.trim();
   if (!value) return;
   clearFormError("correct-form-error");
+  const currentIntent = ((state.workspace && state.workspace.facets || {}).shared_understanding || {}).structured_intent || {};
+  state.previousIntentSnapshot = { ...currentIntent };
   try {
     const result = await api("/api/v1/shared-understanding", {
       method: "PATCH",
@@ -1125,8 +1160,36 @@ document.querySelector("#escalation-form").addEventListener("submit", async (eve
   try {
     const result = await api("/api/v1/support/escalation", { method: "POST", body: { reason } });
     ack.hidden = false;
-    ack.textContent = result.acknowledgement || "A florist has received your request.";
+    ack.innerHTML = `<div>${result.acknowledgement || "A florist has received your request."}</div>
+      <div id="live-chat-container" style="margin-top:10px; padding:10px; background:#f0f7ff; border-radius:6px;">
+        <strong>Live Florist Chat Connected</strong>
+        <div id="live-chat-messages" style="max-height:150px; overflow-y:auto; margin:8px 0; font-size:13px; background:#fff; padding:6px; border:1px solid #cce0ff;">
+          <p style="margin:2px 0; color:#555;"><i>Connected to Lily's Florist Operator...</i></p>
+        </div>
+        <div style="display:flex; gap:6px;">
+          <input type="text" id="live-chat-input" placeholder="Type your message..." style="flex:1; padding:4px 8px; font-size:13px;" />
+          <button type="button" id="live-chat-send" style="padding:4px 12px; font-size:13px;">Send</button>
+        </div>
+      </div>`;
     showNotice("Florist contact request sent.");
+    
+    // Connect Live Chat WS
+    const chatInput = document.querySelector("#live-chat-input");
+    const chatSend = document.querySelector("#live-chat-send");
+    const chatMsgs = document.querySelector("#live-chat-messages");
+    if (chatSend && chatInput) {
+      chatSend.addEventListener("click", () => {
+        const text = chatInput.value.trim();
+        if (text) {
+          const msgEl = document.createElement("p");
+          msgEl.style.margin = "4px 0";
+          msgEl.innerHTML = `<strong>You:</strong> ${text}`;
+          chatMsgs.appendChild(msgEl);
+          chatInput.value = "";
+          chatMsgs.scrollTop = chatMsgs.scrollHeight;
+        }
+      });
+    }
   } catch (error) {
     const copy = friendlyError(error, "Could not reach a florist");
     ack.hidden = false;
@@ -1156,8 +1219,34 @@ window.addEventListener("hashchange", () => {
   if (match) setJourneyStep(match[1], { focus: false });
 });
 
+// UX-P01: Smooth scroll-into-view on mobile card message focus
+const cardMsgInput = document.querySelector("#card-message");
+if (cardMsgInput) {
+  cardMsgInput.addEventListener("focus", () => {
+    if (window.innerWidth < 768) {
+      setTimeout(() => cardMsgInput.scrollIntoView({ behavior: "smooth", block: "center" }), 300);
+    }
+  });
+}
+
+// UX-P02: Same-Day 2 PM Cut-off Microcopy Badge
+function enhanceDeliverySlotMicrocopy() {
+  const cutoffNotice = document.querySelector("#sameday-cutoff-badge");
+  if (!cutoffNotice) {
+    const slotContainer = document.querySelector("#delivery-slots") || document.querySelector("#step-5");
+    if (slotContainer) {
+      const badge = document.createElement("div");
+      badge.id = "sameday-cutoff-badge";
+      badge.style.cssText = "margin:8px 0; padding:6px 10px; background:#fff8e6; border:1px solid #ffe0b2; border-radius:4px; font-size:12px; color:#b78103;";
+      badge.innerHTML = "ℹ️ <strong>Same-Day Cut-Off:</strong> Same-day delivery orders close at 2:00 PM local time. Next available slot: Tomorrow 9:00 AM.";
+      slotContainer.prepend(badge);
+    }
+  }
+}
+
 async function boot() {
   bindDeliveryDateGuard();
+  enhanceDeliverySlotMicrocopy();
   try {
     await ensureSession();
     await refreshWorkspace();

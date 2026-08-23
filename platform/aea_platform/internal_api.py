@@ -11,7 +11,9 @@ from .delivery import DeliveryValidationError, normalize_delivery_details
 from .intent import (IntentAnalysisService, IntentSessionNotFound, IntentValidationError,
                      ReferenceIntentInterpreter, SharedUnderstandingService,
                      is_stale_context_error)
-from .inventory import (InventoryAvailabilityService, InventoryForecastService,
+from .forecast import InventoryForecastService
+from .crm import EngagementCrmService, CrmValidationError
+from .inventory import (InventoryAvailabilityService,
                         InventoryUnavailableError, InventoryValidationError)
 from .order import (ORDER_STATUS_SEQUENCE, CheckoutService, CheckoutStateError,
                     CheckoutTotalMismatch, OrderIncompleteError, OrderNotFound, OrderService,
@@ -44,7 +46,7 @@ class InternalOrchestrationApp:
             raise ValueError("internal token is required")
         from .adapters import (PsycopgExperienceStateStore, PsycopgInventoryAvailabilityStore,
                                PsycopgOrderStore, PsycopgQualityStore, PsycopgRecommendationStore,
-                               PsycopgSupportStore)
+                               PsycopgSupportStore, PsycopgCrmStore)
         store = PsycopgExperienceStateStore(connection)
         self.store = store
         self.connection = connection
@@ -67,6 +69,7 @@ class InternalOrchestrationApp:
         self.checkout = CheckoutService(order_store, self.pricing)
         self.payment_handler = PaymentCheckoutHandler(order_store, ReferencePaymentAuthority())
         self.support = SupportService(PsycopgSupportStore(connection), quality=self.quality)
+        self.crm = EngagementCrmService(PsycopgCrmStore(connection))
 
     async def __call__(self, scope, receive, send):
         headers = {key.decode().lower(): value.decode() for key, value in scope.get("headers", [])}
@@ -101,6 +104,37 @@ class InternalOrchestrationApp:
                 return await self._send(send, 422, {"code": "validation_failed"})
             except (ConversationSessionNotFound, IntentSessionNotFound):
                 return await self._send(send, 404, {"code": "session_not_found"})
+        if scope["path"] == "/internal/v1/crm/reminders" and scope["method"] == "GET":
+            query = parse_qs(scope.get("query_string", b"").decode())
+            browser_hash = (query.get("browser_hash") or [""])[0]
+            try:
+                reminders = self.crm.get_reminders(browser_hash=browser_hash)
+                items = [{
+                    "memory_id": r.memory_id,
+                    "occasion_type": r.occasion_type,
+                    "event_month": r.event_month,
+                    "event_day": r.event_day,
+                    "recipient_relation": r.recipient_relation,
+                    "days_until_event": r.days_until_event,
+                    "reminder_text": r.reminder_text,
+                } for r in reminders]
+                return await self._send(send, 200, {"items": items})
+            except CrmValidationError:
+                return await self._send(send, 422, {"code": "validation_failed"})
+        if scope["path"] == "/internal/v1/crm/occasions" and scope["method"] == "POST":
+            body = await self._body(receive)
+            try:
+                result = self.crm.record_occasion(
+                    browser_hash=body.get("browser_hash", ""),
+                    session_id=body.get("session_id", ""),
+                    occasion_type=body.get("occasion_type", ""),
+                    event_month=int(body.get("event_month", 0)),
+                    event_day=int(body.get("event_day", 0)),
+                    recipient_relation=body.get("recipient_relation", "other"),
+                )
+                return await self._send(send, 201, {"code": "created", "occasion": result})
+            except (CrmValidationError, ValueError, TypeError):
+                return await self._send(send, 422, {"code": "validation_failed"})
         if (len(parts) == 5 and parts[:4] == ["internal", "v1", "operator", "sessions"]
                 and scope["method"] == "GET"):
             try:

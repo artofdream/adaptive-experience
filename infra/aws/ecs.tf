@@ -118,6 +118,19 @@ resource "aws_iam_role_policy_attachment" "ecs_task_cloudwatch" {
   policy_arn = "arn:aws:iam::aws:policy/CloudWatchReadOnlyAccess"
 }
 
+data "aws_iam_policy_document" "ecs_task_ec2_describe" {
+  statement {
+    actions   = ["ec2:DescribeRegions"]
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_role_policy" "ecs_task_ec2_describe" {
+  name   = "${local.prefix}-ecs-task-ec2-describe"
+  role   = aws_iam_role.ecs_task.id
+  policy = data.aws_iam_policy_document.ecs_task_ec2_describe.json
+}
+
 
 resource "aws_ecs_cluster" "main" {
   name = local.prefix
@@ -572,14 +585,19 @@ resource "aws_ecs_task_definition" "grafana" {
   task_role_arn            = aws_iam_role.ecs_task.arn
   container_definitions = jsonencode([{
     name         = "grafana"
-    image        = "grafana/grafana:10.4.0"
+    image        = "${aws_ecr_repository.grafana.repository_url}:latest"
     essential    = true
     portMappings = [{ containerPort = 3000, protocol = "tcp" }]
     environment = [
       { name = "GF_SECURITY_ADMIN_USER", value = "admin" },
       { name = "GF_SECURITY_ADMIN_PASSWORD", value = "admin" },
+      { name = "GF_SERVER_DOMAIN", value = "aea.artof.link" },
       { name = "GF_SERVER_SERVE_FROM_SUB_PATH", value = "true" },
-      { name = "GF_SERVER_ROOT_URL", value = "https://aea.artof.link/grafana/" }
+      { name = "GF_SERVER_ROOT_URL", value = "https://aea.artof.link/grafana/" },
+      { name = "GF_AUTH_ANONYMOUS_ENABLED", value = "true" },
+      { name = "GF_AUTH_ANONYMOUS_ORG_ROLE", value = "Admin" },
+      { name = "GF_SECURITY_ALLOW_EMBEDDING", value = "true" },
+      { name = "GF_NEWS_NEWS_FEED_ENABLED", value = "false" }
     ]
     logConfiguration = {
       logDriver = "awslogs"

@@ -133,3 +133,19 @@ $$\text{RRF Score}(d) = \frac{1}{60 + \text{Rank}_{\text{BM25}}(d)} + \frac{1}{6
 ### Conclusion & Memory Integration
 
 This session memory log has been saved to `research/random-thoughts/2026-08-21-session-memory-building-process-and-lessons-learned.md`. It links directly to existing ADRs, daily briefs, and architectural studies within the AEA Second Brain Vault.
+
+---
+
+## Sponsor answers (2026-08-21 later pass) — facts only
+
+Recorded in in-repo `C:\projects\code\adaptive-experience\research\random-thoughts\2026-08-21-kb-project-building-lessons.md`. Not inbox, not `C:\data\vaults\…`. Do not duplicate that dump here.
+
+| Field | Sponsor answer |
+|---|---|
+| Path B / `aea-pilot` budget | UNKNOWN — number later |
+| Org | `artof-group` is enough |
+| `artof-group/artof-project` | In-scope; GitLab `empty_repo: true`; goals UNKNOWN |
+| Fleeting notes | this in-repo folder (`research/random-thoughts/`) |
+| Payments | **target = Stripe; current = mockup** (!252 `platform/aea_platform/payment.py`). Live secrets UNKNOWN. Not an unpark. PO does not need to unpark Stripe now. M12 parked. |
+
+PO fields (M8–M12, Path B product accept, M13/M14 labels) remain unanswered. No M12 start.

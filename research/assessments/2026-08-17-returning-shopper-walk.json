@@ -1,8 +1,8 @@
 {
-  "url": "https://localhost:8443/",
-  "path": "A",
+  "url": "https://aea.artof.link/",
+  "path": "B",
   "scenario": "returning-shopper",
-  "payment_included": true,
+  "payment_included": false,
   "issue": "#195",
   "related": [
     "#27",
@@ -26,8 +26,8 @@
     {
       "tile": "T-01 Send + T-02 Shared Understanding",
       "expected": "Occasion / recipient / budget appear; Review and correct exists",
-      "actual": "Intent: 'T-02 \u00b7 PERSISTENT\\n\\nIntent Summary (Shared Understanding)\\nOccasion\\nbirthday Edit\\nBudget\\n75 Edit\\nRecipient\\nmother Edit\\n\\nNothing is final until you review the order.\\n\\nReview and correct'. Review: True. csrf=False. dump=''",
-      "result": "pass"
+      "actual": "Intent: 'T-02 \u00b7 PERSISTENT\\n\\nIntent Summary (Shared Understanding)\\n\\nUpdating from your last message\u2026\\n\\nYour occasion, recipient, budget, style, flower preference, and timing will appear here. Review and correct anything that looks wrong.\\n\\nNothing is final until you review the order.\\n\\nReview and correct'. Review: True. csrf=False. dump=''",
+      "result": "fail"
     },
     {
       "tile": "T-03 Curated Recommendations",
@@ -44,7 +44,7 @@
     {
       "tile": "T-05 Delivery",
       "expected": "Date + named window; confirm saved destination reference (not a street address)",
-      "actual": "Date 2026-08-24, dest 'home', street_fields=0, banner='Delivery details confirmed for this session.' error=''",
+      "actual": "Date 2026-08-27, dest 'home', street_fields=0, banner='Delivery details confirmed for this session.' error=''",
       "result": "pass"
     },
     {
@@ -55,26 +55,20 @@
     },
     {
       "tile": "T-07 Checkout",
-      "expected": "Confirm session payment reference; ack; Create order. No PAN fields.",
-      "actual": "status=202 body={'accepted': True, 'pending': True, 'confirmed': False, 'code': 'accepted', 'order_id': '3ef207a0-dea0-47d0-bfd3-9b4588c51c0e', 'status': 'submitted', 'decline_code': None, 'correlation_id': 'd7d05526-af11-4900-87ba-d69a2744eddb'}",
-      "result": "pass"
+      "expected": "Stop before payment unless --payment",
+      "actual": "Payment not included. Did not Create order.",
+      "result": "blocked"
     },
     {
       "tile": "M8 same-session recall",
       "expected": "Ordered earlier in this session on T-03 after accepted order",
-      "actual": "Ordered earlier in this session visible on T-03. cards=['Budget Mixed Bunch |  | $35.00 |  | Available |  | Ordered earlier in this session |  | Select', 'Classic Rose Dozen |  | $70.00 |  | Available | Select']",
-      "result": "pass"
-    },
-    {
-      "tile": "M8 reorder",
-      "expected": "Select recalled product; confirm destination reference (ADR-013)",
-      "actual": "selected recalled product and confirmed destination reference",
-      "result": "pass"
+      "actual": "same-session hint needs an accepted order; payment excluded this run",
+      "result": "blocked"
     },
     {
       "tile": "ASO Help",
       "expected": "Help available without leaving the workspace; labeled as not a person",
-      "actual": "Help: 'How it works\\n\\nAutomated answers from approved shop information. This is not a person.\\n\\nDescribe what you need in your own words.\\nCheck and correct what the assistant understood.\\nChoose flowers, delivery, and review before paying.\\nAsk from a'. Answer: 'From this session: Delivery is scheduled for 2026-08-24 (morning) to destination home.'",
+      "actual": "Help: 'How it works\\n\\nAutomated answers from approved shop information. This is not a person.\\n\\nDescribe what you need in your own words.\\nCheck and correct what the assistant understood.\\nChoose flowers, delivery, and review before paying.\\nAsk from a'. Answer: 'From this session: Delivery is scheduled for 2026-08-27 (morning) to destination home.'",
       "result": "pass"
     },
     {
@@ -82,18 +76,18 @@
       "expected": "Prior order offered in a new browser without login (#193)",
       "actual": "durable prior-order recall is not implemented until #193",
       "result": "blocked"
+    },
+    {
+      "tile": "M8 reorder",
+      "expected": "Select recalled product; confirm destination reference (ADR-013)",
+      "actual": "reorder not attempted; recall not available",
+      "result": "blocked"
     }
   ],
   "api": {
     "suggestions": [],
     "csrf_rejected": false,
     "posts": [
-      {
-        "url": "/api/v1/session",
-        "status": 201,
-        "method": "POST",
-        "error": null
-      },
       {
         "url": "/api/v1/session",
         "status": 201,
@@ -161,39 +155,6 @@
         "order_status": null
       },
       {
-        "url": "/api/v1/checkout",
-        "status": 202,
-        "method": "POST",
-        "error": null,
-        "code": "accepted",
-        "accepted": true,
-        "order_id": "3ef207a0-dea0-47d0-bfd3-9b4588c51c0e",
-        "confirmed": false,
-        "order_status": "submitted"
-      },
-      {
-        "url": "/api/v1/selection",
-        "status": 202,
-        "method": "POST",
-        "error": null,
-        "code": "accepted",
-        "accepted": true,
-        "order_id": null,
-        "confirmed": null,
-        "order_status": null
-      },
-      {
-        "url": "/api/v1/delivery",
-        "status": 202,
-        "method": "POST",
-        "error": null,
-        "code": "accepted",
-        "accepted": true,
-        "order_id": null,
-        "confirmed": null,
-        "order_status": null
-      },
-      {
         "url": "/api/v1/support",
         "status": 200,
         "method": "POST",
@@ -207,20 +168,15 @@
     ],
     "errors": [],
     "last_workspace": {
-      "context_version": 9,
+      "context_version": 7,
       "rec_count": 2,
-      "prior_order_hints": [
-        "budget-mixed-bunch"
-      ],
-      "order": {
-        "order_id": "3ef207a0-dea0-47d0-bfd3-9b4588c51c0e",
-        "status": "submitted",
-        "authoritative_status": "submitted",
-        "delayed": false
-      }
+      "prior_order_hints": [],
+      "order": null
     }
   },
-  "notes": [],
+  "notes": [
+    "no visible control for journey step 3"
+  ],
   "florist_opened": false,
   "browser": "playwright channel=msedge"
 }

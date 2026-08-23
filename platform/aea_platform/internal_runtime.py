@@ -14,7 +14,10 @@ endpoint = os.environ.get("AEA_AI_ENDPOINT")
 api_key = os.environ.get("AEA_AI_API_KEY")
 model = os.environ.get("AEA_AI_MODEL")
 interpreter = None
-if endpoint or api_key or model:
+if os.environ.get("AEA_LOAD_TEST_MOCK_AI") == "1":
+    from .intent import ReferenceIntentInterpreter
+    interpreter = ReferenceIntentInterpreter()
+elif endpoint or api_key or model:
     if not endpoint or not api_key or not model:
         raise RuntimeError("AEA_AI_ENDPOINT, AEA_AI_API_KEY, and AEA_AI_MODEL must be set together")
     interpreter = AvailableIntentInterpreter(OpenAICompatibleIntentInterpreter(

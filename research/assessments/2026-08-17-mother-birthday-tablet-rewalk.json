@@ -1,0 +1,525 @@
+{
+  "url": "https://aea.artof.link/",
+  "scenario": "mother-birthday",
+  "payment_included": false,
+  "origin": "https://aea.artof.link",
+  "assignment": "Tablet-only rewalk after !224 deployed; T-01 left of T-02 at 768/900; product fail if still stacked",
+  "origin_main": "c9c5c0b",
+  "mr": "!224",
+  "steps": [
+    {
+      "tile": "Tablet 768 T-01 left of T-02",
+      "expected": "At 768px, Conversation is left of Intent Summary in the first viewport, not stacked above",
+      "actual": "Conversation sits left of Intent Summary in the first viewport. geo={'viewport': {'w': 768, 'h': 1024}, 'conversation': {'top': 133, 'left': 16, 'width': 359, 'height': 667, 'bottom': 800}, 'understanding': {'top': 133, 'left': 393, 'width': 359, 'height': 325, 'bottom': 459}, 'gridTemplateColumns': '358.797px 358.812px', 'gridTemplateAreas': '\"conversation understanding\" \"main main\"', 'conversationOrder': '0', 'understandingOrder': '0', 't01LeftOfT02': True, 't01AboveT02': False, 'columnTokenCount': 2, 'conversationInFirstViewport': True, 'understandingInFirstViewport': True, 'bothInFirstViewport': True} live_css={'bytes': 16385, 'has_siblings_comment': True, 'has_order_minus_1': False, 'has_tablet_two_col_areas': True, 'has_mobile_stack_areas': True, 'tablet_rule_excerpt': '@media (max-width: 60rem) {\\n  /* T-01 and T-02 are workspace siblings. Nested order cannot swap them. */\\n  main.workspace {\\n    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);\\n    grid-template-areas:\\n      \"conversation understanding\"\\n      \"main main\";\\n  }\\n  .tile-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }\\n}\\n\\n@media (max-width: 40rem) {\\n  .site-header { min-height: 4rem; padding-inline: 1rem; ', 'looks_like_224': True}",
+      "result": "pass"
+    },
+    {
+      "tile": "Tablet 900 T-01 left of T-02",
+      "expected": "At 900px, Conversation is left of Intent Summary in the first viewport, not stacked above",
+      "actual": "Conversation sits left of Intent Summary in the first viewport. geo={'viewport': {'w': 900, 'h': 1024}, 'conversation': {'top': 133, 'left': 16, 'width': 425, 'height': 646, 'bottom': 779}, 'understanding': {'top': 133, 'left': 459, 'width': 425, 'height': 279, 'bottom': 412}, 'gridTemplateColumns': '424.797px 424.812px', 'gridTemplateAreas': '\"conversation understanding\" \"main main\"', 'conversationOrder': '0', 'understandingOrder': '0', 't01LeftOfT02': True, 't01AboveT02': False, 'columnTokenCount': 2, 'conversationInFirstViewport': True, 'understandingInFirstViewport': True, 'bothInFirstViewport': True}",
+      "result": "pass"
+    },
+    {
+      "tile": "T-01 Enter / Discovery",
+      "expected": "Welcome + composer; customer can describe the occasion in own words",
+      "actual": "Welcome visible. Assistant: 'Hello! What occasion are you shopping for today?'. Chips: []. Composer present. session_mint={'status': 201, 'error': None, 'has_session': True, 'correlation_id': None}.",
+      "result": "pass"
+    },
+    {
+      "tile": "T-01 thought completion (ADR-003)",
+      "expected": "Partial 'I need flowers\u2026' yields evolving suggestions such as 'for Mom'; chips optional; typing always allowed",
+      "actual": "Notice: 'Thanks \u2014 your message is in the conversation. Review Shared Understanding and correct anything that looks wrong.'. Chips: ['for Mom', 'for a birthday', 'under $75']. Customer line in log: True. formError: ''.",
+      "result": "pass"
+    },
+    {
+      "tile": "T-01 Conversation Send + T-02 Shared Understanding",
+      "expected": "Message posts; occasion/recipient/budget appear; Review and correct exists",
+      "actual": "Intent panel: 'T-02 \u00b7 PERSISTENT\\n\\nIntent Summary (Shared Understanding)\\nOccasion\\nbirthday Edit\\nBudget\\n75 Edit\\nRecipient\\nmother Edit\\n\\nNothing is final until you review the order.\\n\\nReview and correct'. Review and correct: True. csrf_rejected=False. formError=''.",
+      "result": "pass"
+    },
+    {
+      "tile": "Tablet 768 T-01 left of T-02 after intent",
+      "expected": "Two-column tablet layout still holds after Shared Understanding fills",
+      "actual": "Conversation sits left of Intent Summary in the first viewport. geo={'viewport': {'w': 768, 'h': 1024}, 'conversation': {'top': 133, 'left': 16, 'width': 359, 'height': 732, 'bottom': 865}, 'understanding': {'top': 133, 'left': 393, 'width': 359, 'height': 301, 'bottom': 434}, 'gridTemplateColumns': '358.797px 358.812px', 'gridTemplateAreas': '\"conversation understanding\" \"main main\"', 'conversationOrder': '0', 'understandingOrder': '0', 't01LeftOfT02': True, 't01AboveT02': False, 'columnTokenCount': 2, 'conversationInFirstViewport': True, 'understandingInFirstViewport': True, 'bothInFirstViewport': True}",
+      "result": "pass"
+    },
+    {
+      "tile": "T-03 Curated Recommendations",
+      "expected": "Validated options matching birthday / Mum / budget; available options selectable",
+      "actual": "Cards (2): [{'text': 'Budget Mixed Bunch |  | $35.00 |  | Available | Select', 'title': 'Budget Mixed Bunch', 'badge': 'Available', 'selectDisabled': False}, {'text': 'Classic Rose Dozen |  | $70.00 |  | Available | Select', 'title': 'Classic Rose Dozen', 'badge': 'Available', 'selectDisabled': False}]. badges=[{'title': 'Budget Mixed Bunch', 'badge': 'Available', 'selectDisabled': False}, {'title': 'Classic Rose Dozen', 'badge': 'Available', 'selectDisabled': False}]. select_enabled=2. empty='T-03 \u00b7 STEP 3\\n\\nCurated Recommendations\\n\\nRecommended for your occasion\\n\\nBudget Mixed Bunch\\n\\n$35.00\\n\\nAvailable\\nSelect\\nClassic Rose Dozen\\n\\n$70.00\\n\\nAvailable\\nSelect\\nContinue to customize'.",
+      "result": "pass"
+    },
+    {
+      "tile": "T-04\u2026T-06 Customize / delivery / summary",
+      "expected": "Optional on this tablet-only rewalk",
+      "actual": "Skipped. Full mother-birthday through T-06 not required.",
+      "result": "blocked"
+    },
+    {
+      "tile": "T-07 Checkout",
+      "expected": "Stop before payment unless asked",
+      "actual": "Payment skipped.",
+      "result": "blocked"
+    },
+    {
+      "tile": "T-08 Tracking",
+      "expected": "Tracking after confirmed order",
+      "actual": "Skipped with payment.",
+      "result": "blocked"
+    }
+  ],
+  "api": {
+    "suggestions": [],
+    "csrf_rejected": false,
+    "posts": [
+      {
+        "path": "/api/v1/session",
+        "status": 201,
+        "method": "POST",
+        "error": null,
+        "code": null
+      },
+      {
+        "path": "/api/v1/workspace",
+        "status": 200,
+        "method": "GET",
+        "error": null,
+        "code": null,
+        "rec_count": 0
+      },
+      {
+        "path": "/api/v1/stream",
+        "status": 200,
+        "method": "GET",
+        "error": null,
+        "code": null
+      },
+      {
+        "path": "/api/v1/conversation/messages",
+        "status": 202,
+        "method": "POST",
+        "error": "accepted",
+        "code": "accepted"
+      },
+      {
+        "path": "/api/v1/workspace",
+        "status": 200,
+        "method": "GET",
+        "error": null,
+        "code": null,
+        "rec_count": 0
+      },
+      {
+        "path": "/api/v1/stream",
+        "status": 200,
+        "method": "GET",
+        "error": null,
+        "code": null
+      },
+      {
+        "path": "/api/v1/workspace",
+        "status": 200,
+        "method": "GET",
+        "error": null,
+        "code": null,
+        "rec_count": 0
+      },
+      {
+        "path": "/api/v1/workspace",
+        "status": 200,
+        "method": "GET",
+        "error": null,
+        "code": null,
+        "rec_count": 0
+      },
+      {
+        "path": "/api/v1/conversation/messages",
+        "status": 202,
+        "method": "POST",
+        "error": "accepted",
+        "code": "accepted"
+      },
+      {
+        "path": "/api/v1/workspace",
+        "status": 200,
+        "method": "GET",
+        "error": null,
+        "code": null,
+        "rec_count": 2
+      },
+      {
+        "path": "/api/v1/stream",
+        "status": 200,
+        "method": "GET",
+        "error": null,
+        "code": null
+      },
+      {
+        "path": "/api/v1/workspace",
+        "status": 200,
+        "method": "GET",
+        "error": null,
+        "code": null,
+        "rec_count": 2
+      },
+      {
+        "path": "/api/v1/workspace",
+        "status": 200,
+        "method": "GET",
+        "error": null,
+        "code": null,
+        "rec_count": 2
+      }
+    ],
+    "session_mint": {
+      "status": 201,
+      "error": null,
+      "has_session": true,
+      "correlation_id": null
+    },
+    "auth_errors": [],
+    "status_codes": [
+      {
+        "method": "GET",
+        "path": "/",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/assets/styles.css",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/assets/bouquet-hero.svg",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/assets/florist-status.svg",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/assets/app.js",
+        "status": 200
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/session",
+        "status": 201
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/workspace",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/stream",
+        "status": 200
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/conversation/messages",
+        "status": 202
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/workspace",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/stream",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/workspace",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/workspace",
+        "status": 200
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/conversation/messages",
+        "status": 202
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/workspace",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/assets/bouquet-mixed.svg",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/stream",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/workspace",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/workspace",
+        "status": 200
+      }
+    ],
+    "ai_modes": [
+      {
+        "path": "/api/v1/workspace",
+        "mode": "fallback"
+      },
+      {
+        "path": "/api/v1/conversation/messages",
+        "mode": "fallback"
+      },
+      {
+        "path": "/api/v1/workspace",
+        "mode": "fallback"
+      },
+      {
+        "path": "/api/v1/workspace",
+        "mode": "fallback"
+      },
+      {
+        "path": "/api/v1/workspace",
+        "mode": "fallback"
+      },
+      {
+        "path": "/api/v1/conversation/messages",
+        "mode": "fallback"
+      },
+      {
+        "path": "/api/v1/workspace",
+        "mode": "fallback"
+      },
+      {
+        "path": "/api/v1/workspace",
+        "mode": "fallback"
+      },
+      {
+        "path": "/api/v1/workspace",
+        "mode": "fallback"
+      }
+    ],
+    "select_enabled": true,
+    "availability_badges": [
+      {
+        "title": "Budget Mixed Bunch",
+        "badge": "Available",
+        "selectDisabled": false
+      },
+      {
+        "title": "Classic Rose Dozen",
+        "badge": "Available",
+        "selectDisabled": false
+      }
+    ],
+    "last_workspace": {
+      "context_version": 4,
+      "shared": {
+        "structured_intent": {
+          "occasion": "birthday",
+          "budget": 75.0,
+          "recipient": "mother"
+        },
+        "suggestions": [
+          "What style or mood would you prefer?",
+          "Any flower preferences?",
+          "When should they arrive?"
+        ]
+      },
+      "rec_count": 2
+    }
+  },
+  "live_css": {
+    "bytes": 16385,
+    "has_siblings_comment": true,
+    "has_order_minus_1": false,
+    "has_tablet_two_col_areas": true,
+    "has_mobile_stack_areas": true,
+    "tablet_rule_excerpt": "@media (max-width: 60rem) {\n  /* T-01 and T-02 are workspace siblings. Nested order cannot swap them. */\n  main.workspace {\n    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);\n    grid-template-areas:\n      \"conversation understanding\"\n      \"main main\";\n  }\n  .tile-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }\n}\n\n@media (max-width: 40rem) {\n  .site-header { min-height: 4rem; padding-inline: 1rem; ",
+    "looks_like_224": true
+  },
+  "tablet_layout": {
+    "768x1024-landing": {
+      "viewport": {
+        "w": 768,
+        "h": 1024
+      },
+      "conversation": {
+        "top": 133,
+        "left": 16,
+        "width": 359,
+        "height": 667,
+        "bottom": 800
+      },
+      "understanding": {
+        "top": 133,
+        "left": 393,
+        "width": 359,
+        "height": 325,
+        "bottom": 459
+      },
+      "gridTemplateColumns": "358.797px 358.812px",
+      "gridTemplateAreas": "\"conversation understanding\" \"main main\"",
+      "conversationOrder": "0",
+      "understandingOrder": "0",
+      "t01LeftOfT02": true,
+      "t01AboveT02": false,
+      "columnTokenCount": 2,
+      "conversationInFirstViewport": true,
+      "understandingInFirstViewport": true,
+      "bothInFirstViewport": true
+    },
+    "900x1024-landing": {
+      "viewport": {
+        "w": 900,
+        "h": 1024
+      },
+      "conversation": {
+        "top": 133,
+        "left": 16,
+        "width": 425,
+        "height": 646,
+        "bottom": 779
+      },
+      "understanding": {
+        "top": 133,
+        "left": 459,
+        "width": 425,
+        "height": 279,
+        "bottom": 412
+      },
+      "gridTemplateColumns": "424.797px 424.812px",
+      "gridTemplateAreas": "\"conversation understanding\" \"main main\"",
+      "conversationOrder": "0",
+      "understandingOrder": "0",
+      "t01LeftOfT02": true,
+      "t01AboveT02": false,
+      "columnTokenCount": 2,
+      "conversationInFirstViewport": true,
+      "understandingInFirstViewport": true,
+      "bothInFirstViewport": true
+    },
+    "768x1024-after-intent": {
+      "viewport": {
+        "w": 768,
+        "h": 1024
+      },
+      "conversation": {
+        "top": 133,
+        "left": 16,
+        "width": 359,
+        "height": 732,
+        "bottom": 865
+      },
+      "understanding": {
+        "top": 133,
+        "left": 393,
+        "width": 359,
+        "height": 301,
+        "bottom": 434
+      },
+      "gridTemplateColumns": "358.797px 358.812px",
+      "gridTemplateAreas": "\"conversation understanding\" \"main main\"",
+      "conversationOrder": "0",
+      "understandingOrder": "0",
+      "t01LeftOfT02": true,
+      "t01AboveT02": false,
+      "columnTokenCount": 2,
+      "conversationInFirstViewport": true,
+      "understandingInFirstViewport": true,
+      "bothInFirstViewport": true
+    }
+  },
+  "workspace": {
+    "title": "Lily's Florist \u2014 Adaptive Workspace",
+    "understanding": "T-02 \u00b7 PERSISTENT\n\nIntent Summary (Shared Understanding)\nOccasion\nbirthday Edit\nBudget\n75 Edit\nRecipient\nmother Edit\n\nNothing is final until you review the order.\n\nReview and correct",
+    "listHidden": false,
+    "listCount": 6,
+    "formError": "",
+    "notice": "Thanks \u2014 your message is in the conversation. Review Shared Understanding and correct anything that looks wrong.",
+    "chips": [
+      {
+        "text": "romantic style",
+        "suggest": "romantic style"
+      },
+      {
+        "text": "roses",
+        "suggest": "roses"
+      },
+      {
+        "text": "this weekend",
+        "suggest": "this weekend"
+      }
+    ],
+    "suggestionsHidden": false,
+    "messageForm": true,
+    "composer": true,
+    "cards": [
+      {
+        "text": "Budget Mixed Bunch |  | $35.00 |  | Available | Select",
+        "title": "Budget Mixed Bunch",
+        "badge": "Available",
+        "selectDisabled": false
+      },
+      {
+        "text": "Classic Rose Dozen |  | $70.00 |  | Available | Select",
+        "title": "Classic Rose Dozen",
+        "badge": "Available",
+        "selectDisabled": false
+      }
+    ],
+    "selectEnabledCount": 2,
+    "availabilityBadges": [
+      {
+        "title": "Budget Mixed Bunch",
+        "badge": "Available",
+        "selectDisabled": false
+      },
+      {
+        "title": "Classic Rose Dozen",
+        "badge": "Available",
+        "selectDisabled": false
+      }
+    ],
+    "stepCaption": "Now \u00b7 Choose \u2014 recommendations stay visible after you pick",
+    "hasCardNumber": false
+  },
+  "notes": [
+    "Live /assets/styles.css matches !224 (sibling two-col tablet, no order:-1)."
+  ],
+  "first_blocker": null,
+  "deployed_224": true,
+  "cursor_ide_browser": "no tab available; Playwright fallback",
+  "browser": "playwright channel=msedge",
+  "boot": {
+    "title": "Lily's Florist \u2014 Adaptive Workspace",
+    "understanding": "T-02 \u00b7 PERSISTENT\n\nIntent Summary (Shared Understanding)\n\nYour occasion, recipient, budget, style, flower preference, and timing will appear here. Review and correct anything that looks wrong.\n\nNothing is final until you review the order.\n\nReview and correct",
+    "listHidden": true,
+    "listCount": 0,
+    "formError": "",
+    "notice": "",
+    "chips": [],
+    "suggestionsHidden": true,
+    "messageForm": true,
+    "composer": true,
+    "cards": [],
+    "selectEnabledCount": 0,
+    "availabilityBadges": [],
+    "stepCaption": "Now \u00b7 Discover \u2014 earlier choices stay on this workspace",
+    "hasCardNumber": false
+  }
+}

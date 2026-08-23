@@ -513,3 +513,10 @@ body.operator { background: var(--page); }
   .operator-split, .operator-facts { grid-template-columns: 1fr; }
   .operator .header-note { max-width: none; text-align: left; }
 }
+
+/* UX-P03: WCAG 2.1 AAA 44x44px Minimum Tap Target Enforcement */
+button, input[type="button"], input[type="submit"], select, .stem-counter-btn {
+  min-height: 44px;
+  min-width: 44px;
+}
+

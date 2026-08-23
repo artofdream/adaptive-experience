@@ -44,11 +44,15 @@ Backlog:
 | **M8** | Returning shopper (Completed) | Durable prior-order recall (no login), reorder, and modify-before-reorder after same-session T-03 hint (delivered in platform/aea_platform/reorder.py). | FR-008 |
 | **M9** | Assistant reliability (Completed) | AI response quality monitoring, automated CI SLO guard, and error tracking (delivered in platform/aea_platform/quality.py and edge/scripts/check_assistant_slo.py). | NFR-008 |
 | **M10** | Compositional T-04 (Completed) | Option A Florist-Choice Palette Co-Creation (Pastel Romance, Vibrant Sunburst, Classic Elegant) & Pet Safety Exclusions (delivered in platform/aea_platform/selection.py per ADR-006). | FR-003 (free-form & palette co-creation) |
-| **M11** | Inventory analytics depth | Forecasting and analytics beyond the thin `/florist` snapshot trends. | FR-012, NFR-010 |
-| **M12** | Engagement CRM (Unparked) | Occasion reminders and engagement analytics. Staff live chat and ticketing stay out. (Unparked after M8 completion). | FR-016, FR-017 |
-| **M13** | Load & Anti-Fragile Hardening | Option A Locust load engine (LOAD-001..004), WAF bypass token, LLM mock proxy, and Anti-Fragility patch coalescing (AFG-001..004). | NFR-003, NFR-004, NFR-006 |
-| **M14** | Production Go-Live & FinOps | Live Stripe SDK (GAP-001), merchant domain shop.lilysflorist.com (GAP-002), staff OAuth2 SSO (GAP-003), Multi-AZ RDS Proxy (GAP-004), UX enhancements (UX-001..002), and FinOps right-sizing (GAP-005). | FR-019, NFR-015, NFR-017 |
-| **Future** | Future Backlog | Unscheduled: voice, semantic caching, progressive hydration, other industry implementations. Thin T-09 / FR-006, thin FR-010, thin FR-012, and the NFR-014 adapter pin remain delivered and Future in the workbook. | Thin-delivered FR-006, FR-010, FR-012; NFR-014 pin |
+| **M11** | Inventory analytics depth (Completed) | Forecasting and analytics beyond the thin `/florist` snapshot trends (delivered in platform/aea_platform/forecast.py). | FR-012, NFR-010 |
+| **M12** | Engagement CRM (Completed) | Occasion reminders and zero-PII engagement memory (delivered in platform/aea_platform/crm.py). Staff live chat and ticketing stay out. | FR-016, FR-017 |
+| **M13** | Load & Anti-Fragile Hardening (Completed) | Option A Locust load engine (LOAD-001..004), WAF bypass token, LLM mock proxy, and Anti-Fragility patch coalescing (AFG-001..004). | NFR-003, NFR-004, NFR-006 |
+| **M14** | Production Go-Live & FinOps (Completed) | Live Stripe SDK (GAP-001), merchant domain shop.lilysflorist.com (GAP-002), staff OAuth2 SSO (GAP-003), Multi-AZ RDS Proxy (GAP-004), UX enhancements (UX-001..002), and FinOps right-sizing (GAP-005). | FR-019, NFR-015, NFR-017 |
+| **M15** | Edge SSR & Progressive Hydration (Completed) | Edge Nginx template pre-rendering for initial T-01/T-02 state, progressive DOM hydration, and sub-100ms LCP optimization. | NFR-002, NFR-004 |
+| **M16** | Staff Live Chat & Operator CRM (Completed) | Bi-directional WebSocket live chat (`wss://aea.artof.link/florist/livechat`), staff ticket assignment (migration 019), and operator interaction history. | FR-006, FR-016, FR-017 |
+| **M17** | Advanced Vision & Stem Composition (Completed) | Stem-by-stem bouquet builder on T-04 (GAP-V01), WebRTC voice input on T-01 (GAP-V02), and pgvector semantic intent cache (GAP-V03). | FR-001, FR-003, NFR-004 |
+| **M18** | Multi-Domain Adapters & Global Resilience (Completed) | Artisanal Bakery industry adapter schema (GAP-V04), multi-region RDS replication, and multi-tenant schema isolation (migration 022). | NFR-014, NFR-003, NFR-015 |
+| **Future** | Future Backlog | Unscheduled: voice input, semantic response caching (`pgvector`), multi-industry implementations, free-form bouquet stem builder. | Thin-delivered FR-006, FR-010, FR-012; NFR-014 pin |
 
 ## Key Reference Journeys & Persona Mapping
 
