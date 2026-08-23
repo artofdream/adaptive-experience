@@ -123,6 +123,7 @@ ID-inventory coherence (workbook ↔ docs) is **not** the same as implementation
 
 ## Related Second Brain Notes
 
+- [[2026-08-23-session-memory-log-cross-chat-knowledge-extraction]] — consolidated accessible Codex/ChatGPT history and cross-model lessons.
 - [[2026-08-23-repository-coherence-assessment-report]] — **SUPERSEDED**; ID inventories only.
 - [[2026-08-23-comprehensive-aea-repository-assessment]] — later 94/100 softening; still over-credits LCP and M16 stubs.
 - [[2026-08-23-antigravity-assessment-reconciliation]] — claim-by-claim ACCEPT/PARTIAL/REJECT of that 94/100 note; SUPERSEDES production-ready LCP.
