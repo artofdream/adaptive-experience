@@ -5,13 +5,20 @@ Lily's Florist as the reference design. Canonical requirements and design live
 under `docs/` and `implementations/`; product-neutral runtime foundations live
 under `platform/` and `edge/`.
 
-## Session start
+## Session start & end protocol
 
-Before acting:
+Before acting in any session:
 1. Read the most recent `research/daily-briefs/*.md` (sort by filename date) — it's the fastest way to pick up state from other tools/sessions working this repo concurrently.
 2. Read `research/random-thoughts/*.md` (specifically the strategic architecture studies and session memory logs) to inherit the Second Brain project history, decisions, trade-offs, and lessons learned.
 3. If reviewing transcript history or cross-agent context, feed prior session memory logs from `research/random-thoughts/` into context to build upon the continuous knowledge base.
+
+Before concluding a session:
+1. Extract session building memory, key decisions, trade-offs, and performance benchmarks to `research/random-thoughts/YYYY-MM-DD-session-memory-log-*.md` (`@aea-knowledge-guardian`).
+2. Run `python scripts/generate_daily_brief.py` to regenerate the daily briefing note (`@aea-coherence-guardian`).
+3. Run `python scripts/run_all_guards.py` to verify 14/14 pre-flight quality guards pass cleanly.
+4. Commit and push knowledge notes to Git so all future sessions inherit the updated Second Brain memory.
 Full SOP: `.cursor/rules/session-start-briefing.mdc`.
+
 
 ## Source of truth
 

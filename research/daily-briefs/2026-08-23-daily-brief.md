@@ -1,7 +1,7 @@
 # AEA Daily Executive & Governance Brief — 2026-08-23
 
 > **Tags**: #aea #daily-brief #governance #telemetry #second-brain #performance-guardian  
-> **Generated**: 2026-08-23T17:45:39.512250  
+> **Generated**: 2026-08-23T17:47:47.243499  
 > **Target Domain**: `https://aea.artof.link` (AWS ECS Fargate `aea-pilot`)  
 
 ---

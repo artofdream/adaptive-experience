@@ -51,11 +51,19 @@ fetched).
 ## Who keeps it fresh
 
 `@aea-coherence-guardian` owns writing `research/daily-briefs/YYYY-MM-DD.md`
-(`.cursor/skills/aea-coherence-guardian/SKILL.md`). If the latest brief is
+(`.cursor/skills/aea-coherence-guardian/SKILL.md`). `@aea-knowledge-guardian` owns curating Second Brain session memory logs under `research/random-thoughts/`. If the latest brief is
 stale when a session starts, either invoke `@aea-coherence-guardian` to
 produce a fresh one, or explicitly note in your own work that you're
 operating without current cross-session state. Do not silently proceed as
 if a stale brief were current.
+
+## Session end & memory extraction SOP
+
+Before concluding any session:
+1. Extract session building memory, key decisions, trade-offs, and performance benchmarks to `research/random-thoughts/YYYY-MM-DD-session-memory-log-*.md` (`@aea-knowledge-guardian`).
+2. Run `python scripts/generate_daily_brief.py` to regenerate `research/daily-briefs/YYYY-MM-DD-daily-brief.md`.
+3. Run `python scripts/run_all_guards.py` to verify 14/14 pre-flight quality guards pass cleanly.
+4. Stage and commit knowledge notes (`git add research/random-thoughts/ research/daily-briefs/`) so all assistant tools inherit updated Second Brain memory.
 
 ## Enforcement across tools
 
