@@ -70,22 +70,22 @@ def main():
 
 ## 4. 14-Role Stakeholder Team Active & Next Matrix
 
-| Stakeholder Role | Domain Authority | Active Item (M15) | Next Item (M16) | Status |
+| Stakeholder Role | Domain Authority | Core Focus | Reference Extensions | Status |
 |---|---|---|---|---|
-| `@aea-project-manager` | Scrum Delivery & SOP Gates | Sub-100ms LCP Delivery Gate | Staff Live Chat Readiness | `ACTIVE` |
-| `@aea-product-owner` | Product Vision & Go/No-Go | LCP Workspace Speed Acceptance | Live Chat CRM Acceptance | `ACTIVE` |
-| `@aea-ux-designer` | Workspace UI & Tiles T-01..T-08 | T-01/T-02 Pre-Rendered HTML | Customer T-09 Chat Overlay | `ACTIVE` |
-| `@aea-performance-guardian` | Web Vitals & Sub-100ms LCP | LCP & Hydration Benchmark Audit | WSS Frame Latency Audit | **`APPROVED & INSTALLED`** |
-| `@aea-senior-software-engineer` | Platform Engines & BFF | Hydration Script in app.js | Live Chat Schema 019 | `ACTIVE` |
-| `@aea-devsecops-platform` | AWS ECS Fargate & Terraform | Nginx Edge Gateway Templates | WSS Proxy Setup | `ACTIVE` |
-| `@aea-ai-engineer` | AI Quality & ADR-016 Proxy | Workspace SSR Intent Cache | Multi-Agent Chat Summary | `ACTIVE` |
-| `@aea-appsec-auditor` | Security & Zero-PII Sanitization | SSR HTML Security Audit | WSS Zero-PII Chat Audit | `ACTIVE` |
-| `@aea-customer-journey` | E2E Customer Journeys J1-J4 | Mobile & Desktop LCP Walk | Live Chat Escalation Walk | `ACTIVE` |
-| `@aea-support-coordinator` | Support Triage & Operator Inbox | Contact Florist Inbox Triage | Operator Live Chat Console | `ACTIVE` |
-| `@aea-mr-coordinator` | MR Reviews & Auto-Merge | M15 SSR Pipeline Review | M16 WSS Pipeline Review | `ACTIVE` |
-| `@aea-coherence-guardian` | Coherence & Quality Guards | Guard Verification & DAG Check | Live Chat Schema Coherence | `ACTIVE` |
-| `@aea-knowledge-guardian` | Second Brain Curation | Session Memory Extraction | Architecture Vault Index | `ACTIVE` |
-| `@aea-cost-guardian` | FinOps & AWS Fargate Scaling | Edge SSR CPU Cost Impact | WSS Memory Right-Sizing | `ACTIVE` |
+| `@aea-project-manager` | Scrum Delivery & SOP Gates | M0-M13 Reference Core | M14-M18 Extensions | `ACTIVE` |
+| `@aea-product-owner` | Product Vision & Go/No-Go | MVP Product Acceptance | Extension Schema Audits | `ACTIVE` |
+| `@aea-ux-designer` | Workspace UI & Tiles T-01..T-09 | Adaptive Workspace UX | Touch Target & Focus Polish | `ACTIVE` |
+| `@aea-performance-guardian` | Web Vitals & Sub-100ms LCP | LCP & Hydration Audit | Frame Latency Audit | **`APPROVED & INSTALLED`** |
+| `@aea-senior-software-engineer` | Platform Engines & BFF | Core BFF & PostgreSQL | Extension Migrations 018-022 | `ACTIVE` |
+| `@aea-devsecops-platform` | AWS ECS Fargate & Terraform | Nginx Edge Gateway | AWS Fargate Infrastructure | `ACTIVE` |
+| `@aea-ai-engineer` | AI Quality & ADR-016 Proxy | ADR-016 Mock Proxy | Intent Cache Schemas | `ACTIVE` |
+| `@aea-appsec-auditor` | Security & Zero-PII Sanitization | Zero-Hardcoded Secrets | WAF Perimeter Auth | `ACTIVE` |
+| `@aea-customer-journey` | E2E Customer Journeys J1-J4 | Journeys J1-J4 Walks | Friction Point Remediation | `ACTIVE` |
+| `@aea-support-coordinator` | Support Triage & Operator Inbox | Contact Florist Triage | Operator Console UI | `ACTIVE` |
+| `@aea-mr-coordinator` | MR Reviews & Auto-Merge | MR Quality Gate Review | Auto-Merge Verification | `ACTIVE` |
+| `@aea-coherence-guardian` | Coherence & Quality Guards | 14/14 Quality Guards | Workbook Coherence Checks | `ACTIVE` |
+| `@aea-knowledge-guardian` | Second Brain Curation | Session Memory Extraction | Second Brain Vault Index | `ACTIVE` |
+| `@aea-cost-guardian` | FinOps & AWS Fargate Scaling | Fargate Container Sizing | Token Budget Efficiency | `ACTIVE` |
 
 ---
 

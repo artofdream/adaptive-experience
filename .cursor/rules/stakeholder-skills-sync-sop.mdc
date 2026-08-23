@@ -8,7 +8,7 @@ alwaysApply: true
 
 Every AEA stakeholder role must remain available to Cursor, Codex, Claude,
 Copilot, Gemini, and Grok with equivalent scope, authority, safety boundaries,
-routing, and trigger intent. There are currently **11 roles**:
+routing, and trigger intent. There are currently **14 roles**:
 `aea-project-manager`, `aea-product-owner`, `aea-ux-designer`,
 `aea-customer-journey`, `aea-support-coordinator`, `aea-ai-engineer`,
 `aea-appsec-auditor`, `aea-devsecops-platform`, `aea-senior-software-engineer`,

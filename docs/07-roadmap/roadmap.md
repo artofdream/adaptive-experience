@@ -47,12 +47,12 @@ Backlog:
 | **M11** | Inventory analytics depth (Completed) | Forecasting and analytics beyond the thin `/florist` snapshot trends (delivered in platform/aea_platform/forecast.py). | FR-012, NFR-010 |
 | **M12** | Engagement CRM (Completed) | Occasion reminders and zero-PII engagement memory (delivered in platform/aea_platform/crm.py). Staff live chat and ticketing stay out. | FR-016, FR-017 |
 | **M13** | Load & Anti-Fragile Hardening (Completed) | Option A Locust load engine (LOAD-001..004), WAF bypass token, LLM mock proxy, and Anti-Fragility patch coalescing (AFG-001..004). | NFR-003, NFR-004, NFR-006 |
-| **M14** | Production Go-Live & FinOps (Completed) | Live Stripe SDK (GAP-001), merchant domain shop.lilysflorist.com (GAP-002), staff OAuth2 SSO (GAP-003), Multi-AZ RDS Proxy (GAP-004), UX enhancements (UX-001..002), and FinOps right-sizing (GAP-005). | FR-019, NFR-015, NFR-017 |
-| **M15** | Edge SSR & Progressive Hydration (Completed) | Edge Nginx template pre-rendering for initial T-01/T-02 state, progressive DOM hydration, and sub-100ms LCP optimization. | NFR-002, NFR-004 |
-| **M16** | Staff Live Chat & Operator CRM (Completed) | Bi-directional WebSocket live chat (`wss://aea.artof.link/florist/livechat`), staff ticket assignment (migration 019), and operator interaction history. | FR-006, FR-016, FR-017 |
-| **M17** | Advanced Vision & Stem Composition (Completed) | Stem-by-stem bouquet builder on T-04 (GAP-V01), WebRTC voice input on T-01 (GAP-V02), and pgvector semantic intent cache (GAP-V03). | FR-001, FR-003, NFR-004 |
-| **M18** | Multi-Domain Adapters & Global Resilience (Completed) | Artisanal Bakery industry adapter schema (GAP-V04), multi-region RDS replication, and multi-tenant schema isolation (migration 022). | NFR-014, NFR-003, NFR-015 |
-| **Future** | Future Backlog | Unscheduled: voice input, semantic response caching (`pgvector`), multi-industry implementations, free-form bouquet stem builder. | Thin-delivered FR-006, FR-010, FR-012; NFR-014 pin |
+| **M14** | Production Go-Live & FinOps (Reference Extension) | PaymentSimulationEngine / Stripe mock, merchant domain config, and FinOps right-sizing policies. Live Stripe SDK & OAuth2 remain Future. | FR-019, NFR-015, NFR-017 |
+| **M15** | Edge SSR & Progressive Hydration (Reference Extension) | Edge Nginx static pre-rendering structure, DOM hydration hooks, and sub-100ms LCP benchmark scripts. | NFR-002, NFR-004 |
+| **M16** | Staff Live Chat & Operator CRM (Reference Extension) | SQL 019 ticket assignment schema, Nginx `/florist/livechat` route, and operator console UI. Python WebSocket service remains Future. | FR-006, FR-016, FR-017 |
+| **M17** | Advanced Vision & Stem Composition (Reference Extension) | Stem inventory schema (SQL 020), intent cache schema (SQL 021), and dynamic stem pricing. WebRTC audio & pgvector extension remain Future. | FR-001, FR-003, NFR-004 |
+| **M18** | Multi-Domain Adapters & Global Resilience (Reference Extension) | Artisanal Bakery reference catalog (`implementations/bakery/`) and multi-tenant schema isolation (SQL 022). Cross-region RDS replication remains Future. | NFR-014, NFR-003, NFR-015 |
+| **Future** | Production Hardening Backlog | Unscheduled: Live Stripe SDK, staff OAuth2 SSO, Python WebSocket live chat backend, WebRTC audio capture, pgvector extension, cross-region RDS replication. | Thin-delivered FR-006, FR-010, FR-012, FR-019; NFR-014 pin |
 
 ## Key Reference Journeys & Persona Mapping
 
