@@ -1,7 +1,7 @@
 # AEA Daily Executive & Governance Brief — 2026-08-23
 
 > **Tags**: #aea #daily-brief #governance #telemetry #second-brain #performance-guardian  
-> **Generated**: 2026-08-23T19:44:27.671668  
+> **Generated**: 2026-08-23T19:45:49.974594  
 > **Target Domain**: `https://aea.artof.link` (AWS ECS Fargate `aea-pilot`)  
 
 ---
@@ -33,12 +33,12 @@
 
 ## 3. Recent Second Brain Knowledge Curation Notes
 
+* [[2026-08-23-codex-and-claude-feedback-reconciliation-study]] — 2026-08-23-codex-and-claude-feedback-reconciliation-study.md
 * [[2026-08-23-session-memory-log-knowledge-graph-guard-repair-and-restart-protocol]] — 2026-08-23-session-memory-log-knowledge-graph-guard-repair-and-restart-protocol.md
 * [[2026-08-23-claude-view-repository-progression-and-alignment]] — 2026-08-23-claude-view-repository-progression-and-alignment.md
 * [[2026-08-23-session-memory-log-cross-chat-knowledge-extraction]] — 2026-08-23-session-memory-log-cross-chat-knowledge-extraction.md
 * [[2026-08-23-codex-view-repository-progression-study]] — 2026-08-23-codex-view-repository-progression-study.md
 * [[2026-08-23-session-memory-log-repository-review-paper-complete-m14-m18]] — 2026-08-23-session-memory-log-repository-review-paper-complete-m14-m18.md
-* [[2026-08-23-comprehensive-aea-repository-assessment]] — 2026-08-23-comprehensive-aea-repository-assessment.md
 
 ---
 
