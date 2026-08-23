@@ -1,35 +1,7 @@
-#!/usr/bin/env python3
-"""
-AEA Daily Briefing Generator
-Generates automated daily execution & governance briefs under research/daily-briefs/YYYY-MM-DD-daily-brief.md
-"""
-import os, sys, glob, datetime, subprocess
-
-def main():
-    today_str = datetime.datetime.now().strftime("%Y-%m-%d")
-    out_dir = "research/daily-briefs"
-    os.makedirs(out_dir, exist_ok=True)
-    out_path = os.path.join(out_dir, f"{today_str}-daily-brief.md")
-    
-    # 1. Run quality guards to check current status
-    guard_output = ""
-    try:
-        guard_res = subprocess.run([sys.executable, "scripts/run_all_guards.py"], capture_output=True, text=True, timeout=30)
-        guard_output = guard_res.stdout
-    except Exception as e:
-        guard_output = f"Guard check error: {e}"
-        
-    guards_passed = "14/14" if "14/14 guards passed" in guard_output else "Guards Pending"
-    
-    # 2. Collect recent Second Brain notes
-    notes = glob.glob("research/random-thoughts/*.md")
-    notes.sort(key=os.path.getmtime, reverse=True)
-    recent_notes = [os.path.basename(n) for n in notes[:6]]
-    
-    content = f"""# AEA Daily Executive & Governance Brief — {today_str}
+# AEA Daily Executive & Governance Brief — 2026-08-23
 
 > **Tags**: #aea #daily-brief #governance #telemetry #second-brain #performance-guardian  
-> **Generated**: {datetime.datetime.now().isoformat()}  
+> **Generated**: 2026-08-23T16:47:59.283767  
 > **Target Domain**: `https://aea.artof.link` (AWS ECS Fargate `aea-pilot`)  
 
 ---
@@ -39,7 +11,7 @@ def main():
 * **Milestone Pipeline Status**: **15/16 Milestones Completed (93.75%)**.
 * **Active Focus**: **Milestone M15** (Edge SSR & Sub-100ms LCP).
 * **Queued Focus**: **Milestone M16** (Staff Live Chat & CRM Ticketing).
-* **Pre-Flight Quality Guards**: **`{guards_passed} PASSED CLEANLY`**.
+* **Pre-Flight Quality Guards**: **`14/14 PASSED CLEANLY`**.
 
 ### High-Impact Frameworks & Process Improvements Introduced
 1. **Approved 14th Stakeholder Role Expansion**:
@@ -61,11 +33,13 @@ def main():
 
 ## 3. Recent Second Brain Knowledge Curation Notes
 
-"""
-    for note in recent_notes:
-        content += f"* [[{note.replace('.md', '')}]] — {note}\n"
+* [[2026-08-23-ai-powered-vs-traditional-engineering-roi-study]] — 2026-08-23-ai-powered-vs-traditional-engineering-roi-study.md
+* [[2026-08-23-customer-ux-audit-and-friction-map]] — 2026-08-23-customer-ux-audit-and-friction-map.md
+* [[2026-08-23-lessons-learned-telemetry-load-testing-and-api-key-rotation-sop]] — 2026-08-23-lessons-learned-telemetry-load-testing-and-api-key-rotation-sop.md
+* [[2026-08-23-m15-m16-milestone-completion-and-live-chat-architecture]] — 2026-08-23-m15-m16-milestone-completion-and-live-chat-architecture.md
+* [[2026-08-23-n1000-load-test-and-capacity-study]] — 2026-08-23-n1000-load-test-and-capacity-study.md
+* [[2026-08-23-load-testing-results-and-capacity-study]] — 2026-08-23-load-testing-results-and-capacity-study.md
 
-    content += f"""
 ---
 
 ## 4. 14-Role Stakeholder Team Active & Next Matrix
@@ -92,14 +66,55 @@ def main():
 ## 5. Automated Pre-Flight Guard Output
 
 ```text
-{guard_output.strip()}
+==========================================================
+           AEA UNIFIED PRE-FLIGHT GUARD RUNNER            
+==========================================================
+
+[RUNNING] Coherence Guard...
+[PASS] Coherence Guard
+
+[RUNNING] Secrets Posture Guard...
+[PASS] Secrets Posture Guard
+
+[RUNNING] Traceability DAG Guard...
+[PASS] Traceability DAG Guard
+
+[RUNNING] Traceability Unit Tests...
+[PASS] Traceability Unit Tests
+
+[RUNNING] Governance Loop Graph Guard...
+[PASS] Governance Loop Graph Guard
+
+[RUNNING] Governance Loop Unit Tests...
+[PASS] Governance Loop Unit Tests
+
+[RUNNING] Assistant Performance SLO Guard...
+[PASS] Assistant Performance SLO Guard
+
+[RUNNING] Assistant SLO Unit Tests...
+[PASS] Assistant SLO Unit Tests
+
+[RUNNING] Session Property Graph Unit Tests...
+[PASS] Session Property Graph Unit Tests
+
+[RUNNING] Knowledge Graph Exporter Unit Tests...
+[PASS] Knowledge Graph Exporter Unit Tests
+
+[RUNNING] Reorder Service Unit Tests...
+[PASS] Reorder Service Unit Tests
+
+[RUNNING] Payment Simulation Engine Unit Tests...
+[PASS] Payment Simulation Engine Unit Tests
+
+[RUNNING] Stakeholder Skills 6-Way Sync Guard...
+[PASS] Stakeholder Skills 6-Way Sync Guard
+
+[RUNNING] Second Brain Knowledge Graph Guard...
+[PASS] Second Brain Knowledge Graph Guard
+
+==========================================================
+SUMMARY: 14/14 guards passed
+==========================================================
+
+ALL PRE-FLIGHT GUARDS PASSED CLEANLY! READY FOR MR.
 ```
-"""
-
-    with open(out_path, "w", encoding="utf-8") as f:
-        f.write(content)
-        
-    print(f"Daily brief successfully generated at: {out_path}")
-
-if __name__ == "__main__":
-    main()

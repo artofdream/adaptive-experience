@@ -26,6 +26,19 @@ class StatePatch:
                 value = value[segment]
         return cls(values, facets)
 
+    @classmethod
+    def coalesce(cls, patches: Iterable["StatePatch"]) -> "StatePatch":
+        """Coalesce concurrent tile patches into a single atomic context version increment (AFG-001)."""
+        patch_list = list(patches)
+        if not patch_list:
+            raise ValueError("patches list cannot be empty for coalescing")
+        merged_values = {}
+        merged_facets = []
+        for patch in patch_list:
+            merged_values = merge_state(merged_values, patch.values)
+            merged_facets.extend(patch.changed_facets)
+        return cls.create(merged_values, merged_facets)
+
 
 def merge_state(current: dict, patch: dict) -> dict:
     """Apply object patches recursively without erasing sibling decisions."""

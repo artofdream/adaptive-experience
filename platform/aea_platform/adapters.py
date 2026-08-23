@@ -1051,3 +1051,43 @@ class KafkaFailureRouter:
         # is transport routing metadata only.
         self.publisher.publish(destination, envelope[topic.key], envelope)
         return result
+
+
+class PsycopgCrmStore:
+    """PostgreSQL storage adapter for zero-PII occasion memory (FR-016 / FR-017)."""
+
+    def __init__(self, connection):
+        self.connection = connection
+
+    def upsert_occasion_memory(self, *, memory_id: str, browser_hash: str, session_id: str,
+                               occasion_type: str, event_month: int, event_day: int,
+                               recipient_relation: str, created_at: datetime) -> None:
+        with self.connection.transaction():
+            self.connection.execute(
+                "INSERT INTO crm.customer_occasion_memory "
+                "(memory_id, browser_hash, session_id, occasion_type, event_month, event_day, recipient_relation, created_at, updated_at) "
+                "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) "
+                "ON CONFLICT (browser_hash, occasion_type, recipient_relation) DO UPDATE SET "
+                "session_id = EXCLUDED.session_id, "
+                "event_month = EXCLUDED.event_month, "
+                "event_day = EXCLUDED.event_day, "
+                "updated_at = EXCLUDED.updated_at",
+                (memory_id, browser_hash, session_id, occasion_type, event_month, event_day, recipient_relation, created_at, created_at)
+            )
+
+    def list_occasion_memories(self, *, browser_hash: str) -> list[dict]:
+        rows = self.connection.execute(
+            "SELECT memory_id, browser_hash, occasion_type, event_month, event_day, recipient_relation "
+            "FROM crm.customer_occasion_memory WHERE browser_hash = %s "
+            "ORDER BY event_month ASC, event_day ASC",
+            (browser_hash,)
+        ).fetchall()
+        return [{
+            "memory_id": str(row[0]),
+            "browser_hash": str(row[1]),
+            "occasion_type": str(row[2]),
+            "event_month": int(row[3]),
+            "event_day": int(row[4]),
+            "recipient_relation": str(row[5]),
+        } for row in rows]
+

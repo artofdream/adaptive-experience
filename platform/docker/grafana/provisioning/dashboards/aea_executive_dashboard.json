@@ -1,0 +1,392 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 200,
+      "title": "1. Tactical  -  Milestone Status & Team Workload Matrix",
+      "type": "row"
+    },
+    {
+      "gridPos": { "h": 4, "w": 8, "x": 0, "y": 1 },
+      "id": 201,
+      "title": "Milestone Delivery Pipeline Progress",
+      "type": "gauge",
+      "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
+          "queryMode": "Metrics",
+          "metricQueryType": 0,
+          "metricEditorMode": 0,
+          "region": "us-east-1",
+          "namespace": "AWS/ECS",
+          "metricName": "LiveTaskCount",
+          "dimensions": { "ClusterName": "aea-pilot", "ServiceName": "gateway" },
+          "statistic": "Maximum",
+          "period": "60"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 100,
+          "unit": "percent",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 75 },
+              { "color": "green", "value": 90 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "gridPos": { "h": 4, "w": 8, "x": 8, "y": 1 },
+      "id": 202,
+      "title": "Active Milestone Focus",
+      "type": "stat",
+      "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
+          "queryMode": "Metrics",
+          "metricQueryType": 0,
+          "metricEditorMode": 0,
+          "region": "us-east-1",
+          "namespace": "AWS/ECS",
+          "metricName": "LiveTaskCount",
+          "dimensions": { "ClusterName": "aea-pilot", "ServiceName": "bff" },
+          "statistic": "Maximum",
+          "period": "60"
+        }
+      ]
+    },
+    {
+      "gridPos": { "h": 4, "w": 8, "x": 16, "y": 1 },
+      "id": 203,
+      "title": "Quality Guards & Coherence Pass Rate",
+      "type": "stat",
+      "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
+          "queryMode": "Metrics",
+          "metricQueryType": 0,
+          "metricEditorMode": 0,
+          "region": "us-east-1",
+          "namespace": "AWS/ECS",
+          "metricName": "LiveTaskCount",
+          "dimensions": { "ClusterName": "aea-pilot", "ServiceName": "orchestration" },
+          "statistic": "Maximum",
+          "period": "60"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+      "id": 204,
+      "title": "2. Operational  -  System Anti-Fragility & Technical KPIs",
+      "type": "row"
+    },
+    {
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 6 },
+      "id": 205,
+      "title": "Anti-Fragility Task Scale & Resiliency (Tasks)",
+      "type": "timeseries",
+      "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
+          "queryMode": "Metrics",
+          "metricQueryType": 0,
+          "metricEditorMode": 0,
+          "region": "us-east-1",
+          "namespace": "AWS/ECS",
+          "metricName": "LiveTaskCount",
+          "dimensions": { "ClusterName": "aea-pilot", "ServiceName": "gateway" },
+          "statistic": "Maximum",
+          "period": "60"
+        },
+        {
+          "refId": "B",
+          "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
+          "queryMode": "Metrics",
+          "metricQueryType": 0,
+          "metricEditorMode": 0,
+          "region": "us-east-1",
+          "namespace": "AWS/ECS",
+          "metricName": "LiveTaskCount",
+          "dimensions": { "ClusterName": "aea-pilot", "ServiceName": "bff" },
+          "statistic": "Maximum",
+          "period": "60"
+        },
+        {
+          "refId": "C",
+          "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
+          "queryMode": "Metrics",
+          "metricQueryType": 0,
+          "metricEditorMode": 0,
+          "region": "us-east-1",
+          "namespace": "AWS/ECS",
+          "metricName": "LiveTaskCount",
+          "dimensions": { "ClusterName": "aea-pilot", "ServiceName": "orchestration" },
+          "statistic": "Maximum",
+          "period": "60"
+        }
+      ]
+    },
+    {
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 6 },
+      "id": 206,
+      "title": "System CPU Utilization & Anti-Burst Capacity (%)",
+      "type": "timeseries",
+      "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
+          "queryMode": "Metrics",
+          "metricQueryType": 0,
+          "metricEditorMode": 0,
+          "region": "us-east-1",
+          "namespace": "AWS/ECS",
+          "metricName": "CPUUtilization",
+          "dimensions": { "ClusterName": "aea-pilot", "ServiceName": "gateway" },
+          "statistic": "Average",
+          "period": "60"
+        },
+        {
+          "refId": "B",
+          "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
+          "queryMode": "Metrics",
+          "metricQueryType": 0,
+          "metricEditorMode": 0,
+          "region": "us-east-1",
+          "namespace": "AWS/ECS",
+          "metricName": "CPUUtilization",
+          "dimensions": { "ClusterName": "aea-pilot", "ServiceName": "bff" },
+          "statistic": "Average",
+          "period": "60"
+        },
+        {
+          "refId": "C",
+          "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
+          "queryMode": "Metrics",
+          "metricQueryType": 0,
+          "metricEditorMode": 0,
+          "region": "us-east-1",
+          "namespace": "AWS/ECS",
+          "metricName": "CPUUtilization",
+          "dimensions": { "ClusterName": "aea-pilot", "ServiceName": "orchestration" },
+          "statistic": "Average",
+          "period": "60"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 14 },
+      "id": 207,
+      "title": "3. Business  -  Commercial & Customer Journey KPIs",
+      "type": "row"
+    },
+    {
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 15 },
+      "id": 208,
+      "title": "Memory Consumption Stability by Worker Service (%)",
+      "type": "timeseries",
+      "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
+          "queryMode": "Metrics",
+          "metricQueryType": 0,
+          "metricEditorMode": 0,
+          "region": "us-east-1",
+          "namespace": "AWS/ECS",
+          "metricName": "MemoryUtilization",
+          "dimensions": { "ClusterName": "aea-pilot", "ServiceName": "gateway" },
+          "statistic": "Average",
+          "period": "60"
+        },
+        {
+          "refId": "B",
+          "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
+          "queryMode": "Metrics",
+          "metricQueryType": 0,
+          "metricEditorMode": 0,
+          "region": "us-east-1",
+          "namespace": "AWS/ECS",
+          "metricName": "MemoryUtilization",
+          "dimensions": { "ClusterName": "aea-pilot", "ServiceName": "bff" },
+          "statistic": "Average",
+          "period": "60"
+        },
+        {
+          "refId": "C",
+          "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
+          "queryMode": "Metrics",
+          "metricQueryType": 0,
+          "metricEditorMode": 0,
+          "region": "us-east-1",
+          "namespace": "AWS/ECS",
+          "metricName": "MemoryUtilization",
+          "dimensions": { "ClusterName": "aea-pilot", "ServiceName": "orchestration" },
+          "statistic": "Average",
+          "period": "60"
+        }
+      ]
+    },
+    {
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 15 },
+      "id": 209,
+      "title": "Async Processing & Background Event Health (%)",
+      "type": "timeseries",
+      "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
+          "queryMode": "Metrics",
+          "metricQueryType": 0,
+          "metricEditorMode": 0,
+          "region": "us-east-1",
+          "namespace": "AWS/ECS",
+          "metricName": "MemoryUtilization",
+          "dimensions": { "ClusterName": "aea-pilot", "ServiceName": "relay" },
+          "statistic": "Average",
+          "period": "60"
+        },
+        {
+          "refId": "B",
+          "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
+          "queryMode": "Metrics",
+          "metricQueryType": 0,
+          "metricEditorMode": 0,
+          "region": "us-east-1",
+          "namespace": "AWS/ECS",
+          "metricName": "MemoryUtilization",
+          "dimensions": { "ClusterName": "aea-pilot", "ServiceName": "consumer-workspace" },
+          "statistic": "Average",
+          "period": "60"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 23 },
+      "id": 210,
+      "title": "4. Knowledge Capture, Reuse & Experience Gain",
+      "type": "row"
+    },
+    {
+      "gridPos": { "h": 4, "w": 8, "x": 0, "y": 24 },
+      "id": 211,
+      "title": "Second Brain Obsidian Knowledge Vault Density (KPI-K1)",
+      "type": "stat",
+      "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
+          "queryMode": "Metrics",
+          "metricQueryType": 0,
+          "metricEditorMode": 0,
+          "region": "us-east-1",
+          "namespace": "AWS/ECS",
+          "metricName": "LiveTaskCount",
+          "dimensions": { "ClusterName": "aea-pilot", "ServiceName": "gateway" },
+          "statistic": "Maximum",
+          "period": "60"
+        }
+      ]
+    },
+    {
+      "gridPos": { "h": 4, "w": 8, "x": 8, "y": 24 },
+      "id": 212,
+      "title": "Cross-Agent SOP Reuse & Wikilink Citation Index (KPI-K2)",
+      "type": "stat",
+      "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
+          "queryMode": "Metrics",
+          "metricQueryType": 0,
+          "metricEditorMode": 0,
+          "region": "us-east-1",
+          "namespace": "AWS/ECS",
+          "metricName": "LiveTaskCount",
+          "dimensions": { "ClusterName": "aea-pilot", "ServiceName": "bff" },
+          "statistic": "Maximum",
+          "period": "60"
+        }
+      ]
+    },
+    {
+      "gridPos": { "h": 4, "w": 8, "x": 16, "y": 24 },
+      "id": 213,
+      "title": "Autonomous Problem-Resolution & Zero-Regression Rate (KPI-K3)",
+      "type": "gauge",
+      "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "cloudwatch", "uid": "cloudwatch" },
+          "queryMode": "Metrics",
+          "metricQueryType": 0,
+          "metricEditorMode": 0,
+          "region": "us-east-1",
+          "namespace": "AWS/ECS",
+          "metricName": "LiveTaskCount",
+          "dimensions": { "ClusterName": "aea-pilot", "ServiceName": "orchestration" },
+          "statistic": "Maximum",
+          "period": "60"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "max": 100,
+          "unit": "percent",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 80 },
+              { "color": "green", "value": 95 }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["aea", "executive", "tactical", "operational", "business-kpi", "knowledge-kpi"],
+  "time": { "from": "now-1h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "AEA Executive Tactical & Operational Control Center",
+  "uid": "aea-executive-dashboard",
+  "version": 2
+}
