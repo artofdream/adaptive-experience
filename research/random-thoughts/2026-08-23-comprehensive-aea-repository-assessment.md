@@ -4,6 +4,7 @@
 > **Captured**: 2026-08-23  
 > **Evaluator**: @aea-coherence-guardian & Stakeholder Team  
 > **Target Branch**: `main` (`Commit b8fc661`)  
+> **Reconciliation**: [[2026-08-23-antigravity-assessment-reconciliation]] SUPERSEDES “production-ready” / sub-100ms LCP claims in §1. Foundation code is real; the score and LCP number are not session-start truth.
 
 ---
 
