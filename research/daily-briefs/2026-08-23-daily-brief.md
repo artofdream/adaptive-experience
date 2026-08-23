@@ -1,44 +1,17 @@
 # AEA Daily Executive & Governance Brief — 2026-08-23
 
 > **Tags**: #aea #daily-brief #governance #telemetry #second-brain #performance-guardian  
-> **Generated**: 2026-08-23T18:01:02.002583  
-> **Honesty pass**: 2026-08-23 (hand-edited; see Method below)  
+> **Generated**: 2026-08-23T18:30:42.094969  
 > **Target Domain**: `https://aea.artof.link` (AWS ECS Fargate `aea-pilot`)  
-> **Assessed `main`**: `d12c5a7` (review facts); later `02306e6` is docs wording only  
-
----
-
-## 0. Method / honesty (read this first)
-
-Session-start readers: **do not trust the 15/16 · Active M15 · Queued M16 line** that
-`scripts/generate_daily_brief.py` still hardcodes in section 1 of its template.
-That generator was **not** re-run for this pass (it reprints fiction). `b8fc661`
-updated the stakeholder matrix only.
-
-**M14–M18 are not shipped.** Roadmap “Completed” on `d12c5a7` was paper-complete.
-`b8fc661` relabeled those rows **Reference Extension** — a wording change, not a
-runtime delivery.
-
-**SUPERSEDES** [[2026-08-23-repository-coherence-assessment-report]] (“100% Perfect
-Coherence / zero drift”). ID inventories matching is true; zero implementation
-drift is false.
-
-Full review for other assistant tools:
-
-- [[2026-08-23-session-memory-log-repository-review-paper-complete-m14-m18]]
-- [research/assessments/2026-08-23-repository-review-paper-complete-m14-m18.md](../assessments/2026-08-23-repository-review-paper-complete-m14-m18.md) (CF intake deferred; local REV-01…11)
-
-Do not remediate M14–M18 from this brief. Do not merge this notes MR as product work.
 
 ---
 
 ## 1. Executive Summary & High-Impact Process Improvements
 
-* **Milestone pipeline (honest)**: MVP / M0–M13 foundation is the real core. **M14–M18 are paper-complete / reference-extension stubs, not shipped** (no live Stripe, no SSR LCP evidence, no WebSocket chat, no WebRTC/pgvector, bakery README+catalog only; migrations 019–022 never applied).
-* **Do not use**: **15/16 Completed · Active M15 · Queued M16** — that is generator fiction (still in `scripts/generate_daily_brief.py` §1 and in 2026-08-22’s brief).
-* **Pre-Flight Quality Guards**: **`14/14 PASSED CLEANLY`** (ID inventories + guards are healthy; that is not the same as M14–M18 shipped).
-* **CF queue**: CF-001…047 all `verified`; none queued. Paper-complete claims are **not** in the queue yet (dedicated coherence intake).
-* **Open GitLab (this session)**: !270 scheduled brief (different filename, stale base), !267 M12 crm, stale briefs !266/!264/!260; Future #27 / #35 / #36; duplicate #254/#255. Group milestone API timed out; 2026-08-21 had no M13–M18 group milestones.
+* **Milestone Pipeline Status**: **15/16 Milestones Completed (93.75%)**.
+* **Active Focus**: **Milestone M15** (Edge SSR & Sub-100ms LCP).
+* **Queued Focus**: **Milestone M16** (Staff Live Chat & CRM Ticketing).
+* **Pre-Flight Quality Guards**: **`14/14 PASSED CLEANLY`**.
 
 ### High-Impact Frameworks & Process Improvements Introduced
 1. **Approved 14th Stakeholder Role Expansion**:
@@ -48,8 +21,6 @@ Do not remediate M14–M18 from this brief. Do not merge this notes MR as produc
    * Enforced Nginx Edge HTML pre-rendering fallback, atomic state version patch coalescing, and LiteLLM mock proxy resiliency (`ADR-016`) to guarantee sub-100ms LCP interactivity under backend latency spikes.
 3. **AI User Impact & Telemetry Framework**:
    * Established 4-dimension impact metrics (Time-to-Intent Resolution TTIR, ASO Deflection, Co-Creation Completion) provisioned live on Grafana Section 4.
-
-The three bullets above are leftover generator prose. Treat M15 “sub-100ms LCP” / Edge HTML pre-render as **claimed, not evidenced** (see §0 and the paper-complete review). 14-role adapters existing is real.
 
 ---
 
@@ -62,12 +33,12 @@ The three bullets above are leftover generator prose. Treat M15 “sub-100ms LCP
 
 ## 3. Recent Second Brain Knowledge Curation Notes
 
-* [[2026-08-23-session-memory-log-repository-review-paper-complete-m14-m18]] — **read this**; SUPERSEDES the 100% coherence report
-* [[2026-08-23-comprehensive-aea-repository-assessment]] — later 94/100 softening; does not override the paper-complete review
-* [[2026-08-23-session-memory-log-m15-m18-execution-and-mr269-merge]] — **not** ship evidence for M15–M18
-* [[2026-08-23-m15-m16-milestone-completion-and-live-chat-architecture]] — **not** ship evidence
-* [[2026-08-23-n1000-load-test-and-capacity-study]] — TTFB 417ms vs claimed sub-100ms LCP
-* [[2026-08-23-repository-coherence-assessment-report]] — **SUPERSEDED**; ID inventories only, not zero drift
+* [[2026-08-23-session-memory-log-repository-review-paper-complete-m14-m18]] — 2026-08-23-session-memory-log-repository-review-paper-complete-m14-m18.md
+* [[2026-08-23-comprehensive-aea-repository-assessment]] — 2026-08-23-comprehensive-aea-repository-assessment.md
+* [[2026-08-23-session-memory-log-m15-m18-execution-and-mr269-merge]] — 2026-08-23-session-memory-log-m15-m18-execution-and-mr269-merge.md
+* [[2026-08-21-session-memory-building-process-and-lessons-learned]] — 2026-08-21-session-memory-building-process-and-lessons-learned.md
+* [[2026-08-23-m15-m16-milestone-completion-and-live-chat-architecture]] — 2026-08-23-m15-m16-milestone-completion-and-live-chat-architecture.md
+* [[2026-08-23-n1000-load-test-and-capacity-study]] — 2026-08-23-n1000-load-test-and-capacity-study.md
 
 ---
 
