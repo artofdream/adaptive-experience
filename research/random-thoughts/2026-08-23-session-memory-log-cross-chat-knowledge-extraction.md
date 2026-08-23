@@ -378,3 +378,4 @@ RDS without the appropriate product/engineering/infrastructure authority.
 - [[2026-08-23-session-memory-log-repository-review-paper-complete-m14-m18]] — current correction
 - [[2026-08-23-antigravity-assessment-reconciliation]] — current correction
 - [[2026-08-23-repository-coherence-assessment-report]] — superseded outside its ID-inventory result
+- [[2026-08-23-claude-view-repository-progression-and-alignment]] — Claude's independent alignment response to the Codex handoff; confirms CF-048/049/050/053 at source level and flags that the vault's "14/14 guards" baseline is not currently reproducible from the committed record
