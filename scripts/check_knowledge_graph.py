@@ -55,7 +55,7 @@ def check_knowledge_graph() -> int:
                     or clean_target.startswith("NFR-") or clean_target.startswith("M")
                     or clean_target.startswith("J") or clean_target.startswith("Gap-")
                     or clean_target.startswith("Nginx-")
-                    or clean_target.lower() in ("wikilink", "wikilinks")):
+                    or clean_target.lower() in ("wikilink", "wikilinks", "note-name")):
                 continue
 
             # Check if file exists relative to research/random-thoughts, docs, or repo root
