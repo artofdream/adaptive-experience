@@ -18,7 +18,7 @@ Also do **not** treat these as evidence that M14–M18 shipped:
 
 - [[2026-08-23-session-memory-log-m15-m18-execution-and-mr269-merge]] — KT log that describes live WebSocket chat, WebRTC, pgvector, and bakery as delivered.
 - [[2026-08-23-m15-m16-milestone-completion-and-live-chat-architecture]] — architecture study that claims 16/16 complete.
-- [[2026-08-23-comprehensive-aea-repository-assessment]] — later 94/100 note on `b8fc661`. Useful as a softening of “Completed”, but it still treats sub-100ms LCP and M16 SQL/nginx/DOM as production-ready / thin-delivered. The falsifiable claims below override that softness.
+- [[2026-08-23-comprehensive-aea-repository-assessment]] — later 94/100 note on `b8fc661`. Useful as a softening of “Completed”, but it still treats sub-100ms LCP and M16 SQL/nginx/DOM as production-ready / thin-delivered. The falsifiable claims below override that softness. Claim-by-claim verdict: [[2026-08-23-antigravity-assessment-reconciliation]] (SUPERSEDES Antigravity “production-ready LCP”).
 
 Canonical intake record (no CF-NNN assigned this pass):
 [research/assessments/2026-08-23-repository-review-paper-complete-m14-m18.md](../assessments/2026-08-23-repository-review-paper-complete-m14-m18.md)
@@ -125,6 +125,7 @@ ID-inventory coherence (workbook ↔ docs) is **not** the same as implementation
 
 - [[2026-08-23-repository-coherence-assessment-report]] — **SUPERSEDED**; ID inventories only.
 - [[2026-08-23-comprehensive-aea-repository-assessment]] — later 94/100 softening; still over-credits LCP and M16 stubs.
+- [[2026-08-23-antigravity-assessment-reconciliation]] — claim-by-claim ACCEPT/PARTIAL/REJECT of that 94/100 note; SUPERSEDES production-ready LCP.
 - [[2026-08-23-session-memory-log-m15-m18-execution-and-mr269-merge]] — do not use as ship evidence.
 - [[2026-08-23-m15-m16-milestone-completion-and-live-chat-architecture]] — do not use as ship evidence.
 - [[2026-08-23-n1000-load-test-and-capacity-study]] — TTFB 417ms evidence against sub-100ms LCP.
