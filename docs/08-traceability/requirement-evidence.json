@@ -170,6 +170,7 @@
           "platform/aea_platform/adapters.py",
           "platform/aea_platform/order.py",
           "platform/aea_platform/recommendation.py",
+          "platform/aea_platform/reorder.py",
           "platform/migrations/017_browser_reorder_history.sql"
         ]
       },
@@ -231,6 +232,7 @@
         "disposition": "evidenced",
         "paths": [
           "edge/gateway/ui/florist.html",
+          "platform/aea_platform/forecast.py",
           "platform/aea_platform/internal_api.py",
           "platform/aea_platform/inventory.py",
           "platform/aea_platform/recommendation.py"
@@ -255,8 +257,8 @@
         "paths": [
           "edge/gateway/ui/florist.html",
           "platform/aea_platform/adapters.py",
-          "platform/aea_platform/internal_api.py",
-          "platform/aea_platform/inventory.py"
+          "platform/aea_platform/forecast.py",
+          "platform/aea_platform/internal_api.py"
         ]
       },
       "test": {
@@ -281,7 +283,6 @@
           "platform/aea_platform/adapters.py",
           "platform/aea_platform/internal_api.py",
           "platform/aea_platform/order.py",
-          "platform/aea_platform/selection.py",
           "platform/migrations/008_order_aggregate.sql"
         ]
       },
@@ -343,14 +344,18 @@
         "disposition": "evidenced",
         "paths": [
           "edge/gateway/ui/florist.html",
+          "platform/aea_platform/adapters.py",
+          "platform/aea_platform/crm.py",
           "platform/aea_platform/order.py",
-          "platform/migrations/015_browser_order_recall.sql"
+          "platform/migrations/015_browser_order_recall.sql",
+          "platform/migrations/018_engagement_crm.sql"
         ]
       },
       "test": {
         "disposition": "evidenced",
         "paths": [
-          "edge/tests/test_browser_ui.py"
+          "edge/tests/test_browser_ui.py",
+          "platform/tests/test_crm.py"
         ]
       }
     },
@@ -365,12 +370,17 @@
         "disposition": "evidenced",
         "paths": [
           "edge/gateway/ui/florist.html",
-          "platform/aea_platform/order.py"
+          "platform/aea_platform/adapters.py",
+          "platform/aea_platform/crm.py",
+          "platform/aea_platform/order.py",
+          "platform/migrations/018_engagement_crm.sql"
         ]
       },
       "test": {
-        "disposition": "planned",
-        "paths": []
+        "disposition": "evidenced",
+        "paths": [
+          "platform/tests/test_crm.py"
+        ]
       }
     },
     {
@@ -546,8 +556,11 @@
         ]
       },
       "implementation": {
-        "disposition": "unclaimed",
-        "paths": []
+        "disposition": "evidenced",
+        "paths": [
+          "edge/scripts/check_assistant_slo.py",
+          "platform/aea_platform/agent_gateway.py"
+        ]
       },
       "test": {
         "disposition": "evidenced",
@@ -650,7 +663,9 @@
       "implementation": {
         "disposition": "evidenced",
         "paths": [
+          "edge/scripts/check_assistant_slo.py",
           "platform/aea_platform/adapters.py",
+          "platform/aea_platform/agent_gateway.py",
           "platform/aea_platform/quality.py"
         ]
       },
@@ -683,8 +698,10 @@
         "paths": []
       },
       "implementation": {
-        "disposition": "planned",
-        "paths": []
+        "disposition": "evidenced",
+        "paths": [
+          "platform/aea_platform/forecast.py"
+        ]
       },
       "test": {
         "disposition": "planned",
@@ -745,6 +762,7 @@
         "paths": [
           "edge/bff/aea_bff/app.py",
           "edge/gateway/ui/index.html",
+          "platform/aea_platform/agent_gateway.py",
           "platform/aea_platform/payment.py",
           "platform/migrations/012_checkout_intent.sql"
         ]
@@ -832,13 +850,18 @@
         "paths": [
           "edge/gateway/ui/florist.html",
           "edge/gateway/ui/index.html",
+          "platform/aea_platform/agent_gateway.py",
+          "platform/aea_platform/crm.py",
+          "platform/aea_platform/payment.py",
           "platform/aea_platform/privacy.py",
-          "platform/aea_platform/support.py"
+          "platform/aea_platform/support.py",
+          "platform/migrations/018_engagement_crm.sql"
         ]
       },
       "test": {
         "disposition": "evidenced",
         "paths": [
+          "platform/tests/test_crm.py",
           "platform/tests/test_privacy.py"
         ]
       }
