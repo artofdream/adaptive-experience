@@ -320,3 +320,10 @@ class SupportService:
         if reason not in ESCALATION_REASONS:
             raise SupportValidationError("escalation reason is invalid")
         return reason
+
+
+def route_support_ticket(session_id, reason, details=None):
+    details = details or {}
+    r = str(reason or 'general').lower()
+    p = 'P1_CRITICAL' if any(k in r for k in ['urgent', 'payment', 'delivery']) else 'P3_NORMAL'
+    return {'session_id': session_id, 'reason': r, 'priority': p, 'queue': 'florist_inbox', 'details': details}

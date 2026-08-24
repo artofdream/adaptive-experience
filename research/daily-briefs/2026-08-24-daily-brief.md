@@ -1,7 +1,7 @@
 # AEA Daily Executive & Governance Brief — 2026-08-24
 
 > **Tags**: #aea #daily-brief #governance #telemetry #second-brain #performance-guardian  
-> **Generated**: 2026-08-24T14:44:48.120032  
+> **Generated**: 2026-08-24T14:49:25.342200  
 > **Target Domain**: `https://aea.artof.link` (AWS ECS Fargate `aea-pilot`)  
 
 ---
@@ -33,12 +33,12 @@
 
 ## 3. Recent Second Brain Knowledge Curation Notes
 
+* [[2026-08-24-session-memory-log-phase-1-closure-and-phase-2-kickoff]] — 2026-08-24-session-memory-log-phase-1-closure-and-phase-2-kickoff.md
 * [[2026-08-24-session-memory-log-milestone-shipped-status-assessment]] — 2026-08-24-session-memory-log-milestone-shipped-status-assessment.md
 * [[2026-08-24-session-memory-log-p1-implementation-completion-and-mr275-wave]] — 2026-08-24-session-memory-log-p1-implementation-completion-and-mr275-wave.md
 * [[2026-08-24-aea-high-level-and-low-level-design-specification]] — 2026-08-24-aea-high-level-and-low-level-design-specification.md
 * [[2026-08-24-session-memory-log-mr275-merge-and-canonical-documentation-realignment]] — 2026-08-24-session-memory-log-mr275-merge-and-canonical-documentation-realignment.md
 * [[2026-08-24-session-memory-log-mr267-closure-and-tracker-realignment]] — 2026-08-24-session-memory-log-mr267-closure-and-tracker-realignment.md
-* [[2026-08-24-24-hour-lessons-learned-retrospective]] — 2026-08-24-24-hour-lessons-learned-retrospective.md
 
 ---
 

@@ -226,3 +226,9 @@ class SupportSituationTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+    def test_route_support_ticket(self):
+        from aea_platform.support import route_support_ticket
+        res = route_support_ticket('sess_123', 'urgent payment failed')
+        self.assertEqual(res['priority'], 'P1_CRITICAL')
+        self.assertEqual(res['queue'], 'florist_inbox')
