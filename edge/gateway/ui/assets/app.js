@@ -1304,3 +1304,32 @@ function claimTicketAndConnect(ticketId, operatorId) {
         });
     });
 }
+
+// Florist Operator UI & Support UX Polish (Phase 2 Accelerated Delivery)
+const OPERATOR_CANNED_RESPONSES = [
+    "Thank you for contacting Lily's Florist! How can I assist you with your bouquet order today?",
+    "Your order is currently being handcrafted by our master florist and will be dispatched shortly!",
+    "I have updated your delivery address details. Is there anything else I can help with?"
+];
+
+function renderOperatorCannedResponses(containerId, onSelectCallback) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = '';
+    
+    OPERATOR_CANNED_RESPONSES.forEach((tmpl, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-sm btn-outline-secondary me-2 mb-2';
+        btn.innerText = `Template ${idx + 1}`;
+        btn.title = tmpl;
+        btn.onclick = () => {
+            if (onSelectCallback) onSelectCallback(tmpl);
+        };
+        container.appendChild(btn);
+    });
+}
+
+function filterOperatorInbox(tickets, statusFilter) {
+    if (!statusFilter || statusFilter === 'ALL') return tickets;
+    return tickets.filter(t => (t.status || '').toUpperCase() === statusFilter.toUpperCase());
+}
