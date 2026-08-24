@@ -1,8 +1,6 @@
 -- Migration 020: Stem-by-Stem Inventory Catalog (GAP-V01)
 -- Supports interactive bouquet stem composition, unit pricing, and stock tracking
 
-BEGIN;
-
 CREATE TABLE IF NOT EXISTS stem_inventory (
     stem_id VARCHAR(64) PRIMARY KEY,
     stem_name VARCHAR(128) NOT NULL,
@@ -20,6 +18,3 @@ INSERT INTO stem_inventory (stem_id, stem_name, flower_type, unit_price_cents, a
 ('stem-orchid-phalaenopsis', 'Phalaenopsis Orchid Stem', 'orchids', 850, 300, true),
 ('stem-eucalyptus-silver', 'Silver Dollar Eucalyptus', 'foliage', 250, 1200, true)
 ON CONFLICT (stem_id) DO NOTHING;
-
-INSERT INTO orchestration.schema_migration(version) VALUES (20);
-COMMIT;

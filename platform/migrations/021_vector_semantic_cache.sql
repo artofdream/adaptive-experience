@@ -1,8 +1,6 @@
 -- Migration 021: Vector-Based Semantic Intent Cache (GAP-V03)
 -- Caches pre-computed LLM intent interpretations for zero-latency response lookups
 
-BEGIN;
-
 CREATE TABLE IF NOT EXISTS semantic_intent_cache (
     cache_id VARCHAR(64) PRIMARY KEY,
     query_text TEXT NOT NULL,
@@ -14,6 +12,3 @@ CREATE TABLE IF NOT EXISTS semantic_intent_cache (
 );
 
 CREATE INDEX IF NOT EXISTS idx_semantic_cache_hash ON semantic_intent_cache(query_hash);
-
-INSERT INTO orchestration.schema_migration(version) VALUES (21);
-COMMIT;

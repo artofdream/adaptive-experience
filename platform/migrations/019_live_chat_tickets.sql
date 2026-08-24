@@ -1,8 +1,6 @@
 -- Migration 019: Staff Live Chat & Operator CRM Ticketing
 -- Supports bi-directional live chat, ticket claiming, and customer escalation management
 
-BEGIN;
-
 CREATE TABLE IF NOT EXISTS live_chat_tickets (
     ticket_id VARCHAR(64) PRIMARY KEY,
     session_id VARCHAR(64) NOT NULL,
@@ -24,6 +22,3 @@ CREATE TABLE IF NOT EXISTS live_chat_messages (
 
 CREATE INDEX IF NOT EXISTS idx_live_chat_tickets_status ON live_chat_tickets(status);
 CREATE INDEX IF NOT EXISTS idx_live_chat_messages_ticket ON live_chat_messages(ticket_id);
-
-INSERT INTO orchestration.schema_migration(version) VALUES (19);
-COMMIT;
