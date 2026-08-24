@@ -1,7 +1,7 @@
 # AEA Daily Executive & Governance Brief — 2026-08-24
 
 > **Tags**: #aea #daily-brief #governance #telemetry #second-brain #performance-guardian  
-> **Generated**: 2026-08-24T21:18:39.378706  
+> **Generated**: 2026-08-24T21:19:55.731547  
 > **Target Domain**: `https://aea.artof.link` (AWS ECS Fargate `aea-pilot`)  
 
 ---
@@ -33,12 +33,12 @@
 
 ## 3. Recent Second Brain Knowledge Curation Notes
 
+* [[2026-08-24-session-memory-log-retry-pass-knowledge-capture-and-performance-patterns]] — 2026-08-24-session-memory-log-retry-pass-knowledge-capture-and-performance-patterns.md
 * [[2026-08-24-session-memory-log-load-test-retry-benchmark]] — 2026-08-24-session-memory-log-load-test-retry-benchmark.md
 * [[2026-08-24-session-memory-log-15-30-cet-cloud-runner-load-test-execution]] — 2026-08-24-session-memory-log-15-30-cet-cloud-runner-load-test-execution.md
 * [[2026-08-24-session-memory-log-m15-formal-closure-and-j1-j4-lessons-learned]] — 2026-08-24-session-memory-log-m15-formal-closure-and-j1-j4-lessons-learned.md
 * [[2026-08-24-session-memory-log-24-7-cloud-runner-load-testing-configuration]] — 2026-08-24-session-memory-log-24-7-cloud-runner-load-testing-configuration.md
 * [[2026-08-24-session-memory-log-phase-1-closure-and-phase-2-kickoff]] — 2026-08-24-session-memory-log-phase-1-closure-and-phase-2-kickoff.md
-* [[2026-08-24-session-memory-log-milestone-shipped-status-assessment]] — 2026-08-24-session-memory-log-milestone-shipped-status-assessment.md
 
 ---
 
