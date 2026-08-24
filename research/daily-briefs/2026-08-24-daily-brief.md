@@ -1,7 +1,7 @@
 # AEA Daily Executive & Governance Brief — 2026-08-24
 
 > **Tags**: #aea #daily-brief #governance #telemetry #second-brain #performance-guardian  
-> **Generated**: 2026-08-24T06:29:45.135706  
+> **Generated**: 2026-08-24T14:28:49.071836  
 > **Target Domain**: `https://aea.artof.link` (AWS ECS Fargate `aea-pilot`)  
 
 ---
@@ -33,12 +33,12 @@
 
 ## 3. Recent Second Brain Knowledge Curation Notes
 
+* [[2026-08-24-session-memory-log-mr275-merge-and-canonical-documentation-realignment]] — 2026-08-24-session-memory-log-mr275-merge-and-canonical-documentation-realignment.md
+* [[2026-08-24-session-memory-log-mr267-closure-and-tracker-realignment]] — 2026-08-24-session-memory-log-mr267-closure-and-tracker-realignment.md
+* [[2026-08-24-24-hour-lessons-learned-retrospective]] — 2026-08-24-24-hour-lessons-learned-retrospective.md
+* [[2026-08-24-aea-gaps-vs-reality-reconciliation-and-assessment]] — 2026-08-24-aea-gaps-vs-reality-reconciliation-and-assessment.md
 * [[2026-08-23-session-memory-log-cf049-lcp-audit-script-honest-labeling]] — 2026-08-23-session-memory-log-cf049-lcp-audit-script-honest-labeling.md
 * [[2026-08-23-session-memory-log-cf050-migration-runner-consolidation]] — 2026-08-23-session-memory-log-cf050-migration-runner-consolidation.md
-* [[2026-08-23-session-memory-log-milestone-status-and-actionable-items]] — 2026-08-23-session-memory-log-milestone-status-and-actionable-items.md
-* [[2026-08-23-codex-and-claude-feedback-reconciliation-study]] — 2026-08-23-codex-and-claude-feedback-reconciliation-study.md
-* [[2026-08-23-session-memory-log-knowledge-graph-guard-repair-and-restart-protocol]] — 2026-08-23-session-memory-log-knowledge-graph-guard-repair-and-restart-protocol.md
-* [[2026-08-23-claude-view-repository-progression-and-alignment]] — 2026-08-23-claude-view-repository-progression-and-alignment.md
 
 ---
 
