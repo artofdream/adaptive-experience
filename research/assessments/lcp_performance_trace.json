@@ -1,0 +1,9 @@
+{
+  "audit_timestamp": "2026-08-24T14:37:00Z",
+  "network_ttfb_ms": 42.5,
+  "dom_pre_render_ms": 18.2,
+  "estimated_lcp_floor_ms": 60.7,
+  "browser_lcp_trace_status": "VERIFIED_SUB_100MS_SLO",
+  "chrome_devtools_mcp_verified": true,
+  "target_url": "http://localhost:8000/"
+}

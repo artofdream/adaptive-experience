@@ -63,3 +63,11 @@ if __name__ == "__main__":
     if result["status"] == "FAIL":
         sys.exit(1)
 
+
+def export_browser_lcp_trace_json(metrics: dict) -> Path:
+    import json
+    out_dir = Path('research/assessments')
+    out_dir.mkdir(parents=True, exist_ok=True)
+    out_path = out_dir / 'lcp_performance_trace.json'
+    out_path.write_text(json.dumps(metrics, indent=2), encoding='utf-8')
+    return out_path
