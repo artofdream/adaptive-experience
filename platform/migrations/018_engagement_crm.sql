@@ -1,4 +1,6 @@
 -- Milestone M12: Engagement CRM & Occasion Memory (FR-016 / FR-017 / NFR-017)
+BEGIN;
+
 CREATE SCHEMA IF NOT EXISTS crm;
 
 CREATE TABLE IF NOT EXISTS crm.customer_occasion_memory (
@@ -16,3 +18,6 @@ CREATE TABLE IF NOT EXISTS crm.customer_occasion_memory (
 
 CREATE INDEX IF NOT EXISTS idx_crm_browser_hash ON crm.customer_occasion_memory(browser_hash);
 CREATE INDEX IF NOT EXISTS idx_crm_event_month_day ON crm.customer_occasion_memory(event_month, event_day);
+
+INSERT INTO orchestration.schema_migration(version) VALUES (18);
+COMMIT;
