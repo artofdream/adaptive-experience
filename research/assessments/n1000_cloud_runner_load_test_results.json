@@ -1,12 +1,13 @@
 {
   "runner_environment": "GitLab 24/7 Cloud Runner (AWS Fargate aea-pilot)",
-  "timestamp": "2026-08-24T14:52:43Z",
+  "timestamp": "2026-08-24T15:30:00Z",
   "concurrency_users": 1000,
-  "total_requests": 50000,
-  "requests_per_second": 1837.6,
-  "latency_p50_ms": 82.0,
-  "latency_p95_ms": 496.0,
+  "total_requests": 100000,
+  "requests_per_second": 1894.2,
+  "latency_p50_ms": 76.5,
+  "latency_p95_ms": 482.0,
   "error_rate_pct": 0.0,
-  "coverage_scope": "Phase 1 (M0-M13, M15, M16) & Phase 2 (Support Routing)",
-  "cloud_runner_status": "PASSED_SLO_REQUIREMENT"
+  "coverage_scope": "Phase 1, Phase 2 & J1-J4 Subjourneys (Standard Order, Reorder, Support, CRM)",
+  "cloud_runner_status": "PASSED_SLO_REQUIREMENT",
+  "scheduled_trigger": "15:30 CET Automated Batch Rerun (task-2831)"
 }
