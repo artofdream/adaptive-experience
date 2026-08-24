@@ -35,6 +35,16 @@ authoritative for business facts.
 ## Initial deployment topology
 MVP deployment follows [ADR-007](../06-adr/ADR-007-initial-deployment-topology.md):
 
+Deployment-specific diagram sets:
+
+- [Local Deployment HLD and LLD](local-deployment-hld-lld.md) documents the
+  executable Docker Compose reference profiles and their non-production
+  boundaries.
+- [AEA Pilot Deployment HLD and LLD](aea-pilot-deployment-hld-lld.md) maps the
+  same logical architecture to the AWS Path B `aea-pilot` topology and
+  distinguishes repository implementation, IaC definition, and pending
+  operational evidence.
+
 - **Modular monolith backend** — Orchestration, Concierge, and authoritative
   domain modules share one deployable process with explicit module boundaries.
 - **Separate Adaptive UI** — talks to the BFF, not to domain modules or the
@@ -42,7 +52,9 @@ MVP deployment follows [ADR-007](../06-adr/ADR-007-initial-deployment-topology.m
 - **Separate BFF** — owns browser-facing transport only; does not own experience
   state, workflow decisions, or domain authority.
 - **External message broker** — concrete Central Message Bus for governed MVP
-  topics; broker **product** remains deferred (see ADR-007 and CF-016).
+  topics. ADR-012 selects Apache Kafka; pilot hosting, ACL application, and
+  operational evidence remain deployment concerns rather than a deferred
+  broker-product decision.
 
 ## Domain services (MVP)
 | Service | Responsibility | Authoritative |
