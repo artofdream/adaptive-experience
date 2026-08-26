@@ -180,7 +180,7 @@ flowchart TD
 
 ## 7. Stakeholder Governance & 6-Way Skill Portability
 
-The AEA project is driven by an **11-role stakeholder team** ([`AGENTS.md`](file:///c:/projects/code/adaptive-experience/AGENTS.md)):
+The AEA project is driven by a **14-role stakeholder team** ([`AGENTS.md`](file:///c:/projects/code/adaptive-experience/AGENTS.md)):
 
 | Stakeholder Role | Primary Domain & Responsibility | Canonical Skill File |
 | :--- | :--- | :--- |
@@ -195,6 +195,9 @@ The AEA project is driven by an **11-role stakeholder team** ([`AGENTS.md`](file
 | `aea-senior-software-engineer` | Code implementation, architecture refactoring, conflict resolution | [`.cursor/skills/aea-senior-software-engineer/SKILL.md`](file:///c:/projects/code/adaptive-experience/.cursor/skills/aea-senior-software-engineer/SKILL.md) |
 | `aea-mr-coordinator` | GitLab MR review, gate validation, automated merge authority | [`.cursor/skills/aea-mr-coordinator/SKILL.md`](file:///c:/projects/code/adaptive-experience/.cursor/skills/aea-mr-coordinator/SKILL.md) |
 | `aea-coherence-guardian` | Coherence checks, daily briefs, findings loop remediation | [`.cursor/skills/aea-coherence-guardian/SKILL.md`](file:///c:/projects/code/adaptive-experience/.cursor/skills/aea-coherence-guardian/SKILL.md) |
+| `aea-knowledge-guardian` | Second Brain curation, session memory, vault index | [`.cursor/skills/aea-knowledge-guardian/SKILL.md`](file:///c:/projects/code/adaptive-experience/.cursor/skills/aea-knowledge-guardian/SKILL.md) |
+| `aea-cost-guardian` | FinOps, Fargate sizing, LLM token budget | [`.cursor/skills/aea-cost-guardian/SKILL.md`](file:///c:/projects/code/adaptive-experience/.cursor/skills/aea-cost-guardian/SKILL.md) |
+| `aea-performance-guardian` | Web Vitals, LCP, hydration audit | [`.cursor/skills/aea-performance-guardian/SKILL.md`](file:///c:/projects/code/adaptive-experience/.cursor/skills/aea-performance-guardian/SKILL.md) |
 
 ### 7.1 Stakeholder Roster Status, State & Definition Mapping
 
