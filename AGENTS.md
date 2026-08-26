@@ -14,7 +14,7 @@ Before acting in any session:
 
 Before concluding a session:
 1. Extract session building memory, key decisions, trade-offs, and performance benchmarks to `research/random-thoughts/YYYY-MM-DD-session-memory-log-*.md` (`@aea-knowledge-guardian`).
-2. Run `python scripts/generate_daily_brief.py` to regenerate the daily briefing note (`@aea-coherence-guardian`).
+2. Run `python scripts/generate_daily_brief.py` to regenerate `research/daily-briefs/YYYY-MM-DD.md` (`@aea-coherence-guardian`).
 3. Run `python scripts/run_all_guards.py` to verify 14/14 pre-flight quality guards pass cleanly.
 4. Commit and push knowledge notes to Git so all future sessions inherit the updated Second Brain memory.
 Full SOP: `.cursor/rules/session-start-briefing.mdc`.
