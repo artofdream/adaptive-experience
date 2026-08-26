@@ -39,6 +39,22 @@ class BrowserUiTests(unittest.TestCase):
         self.assertIn('placeholder="For example:', self.html)
         self.assertIn("You can change every detail later", self.html)
         self.assertIn("Nothing is final until you review", self.html)
+        self.assertIn('onsubmit="event.preventDefault()"', self.html)
+
+    def test_app_js_does_not_use_unquoted_template_interpolations(self):
+        """A single unquoted ${...} is a SyntaxError and kills T-01/T-02 boot."""
+        for i, line in enumerate(self.script.splitlines(), 1):
+            stripped = line.strip()
+            if stripped.startswith("//"):
+                continue
+            if "${" in line and "`" not in line:
+                self.fail(
+                    f"app.js line {i} interpolates without backticks (parse error): {line}"
+                )
+            if re.search(r"\bfetch\s*\(\s*/", line):
+                self.fail(
+                    f"app.js line {i} uses an unquoted fetch URL (parse error): {line}"
+                )
 
     def test_semantic_landmarks_labels_and_live_feedback_are_present(self):
         for tag in ("header", "main", "section", "aside", "form", "label", "dialog"):

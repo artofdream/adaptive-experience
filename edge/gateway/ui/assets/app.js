@@ -1264,47 +1264,6 @@ async function boot() {
 
 boot();
 
-
-// Live Chat WebSocket Client Handler (P1.2 Closing Feature)
-function connectLiveChatWebSocket(ticketId, onMessageCallback) {
-    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = ${wsProtocol}///ws/livechat/;
-    const socket = new WebSocket(wsUrl);
-
-    socket.onopen = () => {
-        console.log([AEA LiveChat] Connected to ticket );
-    };
-
-    socket.onmessage = (event) => {
-        try {
-            const data = JSON.parse(event.data);
-            if (onMessageCallback) onMessageCallback(data);
-        } catch (e) {
-            console.error('[AEA LiveChat] Failed to parse message:', e);
-        }
-    };
-
-    socket.onclose = () => {
-        console.log([AEA LiveChat] Connection closed for ticket );
-    };
-
-    return socket;
-}
-
-function claimTicketAndConnect(ticketId, operatorId) {
-    return fetch(/api/v1/livechat/tickets//claim, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ operator_id: operatorId })
-    })
-    .then(res => res.json())
-    .then(ticket => {
-        return connectLiveChatWebSocket(ticketId, (msg) => {
-            console.log('[AEA LiveChat Message]', msg);
-        });
-    });
-}
-
 // Florist Operator UI & Support UX Polish (Phase 2 Accelerated Delivery)
 const OPERATOR_CANNED_RESPONSES = [
     "Thank you for contacting Lily's Florist! How can I assist you with your bouquet order today?",

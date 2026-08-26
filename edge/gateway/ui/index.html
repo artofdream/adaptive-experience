@@ -52,7 +52,7 @@
         <p class="assistant-message">Hello! What occasion are you shopping for today?</p>
       </div>
       <p id="disclosure" class="disclosure">AI-generated interpretation; review and correct before ordering.</p>
-      <form id="message-form" aria-describedby="message-hint message-form-error">
+      <form id="message-form" aria-describedby="message-hint message-form-error" onsubmit="event.preventDefault()">
         <label for="message">Your message</label>
         <div class="suggestions" id="suggestions" aria-label="Optional thought-completion suggestions" hidden></div>
         <div class="composer">
