@@ -30,9 +30,9 @@ SKILLS = {
         "Use the installed `browser:control-in-app-browser` skill instead of Cursor browser tools. Use Codex visualization when requested; ignore Cursor canvas paths.",
     ),
     "aea-coherence-guardian": (
-        "Own the AEA / Lily's Florist coherence findings loop end to end — running assessment intake against research/coherence-findings-loop.md, remediating the first queued or regressed finding one at a time, and producing the periodic repo activity/status brief under research/daily-briefs/. Use for coherence checks, hourly/daily coherence ticks, doc/code/ID drift, reconciling the CF queue against GitLab, activity reports, or the AEA coherence guardian stakeholder.",
+        "Own the AEA / Lily's Florist coherence findings loop end to end — running assessment intake against research/coherence-findings-loop.md, remediating the first queued or regressed finding one at a time, and producing the periodic activity recap at research/random-thoughts/YYYY-MM-DD-daily-activity.md. The DATE_RE session-start brief remains generator plus honest hand-review, not cadence writes. Use for coherence checks, hourly/daily coherence ticks, doc/code/ID drift, reconciling the CF queue against GitLab, activity reports, or the AEA coherence guardian stakeholder.",
         "Follow `research/coherence-findings-loop.md` as the operative procedure this role runs, not a companion reference file.",
-        "Treat the coherence loop and the daily activity brief as this role's job, not the PM's or support coordinator's. Do not create Codex tasks, threads, or subagents unless the user explicitly requests delegation.",
+        "Treat the coherence loop and the activity recap sidecar as this role's job, not the PM's or support coordinator's. Never write DATE_RE YYYY-MM-DD.md from cadence. Do not create Codex tasks, threads, or subagents unless the user explicitly requests delegation.",
     ),
     "aea-cost-guardian": (
         "Own AEA platform FinOps and cloud cost optimization across AWS compute (ECS Fargate right-sizing), RDS PostgreSQL storage, MSK Kafka streaming, LLM token budget efficiency (embedding caching, LiteLLM mock proxies under ADR-016), and cloud billing audits. Use for cost optimization, FinOps audits, cloud budget caps, LLM token efficiency, AWS right-sizing, or the AEA cost guardian stakeholder.",
