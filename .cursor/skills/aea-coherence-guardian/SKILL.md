@@ -4,8 +4,10 @@ description: >-
   Owns the Adaptive Experience Architecture (AEA) / Lily's Florist coherence
   findings loop end to end: runs assessment intake against
   research/coherence-findings-loop.md, remediates the first queued or
-  regressed finding one at a time, and produces the periodic repo activity /
-  status brief under research/daily-briefs/. Use when the user asks to run a
+  regressed finding one at a time, and produces the periodic activity recap
+  at research/random-thoughts/YYYY-MM-DD-daily-activity.md. The DATE_RE
+  session-start brief (research/daily-briefs/YYYY-MM-DD.md) stays generator
+  plus honest hand-review — not cadence writes. Use when the user asks to run a
   coherence check, hourly/daily coherence tick, check for doc/code/ID drift,
   reconcile the CF queue against GitLab, generate an activity report or daily
   brief, or act as the AEA coherence guardian stakeholder. Do not use for
@@ -27,10 +29,13 @@ GitLab: `artof-group/adaptive-experience-architecture` (`glab`, not `gh`).
 
 This skill **does not merge**. Only `@aea-mr-coordinator` may set auto-merge.
 
-The activity/status brief this role writes to `research/daily-briefs/` is
-not just a report — every new session, in any tool, is required to read the
-latest one before acting (`.cursor/rules/session-start-briefing.mdc`). Keep
-it genuinely current; a stale brief undermines that SOP for every tool.
+The session-start bus is `research/daily-briefs/YYYY-MM-DD.md` (DATE_RE).
+Every new session, in any tool, must read the latest committed DATE_RE
+file before acting (`.cursor/rules/session-start-briefing.mdc`). This role
+does **not** create, edit, append, restore, or commit DATE_RE on cadence.
+DATE_RE stays `scripts/generate_daily_brief.py` plus an honest hand-review.
+Cadence and activity recaps write
+`research/random-thoughts/YYYY-MM-DD-daily-activity.md` only.
 Whenever a Coherence Finding (CF) is remediated or closed, hand off to `$aea-knowledge-guardian`
 to record a Second Brain lesson-learned memory node under `research/random-thoughts/`.
 
@@ -46,7 +51,9 @@ credits a `aea-daily-activity-report` "scheduled task" that matches no
 committed script or skill. Both jobs are folded into this one role rather
 than kept as two: they are the same underlying work (verify repo truth
 against GitLab and against itself, report what changed) at different
-cadences.
+cadences. `aea-daily-activity-report` is still not a committed script; this
+skill is what Claude obeys. Cadence reporting lands in the random-thoughts
+sidecar, not on DATE_RE.
 
 ## Hard constraints
 
@@ -81,7 +88,7 @@ Coherence guardian:
 - [ ] 2. Reconcile queue Status/Issue-MR columns against live GitLab
 - [ ] 3. If queued/regressed exists: one remediation iteration (issue -> branch -> fix -> MR)
 - [ ] 4. Else: run guards + a light scan; intake only if new findings appear
-- [ ] 5. If a status/activity brief is due: write research/daily-briefs/YYYY-MM-DD.md
+- [ ] 5. If a status/activity recap is due: write research/random-thoughts/YYYY-MM-DD-daily-activity.md (never DATE_RE YYYY-MM-DD.md)
 - [ ] 6. Report mode, finding ID, MR URL if any, next queued item, stop condition if hit
 ```
 
@@ -126,40 +133,58 @@ get closed as duplicates, MRs get merged, and the queue can lag (this
 happened with CF-028, CF-038: a duplicate issue stayed open after the real
 one closed). Reconcile the column, don't just read it.
 
-### 5. Activity / status brief
+### 5. Activity / status recap
 
-When the user asks for a daily brief, an activity report, or "what
-happened," or when running a scheduled cadence pass, write
-`research/daily-briefs/YYYY-MM-DD.md` (one file per day; append a dated
-section if the file already exists for today). Cover:
+This role is **not** the session-start brief. Do **not** create, edit,
+append, restore, or commit `research/daily-briefs/YYYY-MM-DD.md`. That
+DATE_RE file is the only session-start bus. Owner:
+`scripts/generate_daily_brief.py` plus an honest hand-review. Freshness CI
+(`scripts/check_daily_brief_freshness.py`) only matches
+`^(\d{4}-\d{2}-\d{2})\.md$`. A wedged shell or reflog fallback is not a
+brief.
 
-1. **Commits / MRs merged** since the last brief (`git log`,
+When the user asks for a daily activity recap, an activity report, or
+"what happened," or when running a scheduled cadence pass, write
+`research/random-thoughts/YYYY-MM-DD-daily-activity.md` only (one file per
+day; append a dated section if today's sidecar already exists). Never
+write cadence content onto DATE_RE.
+
+If `git`, `glab`, or the shell is down: write **nothing**. Do not
+reflog-fallback onto DATE_RE. Report the outage in chat. Stop.
+
+If `git` and `glab` work: Knowledge First — read the latest **committed**
+DATE_RE brief; do not edit it. Probe in this session (`git log`,
+`glab mr list`, `glab issue list`). A status word is a claim; probe or
+write Unknown. Shared memory is committed GitLab main (`glab`, not `gh`).
+Cover:
+
+1. **Commits / MRs merged** since the last recap (`git log`,
    `glab mr list --merged`) — cite actual SHAs/MR numbers, don't estimate.
 2. **Coherence queue movement** — findings that changed state, with
-   evidence paths.
-3. **Milestone movement** — GitLab milestone open/closed counts.
-4. **Guard status** — `check_coherence.py` / `check_topic_schemas.py`
-   pass/fail.
-5. A short **method note** if any evidence source was unavailable (mirror
-   the honesty pattern already used in `research/daily-briefs/2026-08-14.md`
-   when `git log` access failed that day — say what you could and couldn't
-   verify, don't fill the gap with a guess).
+   evidence paths. Do not invent CF ids.
+3. **Milestone movement** — GitLab milestone open/closed counts from
+   `glab`. If the probe fails, write Unknown.
+4. **Guard status** — only if this session ran the guards; otherwise
+   Unknown. Do not claim a pass/fail you did not probe.
+5. A short **method note** if any evidence source was unavailable. Do not
+   fill a gap with a guess. Do not reconstruct a DATE_RE file from reflog
+   (the 2026-08-14 / 2026-08-18 / 2026-08-23 DATE_RE-shaped activity
+   reports are the class not to repeat).
 
 This is reporting, not remediation — do not fix findings you notice while
-writing the brief; queue them through steps 1–4 on a later pass instead
-(or immediately after, as a clearly separate iteration).
+writing the recap; queue them through steps 1–4 on a later pass instead
+(or immediately after, as a clearly separate iteration). One finding →
+one GitLab issue → one branch from `origin/main` → one MR. Do not merge.
 
-**Commit and push the brief. A brief that only exists in a local working
-tree is not shared memory** — `.cursor/rules/session-start-briefing.mdc`
-requires every session, in any tool, to read the latest brief before
-acting, and a session on a different machine or a fresh clone cannot read
-a file nobody committed. This happened for real: four prior briefs
-(2026-08-11, 2026-08-12, 2026-08-14, 2026-08-18) were written to disk and
-never `git add`ed, so every session-start check that "read the latest
-brief" was silently reading nothing durable. `git add
-research/daily-briefs/<date>.md`, commit, push, and open an MR
-(`docs: daily brief <date>`) same as any other docs-only change — do not
-leave it as an uncommitted file and call the brief done.
+Do not rerun `scripts/generate_daily_brief.py` as part of a cadence
+recap. Do not invent BG/US/FR/NFR or CF ids.
+
+**Commit the recap sidecar only when probes ran.** A sidecar that only
+exists in a local working tree is not shared memory. `git add
+research/random-thoughts/<date>-daily-activity.md`, commit, push, and
+open an MR (`docs: daily activity recap <date>`) — do not leave it as an
+uncommitted file and call the recap done. If probes did not run, do not
+commit a sidecar.
 
 ## Collaboration
 
@@ -186,3 +211,5 @@ blockers/verdict in prose.
 - Batching more than one finding into a single MR
 - Product go/no-go (`@aea-product-owner`) or Scrum cadence/bench (`@aea-project-manager`)
 - Secrets, budget, `terraform destroy` (sponsor)
+- Creating, editing, appending, restoring, or committing DATE_RE
+  `research/daily-briefs/YYYY-MM-DD.md` from cadence or reflog fallback
