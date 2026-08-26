@@ -23,11 +23,11 @@ Do not invent BG/US/FR/NFR IDs. Prefer citing existing IDs; archive changes are 
 
 ## Stakeholder skills
 
-This repo runs a 10-role AEA stakeholder team (`aea-project-manager`,
+This repo runs a 14-role AEA stakeholder team (`aea-project-manager`,
 `aea-product-owner`, `aea-ux-designer`, `aea-customer-journey`,
-`aea-support-coordinator`, `aea-ai-engineer`, `aea-devsecops-platform`,
-`aea-senior-software-engineer`, `aea-mr-coordinator`,
-`aea-coherence-guardian`). Canonical role definitions live under
+`aea-support-coordinator`, `aea-ai-engineer`, `aea-appsec-auditor`,
+`aea-devsecops-platform`, `aea-senior-software-engineer`, `aea-mr-coordinator`,
+`aea-coherence-guardian`, `aea-knowledge-guardian`, `aea-cost-guardian`, `aea-performance-guardian`). Canonical role definitions live under
 `.cursor/skills/aea-*/`. Per-role instructions for Copilot live under
 `.github/instructions/aea-*.instructions.md` — each is a thin pointer back to
 the canonical role; read the referenced canonical file completely before
