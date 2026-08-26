@@ -453,3 +453,96 @@ deploy-ecs:
         - edge/**/*
         - .gitlab-ci.yml
     - if: '$CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "web"'
+
+# Path B: agent-runner image. Separate from shop build-ecr so a skill-only
+# change does not rebuild orchestration/BFF/gateway. OIDC, main only.
+# Sponsor pastes GitLab CI var AEA_ECR_AGENT_RUNNER from terraform output
+# ecr_agent_runner_url. Do not push this image from a laptop.
+build-ecr-agent-runner:
+  extends: .aws_oidc
+  stage: deploy
+  image: docker:27.1.1-cli
+  services:
+    - name: docker:27.1.1-dind
+      alias: docker
+      command: ["--tls=false"]
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+    DOCKER_DRIVER: overlay2
+  timeout: 45m
+  resource_group: path-b-ecs
+  before_script:
+    - apk add --no-cache --upgrade aws-cli expat
+    - aws --version
+    - mkdir -p /tmp
+    - printf '%s' "$GITLAB_OIDC_TOKEN" > /tmp/web-identity-token
+    - chmod 0400 /tmp/web-identity-token
+    - export AWS_WEB_IDENTITY_TOKEN_FILE=/tmp/web-identity-token
+    - export AWS_ROLE_SESSION_NAME="gitlab-${CI_PIPELINE_ID}"
+    - export AWS_REGION="${AWS_DEFAULT_REGION:-us-east-1}"
+    - test -n "${AWS_ROLE_ARN:-}"
+    - test -n "${AEA_ECR_AGENT_RUNNER:-}"
+  script:
+    - REGISTRY=$(printf '%s' "$AEA_ECR_AGENT_RUNNER" | cut -d/ -f1)
+    - aws ecr get-login-password --region "$AWS_REGION" | docker login --username AWS --password-stdin "$REGISTRY"
+    - docker build -f platform/docker/Dockerfile.agent-runner -t "$AEA_ECR_AGENT_RUNNER:$CI_COMMIT_SHA" -t "$AEA_ECR_AGENT_RUNNER:latest" .
+    - docker push "$AEA_ECR_AGENT_RUNNER:$CI_COMMIT_SHA"
+    - docker push "$AEA_ECR_AGENT_RUNNER:latest"
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      changes:
+        - platform/docker/Dockerfile.agent-runner
+        - platform/aea_platform/agent_gateway.py
+        - platform/tests/test_agent_gateway.py
+        - .cursor/skills/**/*
+        - .agents/skills/**/*
+        - .claude/skills/**/*
+        - .gemini/skills/**/*
+        - .grok/skills/**/*
+        - .github/instructions/**/*
+        - scripts/generate_codex_stakeholder_skills.py
+        - .gitlab-ci.yml
+    - if: '$CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "web"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: manual
+      allow_failure: true
+
+deploy-ecs-agent-runner:
+  extends: .aws_oidc
+  stage: deploy
+  image: python:3.12-alpine
+  needs:
+    - job: build-ecr-agent-runner
+  timeout: 30m
+  resource_group: path-b-ecs
+  before_script:
+    - apk add --no-cache --upgrade aws-cli expat
+    - aws --version
+    - mkdir -p /tmp
+    - printf '%s' "$GITLAB_OIDC_TOKEN" > /tmp/web-identity-token
+    - chmod 0400 /tmp/web-identity-token
+    - export AWS_WEB_IDENTITY_TOKEN_FILE=/tmp/web-identity-token
+    - export AWS_ROLE_SESSION_NAME="gitlab-${CI_PIPELINE_ID}"
+    - export AWS_REGION="${AWS_DEFAULT_REGION:-us-east-1}"
+    - test -n "${AWS_ROLE_ARN:-}"
+    - test -n "${AEA_ECS_CLUSTER:-}"
+    - test -n "${AEA_ECR_AGENT_RUNNER:-}"
+  script:
+    - aws ecs update-service --cluster "$AEA_ECS_CLUSTER" --service agent-runner --force-new-deployment --query service.serviceName --output text
+    - aws ecs wait services-stable --cluster "$AEA_ECS_CLUSTER" --services agent-runner
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      changes:
+        - platform/docker/Dockerfile.agent-runner
+        - platform/aea_platform/agent_gateway.py
+        - platform/tests/test_agent_gateway.py
+        - .cursor/skills/**/*
+        - .agents/skills/**/*
+        - .claude/skills/**/*
+        - .gemini/skills/**/*
+        - .grok/skills/**/*
+        - .github/instructions/**/*
+        - scripts/generate_codex_stakeholder_skills.py
+        - .gitlab-ci.yml
+    - if: '$CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "web"'

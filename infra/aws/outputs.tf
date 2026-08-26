@@ -14,6 +14,10 @@ output "ecr_gateway_url" {
   value = aws_ecr_repository.gateway.repository_url
 }
 
+output "ecr_agent_runner_url" {
+  value = aws_ecr_repository.agent_runner.repository_url
+}
+
 output "gitlab_ci_role_arn" {
   description = "Set GitLab CI variable AWS_ROLE_ARN to this value (OIDC)."
   value       = aws_iam_role.gitlab_ci.arn

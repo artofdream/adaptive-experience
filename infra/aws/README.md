@@ -98,6 +98,7 @@ deploy jobs exist:
 | `AEA_ECR_ORCHESTRATION` | `ecr_orchestration_url` |
 | `AEA_ECR_BFF` | `ecr_bff_url` |
 | `AEA_ECR_GATEWAY` | `ecr_gateway_url` |
+| `AEA_ECR_AGENT_RUNNER` | `ecr_agent_runner_url` |
 | `AEA_ECS_CLUSTER` | `ecs_cluster_name` |
 | `AEA_PUBLIC_URL` | `public_url` |
 
