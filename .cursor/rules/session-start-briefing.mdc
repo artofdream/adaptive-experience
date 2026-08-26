@@ -8,7 +8,8 @@ alwaysApply: true
 
 Before taking any repo action in a new session — Cursor, Codex, Claude Code,
 or Copilot — read the most recent file in `research/daily-briefs/` (sort by
-filename date, open the latest `YYYY-MM-DD.md`).
+filename date, open the latest `YYYY-MM-DD.md`). That DATE_RE name is the
+only live handoff. Historical `YYYY-MM-DD-daily-brief.md` files are not.
 
 ## Why
 
@@ -25,7 +26,8 @@ fetched).
 
 ## What "read first" means
 
-1. `ls research/daily-briefs/*.md`, sort by date, open the most recent.
+1. `ls research/daily-briefs/*.md`, sort by date, open the latest `YYYY-MM-DD.md`
+   (ignore `*-daily-brief.md` — that suffix is history, not the live bus).
 2. Read `research/random-thoughts/*.md` (specifically the strategic architecture studies and session memory logs) to inherit the Second Brain project history, decisions, trade-offs, and lessons learned.
 3. If reviewing transcript history or cross-agent context, feed prior session memory logs from `research/random-thoughts/` into context to build upon the continuous knowledge base.
 4. If today's brief does not exist, read the most recent one available and
@@ -61,7 +63,7 @@ if a stale brief were current.
 
 Before concluding any session:
 1. Extract session building memory, key decisions, trade-offs, and performance benchmarks to `research/random-thoughts/YYYY-MM-DD-session-memory-log-*.md` (`@aea-knowledge-guardian`).
-2. Run `python scripts/generate_daily_brief.py` to regenerate `research/daily-briefs/YYYY-MM-DD-daily-brief.md`.
+2. Run `python scripts/generate_daily_brief.py` to regenerate `research/daily-briefs/YYYY-MM-DD.md`.
 3. Run `python scripts/run_all_guards.py` to verify 14/14 pre-flight quality guards pass cleanly.
 4. Stage and commit knowledge notes (`git add research/random-thoughts/ research/daily-briefs/`) so all assistant tools inherit updated Second Brain memory.
 

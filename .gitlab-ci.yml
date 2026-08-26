@@ -203,6 +203,7 @@ daily-brief-generate:
     - apk add --no-cache git git-lfs
   script:
     - python scripts/generate_daily_brief.py
+    - python scripts/check_daily_brief_freshness.py
   rules:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
 
@@ -213,6 +214,21 @@ daily-brief-freshness:
     - python scripts/check_daily_brief_freshness.py
   rules:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
+
+daily-brief-honesty:
+  stage: verify
+  image: python:3.12-alpine
+  script:
+    - python scripts/test_generate_daily_brief.py -v
+  rules:
+    - changes:
+        - "scripts/generate_daily_brief.py"
+        - "scripts/test_generate_daily_brief.py"
+        - "scripts/check_daily_brief_freshness.py"
+        - "docs/07-roadmap/roadmap.md"
+        - ".cursor/rules/session-start-briefing.mdc"
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
 
 platform-foundation-unit:
   stage: verify
