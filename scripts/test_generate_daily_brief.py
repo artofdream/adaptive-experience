@@ -7,14 +7,23 @@ today's brief). Renders via ``build_brief`` with fixtures / mocked guards.
 
 from __future__ import annotations
 
+import datetime
 import sys
+import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from check_daily_brief_freshness import DATE_RE, check_generator_brief_honesty
+from check_daily_brief_freshness import (
+    DATE_RE,
+    STALE_AFTER_DAYS,
+    check_generator_brief_honesty,
+    latest_brief_date,
+)
+import check_daily_brief_freshness as freshness
 from generate_daily_brief import (
     GENERATOR_TITLE,
     ROADMAP_PATH,
@@ -158,6 +167,32 @@ class TestRenderBrief(unittest.TestCase):
         """2026-08-26.md mentions 15/16 as a non-claim; it is not generator output."""
         violations = check_generator_brief_honesty()
         self.assertEqual(violations, [])
+
+
+
+class TestStaleAfterDays(unittest.TestCase):
+    def test_stale_after_days_is_zero(self):
+        self.assertEqual(STALE_AFTER_DAYS, 0)
+        self.assertEqual(freshness.STALE_AFTER_DAYS, 0)
+
+    def test_today_ok_yesterday_stale(self):
+        today = datetime.datetime.now(datetime.timezone.utc).date()
+        yesterday = today - datetime.timedelta(days=1)
+        with tempfile.TemporaryDirectory() as tmp:
+            briefs = Path(tmp)
+            today_path = briefs / f"{today.isoformat()}.md"
+            yesterday_path = briefs / f"{yesterday.isoformat()}.md"
+            today_path.write_text("# fixture today\n", encoding="utf-8")
+            with mock.patch.object(freshness, "BRIEFS_DIR", briefs):
+                self.assertEqual(latest_brief_date(), today)
+                freshness.main()
+
+                today_path.unlink()
+                yesterday_path.write_text("# fixture yesterday\n", encoding="utf-8")
+                self.assertEqual(latest_brief_date(), yesterday)
+                with self.assertRaises(SystemExit) as ctx:
+                    freshness.main()
+                self.assertEqual(ctx.exception.code, 1)
 
 
 if __name__ == "__main__":
