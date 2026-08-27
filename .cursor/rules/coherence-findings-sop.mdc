@@ -29,6 +29,15 @@ iteration).
 5. **MR** — Open one merge request linked to the issue (`Closes #N`), with a
    short summary and test plan.
 
+## Path B / UI findings
+
+For live shop / Adaptive Workspace claims, evidence is a journey × viewport
+clip (phone and desktop), not a screenshot of docs. Follow the Path B
+section in `research/coherence-findings-loop.md`. Do not open a parallel UX
+loop. Do not restyle the shop from a knowledge or intake MR. Do not mark
+a UI finding `verified` until the same script is re-recorded after the
+product merge.
+
 ## Ordering
 
 Prefer severity then dependency: medium before low; fix publishers/ownership

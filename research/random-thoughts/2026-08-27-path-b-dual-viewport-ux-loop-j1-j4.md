@@ -2,21 +2,24 @@
 
 > **Tags**: #aea #second-brain #ux #path-b #j1 #j2 #j3 #j4 #knowledge-first
 > **Captured**: 2026-08-27
-> **GitLab**: #272
+> **GitLab**: #272 / !298
+> **Coherence Finding**: CF-054 (in-mr, knowledge only)
 > **Related**: sponsor T-04 notice (parked), not #254 / #231 / !297
-> **Owners to inherit**: @aea-ux-designer, @aea-customer-journey, @aea-knowledge-guardian, @aea-mr-coordinator
+> **Owners to inherit**: @aea-ux-designer, @aea-customer-journey, @aea-knowledge-guardian, @aea-mr-coordinator, @aea-coherence-guardian
 > **This node is knowledge, not a UI restyle.**
 > **Probed**: live `https://aea.artof.link`, phone iPhone SE 375x667 device mode, desktop 1280x800, session-based (no password). Clips cut on 2026-08-27 evening Europe/Berlin.
 
 Later agents: do not rediscover this from chat. Shared memory is committed GitLab `main` only. A status word is a claim. Probe with the same journey script or write Unknown.
 
-Inherits [[2026-08-27-honesty-crisis-lessons-and-path-b-chain]]. Journeys [[J1]] [[J2]] [[J3]] [[J4]]. Requirements in play: [[FR-001]] [[FR-007]] [[FR-011]] [[NFR-009]] [[FR-003]] [[FR-009]] [[FR-008]].
+Inherits [[2026-08-27-honesty-crisis-lessons-and-path-b-chain]]. Session log [[2026-08-27-session-memory-log-cf054-path-b-ux-in-coherence-loop]]. Journeys [[J1]] [[J2]] [[J3]] [[J4]]. Requirements in play: [[FR-001]] [[FR-007]] [[FR-011]] [[NFR-009]] [[FR-003]] [[FR-009]] [[FR-008]].
 
 ---
 
-## 1. Continuous UX loop (do this, not a new product)
+## 1. Continuous UX loop (this is the coherence loop)
 
-Do **not** add a 15th hat. Do **not** stand up a separate analytics app for this. Mirror the coherence-findings loop:
+Do **not** add a 15th hat. Do **not** stand up a separate analytics app.
+Folded into `research/coherence-findings-loop.md` as CF-054 (Path B / UI
+evidence). Same queue, same SOP, same merger.
 
 1. **Record** one journey on one viewport (phone 9:16 or desktop 16:9), captions naming the tile.
 2. **Review** against a short bar (below), with the clip as evidence.
@@ -26,7 +29,7 @@ Do **not** add a 15th hat. Do **not** stand up a separate analytics app for this
 
 Graph (nodes already in the repo): Journey × Viewport → Clip → Finding → Issue → Note → MR → Clip′.
 
-`@aea-customer-journey` owns the script (what to tap). `@aea-ux-designer` owns the change. `@aea-knowledge-guardian` keeps the graph honest. Cadence must not write DATE_RE.
+`@aea-customer-journey` owns the script (what to tap). `@aea-ux-designer` owns the change. `@aea-knowledge-guardian` keeps the graph honest. `@aea-coherence-guardian` owns the CF row. Cadence must not write DATE_RE.
 
 ---
 
@@ -81,6 +84,6 @@ Engagement is the conversation hook on both; the layout is what changes.
 
 ## 5. First issue in the loop
 
-#272 is the tracker for this finding. Implementer: `@aea-ux-designer`. This MR only commits this note. No CSS/JS restyle here. Do not batch CRM #254, HLD #231, or !297.
+#272 / CF-054 is the tracker. Implementer: `@aea-ux-designer`. This MR only commits knowledge (this note, the session log, the finding note, the loop/SOP Path B path). No CSS/JS restyle here. Do not batch CRM #254, HLD #231, or !297. Do not mark CF-054 `verified` from !298.
 
-Re-probe after a UX MR: same J1 script on phone and desktop. Unknown until those clips exist.
+Re-probe after a UX MR: same [[J1]] script on phone and desktop. Unknown until those clips exist.

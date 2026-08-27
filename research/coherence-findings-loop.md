@@ -67,6 +67,7 @@ completed rows because the queue is also the audit trail.
 | 51 | CF-051 | FR-016/017 narrative and M12 completion wording conflict with canonical reminder/analytics definitions and thin runtime | Medium | verified | 2026-08-23 | 2026-08-27 | `docs/02-business-analysis/requirements.md` · `docs/07-roadmap/roadmap.md` |
 | 52 | CF-052 | M14 claims merchant-domain configuration but committed Terraform represents only aea.artof.link | Medium | verified | 2026-08-23 | 2026-08-27 | `docs/07-roadmap/roadmap.md` · `infra/aws/variables.tf` |
 | 53 | CF-053 | M17 calls pgvector Future although migration 013 and local Compose already enable the retrieval extension | Medium | verified | 2026-08-23 | 2026-08-27 | `docs/07-roadmap/roadmap.md` · `platform/migrations/013_retrieval_pgvector.sql` |
+| 54 | CF-054 | Path B phone copies the 7-step desktop Adaptive Workspace; dual viewport (phone linear, desktop spatial) not used (J1–J4 clips 2026-08-27) | Medium | in-mr | 2026-08-27 | 2026-08-27 | #272 / !298 (knowledge; product UX still open) |
 
 Allowed statuses: `queued`, `investigating`, `ready`, `in-progress`, `in-mr`,
 `verified`, `regressed`, `duplicate`, `not-reproducible`, and `blocked`.
@@ -106,8 +107,10 @@ queue but does not start remediation in the same iteration.
 2. Select the first `regressed` or `queued` row in queue order. Mark it
    `investigating` before changing canonical files.
 3. Reproduce the claim using the workbook, published docs, CI, and current
-   GitLab issues/MRs. Record exact paths and commands in a note created from
-   [`templates/coherence-finding.md`](templates/coherence-finding.md).
+   GitLab issues/MRs. For Path B / live shop UI claims, also record the
+   same journey script on phone and desktop (see Path B / UI evidence).
+   Record exact paths and commands in a note created from
+   [`research/templates/coherence-finding.md`](templates/coherence-finding.md).
 4. If the finding is already fixed, duplicated, or not reproducible, record
    the evidence, set the terminal status, and stop this iteration.
 5. If confirmed, set it `ready` and follow
@@ -118,8 +121,30 @@ queue but does not start remediation in the same iteration.
    `verified`. Use the post-merge path in
    [`claude-obsidian-loop.md`](claude-obsidian-loop.md)
    (`python scripts/check_coherence.py` + main `coherence-guard`).
+   For Path B UI findings, re-record the same script on both viewports;
+   a green pipeline is not enough.
 7. Stop. The next scheduled or human-triggered pass starts with the next
    `queued` row.
+
+## Path B / UI evidence (same loop)
+
+UI findings for Lily's Florist Path B use this queue. Do not stand up a
+second UX loop and do not add a 15th hat. Journey × viewport is the unit.
+
+- **Reproduce:** record the same customer-journey script on phone (9:16,
+  ~375px) and desktop (16:9). Captions name the tile. Clips are evidence,
+  not DATE_RE. Session cookie or demo token; do not spend money.
+- **Intake:** one falsifiable claim, one `CF-NNN`, one GitLab issue.
+  `@aea-customer-journey` owns the script. `@aea-ux-designer` owns the
+  product MR. `@aea-knowledge-guardian` writes the vault note.
+  `@aea-mr-coordinator` merges. Clips stay out of `research/daily-briefs/`.
+- **Verify:** after the product MR merges, re-record the same script on
+  both viewports. Mark `verified` only if the new clip shows the fix.
+  Otherwise leave it open or set `regressed`. Unknown until those clips
+  exist.
+- **Hourly ticks** must not restyle Adaptive Workspace or Path B CSS/JS
+  unless `@aea-ux-designer` was invoked. A knowledge or intake MR may
+  land first; that does not close a UI finding.
 
 ## Safety and stop conditions
 
