@@ -10,7 +10,7 @@
 
 ## 1. Issue Background & Remediation (#270)
 
-Issue **#270** flagged that Path B live intent interpretation degraded to local reference fallback whenever Anthropic API responses returned at ~2.048s. 
+Issue **#270** flagged that Path B live intent interpretation degraded to local reference fallback whenever Anthropic API responses returned at ~2.048s.
 
 Investigation revealed that while `OpenAICompatibleIntentInterpreter` enforces an NFR-003 SLA upper boundary of **&le; 2.5s**, `request_timeout` in `edge/litellm.yaml` and default `AEA_AI_TIMEOUT` in `platform/aea_platform/internal_runtime.py` were hardcoded to **2.0s**. Requests taking between 2.0s and 2.5s were prematurely aborted at the 2.0s threshold.
 
