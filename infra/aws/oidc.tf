@@ -58,6 +58,7 @@ data "aws_iam_policy_document" "gitlab_ci" {
       aws_ecr_repository.orchestration.arn,
       aws_ecr_repository.bff.arn,
       aws_ecr_repository.gateway.arn,
+      aws_ecr_repository.agent_runner.arn,
     ]
   }
   statement {
