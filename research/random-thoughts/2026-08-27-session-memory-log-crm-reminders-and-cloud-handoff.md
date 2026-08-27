@@ -3,6 +3,7 @@
 > **Date**: 2026-08-27  
 > **Stakeholders**: `@aea-ai-engineer`, `@aea-senior-software-engineer`, `@aea-mr-coordinator`, `@aea-knowledge-guardian`  
 > **Traceability**: FR-016, FR-017, NFR-017, ADR-016, Issue #254, Issue #231  
+> **Tags**: #aea  
 
 ---
 
