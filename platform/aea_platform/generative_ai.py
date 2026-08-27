@@ -31,7 +31,7 @@ class OpenAICompatibleIntentInterpreter:
     """Vendor-neutral chat-completions adapter with a strict JSON boundary."""
 
     def __init__(self, endpoint: str, api_key: str, model: str, *,
-                 timeout_seconds: float = 2.0, transport=None):
+                 timeout_seconds: float = 2.5, transport=None):
         if not endpoint or not api_key or not model:
             raise ValueError("AI endpoint, API key, and model are required")
         if timeout_seconds <= 0 or timeout_seconds > 2.5:
