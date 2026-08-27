@@ -125,6 +125,7 @@ Vault notes (wikilinks; graph guard resolves `research/random-thoughts/`):
 - [[2026-08-21-kb-project-building-lessons]]
 
 - [[2026-08-26-date-re-bus-and-agent-runner-image-roll]]
+- [[2026-08-27-honesty-crisis-lessons-and-path-b-chain]]
 
 ADRs (prefix allowed by `scripts/check_knowledge_graph.py`): [[ADR-016]]
 

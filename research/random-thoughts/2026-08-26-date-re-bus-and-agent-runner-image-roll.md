@@ -68,6 +68,7 @@ Same fail in every model: status word without a probe, DATE_RE from wedged git, 
 ## 5. Related
 
 - [[2026-08-25-trust-but-verify-job-and-single-role-list]]
+- [[2026-08-27-honesty-crisis-lessons-and-path-b-chain]]
 - [[2026-08-23-claude-view-repository-progression-and-alignment]]
 - [[2026-08-21-kb-project-building-lessons]]
 - [[ADR-016]]
