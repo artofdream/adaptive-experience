@@ -21,5 +21,5 @@ elif endpoint or api_key or model:
     if not endpoint or not api_key or not model:
         raise RuntimeError("AEA_AI_ENDPOINT, AEA_AI_API_KEY, and AEA_AI_MODEL must be set together")
     interpreter = AvailableIntentInterpreter(OpenAICompatibleIntentInterpreter(
-        endpoint, api_key, model, timeout_seconds=float(os.environ.get("AEA_AI_TIMEOUT", "2.0"))))
+        endpoint, api_key, model, timeout_seconds=float(os.environ.get("AEA_AI_TIMEOUT", "2.5"))))
 app = InternalOrchestrationApp(psycopg.connect(dsn, autocommit=True), token, interpreter)

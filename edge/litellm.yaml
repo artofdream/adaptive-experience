@@ -17,7 +17,7 @@ model_list:
 
 litellm_settings:
   drop_params: true
-  request_timeout: 2
+  request_timeout: 2.5
   num_retries: 0
 
 # Path B has no Prisma. Master-key-only in the VPC. Rolling ghcr.io/berriai/litellm:main-latest
