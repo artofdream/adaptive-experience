@@ -19,3 +19,12 @@ litellm_settings:
   drop_params: true
   request_timeout: 2
   num_retries: 0
+
+# Path B has no Prisma. Master-key-only in the VPC. Rolling ghcr.io/berriai/litellm:main-latest
+# returns HTTP 400 {"type":"no_db_connection","message":"No connected db."} when a
+# chat-completions bearer is not treated as the master key, so T-01 degrades even while
+# the ECS task is HEALTHY. Pin the master key and allow VPC traffic if DB is absent.
+# Closes GitLab #265 (runtime: service up, POST /v1/chat/completions 400).
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY
+  allow_requests_on_db_unavailable: true
