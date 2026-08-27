@@ -7,13 +7,13 @@ alwaysApply: true
 # Session-start briefing SOP
 
 Before taking any repo action in a new session — Cursor, Codex, Claude Code,
-or Copilot — read the most recent file in `research/daily-briefs/` (sort by
+Copilot, or Antigravity — read the most recent file in `research/daily-briefs/` (sort by
 filename date, open the latest `YYYY-MM-DD.md`). That DATE_RE name is the
 only live handoff. Historical `YYYY-MM-DD-daily-brief.md` files are not.
 
 ## Why
 
-Cursor, Codex, Claude Code, and Copilot all work this repo, sometimes
+Cursor, Codex, Claude Code, Copilot, and Antigravity all work this repo, sometimes
 concurrently, with no live channel between them. The daily brief is the
 durable, git-versioned handoff point — commits/MRs merged, coherence queue
 movement, milestone movement, guard status — produced by
@@ -76,6 +76,7 @@ this procedure:
 - Cursor: this rule (`alwaysApply: true`)
 - Codex: `AGENTS.md` → "Session start"
 - Copilot: `.github/copilot-instructions.md` → "Session start"
+- Antigravity: `.agents/rules/` (Always On workspace rule)
 
 Do not duplicate this procedure in each of those files — point to this one,
-so a change here does not require four edits to stay consistent.
+so a change here does not require five edits to stay consistent.
