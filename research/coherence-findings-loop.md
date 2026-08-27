@@ -63,10 +63,10 @@ completed rows because the queue is also the audit trail.
 | 47 | CF-047 | Group milestone descriptions (M4–M7, Future Backlog, UX alignment) still list pre-CF-041 coverage and closed “current” work | Medium | verified | 2026-08-16 | 2026-08-17 | #191 / !195 · #206 / !211 @ 7cae086 |
 | 48 | CF-048 | Daily-brief publisher hardcodes 15/16 completed and unsupported M15 pre-render/sub-100ms claims | High | verified | 2026-08-23 | 2026-08-26 | #259 / !280 |
 | 49 | CF-049 | M15 roadmap/audit presents static SPA TTFB as Edge SSR and estimated browser LCP | High | verified | 2026-08-23 | 2026-08-27 | `research/random-thoughts/2026-08-23-session-memory-log-cf049-lcp-audit-script-honest-labeling.md` |
-| 50 | CF-050 | Extension migrations 019–022 sit outside the only migration runner path while roadmap cites their schemas as delivered artifacts | High | queued | 2026-08-23 | 2026-08-23 | `research/assessments/2026-08-23-codex-independent-runtime-coherence-assessment.md` |
-| 51 | CF-051 | FR-016/017 narrative and M12 completion wording conflict with canonical reminder/analytics definitions and thin runtime | Medium | queued | 2026-08-23 | 2026-08-23 | `research/assessments/2026-08-23-codex-independent-runtime-coherence-assessment.md` |
-| 52 | CF-052 | M14 claims merchant-domain configuration but committed Terraform represents only aea.artof.link | Medium | queued | 2026-08-23 | 2026-08-23 | `research/assessments/2026-08-23-codex-independent-runtime-coherence-assessment.md` |
-| 53 | CF-053 | M17 calls pgvector Future although migration 013 and local Compose already enable the retrieval extension | Medium | queued | 2026-08-23 | 2026-08-23 | `research/assessments/2026-08-23-codex-independent-runtime-coherence-assessment.md` |
+| 50 | CF-050 | Extension migrations 019–022 sit outside the only migration runner path while roadmap cites their schemas as delivered artifacts | High | verified | 2026-08-23 | 2026-08-27 | `platform/tests/test_postgres_integration.py` |
+| 51 | CF-051 | FR-016/017 narrative and M12 completion wording conflict with canonical reminder/analytics definitions and thin runtime | Medium | verified | 2026-08-23 | 2026-08-27 | `docs/02-business-analysis/requirements.md` · `docs/07-roadmap/roadmap.md` |
+| 52 | CF-052 | M14 claims merchant-domain configuration but committed Terraform represents only aea.artof.link | Medium | verified | 2026-08-23 | 2026-08-27 | `docs/07-roadmap/roadmap.md` · `infra/aws/variables.tf` |
+| 53 | CF-053 | M17 calls pgvector Future although migration 013 and local Compose already enable the retrieval extension | Medium | verified | 2026-08-23 | 2026-08-27 | `docs/07-roadmap/roadmap.md` · `platform/migrations/013_retrieval_pgvector.sql` |
 
 Allowed statuses: `queued`, `investigating`, `ready`, `in-progress`, `in-mr`,
 `verified`, `regressed`, `duplicate`, `not-reproducible`, and `blocked`.

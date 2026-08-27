@@ -171,6 +171,15 @@ unified-guard-runner:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_COMMIT_BRANCH == "main"'
 
+trust-but-verify-guard:
+  stage: verify
+  image: python:3.12-alpine
+  script:
+    - python scripts/run_verify_job.py
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
 process-coherence-guard:
   stage: verify
   image: python:3.12-alpine
