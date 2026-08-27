@@ -124,6 +124,8 @@ Vault notes (wikilinks; graph guard resolves `research/random-thoughts/`):
 - [[2026-08-23-codex-and-claude-feedback-reconciliation-study]]
 - [[2026-08-21-kb-project-building-lessons]]
 
+- [[2026-08-26-date-re-bus-and-agent-runner-image-roll]]
+
 ADRs (prefix allowed by `scripts/check_knowledge_graph.py`): [[ADR-016]]
 
 SOPs and skills (markdown links; `.cursor/` is not in the wikilink resolver, so a `[[wikilink]]` here would be a broken graph edge and would violate this note's own principle):
