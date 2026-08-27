@@ -47,12 +47,12 @@ Backlog:
 | **M11** | Inventory analytics depth (Completed) | Forecasting and analytics beyond the thin `/florist` snapshot trends (delivered in platform/aea_platform/forecast.py). | FR-012, NFR-010 |
 | **M12** | Engagement CRM (Completed) | Occasion reminders and zero-PII engagement memory (delivered in platform/aea_platform/crm.py). Staff live chat and ticketing stay out. | FR-016, FR-017 |
 | **M13** | Load & Anti-Fragile Hardening (Completed) | Option A Locust load engine (LOAD-001..004), WAF bypass token, LLM mock proxy, and Anti-Fragility patch coalescing (AFG-001..004). | NFR-003, NFR-004, NFR-006 |
-| **M14** | Production Go-Live & FinOps (Reference Extension) | PaymentSimulationEngine / Stripe mock, merchant domain config, and FinOps right-sizing policies. Live Stripe SDK & OAuth2 remain Future. | FR-019, NFR-015, NFR-017 |
+| **M14** | Production Go-Live & FinOps (Reference Extension) | PaymentSimulationEngine / Stripe mock, `aea.artof.link` reference domain Terraform configuration (with multi-tenant merchant domain mapping demonstrated), and FinOps right-sizing policies. Live Stripe SDK & OAuth2 remain Future. | FR-019, NFR-015, NFR-017 |
 | **M15** | Edge SSR & Progressive Hydration (Reference Extension) | Edge Nginx static pre-rendering structure, DOM hydration hooks, and sub-100ms LCP benchmark scripts. | NFR-002, NFR-004 |
 | **M16** | Staff Live Chat & Operator CRM (Reference Extension) | SQL 019 ticket assignment schema, Nginx `/florist/livechat` route, and operator console UI. Python WebSocket service remains Future. | FR-006, FR-016, FR-017 |
-| **M17** | Advanced Vision & Stem Composition (Reference Extension) | Stem inventory schema (SQL 020), intent cache schema (SQL 021), and dynamic stem pricing. WebRTC audio & pgvector extension remain Future. | FR-001, FR-003, NFR-004 |
+| **M17** | Advanced Vision & Stem Composition (Reference Extension) | Stem inventory schema (SQL 020), intent cache schema (SQL 021), and dynamic stem pricing. pgvector retrieval schema delivered in Migration 013; WebRTC audio remains Future. | FR-001, FR-003, NFR-004 |
 | **M18** | Multi-Domain Adapters & Global Resilience (Reference Extension) | Artisanal Bakery reference catalog (`implementations/bakery/`) and multi-tenant schema isolation (SQL 022). Cross-region RDS replication remains Future. | NFR-014, NFR-003, NFR-015 |
-| **Future** | Production Hardening Backlog | Unscheduled: Live Stripe SDK, staff OAuth2 SSO, Python WebSocket live chat backend, WebRTC audio capture, pgvector extension, cross-region RDS replication. | Thin-delivered FR-006, FR-010, FR-012, FR-019; NFR-014 pin |
+| **Future** | Production Hardening Backlog | Unscheduled: Live Stripe SDK, staff OAuth2 SSO, Python WebSocket live chat backend, WebRTC audio capture, cross-region RDS replication. | Thin-delivered FR-006, FR-010, FR-012, FR-019; NFR-014 pin |
 
 ## Key Reference Journeys & Persona Mapping
 
@@ -71,10 +71,10 @@ To validate requirement execution across active tiles (T-01 through T-09), the d
 - Human support escalation (FR-006 / T-09) is a thin Contact Florist overlay:
   the customer confirms an allowlisted reason and the system records
   `support.escalation.requested`. Automated FAQ remains ASO / FR-009. Staff
-  CRM, live chat, and ticketing remain Future (FR-016 / FR-017). A local
+  live chat and ticketing stay in M16 extension scope; FR-016 (AI event reminders)
+  and FR-017 (engagement analytics) are delivered in M12 via `crm.py`. A local
   florist operator console is defined as a fail-closed read surface for T-09
-  requests and may show prior ASO answers for the same opaque session; it
-  does not implement FR-016 / FR-017.
+  requests and may show prior ASO answers for the same opaque session.
 - Thin FR-010 situational answers (order status, session delivery, inventory
   availability) are delivered on ASO via `support.situation.answered`. They do
   not replace T-08 tracking or FR-009 policy FAQ.

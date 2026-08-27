@@ -237,18 +237,18 @@ def render_brief(
 |---|---|---|---|---|
 | `@aea-project-manager` | Scrum Delivery & SOP Gates | M0-M13 Reference Core | M14-M18 Extensions | `ACTIVE` |
 | `@aea-product-owner` | Product Vision & Go/No-Go | MVP Product Acceptance | Extension Schema Audits | `ACTIVE` |
-| `@aea-ux-designer` | Workspace UI & Tiles T-01..T-09 | Adaptive Workspace UX | Touch Target & Focus Polish | `ACTIVE` |
+| `@aea-ux-designer` | Workspace UI & Tiles T-01..T-09 | Adaptive Workspace UX | Touch Target & Focus Polish | `IDLE` |
 | `@aea-performance-guardian` | Web Vitals & LCP audit | LCP & Hydration Audit | Frame Latency Audit | `ACTIVE` |
 | `@aea-senior-software-engineer` | Platform Engines & BFF | Core BFF & PostgreSQL | Extension Migrations 018-022 | `ACTIVE` |
 | `@aea-devsecops-platform` | AWS ECS Fargate & Terraform | Nginx Edge Gateway | AWS Fargate Infrastructure | `ACTIVE` |
 | `@aea-ai-engineer` | AI Quality & ADR-016 Proxy | ADR-016 Mock Proxy | Intent Cache Schemas | `ACTIVE` |
-| `@aea-appsec-auditor` | Security & Zero-PII Sanitization | Zero-Hardcoded Secrets | WAF Perimeter Auth | `ACTIVE` |
-| `@aea-customer-journey` | E2E Customer Journeys J1-J4 | Journeys J1-J4 Walks | Friction Point Remediation | `ACTIVE` |
-| `@aea-support-coordinator` | Support Triage & Operator Inbox | Contact Florist Triage | Operator Console UI | `ACTIVE` |
-| `@aea-mr-coordinator` | MR Reviews & Auto-Merge | MR Quality Gate Review | Auto-Merge Verification | `ACTIVE` |
+| `@aea-appsec-auditor` | Security & Zero-PII Sanitization | Zero-Hardcoded Secrets | WAF Perimeter Auth | `IDLE` |
+| `@aea-customer-journey` | E2E Customer Journeys J1-J4 | Journeys J1-J4 Walks | Friction Point Remediation | `IDLE` |
+| `@aea-support-coordinator` | Support Triage & Operator Inbox | Contact Florist Triage | Operator Console UI | `IDLE` |
+| `@aea-mr-coordinator` | MR Reviews & Auto-Merge | MR Quality Gate Review | Auto-Merge Verification | `BENCH` |
 | `@aea-coherence-guardian` | Coherence & Quality Guards | Pre-flight quality guards | Workbook Coherence Checks | `ACTIVE` |
 | `@aea-knowledge-guardian` | Second Brain Curation | Session Memory Extraction | Second Brain Vault Index | `ACTIVE` |
-| `@aea-cost-guardian` | FinOps & AWS Fargate Scaling | Fargate Container Sizing | Token Budget Efficiency | `ACTIVE` |
+| `@aea-cost-guardian` | FinOps & AWS Fargate Scaling | Fargate Container Sizing | Token Budget Efficiency | `IDLE` |
 
 ---
 
