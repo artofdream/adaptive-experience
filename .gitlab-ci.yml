@@ -199,17 +199,26 @@ loop-graph-guard:
 daily-brief-generate:
   stage: report
   image: python:3.12-alpine
+  variables:
+    GIT_DEPTH: "0"
   before_script:
     - apk add --no-cache git git-lfs
   script:
     - python scripts/generate_daily_brief.py
+    - python scripts/commit_daily_brief.py
     - python scripts/check_daily_brief_freshness.py
+  artifacts:
+    paths:
+      - research/daily-briefs/
+    expire_in: 1 day
   rules:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
 
 daily-brief-freshness:
   stage: verify
   image: python:3.12-alpine
+  needs:
+    - job: daily-brief-generate
   script:
     - python scripts/check_daily_brief_freshness.py
   rules:
@@ -225,6 +234,7 @@ daily-brief-honesty:
         - "scripts/generate_daily_brief.py"
         - "scripts/test_generate_daily_brief.py"
         - "scripts/check_daily_brief_freshness.py"
+        - "scripts/commit_daily_brief.py"
         - "docs/07-roadmap/roadmap.md"
         - ".cursor/rules/session-start-briefing.mdc"
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'

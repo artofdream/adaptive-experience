@@ -1,4 +1,4 @@
-"""Fail if the latest research/daily-briefs/*.md is stale.
+"""Fail if the latest research/daily-briefs/*.md is not today's DATE_RE.
 
 Read by session-start-briefing.mdc's watchdog: every session is supposed to
 read the latest brief before acting, so a brief that nobody is producing
@@ -7,6 +7,9 @@ GitLab CI schedule instead of relying on a human or an AI session noticing.
 
 Canonical handoff is ``YYYY-MM-DD.md`` (DATE_RE). Historical
 ``YYYY-MM-DD-daily-brief.md`` files are not the live bus and are ignored.
+
+``STALE_AFTER_DAYS = 0``: fail when ``age_days > 0``. A 1-day-old file is
+not today's handoff.
 """
 
 from __future__ import annotations
@@ -18,7 +21,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 BRIEFS_DIR = ROOT / "research" / "daily-briefs"
-STALE_AFTER_DAYS = 1
+STALE_AFTER_DAYS = 0
 DATE_RE = re.compile(r"^(\d{4}-\d{2}-\d{2})\.md$")
 GENERATOR_TITLE = "AEA Daily Executive & Governance Brief"
 
