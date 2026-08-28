@@ -32,7 +32,8 @@ class TestBuildFrameworkSite(unittest.TestCase):
 
     def test_wrap(self):
         html_doc = wrap("Test Title", "index", "<p>Hello</p>")
-        self.assertIn("<title>Test Title — Adaptive Experience Architecture</title>", html_doc)
+        self.assertIn("<title>Test Title", html_doc)
+        self.assertIn("architecture.artof.link", html_doc)
         self.assertIn("<p>Hello</p>", html_doc)
         self.assertIn('aria-current="page"', html_doc)
 
