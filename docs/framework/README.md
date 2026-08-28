@@ -12,6 +12,8 @@ Graph-guard (`scripts/check_knowledge_graph.py`) scans `research/random-thoughts
 | `docs/framework/schema.md` | `public/schema.html` |
 | `docs/framework/comparison.md` | `public/comparison.html` |
 | `docs/framework/path-b.md` | `public/path-b.html` |
+| `docs/framework/journal.md` | `public/journal.html` |
+| `docs/framework/assets/` (safe filenames only) | `public/assets/` |
 
 This README is operator SOP. It is **not** in the allowlist and is not published.
 
@@ -20,6 +22,8 @@ Adding a public page means:
 1. Add the markdown under `docs/framework/`.
 2. Add a row to `PAGES` in `scripts/build_framework_site.py`.
 3. MR. MRC merges. The `pages` job on `main` rebuilds `public/`.
+
+Images are optional. Use `![alt](assets/name.jpg)` on its own line. The builder copies only files whose path matches `assets/[A-Za-z0-9._-]+\.(png|jpg|jpeg|webp)`. No remote URLs. No `..`. No mermaid (the builder does not render it).
 
 Do not glob the whole repo. Do not paste DATE_RE, vault papers, TAM/raise, or 3DX Lab onto the public site. A lean [comparison](comparison.md) page is allowlisted; the 715-line vault working paper is not. Do not restyle the shop.
 

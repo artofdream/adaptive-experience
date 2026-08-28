@@ -2,7 +2,7 @@
 
 This page is the public map of Adaptive Experience. Use it when talking about the framework. It is not the shop and not a trophy.
 
-[Home](index.html) · [Path B case study](path-b.html) · [Comparison](comparison.html)
+[Home](index.html) · [Path B case study](path-b.html) · [Comparison](comparison.html) · [Journal](journal.html)
 
 ## Formula
 
@@ -65,4 +65,4 @@ Named scripts used to probe the florist instantiation at [aea.artof.link](https:
 - Not AGENTS.md and not a 14/14 scoreboard.
 - Not a request to restyle the florist.
 
-Back to the [framework](index.html), the [Path B case study](path-b.html), or the [comparison](comparison.html).
+Back to the [framework](index.html), the [Path B case study](path-b.html), the [comparison](comparison.html), or the [journal](journal.html).

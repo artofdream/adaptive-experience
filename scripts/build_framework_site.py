@@ -2,6 +2,7 @@
 """Build architecture.artof.link from an allowlist of docs/framework markdown.
 
 Stdlib only. Adding a page means changing PAGES below. Do not glob the repo.
+Images may only come from docs/framework/assets/ with a safe filename.
 """
 from __future__ import annotations
 
@@ -18,6 +19,7 @@ PAGES = [
     ('schema', 'schema.md', 'Schema'),
     ('comparison', 'comparison.md', 'Comparison'),
     ('path-b', 'path-b.md', 'Path B case study'),
+    ('journal', 'journal.md', 'Journal'),
 ]
 SITE = 'architecture.artof.link'
 CSS = (
@@ -35,12 +37,16 @@ CSS = (
     'background:#1c2024;padding:.1em .35em}'
     '.formula{border-left:3px solid var(--accent);padding-left:1rem}'
     '.warn{color:var(--warn)}nav.site{display:flex;gap:1rem;margin-top:.75rem}'
+    'figure{margin:1.75rem 0}figure img{max-width:100%;height:auto;display:block;'
+    'border:1px solid var(--rule)}'
     'footer{margin-top:3rem;padding:1.5rem 1.25rem 3rem;border-top:1px solid var(--rule);'
     'color:var(--muted);font-family:ui-sans-serif,system-ui,sans-serif;font-size:.82rem}'
 )
 INLINE = re.compile(
     r'`([^`]+)`|\[([^\]]+)\]\(([^)]+)\)|\*\*([^*]+)\*\*|\*([^*]+)\*'
 )
+IMG_LINE = re.compile(r'^!\[([^\]]*)\]\(([^)]+)\)$')
+SAFE_ASSET = re.compile(r'^assets/[A-Za-z0-9._-]+\.(?:png|jpe?g|webp)$')
 
 
 def inline_md(text: str) -> str:
@@ -76,6 +82,21 @@ def md_to_html(source: str) -> str:
         line = raw.strip()
         if not line:
             close()
+            continue
+        img = IMG_LINE.match(line)
+        if img:
+            close()
+            alt, src = img.group(1), img.group(2)
+            if SAFE_ASSET.match(src):
+                out.append(
+                    '<figure><img src="'
+                    + html.escape(src, quote=True)
+                    + '" alt="'
+                    + html.escape(alt, quote=True)
+                    + '"></figure>'
+                )
+            else:
+                out.append('<p>' + html.escape(line) + '</p>')
             continue
         h = re.match(r'^(#{1,3})\s+(.*)$', line)
         if h:
@@ -126,9 +147,25 @@ def wrap(title: str, slug: str, body: str) -> str:
     )
 
 
+def copy_assets() -> None:
+    src = SRC / 'assets'
+    dest = OUT / 'assets'
+    if not src.is_dir():
+        return
+    dest.mkdir(parents=True, exist_ok=True)
+    for path in src.iterdir():
+        if not path.is_file():
+            continue
+        rel = 'assets/' + path.name
+        if SAFE_ASSET.match(rel):
+            (dest / path.name).write_bytes(path.read_bytes())
+            print('ok: ' + str(path.relative_to(ROOT)) + ' -> ' + str((dest / path.name).relative_to(ROOT)))
+
+
 def build() -> int:
     OUT.mkdir(parents=True, exist_ok=True)
     fail = 0
+    copy_assets()
     for slug, name, title in PAGES:
         path = SRC / name
         if not path.is_file():
