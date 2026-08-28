@@ -2,7 +2,7 @@
 
 Path B is one instantiation of Adaptive Experience: a live florist workspace at [https://aea.artof.link](https://aea.artof.link). It is not this site, not the framework home, and not a trophy.
 
-[Framework home](index.html) · [Schema](schema.html)
+[Framework home](index.html) · [Schema](schema.html) · [Comparison](comparison.html)
 
 ## Journeys
 
