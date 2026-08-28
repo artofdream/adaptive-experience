@@ -6,6 +6,10 @@ alwaysApply: false
 
 # Figma ↔ shop UI sync
 
+> **Captured/Updated**: 2026-08-28  
+> **Owner**: `@aea-ux-designer`  
+> **Traceability**: Issue #274, Design System SOP  
+
 When changing `edge/gateway/ui/` or proposing a **new user journey**, follow
 `.cursor/skills/aea-ux-designer/SKILL.md` (Figma section).
 

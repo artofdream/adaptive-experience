@@ -5,6 +5,10 @@ alwaysApply: true
 
 # Claude ↔ Obsidian loop
 
+> **Captured/Updated**: 2026-08-28  
+> **Owner**: `@aea-knowledge-guardian` with `@aea-coherence-guardian`  
+> **Traceability**: Issue #274, Second Brain Knowledge SOP  
+
 When capturing, triaging, or promoting working knowledge for this repository,
 follow `research/claude-obsidian-loop.md`.
 

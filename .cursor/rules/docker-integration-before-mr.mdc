@@ -5,6 +5,10 @@ alwaysApply: true
 
 # Docker integration before push and MR
 
+> **Captured/Updated**: 2026-08-28  
+> **Owner**: `@aea-devsecops-platform` with `@aea-senior-software-engineer`  
+> **Traceability**: Issue #274, CI/CD Pre-Push SOP  
+
 Before `git push` and opening or updating a merge request, run the **local
 Docker integration tests for every component the change actually impacts**.
 Do not treat unit tests as a substitute.
