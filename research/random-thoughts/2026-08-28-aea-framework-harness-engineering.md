@@ -467,6 +467,139 @@ Do not mark [[CF-054]] `verified` in this note until those clips exist. The queu
 
 **TABLE XII — ARCHITECTURE DECISION FRAMEWORK (AEA)**
 
+| Problem | Start with | Do not add yet |
+|---|---|---|
+| Known errors repeat | Strongest layer (sensor/CI); prune duplicate guide | Another hat |
+| Availability lies | Fail-closed sensor | Softer copy |
+| Hat exceeds scope | Permission + ID freeze | Full committee every edit |
+| State lost next session | Committed DATE_RE | Vector memory |
+| Status words drift | Honesty trip wire | LLM-as-judge on the brief |
+| Viewport divergence | Spec + UX-owned CSS | A second product |
+| Loop never stops | One-CF + MRC | Multi-agent debate |
+
+Run the experience. Observe failures. Let the harness grow from CFs. Do not build a heavier harness than the shop. Do not skip sensors because the concierge sounded sure.
+
+## XII. PRODUCTION CHECKLIST FOR PATH B + ENGINEERING HARNESS
+
+*A shop is not production because the demo clip is pretty*
+
+**TABLE XIII — PATH B PRODUCTION READINESS CHECKLIST**
+
+| # | Requirement | Failure if missing |
+|---|---|---|
+| 1 | AGENTS.md SOP + DATE_RE handoff | Every session starts from zero |
+| 2 | 14 hats, no 15th | Shadow implementer |
+| 3 | FR/NFR ID freeze + graph-guard | Workbook drift |
+| 4 | Computational guards in CI | Errors reach the shop |
+| 5 | Fail-closed FR-011 / NFR-009 | Available on stale data |
+| 6 | One CF / issue / branch / MR | Queue fan-out |
+| 7 | MRC-only merge | Producer bias on main |
+| 8 | Honesty rule ([[CF-048]] / [[CF-054]] class) | Unprobed or false-verified status |
+| 9 | Grafana + CloudWatch NFR-003 | Blind latency and drift |
+| 10 | Trusted/untrusted split | Speech as instruction |
+| 11 | UX ownership of Path B CSS | Viewport fork |
+| 12 | Clip probe dated after the CSS | Claim without evidence |
+
+## XVI. WHEN NOT TO GROW THE HARNESS
+
+*Not every utterance justifies another skill*
+
+A harness earns its cost when the experience repeats, failures have customer consequences, sessions must preserve Shared Understanding, or more than one hat touches main. One-off copy brainstorms, exploratory product talks, and throwaway prototypes do not need DATE_RE, MRC, and fourteen skills. Path B is not that. It is external-facing and must stay honest about stock, payment mockups, and tracking.
+
+**TABLE XVI — HARNESS DECISION FILTER**
+
+| Scenario | Harness? | Why |
+|---|---|---|
+| One-off copy riff | No | No recurrence |
+| Exploratory UX sketch | Maybe | If it will hit Path B CSS, yes |
+| Live availability claim | Yes | FR-011 customer consequence |
+| Daily DATE_RE handoff | Yes | Next session depends on it |
+| CF intake / MRC merge | Yes | Main is shared |
+| Personal note in random-thoughts | No | Not shared memory |
+| Payment FR-019 mockup | Yes | Must not imply live Stripe |
+| 3DX Lab work | Separate | Out of scope for this paper |
+
+The test: would a customer notice a silent wrong Available badge? Then you need a sensor. Would the next session need yesterday's intent? Then you need DATE_RE. Would a mistaken merge change the shop? Then you need MRC. If none apply, the conversation itself is enough.
+
+## XVII. HARNESS ENGINEERING FOR THE FOURTEEN HATS
+
+*Multi-agent here means typed hats, not a swarm*
+
+The six-layer harness applies to each hat. The system additionally needs typed handoffs, a shared vault, a routing policy (the CF queue), and an independent verifier no producer can override. That verifier is @aea-mr-coordinator.
+
+### A. Typed Handoffs
+
+When @aea-ux-designer passes work to @aea-senior-software-engineer, the handoff is a GitLab artifact plus vault, not chat: issue, MR, evidence, unresolved remainder. "Done, looks good" must not advance Path B. The receiver should open the spec or the CSS and check. Packet fields still apply: identity, pointer, evidence, assumptions, deadline [11].
+
+### B. Shared Memory versus Shared Context
+
+Fourteen hats in one conversation pollute context. AEA's better pattern is already in the vault: hats read DATE_RE, the CF row, and the skill that matches the hat. They do not inherit another hat's discarded plan. Uncommitted files remain private.
+
+### C. The Verifier Must Be Independent
+
+The hat that produced the CSS is not the judge of whether [[CF-054]] is verified. Producer bias is real. A closed issue is not a clip. Deterministic guards first. MRC reports gate failures without silently rewriting the shop. Auto-merge when gates pass is still an MRC act, not a courtesy from the producer. Escalation to MRC or PO is a successful stop.
+
+**TABLE XVII — FOURTEEN-HAT HARNESS EXTENSIONS**
+
+| Multi-hat layer | Single-hat equivalent | What it adds |
+|---|---|---|
+| GitLab issue / MR packet | Self-check | Contract between hats |
+| Vault + DATE_RE | Session log | Cross-hat memory |
+| CF queue routing | Agentic loop | One-finding assignment |
+| @aea-mr-coordinator | Computational sensor | Producer-consumer split |
+| PO / PM / sponsor packet | Human approval | System-level escalation |
+
+## XVIII. CONCLUSION
+
+The model provides interpretation. Domain services provide validation. The outer harness determines whether Lily's Florist is a product or a demo. Related work shows that harness-only changes can move coding-agent benches [2], [6], [7]. Those benches are not this shop. AEA's claim is smaller and stricter: Adaptive Experience = Shared Understanding + Domain Services + Outer Harness. The six layers are the minimum infrastructure for an experience that must work across sessions and viewports without improvising IDs or availability.
+
+Guides prevent known failures. Sensors catch new ones. The agentic loop bounds work to one CF. Memory persists in DATE_RE, not in chat. Permissions freeze fourteen hats. Observability makes honesty checkable. The practical recommendation remains the ratchet: when Path B lies, fix the harness at the strongest layer (sensor/CI), not the sentence. Start from the vault that already exists. Add one guard. Keep one merge owner. Log one probe. Lean by subtraction. The harness accumulates. The experience becomes inspectable.
+
+A reliable AEA system should make this statement true: every important shop claim traces to a guide that shaped it, a sensor that verified it, a hat that was allowed to touch it, a brief that preserved it, and a log that recorded it. When that statement is false, more model calls usually increase opacity. When it is true, the harness is an engineering mechanism rather than a personality.
+
+> "The engineers who thrive in 2026 are not the ones who write the most code. They are the ones who build the best environments for agents to write code in." On Path B the line restates: the team that thrives is the one that builds the best environment for an experience to stay honest.
+
+## XIV. HARNESS VS. PROMPT AND CONTEXT FOR EXPERIENCE SYSTEMS
+
+*Why a dual-viewport florist cannot be prompt-engineered into honesty*
+
+**TABLE XIV-B — THREE DISCIPLINES, EXPERIENCE-SHAPED**
+
+| Challenge | Prompt Eng. | Context Eng. | Harness Eng. |
+|---|---|---|---|
+| False Available | "Don't overclaim" | Retrieve stock text | Fail-closed sensor |
+| Lost intent | Summarize in prompt | Memory / SU object | DATE_RE + FR-001 |
+| Wrong hat edits CSS | Instruct in chat | Limit file list | UX ownership + MRC |
+| Quality varies | Add examples | Few-shot journeys | Guards + clip probe |
+| Runs on forever | "Be concise" | Limit context | One-CF + merge policy |
+| Errors repeat | Re-add correction | Store in notes | Guide + CF ratchet |
+| Unprobed status | Add warning | Retrieve last brief | Honesty trip wire |
+
+A prompt cannot disable Select. A retrieval pipeline cannot stop a knowledge MR from closing a UI finding. A memory system cannot fire a DATE_RE trip wire. Those are harness responsibilities. Prompt, context, and harness all exist on Path B. If forced to spend the next engineering hour, spend it on the layer that makes a lie unrepresentable.
+
+### A. Compounding
+
+Guide rules, guards, and merge policy compound across sessions. Prompt corrections do not. Context corpora degrade as they grow. Harness improvements are structural. That is the lesson borrowed from related work, not a reprint of its bench deltas.
+
+### B. When All Three Are Needed
+
+The concierge voice is a prompt problem. Shared Understanding is a context problem. Fail-closed inventory, MRC, and honesty are harness problems. Removing any layer weakens Path B. The next hour still belongs to the harness when the shop is already fluent and still untrustworthy.
+
+## XIV. LIMITATIONS AND COMMON MISTAKES
+
+*What goes wrong even with fourteen hats*
+
+### A. The Over-Engineered Fifteenth Hat
+
+A harness with a shadow implementer, twelve inferential judges, and a forty-step approval chain is not safety. It is latency. The harness should be the minimum that keeps Path B honest. If hats spend more time coordinating than shipping probed findings, the harness is too heavy. Do not invent a 15th implementer to "just finish the CSS."
+
+### B. DATE_RE Pollution
+
+Cadence jobs writing DATE_RE, or sessions dumping random-thoughts into the handoff filename, recreate [[CF-048]]. Cadence writes `YYYY-MM-DD-daily-activity.md` after #263. Prune. Expire. Keep one live brief name (`research/daily-briefs/YYYY-MM-DD.md`). Do not paste papers into DATE_RE. A stale brief that claims Active Focus as fact when DATE_RE 2026-08-28 said Unknown is a sensor miss. Date and prune guide rules (#274, in progress).
+
+### C. Claiming Verified Without a Probe
+
+
 
 
 
