@@ -88,9 +88,10 @@ def md_to_html(source: str) -> str:
             close()
             alt, src = img.group(1), img.group(2)
             if SAFE_ASSET.match(src):
+                href = src if src.startswith('/') else '/' + src
                 out.append(
                     '<figure><img src="'
-                    + html.escape(src, quote=True)
+                    + html.escape(href, quote=True)
                     + '" alt="'
                     + html.escape(alt, quote=True)
                     + '"></figure>'
