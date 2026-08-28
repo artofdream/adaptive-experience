@@ -2,7 +2,7 @@
 
 > **Tags**: #aea #second-brain #harness #knowledge-first #path-b
 > **Captured**: 2026-08-28
-> **GitLab**: Related #274 (this note). Related #273 via !304 (**open**, unmerged). #275 queued.
+> **GitLab**: Related #274 (this note). Related #273 via !304 (**merged**). #275 queued.
 > **Related**: [[2026-08-27-path-b-dual-viewport-ux-loop-j1-j4]] [[2026-08-27-session-memory-log-cf054-path-b-ux-in-coherence-loop]] [[2026-08-26-date-re-bus-and-agent-runner-image-roll]] [[2026-08-28-aea-framework-harness-engineering]] [[2026-08-28-aea-vs-harness-playbook-comparison]]
 > **This node is knowledge, not DATE_RE, not a UI restyle.**
 
@@ -27,7 +27,7 @@ Wikilinks and `#aea` keep the graph-guard happy. Cite existing [[FR-001]] [[J1]]
 
 ## 2. DATE_RE one-file binding
 
-Read on GitLab `main` (no clone): `scripts/check_daily_brief_freshness.py` defines `DATE_RE = re.compile(r"^(\d{4}-\d{2}-\d{2})\.md$")`. That is the only live handoff filename.
+Read on GitLab `main` (no clone): `scripts/check_daily_brief_freshness.py` defines `DATE_RE = re.compile(r"^(\d{4}-\d{2}-\d{2})\\.md$")`. That is the only live handoff filename.
 
 - DATE_RE = only `research/daily-briefs/YYYY-MM-DD.md`.
 - Archaeology belongs in `research/random-thoughts/`.
@@ -43,7 +43,7 @@ Read on GitLab `main` (no clone): `scripts/check_daily_brief_freshness.py` defin
 1. Session start: DATE_RE, then this node if the work is harness/lean/CF-054.
 2. Treat the playbook as a map of the outer harness, not as ship evidence. Template benches are related work, not AEA results.
 3. Lean/antifragility/maintainability work is the backlog, not more paper:
-   - #273 CF-054 clip dated after CSS + queue reconcile. SOP+queue fix is !304 (**open**, unmerged, branch `docs/273-cf054-clip-verify-after-css`). Do not treat !304 as merged. On `main` the CF-054 queue row still says `verified` (false verified). On !304's branch the row is `regressed`. Live [[J1]] clip after CSS !300: Unknown.
+   - #273 CF-054 clip dated after CSS + queue reconcile. SOP+queue fix is !304 (**merged** 28 Aug 22:14 Berlin). On `main` the CF-054 queue row is `regressed`. GitLab closed #273 with that merge; the close is SOP/queue honesty, not clip-verify. Live [[J1]] clip after CSS !300: Unknown.
    - #274 DATE_RE one file + this placement (this MR). Disjoint files from !304.
    - #275 prune guide lines sensors already enforce (queued). Do not start #275 here.
 4. MRC merges. Knowledge guardian writes notes. UX owns the clip. Coherence owns the CF row.
@@ -52,13 +52,13 @@ Read on GitLab `main` (no clone): `scripts/check_daily_brief_freshness.py` defin
 
 Mark steps **in progress**, not done:
 
-- Clip-verify close sensor (CF-054 / #273): in progress; !304 open, unmerged
-- Queue reconcile from `glab`: in progress on !304, not yet on `main`
+- Clip-verify close sensor (CF-054 / #273): SOP merged as !304; clip after CSS Unknown
+- Queue reconcile from `glab`: on `main` after !304 (CF-054 is `regressed`)
 - Guide/skill prune (#275): queued
 - DATE_RE thin (#274): in progress via this note
 - Live J1 re-record after !300: Unknown
 
-Do not mark CF-054 `verified` in the paper until those clips exist. Paper language: **regressed** / false verified on main.
+Do not mark CF-054 `verified` in the paper until those clips exist. Paper language: **regressed** on main after !304; clip after CSS Unknown.
 
 ## 5. Disjoint from !304
 
