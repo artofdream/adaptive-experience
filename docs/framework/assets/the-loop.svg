@@ -1,0 +1,89 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 230" width="100%" height="auto" role="img" aria-label="The Execution Loop: Interpret, Act, Verify, Remember">
+  <defs>
+    <style>
+      .bg { fill: #121417; }
+      .card { fill: #181c22; stroke: #2a2e33; stroke-width: 1.5; rx: 6px; }
+      .step-num { font-family: ui-monospace, Menlo, monospace; font-size: 10px; fill: #c4b08a; font-weight: 700; }
+      .title { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; font-weight: 700; font-size: 14px; fill: #e7e4dc; }
+      .desc { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; font-weight: 400; font-size: 11px; fill: #9a9588; }
+      .arrow { fill: none; stroke: #c4b08a; stroke-width: 1.5; stroke-dasharray: 3 3; }
+      .arrow-head { fill: #c4b08a; }
+      .banner { font-family: Palatino, "Times New Roman", serif; font-size: 17px; fill: #e7e4dc; font-weight: 600; text-anchor: middle; }
+    </style>
+    <marker id="arr" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 1 L 10 5 L 0 9 z" class="arrow-head"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="230" class="bg" rx="8"/>
+  <rect x="1" y="1" width="798" height="228" fill="none" stroke="#2a2e33" stroke-width="1" rx="7"/>
+
+  <!-- Top Title Banner -->
+  <text x="400" y="32" class="banner">The Execution Loop</text>
+  <line x1="40" y1="48" x2="760" y2="48" stroke="#2a2e33" stroke-width="1"/>
+
+  <!-- Node 1: Interpret -->
+  <g transform="translate(40, 68)">
+    <rect width="160" height="110" class="card"/>
+    <rect x="0" y="0" width="160" height="4" fill="#c4b08a" rx="2"/>
+    <text x="14" y="24" class="step-num">STEP 1</text>
+    <text x="14" y="44" class="title">Interpret</text>
+    <text x="14" y="68" class="desc">
+      <tspan x="14" dy="0">Read user intent into</tspan>
+      <tspan x="14" dy="16">Shared Understanding</tspan>
+      <tspan x="14" dy="16">session model.</tspan>
+    </text>
+  </g>
+
+  <!-- Arrow 1 -> 2 -->
+  <line x1="205" y1="123" x2="225" y2="123" stroke="#c4b08a" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Node 2: Act -->
+  <g transform="translate(230, 68)">
+    <rect width="160" height="110" class="card"/>
+    <rect x="0" y="0" width="160" height="4" fill="#c4b08a" rx="2"/>
+    <text x="14" y="24" class="step-num">STEP 2</text>
+    <text x="14" y="44" class="title">Act</text>
+    <text x="14" y="68" class="desc">
+      <tspan x="14" dy="0">Call domain services;</tspan>
+      <tspan x="14" dy="16">do not fake inventory,</tspan>
+      <tspan x="14" dy="16">pricing, or actions.</tspan>
+    </text>
+  </g>
+
+  <!-- Arrow 2 -> 3 -->
+  <line x1="395" y1="123" x2="415" y2="123" stroke="#c4b08a" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Node 3: Verify -->
+  <g transform="translate(420, 68)">
+    <rect width="160" height="110" class="card"/>
+    <rect x="0" y="0" width="160" height="4" fill="#c4b08a" rx="2"/>
+    <text x="14" y="24" class="step-num">STEP 3</text>
+    <text x="14" y="44" class="title">Verify</text>
+    <text x="14" y="68" class="desc">
+      <tspan x="14" dy="0">Empirical probe on</tspan>
+      <tspan x="14" dy="16">live journey viewport.</tspan>
+      <tspan x="14" dy="16">No probe = Unknown.</tspan>
+    </text>
+  </g>
+
+  <!-- Arrow 3 -> 4 -->
+  <line x1="585" y1="123" x2="605" y2="123" stroke="#c4b08a" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Node 4: Remember -->
+  <g transform="translate(610, 68)">
+    <rect width="150" height="110" class="card"/>
+    <rect x="0" y="0" width="150" height="4" fill="#c4b08a" rx="2"/>
+    <text x="14" y="24" class="step-num">STEP 4</text>
+    <text x="14" y="44" class="title">Remember</text>
+    <text x="14" y="68" class="desc">
+      <tspan x="14" dy="0">Record actual state</tspan>
+      <tspan x="14" dy="16">into shared memory;</tspan>
+      <tspan x="14" dy="16">inform next turn.</tspan>
+    </text>
+  </g>
+
+  <!-- Feedback Loop Underneath -->
+  <path d="M 685 183 L 685 200 L 120 200 L 120 183" class="arrow" marker-end="url(#arr)"/>
+</svg>

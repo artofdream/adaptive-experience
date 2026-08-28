@@ -12,6 +12,8 @@ Shared Understanding is the session's current, reviewable model of intent. Domai
 
 AI may interpret. Domain services decide. A status word is a claim; it needs a probe.
 
+![Adaptive Experience formula](assets/formula.svg)
+
 ## Six layers
 
 1. **Guides** — constraints and playbooks (what may be said, what must be checked, who owns a surface).
@@ -23,12 +25,16 @@ AI may interpret. Domain services decide. A status word is a claim; it needs a p
 
 These are layers of the harness. They are not extra products.
 
+![The six layers of the outer harness](assets/six-layers.svg)
+
 ## Loop
 
 1. **Interpret** — read intent into Shared Understanding.
 2. **Act** — call domain services; do not fake their answers.
 3. **Verify** — a probe on the same journey and viewport, or a mechanical check. Closing a ticket is not a probe.
 4. **Remember** — write what was actually shown, not what would look good.
+
+![The four-step execution loop: Interpret, Act, Verify, Remember](assets/the-loop.svg)
 
 ## Roles
 
