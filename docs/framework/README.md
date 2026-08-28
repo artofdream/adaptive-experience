@@ -27,7 +27,18 @@ Do not glob the whole repo. Do not paste DATE_RE, vault papers, TAM/raise, or 3D
 2. Open one MR from `main`. Do not batch #274 / #275 or the playbook paper.
 3. MRC merges. Do not self-merge.
 4. On `main`, CI job `pages` runs `python scripts/build_framework_site.py` and publishes the `public/` artifact to GitLab Pages.
-5. Until DNS exists, the site is at `https://artof-group.gitlab.io/adaptive-experience-architecture/`.
-6. Sponsor leftover: GitLab Pages custom domain `architecture.artof.link` → CNAME to `artof-group.gitlab.io` plus verification TXT. Do not add this hostname to the Path B ALB or Terraform `domain_name` (CF-052). There is no Route53 in `infra/`.
+5. After MRC merge, the `pages` job on `main` publishes `public/`.
+6. **Do not** use GitLab's **Get started with GitLab Pages** wizard (step 1
+   defaults to `node:lts` + `public/`). That would generate a second CI file
+   and fight `scripts/build_framework_site.py` (`python:3.12-alpine`). Leave
+   the wizard until the job has run; then **Deploy → Pages → New domain**.
+7. Custom domain leftover (sponsor, Route53 account `737290977112`):
+   CNAME `architecture.artof.link` → `artof-group.gitlab.io` is **already
+   live**. Add the GitLab Pages **TXT** GitLab shows after New domain. Then
+   Retry verification, set Pages visibility to **Everyone**, leave Let's
+   Encrypt on. Click path: **Deploy → Pages** (not Settings → Pages).
+   Access control: **Settings → General → Visibility → Pages → Everyone**.
+   Do not add this hostname to the Path B ALB or Terraform `domain_name`
+   (CF-052). There is no Route53 in `infra/`.
 
 The `pages` job does not `needs` ECS jobs and does not use `resource_group: path-b-ecs`.

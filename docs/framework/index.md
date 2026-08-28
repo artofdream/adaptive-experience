@@ -31,7 +31,7 @@ Fourteen hats are lenses. Three executable jobs: implement, verify, merge (MRC o
 
 - The AEA **framework** (formula + six layers), published from allowlisted markdown on GitLab `main`.
 - Edit `docs/framework/`, open an MR, MRC merges, GitLab Pages publishes. No CMS.
-- Intended hostname: `architecture.artof.link` (DNS is a sponsor leftover until the CNAME exists). Until then, GitLab Pages serves the same files at the project Pages URL.
+- Intended hostname: `architecture.artof.link` (CNAME to `artof-group.gitlab.io` is live; GitLab Pages domain verification and Let's Encrypt remain). Until Pages publishes, treat the site as not up.
 
 ## What this site is not
 
