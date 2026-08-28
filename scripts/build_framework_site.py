@@ -46,7 +46,7 @@ INLINE = re.compile(
     r'`([^`]+)`|\[([^\]]+)\]\(([^)]+)\)|\*\*([^*]+)\*\*|\*([^*]+)\*'
 )
 IMG_LINE = re.compile(r'^!\[([^\]]*)\]\(([^)]+)\)$')
-SAFE_ASSET = re.compile(r'^assets/[A-Za-z0-9._-]+\.(?:png|jpe?g|webp)$')
+SAFE_ASSET = re.compile(r'^assets/[A-Za-z0-9._-]+\.(?:png|jpe?g|webp|svg)$')
 LOCAL_PAGE = re.compile(r'^(?:index|[A-Za-z0-9._-]+)\.html$')
 
 
@@ -147,6 +147,7 @@ def wrap(title: str, slug: str, body: str) -> str:
     return (
         '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">'
         '<meta name="viewport" content="width=device-width, initial-scale=1">'
+        '<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">'
         '<title>' + html.escape(title) + ' — ' + html.escape(SITE) + '</title>'
         '<style>' + CSS + '</style></head><body><header>'
         '<a href="' + html.escape(site_href('index.html'), quote=True) + '">' + html.escape(SITE) + '</a>'
