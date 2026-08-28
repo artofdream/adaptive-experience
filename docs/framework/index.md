@@ -12,6 +12,8 @@ Shared Understanding is the session's current, reviewable model of intent. Domai
 
 AI may interpret. Domain services decide. Status words are claims; they need a probe.
 
+![Adaptive Experience formula: Shared Understanding + Domain Services + Outer Harness](assets/formula.svg)
+
 ## Six layers
 
 1. **Guides** — constraints and playbooks that steer the experience (what may be said, what must be checked, who owns a surface). Fourteen hats are **roles**, not extra layers.
@@ -20,6 +22,8 @@ AI may interpret. Domain services decide. Status words are claims; they need a p
 4. **Memory** — Shared Understanding that persists for a session. Memory stores what was agreed, not what would look good on a slide.
 5. **Permissions** — who may change what. Domain services stay authoritative; the outer harness does not silently restyle or redeploy a live shop.
 6. **Observability** — evidence for every status word. If the probe is missing, write **Unknown**.
+
+![The six layers of the outer harness](assets/six-layers.svg)
 
 ## Honesty, knowledge, antifragility
 

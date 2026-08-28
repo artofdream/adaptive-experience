@@ -1,0 +1,85 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 380" width="100%" height="auto" role="img" aria-label="The Six Layers of the Outer Harness">
+  <defs>
+    <style>
+      .bg { fill: #121417; }
+      .card { fill: #181c22; stroke: #2a2e33; stroke-width: 1.5; rx: 6px; }
+      .layer-num { font-family: ui-monospace, Menlo, monospace; font-size: 11px; fill: #c4b08a; font-weight: 700; }
+      .title { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; font-weight: 700; font-size: 14px; fill: #e7e4dc; }
+      .desc { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; font-weight: 400; font-size: 12px; fill: #9a9588; }
+      .banner { font-family: Palatino, "Times New Roman", serif; font-size: 17px; fill: #e7e4dc; font-weight: 600; text-anchor: middle; }
+      .footer-note { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; font-size: 11px; fill: #9a9588; text-anchor: middle; }
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="380" class="bg" rx="8"/>
+  <rect x="1" y="1" width="798" height="378" fill="none" stroke="#2a2e33" stroke-width="1" rx="7"/>
+
+  <!-- Top Title Banner -->
+  <text x="400" y="32" class="banner">The Six Layers of the Outer Harness</text>
+  <line x1="40" y1="48" x2="760" y2="48" stroke="#2a2e33" stroke-width="1"/>
+
+  <!-- Layer 1: Guides -->
+  <g transform="translate(40, 62)">
+    <rect width="350" height="85" class="card"/>
+    <rect x="0" y="0" width="4" height="85" fill="#c4b08a" rx="1"/>
+    <text x="20" y="24" class="layer-num">LAYER 1</text>
+    <text x="85" y="24" class="title">Guides &amp; Playbooks</text>
+    <text x="20" y="48" class="desc">Constraints, policies, and operating procedures.</text>
+    <text x="20" y="66" class="desc">Defines what may be said and who owns each surface.</text>
+  </g>
+
+  <!-- Layer 2: Sensors -->
+  <g transform="translate(410, 62)">
+    <rect width="350" height="85" class="card"/>
+    <rect x="0" y="0" width="4" height="85" fill="#c4b08a" rx="1"/>
+    <text x="20" y="24" class="layer-num">LAYER 2</text>
+    <text x="95" y="24" class="title">Sensors &amp; Context</text>
+    <text x="20" y="48" class="desc">Notices intent, viewport (9:16 vs 16:9), and state.</text>
+    <text x="20" y="66" class="desc">Grounds experience in real telemetry without guessing.</text>
+  </g>
+
+  <!-- Layer 3: Loop -->
+  <g transform="translate(40, 157)">
+    <rect width="350" height="85" class="card"/>
+    <rect x="0" y="0" width="4" height="85" fill="#c4b08a" rx="1"/>
+    <text x="20" y="24" class="layer-num">LAYER 3</text>
+    <text x="75" y="24" class="title">The Execution Loop</text>
+    <text x="20" y="48" class="desc">Interpret → Act → Verify → Remember.</text>
+    <text x="20" y="66" class="desc">Empirical progression: closing a ticket is not a probe.</text>
+  </g>
+
+  <!-- Layer 4: Memory -->
+  <g transform="translate(410, 157)">
+    <rect width="350" height="85" class="card"/>
+    <rect x="0" y="0" width="4" height="85" fill="#c4b08a" rx="1"/>
+    <text x="20" y="24" class="layer-num">LAYER 4</text>
+    <text x="95" y="24" class="title">Shared Understanding</text>
+    <text x="20" y="48" class="desc">Session-persisted conversational context.</text>
+    <text x="20" y="66" class="desc">Stores what was agreed and validated, not pitch decks.</text>
+  </g>
+
+  <!-- Layer 5: Permissions -->
+  <g transform="translate(40, 252)">
+    <rect width="350" height="85" class="card"/>
+    <rect x="0" y="0" width="4" height="85" fill="#c4b08a" rx="1"/>
+    <text x="20" y="24" class="layer-num">LAYER 5</text>
+    <text x="95" y="24" class="title">Authority &amp; Boundaries</text>
+    <text x="20" y="48" class="desc">Domain services remain authoritative on price &amp; stock.</text>
+    <text x="20" y="66" class="desc">Outer harness does not fake responses or mutate state.</text>
+  </g>
+
+  <!-- Layer 6: Observability -->
+  <g transform="translate(410, 252)">
+    <rect width="350" height="85" class="card"/>
+    <rect x="0" y="0" width="4" height="85" fill="#c4b08a" rx="1"/>
+    <text x="20" y="24" class="layer-num">LAYER 6</text>
+    <text x="95" y="24" class="title">Observability &amp; Probes</text>
+    <text x="20" y="48" class="desc">Empirical proof for every status word.</text>
+    <text x="20" y="66" class="desc">If a verified probe is missing, mark strictly as Unknown.</text>
+  </g>
+
+  <!-- Footer note -->
+  <line x1="40" y1="347" x2="760" y2="347" stroke="#2a2e33" stroke-width="1"/>
+  <text x="400" y="364" class="footer-note">Harness layers govern interactions without replacing authoritative domain backends.</text>
+</svg>

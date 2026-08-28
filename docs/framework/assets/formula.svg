@@ -1,0 +1,71 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 240" width="100%" height="auto" role="img" aria-label="Adaptive Experience = Shared Understanding + Domain Services + Outer Harness">
+  <defs>
+    <style>
+      .bg { fill: #121417; }
+      .card { fill: #181c22; stroke: #2a2e33; stroke-width: 1.5; rx: 6px; }
+      .card-accent { fill: #181c22; stroke: #c4b08a; stroke-width: 2; rx: 6px; }
+      .title { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; font-weight: 700; font-size: 15px; fill: #e7e4dc; }
+      .title-accent { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; font-weight: 700; font-size: 15px; fill: #c4b08a; }
+      .desc { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; font-weight: 400; font-size: 12px; fill: #9a9588; line-height: 1.4; }
+      .symbol { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; font-weight: 700; font-size: 24px; fill: #c4b08a; text-anchor: middle; dominant-baseline: central; }
+      .banner { font-family: Palatino, "Times New Roman", serif; font-size: 17px; fill: #e7e4dc; font-weight: 600; text-anchor: middle; }
+      .tag { font-family: ui-monospace, Menlo, monospace; font-size: 10px; fill: #c4b08a; letter-spacing: 0.5px; }
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="240" class="bg" rx="8"/>
+  <rect x="1" y="1" width="798" height="238" fill="none" stroke="#2a2e33" stroke-width="1" rx="7"/>
+
+  <!-- Top Title Banner -->
+  <text x="400" y="34" class="banner">Adaptive Experience = Shared Understanding + Domain Services + Outer Harness</text>
+  <line x1="40" y1="52" x2="760" y2="52" stroke="#2a2e33" stroke-width="1"/>
+
+  <!-- Pillar 1: Shared Understanding -->
+  <g transform="translate(40, 72)">
+    <rect width="210" height="135" class="card"/>
+    <rect x="0" y="0" width="210" height="4" fill="#c4b08a" rx="2"/>
+    <text x="16" y="26" class="tag">LAYER 4</text>
+    <text x="16" y="48" class="title">Shared Understanding</text>
+    <text x="16" y="74" class="desc">
+      <tspan x="16" dy="0">• Session intent model</tspan>
+      <tspan x="16" dy="18">• Reviewable context</tspan>
+      <tspan x="16" dy="18">• AI may interpret</tspan>
+      <tspan x="16" dy="18">• Agreed facts only</tspan>
+    </text>
+  </g>
+
+  <!-- Plus Symbol 1 -->
+  <text x="275" y="140" class="symbol">+</text>
+
+  <!-- Pillar 2: Domain Services -->
+  <g transform="translate(295, 72)">
+    <rect width="210" height="135" class="card"/>
+    <rect x="0" y="0" width="210" height="4" fill="#c4b08a" rx="2"/>
+    <text x="16" y="26" class="tag">AUTHORITATIVE</text>
+    <text x="16" y="48" class="title">Domain Services</text>
+    <text x="16" y="74" class="desc">
+      <tspan x="16" dy="0">• Real inventory &amp; stock</tspan>
+      <tspan x="16" dy="18">• Authoritative pricing</tspan>
+      <tspan x="16" dy="18">• Delivery &amp; payments</tspan>
+      <tspan x="16" dy="18">• Validates every claim</tspan>
+    </text>
+  </g>
+
+  <!-- Plus Symbol 2 -->
+  <text x="530" y="140" class="symbol">+</text>
+
+  <!-- Pillar 3: Outer Harness -->
+  <g transform="translate(550, 72)">
+    <rect width="210" height="135" class="card-accent"/>
+    <rect x="0" y="0" width="210" height="4" fill="#c4b08a" rx="2"/>
+    <text x="16" y="26" class="tag">GOVERNANCE &amp; LOOP</text>
+    <text x="16" y="48" class="title-accent">Outer Harness</text>
+    <text x="16" y="74" class="desc">
+      <tspan x="16" dy="0">• 6 defensive layers</tspan>
+      <tspan x="16" dy="18">• 14 stakeholder roles</tspan>
+      <tspan x="16" dy="18">• Probes &amp; observability</tspan>
+      <tspan x="16" dy="18">• Antifragile loop</tspan>
+    </text>
+  </g>
+</svg>
