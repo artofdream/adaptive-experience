@@ -67,7 +67,7 @@ completed rows because the queue is also the audit trail.
 | 51 | CF-051 | FR-016/017 narrative and M12 completion wording conflict with canonical reminder/analytics definitions and thin runtime | Medium | verified | 2026-08-23 | 2026-08-27 | `docs/02-business-analysis/requirements.md` · `docs/07-roadmap/roadmap.md` |
 | 52 | CF-052 | M14 claims merchant-domain configuration but committed Terraform represents only aea.artof.link | Medium | verified | 2026-08-23 | 2026-08-27 | `docs/07-roadmap/roadmap.md` · `infra/aws/variables.tf` |
 | 53 | CF-053 | M17 calls pgvector Future although migration 013 and local Compose already enable the retrieval extension | Medium | verified | 2026-08-23 | 2026-08-27 | `docs/07-roadmap/roadmap.md` · `platform/migrations/013_retrieval_pgvector.sql` |
-| 54 | CF-054 | Path B phone copies the 7-step desktop Adaptive Workspace; dual viewport (phone linear, desktop spatial) not used (J1–J4 clips 2026-08-27) | Medium | in-mr | 2026-08-27 | 2026-08-27 | #272 / !298 (knowledge; product UX still open) |
+| 54 | CF-054 | Path B phone copies the 7-step desktop Adaptive Workspace; dual viewport (phone linear, desktop spatial) not used (J1–J4 clips 2026-08-27) | Medium | verified | 2026-08-27 | 2026-08-28 | #272 / !298, !299, !300 |
 
 Allowed statuses: `queued`, `investigating`, `ready`, `in-progress`, `in-mr`,
 `verified`, `regressed`, `duplicate`, `not-reproducible`, and `blocked`.
