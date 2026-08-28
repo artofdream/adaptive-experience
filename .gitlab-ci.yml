@@ -565,3 +565,21 @@ deploy-ecs-agent-runner:
         - scripts/generate_codex_stakeholder_skills.py
         - .gitlab-ci.yml
     - if: '$CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "web"'
+
+# architecture.artof.link: GitLab Pages from docs/framework allowlist.
+# Independent of Path B ECS (no needs, no resource_group path-b-ecs).
+# Merge to main publishes. Custom domain DNS is a sponsor one-time leftover.
+pages:
+  stage: deploy
+  image: python:3.12-alpine
+  script:
+    - python scripts/build_framework_site.py
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      changes:
+        - docs/framework/**/*
+        - scripts/build_framework_site.py
+        - .gitlab-ci.yml
