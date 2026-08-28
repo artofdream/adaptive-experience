@@ -2,7 +2,7 @@
 
 This page is a short public comparison: Adaptive Experience Architecture next to a six-layer harness taxonomy used for coding agents. It exists so a reader can see the sources and the limits in one place.
 
-[Home](index.html) · [Schema](schema.html) · [Path B](path-b.html)
+[Home](index.html) · [Schema](schema.html) · [Path B](path-b.html) · [Journal](journal.html)
 
 ## What this is
 
@@ -89,4 +89,4 @@ Only what has a probe, or Unknown:
 - Live Stripe, a finished dual-viewport, a 14/14 skill score, GAIA, Terminal Bench, or a million generated lines.
 - Endorsement by any organization named in related work.
 
-Back to the [schema](schema.html) or the [framework](index.html).
+Back to the [framework](index.html), the [schema](schema.html), the [Path B case study](path-b.html), or the [journal](journal.html).

@@ -2,7 +2,7 @@
 
 Path B is one instantiation of Adaptive Experience: a live florist workspace at [https://aea.artof.link](https://aea.artof.link). It is not this site, not the framework home, and not a trophy.
 
-[Framework home](index.html) · [Schema](schema.html) · [Comparison](comparison.html)
+[Framework home](index.html) · [Schema](schema.html) · [Comparison](comparison.html) · [Journal](journal.html)
 
 ## Journeys
 
@@ -30,4 +30,4 @@ This page mentions CF-054 so the public case study stays honest. It is not a bad
 - Not internal vault papers, fundraising materials, or lab prototypes.
 - Not a request to restyle Path B CSS.
 
-Back to the [framework](index.html).
+The [journal](journal.html) is the curated history. Back to the [framework](index.html).
