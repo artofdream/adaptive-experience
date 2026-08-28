@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Lily's Florist">
+  <rect width="32" height="32" fill="#efeaf6"/>
+  <ellipse cx="16" cy="11" rx="5" ry="7" fill="#5b3d8c"/>
+  <ellipse cx="11" cy="15" rx="6" ry="5" fill="#5b3d8c"/>
+  <ellipse cx="21" cy="15" rx="6" ry="5" fill="#5b3d8c"/>
+  <rect x="15" y="16" width="2" height="10" fill="#5b3d8c"/>
+  <ellipse cx="21" cy="22" rx="5" ry="3" fill="#4a7c59"/>
+</svg>
