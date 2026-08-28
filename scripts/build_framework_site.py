@@ -47,6 +47,16 @@ INLINE = re.compile(
 )
 IMG_LINE = re.compile(r'^!\[([^\]]*)\]\(([^)]+)\)$')
 SAFE_ASSET = re.compile(r'^assets/[A-Za-z0-9._-]+\.(?:png|jpe?g|webp)$')
+LOCAL_PAGE = re.compile(r'^(?:index|[A-Za-z0-9._-]+)\.html$')
+
+
+def site_href(href: str) -> str:
+    """Root-relative for Pages pretty URLs (/journal must not resolve schema.html to /journal/schema.html)."""
+    if href.startswith(('/', 'http://', 'https://', 'mailto:', '#')):
+        return href
+    if SAFE_ASSET.match(href) or LOCAL_PAGE.match(href):
+        return '/' + href
+    return href
 
 
 def inline_md(text: str) -> str:
@@ -57,7 +67,7 @@ def inline_md(text: str) -> str:
         if m.group(1) is not None:
             parts.append('<code>' + html.escape(m.group(1)) + '</code>')
         elif m.group(2) is not None:
-            href = html.escape(m.group(3), quote=True)
+            href = html.escape(site_href(m.group(3)), quote=True)
             parts.append('<a href="' + href + '">' + html.escape(m.group(2)) + '</a>')
         elif m.group(4) is not None:
             parts.append('<strong>' + html.escape(m.group(4)) + '</strong>')
@@ -88,9 +98,10 @@ def md_to_html(source: str) -> str:
             close()
             alt, src = img.group(1), img.group(2)
             if SAFE_ASSET.match(src):
+                href = src if src.startswith('/') else '/' + src
                 out.append(
                     '<figure><img src="'
-                    + html.escape(src, quote=True)
+                    + html.escape(href, quote=True)
                     + '" alt="'
                     + html.escape(alt, quote=True)
                     + '"></figure>'
@@ -129,7 +140,7 @@ def md_to_html(source: str) -> str:
 def wrap(title: str, slug: str, body: str) -> str:
     nav = []
     for other, _src, other_title in PAGES:
-        href = 'index.html' if other == 'index' else other + '.html'
+        href = site_href('index.html' if other == 'index' else other + '.html')
         cur = ' aria-current="page"' if other == slug else ''
         label = 'Framework' if other == 'index' else other_title
         nav.append('<a href="' + href + '"' + cur + '>' + html.escape(label) + '</a>')
@@ -138,7 +149,7 @@ def wrap(title: str, slug: str, body: str) -> str:
         '<meta name="viewport" content="width=device-width, initial-scale=1">'
         '<title>' + html.escape(title) + ' — ' + html.escape(SITE) + '</title>'
         '<style>' + CSS + '</style></head><body><header>'
-        '<a href="index.html">' + html.escape(SITE) + '</a>'
+        '<a href="' + html.escape(site_href('index.html'), quote=True) + '">' + html.escape(SITE) + '</a>'
         '<nav class="site">' + ''.join(nav) + '</nav></header><main>'
         + body +
         '</main><footer>Public framework surface. Allowlisted markdown on GitLab main. '
