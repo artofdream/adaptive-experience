@@ -10,6 +10,7 @@ Related #279. Disjoint from #278 / journal branch. Do not batch. MRC merges.
 - Allowlist row `comparison` in `scripts/build_framework_site.py`
 - Links from index, schema, Path B
 - README allowlist row
+- Named public principles on home, schema, and comparison: formula, honesty, Knowledge First, antifragility (principles, not SOP dump)
 
 ## Honesty
 

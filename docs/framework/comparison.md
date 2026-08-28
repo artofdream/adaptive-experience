@@ -17,6 +17,17 @@ An independent Art of Group note. It maps AEA onto six harness layers (guides, s
 - Not AGENTS.md, not DATE_RE, not a pitch deck, not 3DX Lab.
 - Not proof that Path B dual-viewport is done. That clip after the CSS is **Unknown**. **CF-054** is **regressed**.
 
+## Core principles
+
+The six layers are the map. These four do not drop out of the layer names, and they are what this page is actually comparing.
+
+1. **The formula** — Adaptive Experience = Shared Understanding + Domain Services + Outer Harness. Domain services stay authoritative. The model may interpret; it does not invent stock, price, delivery, or payment.
+2. **Honesty** — a status word is a claim. Probe it on the same journey and viewport, or write **Unknown**. Merging CSS, closing a ticket, or publishing Pages is not a clip. **CF-054** stays **regressed**. The post-CSS dual-viewport clip stays **Unknown**.
+3. **Knowledge First** — read committed shared memory before doing new work. Shared memory is GitLab `main`. Chat is not shared memory. An uncommitted file is not shared memory. A fluent recap is not a probe.
+4. **Antifragility** — when the same miss repeats, change the strongest layer (a sensor, a gate, a permission), not another paragraph of motivation. Related work calls this a ratchet. AEA is **not** claiming to be antifragile yet. Dual-viewport is still a counter-example.
+
+These are principles, not operator SOPs. DATE_RE, AGENTS.md, and CI job catalogs stay off this site.
+
 ## Sources
 
 Related work (cited, not inherited as AEA evidence):

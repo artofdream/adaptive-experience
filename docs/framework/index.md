@@ -21,9 +21,13 @@ AI may interpret. Domain services decide. Status words are claims; they need a p
 5. **Permissions** — who may change what. Domain services stay authoritative; the outer harness does not silently restyle or redeploy a live shop.
 6. **Observability** — evidence for every status word. If the probe is missing, write **Unknown**.
 
-## Honesty
+## Honesty, knowledge, antifragility
 
 A status word (`verified`, `shipped`, `complete`) is a claim. Probe it with the same journey, the same viewport, or a mechanical check — or write Unknown. Do not treat a merged spec or a CSS change as verification.
+
+**Knowledge First.** Read committed shared memory before rediscovering. Shared memory is GitLab `main`. Chat is not shared memory.
+
+**Antifragility.** A repeated miss is a harness gap. Add a sensor or a gate so the same miss cannot recur. AEA is not claiming that bar yet.
 
 Fourteen hats are lenses. Three executable jobs: implement, verify, merge (MRC only).
 
