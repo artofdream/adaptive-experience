@@ -138,10 +138,13 @@ second UX loop and do not add a 15th hat. Journey × viewport is the unit.
   `@aea-customer-journey` owns the script. `@aea-ux-designer` owns the
   product MR. `@aea-knowledge-guardian` writes the vault note.
   `@aea-mr-coordinator` merges. Clips stay out of `research/daily-briefs/`.
-- **Verify:** after the product MR merges, re-record the same script on
-  both viewports. Mark `verified` only if the new clip shows the fix.
-  Otherwise leave it open or set `regressed`. Unknown until those clips
-  exist.
+- **Verify (binding):** Path B `verified` requires a journey×viewport clip
+  **dated after** the product/CSS merge. Closing GitLab from a spec or CSS
+  MR is not verification. After the product MR merges, re-record the same
+  script on both viewports. Mark `verified` only if the new clip shows the
+  fix. Otherwise leave it open or set `regressed`. Unknown until those
+  clips exist. A `verified` row with no clip dated after CSS is a
+  CF-048-class honesty miss → set `regressed`.
 - **Hourly ticks** must not restyle Adaptive Workspace or Path B CSS/JS
   unless `@aea-ux-designer` was invoked. A knowledge or intake MR may
   land first; that does not close a UI finding.
@@ -207,7 +210,10 @@ Hourly coherence tick for this repo. Follow research/coherence-findings-loop.md,
 
 1. Fetch/pull origin/main. Refresh glab PATH on Windows if needed.
 2. Reconcile research/coherence-findings-loop.md Status and Issue/MR columns
-   against GitLab (open/merged). Do not invent CF IDs.
+   against GitLab (open/merged). Path B verified requires clip after CSS;
+   do not mark verified from spec/CSS merge; do not restyle Path B CSS
+   unless `@aea-ux-designer`; reconcile Issue/MR from `glab`, not from
+   the queue text alone. Do not invent CF IDs.
 3. If any row is queued or regressed: run ONE remediation iteration on the first
    such row (severity then dependency). Reproduce; if confirmed, one issue → one
    isolated branch → one focused fix → one MR. Loop ticks must not merge.
