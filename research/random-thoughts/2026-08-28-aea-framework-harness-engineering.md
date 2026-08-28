@@ -193,4 +193,143 @@ def verified_step(hat, task, sensors):
 
 ### B. Clip Probes
 
+Path B journey×viewport clips are UI probes ([[CF-054]]), not marketing. They sit below computational sensors because they are slow and human-scored. They still matter: a dual-viewport shop that only works in one recording is not dual. [[J1]] (Urgent Sam), [[J2]] (Planner Sarah), [[J3]] (Loyal Alex), and [[J4]] (Tracker Chris) are the journey set. One session, desktop Adaptive Workspace, phone linear concierge. Honest leftovers from the 2026-08-27 clips: [[J3]] recall without a reorder badge; [[J4]] ASO fail-closed, not T-08; Track gated until checkout. Live shop re-record of [[J1]] phone+desktop after !300 (`63aaa4ce`) is Unknown. [[CF-054]] is **regressed**, not clip-verified. The queue row on main said `verified` with #272 / !298, !299, !300 until !304 merged (28 Aug 22:14 Berlin). That was a false verified. Main is now `regressed`. Live [[J1]] re-record after !300 is still Unknown. The finding note on main after !304 is `regressed` / #273. Closing #272 from spec !299 is not a probe. Path B `verified` requires a clip dated after the CSS/product merge.
+
+### C. Sensor Economics
+
+`check_coherence.py` costs nothing per run compared with a token-heavy judge. graph-guard catches ID drift before a hat invents US-008. CI is the sensor that survives a closed laptop. Add inferential sensors only for checks no deterministic rule can capture, such as concierge tone. Treat those as advisory, not gates.
+
+### D. The Sensor Coverage Test
+
+- Can a session check inventory honesty without a human staring at Grafana?
+- Does every critical Path B claim have at least one computational sensor?
+- Are sensor results logged so CF status is not a vibe?
+- Could a silent DATE_RE lie reach the next session without tripping a wire?
+- If any answer is no, add the sensor before claiming unattended operation.
+
+## V. LAYER 3: THE AGENTIC LOOP
+
+*One finding, one issue, one branch, one MR; loop ticks must not merge*
+
+The AEA agentic loop is not Plan-Execute-Retry inside one context window. It is a typed GitLab loop. The CF-NNN queue lives in `research/coherence-findings-loop.md`. The unit of work is one finding. One layer per finding: a knowledge MR must not restyle Path B CSS. Hourly ticks must not restyle Adaptive Workspace or Path B CSS/JS unless `@aea-ux-designer` was invoked. Hourly ticks must reconcile Issue/MR from `glab`, not from the queue text. Fan-out is how honest queues die. Do not copy template `$5`, 3 retries, or 80% completion as loop bounds.
+
+```python
+def cf_loop(finding, vault):
+    issue = gitlab.open_issue(finding)     # one CF -> one issue
+    branch = spawn_branch(issue)           # one issue -> one branch
+    mr = open_mr(branch)                   # one branch -> one MR
+    if loop_tick(mr):
+        return reject("loop ticks must not merge")
+    if not gates_pass(mr):
+        return escalate(issue, packet)     # PO / PM / sponsor
+    return mrc.merge(mr)                   # only @aea-mr-coordinator
+```
+
+**TABLE IV — REQUIRED LOOP BOUNDS (AEA)**
+
+| Bound | Purpose | Default |
+|---|---|---|
+| One CF per issue | Prevent queue fan-out | Hard rule |
+| Loop ticks merge? | Protect main | Never |
+| Who merges | Independent verifier | @aea-mr-coordinator only |
+| Auto-merge | When gates pass | MRC policy, not the producing hat |
+| Escalation | Human decision packet | PO / PM / sponsor |
+| Stopping condition | Honest partial state | Always defined |
+
+### A. Escalation Is Not Failure
+
+Escalation to MRC or PO is a **successful stop**, not a failure. A hat that escalates with a packet is more valuable than one that merges a fluent wrong shop. The packet should contain: the decision required, the recommended option, alternatives already tested, cost of waiting, and the safest default if nobody replies. Secrets and budget escalate to the sponsor. Archive and workbook edits need human confirmation. Path B CSS changes escalate to @aea-ux-designer, not to whoever has the editor open.
+
+### B. The Background Agent Rule, Restated
+
+Hashimoto wants an agent working while the human reviews [1]. AEA allows background work inside a finding. It does not allow background merges. Humans steer hats. MRC steers main. That split is the loop.
+
+## VI. LAYER 4: MEMORY AND STATE
+
+*The model forgets every session. DATE_RE is the only live handoff filename*
+
+Every model call starts empty. The harness reconstructs state. DATE_RE is **one file**: `research/daily-briefs/YYYY-MM-DD.md` — the only live handoff. Archaeology lives in `research/random-thoughts/`. Cadence writes `research/random-thoughts/YYYY-MM-DD-daily-activity.md` (SOP after #263). Do not paste papers into DATE_RE. This playbook is a working note in `research/random-thoughts/`, not `docs/`, until `@aea-product-owner` promotes it. Obsidian wikilinks and `#aea` tags stitch the vault. Uncommitted files are not shared memory. If it is not committed on GitLab `main`, the next session does not have it.
+
+**TABLE V — STATE PERSISTENCE LAYERS (AEA)**
+
+| Layer | Persists | Implementation |
+|---|---|---|
+| Context window | Current turn | Conversation buffer |
+| random-thoughts/ | Session traces | research/random-thoughts/ |
+| DATE_RE brief | Only live handoff | research/daily-briefs/YYYY-MM-DD.md |
+| Cadence activity | Not DATE_RE | research/random-thoughts/YYYY-MM-DD-daily-activity.md |
+| CF queue | Finding lifecycle | research/coherence-findings-loop.md |
+| Vault graph | Permanent links | Obsidian wikilinks + #aea |
+| Git working copy | Nothing uncommitted | Not shared memory |
+
+### A. DATE_RE versus random-thoughts
+
+`random-thoughts/` is allowed to be messy. DATE_RE is not. Cadence jobs must not write DATE_RE; they write `YYYY-MM-DD-daily-activity.md` after #263. A generator that pollutes the handoff filename recreates [[CF-048]]. The brief is a state file. Treat it like a checkpoint, not a blog.
+
+```
+BRIEF = f"research/daily-briefs/{today}.md"   # DATE_RE only
+# recovery test: new session reads the committed brief
+# uncommitted files are not shared memory
+# cadence must not write DATE_RE
+```
+
+### B. The Recovery Test
+
+Close the session in the middle of a finding. Open a new one. It must read the committed DATE_RE brief, identify the open CF, and resume without asking a human to re-explain Path B. If it cannot, memory is insufficient. Do not compensate by pasting yesterday's chat. That is not a harness.
+
+### C. Memory versus Guides
+
+Memory records what happened. Guides define what should happen. Promote a stable policy into a skill or a rule. Leave the day's debris in random-thoughts/. Typed handoffs are GitLab issue/MR plus vault, not chat. Do not rely on an agent remembering the ID freeze from a prior conversation.
+
+## VII. LAYER 5: PERMISSIONS AND BUDGETS
+
+*Fourteen hats. No fifteenth implementer. The harness is the security boundary*
+
+The model cannot restrict itself. Permissions are a harness property [3]. AEA encodes them as roles, ID freeze, merge policy, and human confirmation gates.
+
+**Template 2 — AEA capability budget**
+
+```
+ALLOW: role-scoped skill under .cursor/skills/aea-*/
+ALLOW: one CF -> one issue -> one branch -> one MR
+DENY: invent BG / US / FR / NFR IDs
+DENY: invent a 15th implementer hat
+DENY: knowledge MR closing a UI finding
+ASK: archive/ or workbook changes (human confirmation)
+HUMAN: secrets, budget (sponsor)
+CSS Path B: @aea-ux-designer (hourly ticks must not restyle)
+MERGE: @aea-mr-coordinator only; no casual merge
+```
+
+**TABLE VI — DEFAULT ACTION POLICY (14 HATS)**
+
+| Action | Default | Reason |
+|---|---|---|
+| Read vault + skills | Allow | Reversible observation |
+| Open CF + issue | Allow | Typed intake |
+| Edit Path B CSS | @aea-ux-designer | Dual-viewport ownership |
+| Change workbook IDs | Human confirm | ID freeze |
+| Merge to main | MRC only | Independent verifier |
+| Secrets / spend | Sponsor | Irreversible |
+| Invent a hat or ID | Deny | Blast radius |
+
+The fourteen hats are: aea-project-manager, aea-product-owner, aea-ux-designer, aea-customer-journey, aea-support-coordinator, aea-ai-engineer, aea-appsec-auditor, aea-devsecops-platform, aea-senior-software-engineer, aea-mr-coordinator, aea-coherence-guardian, aea-knowledge-guardian, aea-cost-guardian, aea-performance-guardian. Keep 14 hats. Typed handoffs travel through GitLab issues/MRs and the vault, not chat. MRC is the independent verifier. Producer bias is why the producing hat does not merge.
+
+### A. Untrusted Surfaces
+
+Path B reads customer speech. That is untrusted content. A crafted utterance must not expand permissions, mint an FR ID, or trigger a merge. Trusted instructions are guide files and skills. Untrusted data is customer input, retrieved docs, and clip narration. Keep them split [2]. Trusted guides vs shop speech: `docs/` and the dual-viewport spec are not live-shop evidence. A specification merge is not a clip.
+
+### B. Four Budget Dimensions
+
+Scope: which hat, which files, which GitLab actions. Rate: findings per session, not an unbounded rewrite of the shop. Reversibility: workbook edits and live CSS are harder to reverse than a draft MR. Visibility: CF status, Grafana, and the brief must show who did what. Encode all four before unattended runs. NFR-003 (≤ 2.5s) is a latency budget on the model call, not permission to skip sensors.
+
+## VIII. LAYER 6: OBSERVABILITY
+
+*Status words need a probe. Grafana is not a vibe check*
+
+A production harness needs telemetry. Required on Path B: CF queue Last seen / status, guard verdicts, LiteLLM latency via CloudWatch, and Grafana at https://aea.artof.link/grafana/. The honesty rule is the distinctive AEA sensor: status words need a probe. Without it, a faster concierge looks successful while omitting the claim that mattered.
+
+**TABLE VII — AEA TRIP WIRE TRIGGERS**
+
+
 
