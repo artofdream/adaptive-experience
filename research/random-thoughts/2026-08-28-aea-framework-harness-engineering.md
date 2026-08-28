@@ -70,3 +70,127 @@ This note is for the 14 AEA hats, and for small product teams who are building a
 
 **Revision policy.** Comparison or field feedback that would change a claim, a sensor, or a limitation revises this note. Do not leave the playbook stale while a sibling comparison is more honest. A status word is a claim: probe committed GitLab `main` or write Unknown. Shared memory is committed GitLab `main` only.
 
+## II. THE FORMULA: ADAPTIVE EXPERIENCE = SU + SERVICES + HARNESS
+
+*How Path B restates Agent = Model + Harness*
+
+Related work crystallized a coding-agent formula: Agent = Model + Harness [1], [2], [3]. Hashimoto's ratchet is the method: when the agent makes a mistake, engineer a solution so the mistake does not recur [1]. AEA keeps that ratchet and changes the product. The thing being shipped is not a million-line coding agent. It is a florist experience in which Shared Understanding is editable, recommendations are validated, and availability is fail-closed.
+
+> "Anytime you find an agent makes a mistake, you take the time to engineer a solution such that the agent never makes that mistake again."
+>
+> — Mitchell Hashimoto [1], applied here to experience failures, not code diffs
+
+The AEA restatement is operational. Shared Understanding is the customer-visible state ([[FR-001]], FR-021). Domain services validate what the model is not allowed to invent ([[FR-007]], inventory, delivery, payment). The outer harness is everything that keeps fourteen hats from improvising a fifteenth, keeps IDs frozen, and keeps merges behind @aea-mr-coordinator. Keep 14 hats. Do not copy playbook `$5` / 3 retries / 80% completion as AEA policy.
+
+### A. Related Work, Not Inherited Evidence
+
+The template playbook compiles third-party harness-only gains: a GAIA swing, a Terminal Bench rank change, a million-line Codex codebase [2], [6], [7]. Those numbers are not AEA results. This paper does not reprint them as if Lily's Florist had run those benches. Cite them as related work. AEA evidence in this note is narrower: [[CF-048]] verified (#259 / !280); the dual-viewport trail on !298 / !299 / !300 with [[CF-054]] **regressed** (queue `verified` is a false verified; live [[J1]] re-record after !300 Unknown); fail-closed inventory as specified ([[FR-011]] / [[NFR-009]]); and an honest leftover list from the 2026-08-27 clips.
+
+**TABLE II — INNER RUNTIME VERSUS OUTER HARNESS (AEA)**
+
+| Layer | What it is | What it is not |
+|---|---|---|
+| Model | LLM Path B calls via LiteLLM; NFR-003 ≤ 2.5s | The product |
+| Inner runtime | Edge BFF, domain services, PostgreSQL, broker per ADRs | The 14-hat team |
+| Outer harness | 14 roles, vault, CF loop, CI guards, DATE_RE | A prompt file |
+| Shared Understanding | Editable customer state ([[FR-001]]/021) | A hidden chain-of-thought |
+
+### B. Inner Harness vs. Outer Harness
+
+Frontier labs ship an inner harness: safety layers, native tool calling, context windows. AEA does not pretend to replace that. The engineering moat for Path B is the outer harness: session-start SOP, 14 canonical skills, coherence scripts, GitLab gates, fail-closed inventory, and the honesty rule. This playbook is about that outer harness [5]. The inner product runtime still matters. Domain services validate. The broker stays product-neutral per the ADRs. Payment FR-019 is mockup, not live Stripe. That is an honesty constraint, not a roadmap slogan.
+
+## III. LAYER 1: GUIDES
+
+*Feedforward controls that prevent known failures before a session starts*
+
+Guides are what an AEA session reads before it acts. They are feedforward. Fowler and Böckeler's guides-and-sensors taxonomy remains the vocabulary [3]. On Path B the guide surface is specific, not generic AGENTS.md folklore.
+
+### A. What Guides Contain
+
+The session-start SOP lives in AGENTS.md. Cursor loads `.cursor/rules` with session-start-briefing, coherence-findings-sop, docker-integration-before-mr, and stakeholder-skills-sync. Fourteen canonical skills sit under `.cursor/skills/aea-*/`. ADRs freeze architecture moves. FR and NFR IDs come from the workbook, not from a helpful agent inventing a new number. The dual-viewport contract is `docs/05-ux-design-guide/path-b-dual-viewport-specification.md`. Path B CSS is owned by @aea-ux-designer. Guides should name files, roles, and stop conditions. Motivational language is not a guide.
+
+**Template 1 — Minimum AEA session-start guide**
+
+```
+PROJECT: Lily's Florist / Path B
+TRACKER: GitLab (glab). GitHub is a one-way mirror.
+HANDOFF: research/daily-briefs/YYYY-MM-DD.md   # DATE_RE only
+RULES:
+- Do not invent BG / US / FR / NFR IDs
+- Do not invent a 15th implementer hat
+- One CF -> one issue -> one branch -> one MR
+- Only @aea-mr-coordinator merges
+ANTI-PATTERNS:
+- Status words without a probe ([[CF-048]] / [[CF-054]] false verified)
+- Loop ticks that merge or restyle Path B CSS
+- Knowledge MR closing a UI finding
+- Queue `verified` without a clip dated after the CSS merge
+```
+
+Vision principles from `docs/01-product-vision/product-vision.md` belong in the guide layer because they constrain design: Thought before form; Knowledge before navigation; Shared understanding before recommendation; Experiences earn attention; Continuity before immediacy; Latest relevant intent wins; AI interprets, domain services validate. BG-001 through BG-007 exist in that vision. This paper does not invent their wording.
+
+### B. The Ratchet, AEA-shaped
+
+Hashimoto's ratchet still holds [1]. The six steps on Path B: (1) a session or a clip surfaces a failure. (2) Classify the class, not the anecdote. (3) Pick the **strongest** layer — a sensor or CI guard, not another paragraph. (4) Encode it in the vault. (5) Open one CF and one GitLab issue. (6) Do not call it verified until a probe says so. A prompt patch fixes one conversation. A skill rule fixes every future hat that loads it. A CI guard makes the error structurally harder. The same error three times becomes a sensor. A DATE_RE line is not a probe. Docs and spec are trusted guides; they are not live-shop evidence.
+
+### C. Guide Hygiene
+
+Fourteen skills and four always-on rules already accumulate. Lean by **subtraction**, not a fifteenth skill. Version them. Date the reason a rule exists. Delete guide and skill lines that CI sensors already enforce (GitLab #275, queued). Date and prune guide rules (GitLab #274, in progress). Do not grow a fifteenth skill that is secretly "just implement it." A guide file with undated aspirations is not a harness. It is vault drift.
+
+- Can the hat verify the rule without subjective taste?
+- Does the rule trace to an observed CF, ADR, FR, or NFR?
+- Are two skills telling the same hat opposite merge policies?
+- Could a python guard replace this sentence?
+- When was the rule last read against current Path B behavior?
+
+### D. Guides as Organizational Memory
+
+AGENTS.md is not a suggestion to the model. It is the system of record for how a session must begin. When the conversation and the guide conflict, the guide wins. That inversion is what makes the outer harness durable [2]. New hats inherit the ID freeze and the MRC merge rule in seconds. When a human leaves, the corrections remain in skills, ADRs, and the CF queue.
+
+### E. The Cost of Not Having Guides
+
+Without the SOP, every new session infers Path B from the live shop alone. It will invent FR IDs. It will treat GitHub as the tracker. It will mark [[CF-054]] `verified` because CSS merged — that already happened on main until !304, and it was a false verified. It will write a DATE_RE file that is not the DATE_RE filename. Every correction made only in chat dies with the session. The guide file is what makes the correction permanent.
+
+## IV. LAYER 2: SENSORS
+
+*Feedback controls; computational first; clips are probes, not trophies*
+
+Sensors verify after execution. They catch what guides did not prevent. Computational sensors first [3]. Inferential judgment is expensive and non-deterministic. Path B already has python guards. Use them before asking a model whether the shop "feels" done.
+
+**TABLE III — AEA SENSOR TYPES AND RELIABILITY**
+
+| Type | Example | Speed | Determinism |
+|---|---|---|---|
+| Computational | scripts/check_coherence.py | Fast | Deterministic |
+| Computational | check_knowledge_graph.py | Fast | Deterministic |
+| Computational | run_all_guards.py + GitLab CI | Fast | Deterministic |
+| Computational | Fail-closed inventory [[FR-011]] / [[NFR-009]] | Fast | Deterministic |
+| Probe (UI) | Path B journey×viewport clips ([[CF-054]]) | Slow | Human-scored |
+| Inferential | LLM-as-judge on copy tone | Slow | Non-deterministic |
+
+Fail-closed inventory is a product sensor, not a linter. Missing or stale `observed_at` becomes unknown. Select is disabled. That is [[FR-011]] / [[NFR-009]]. A green Available badge without a fresh observation is a demo. DATE_RE claiming 14/14 skill coverage is a generator claim. This paper does not restate 14/14 as independently probed. Nobody ran the script for this compilation.
+
+### A. Self-Verification Pattern
+
+The strongest pattern gives the session its own sensors. After a change, run the guard. Loop the error text back. This is not the model grading itself. It is the model executing an external check.
+
+```python
+def fail_closed_inventory(row):
+    if missing(row.observed_at) or stale(row.observed_at):
+        return "unknown"   # Select disabled (FR-011 / NFR-009)
+    return row.availability
+
+def verified_step(hat, task, sensors):
+    result = hat.execute(task)
+    for sensor in sensors:
+        verdict = sensor.check(result)
+        if not verdict.passed:
+            result = hat.fix(result, verdict)
+            if not sensor.check(result).passed:
+                return escalate(task, verdict)
+    return result
+```
+
+### B. Clip Probes
+
+
