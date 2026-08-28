@@ -32,6 +32,7 @@ crash.*.log
 
 # Temporary workspace scratch & test artifacts
 artifacts/
+public/
 .worktrees/
 research/assessments/_walk_shots*/
 research/assessments/_florist_ux_shots/
