@@ -11,6 +11,9 @@
 
 This strategic study establishes the feasibility, cost structure (FinOps), and DevOps pipeline for launching **Native Mobile Companion Applications** (Android Kotlin / Jetpack Compose leading to iOS SwiftUI) for the **Adaptive Experience Architecture (AEA)**.
 
+> [!NOTE]
+> **Honesty & Scope Notice**: This document represents an exploratory feasibility study and future extension blueprint. Dedicated native mobile applications, FCM/APNs push notification relays, and mobile app store distribution pipelines are **not** implemented or deployed in the current reference foundation. Shipped mobile presentation is provided via Path B Responsive Web Dual-Viewport Presentation (`app.js` / HTML).
+
 ### Core Architectural Principle
 > **100% Backend & API Contract Reuse.**  
 > Native mobile clients consume the exact same edge BFF REST endpoints (`/api/v1/sessions/...`), Server-Sent Events (SSE) stream (`/api/v1/sessions/{id}/stream`), and zero-PII vault checkout (`NFR-017` / `ADR-013`) as the Web Adaptive Workspace. No platform service rewrites are required.

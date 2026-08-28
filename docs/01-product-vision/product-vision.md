@@ -21,8 +21,8 @@ Create an AI-native florist experience where customers express needs naturally a
 - Latest relevant intent wins
 - AI interprets; domain services validate
 
-## Multi-surface & native mobile vision
-- **Single session, multi-surface presentation**: A unified session model (`ADR-001`), Contract-First API (`ADR-008`), and Zero-PII security (`NFR-017`) project adaptively across both Web Adaptive Workspaces (desktop 8-Tile spatial layout) and Native Mobile Concierge apps (3-Stage *Need → Pick → Pay* linear flow).
-- **Native Android & iOS companion experience**: High-performance, native mobile applications (Android Kotlin / Jetpack Compose leading to iOS SwiftUI) consuming identical BFF endpoints without backend rewrites.
-- **Proactive annual occasion engagement**: Integration of native push notification relays (FCM/APNs) with `EngagementCrmService` (`FR-016`) to proactively remind shoppers of upcoming annual occasions (e.g., *Mom's Birthday*) 30 days in advance.
+## Multi-surface & native mobile vision (Future extension & roadmap)
+- **Single session, multi-surface presentation**: A unified session model (`ADR-001`), Contract-First API (`ADR-008`), and Zero-PII security (`NFR-017`) project adaptively across desktop and mobile form factors. The reference implementation delivers a Responsive Web Dual-Viewport Presentation (desktop 8-Tile spatial layout transitioning to a 3-Stage *Need → Pick → Pay* linear concierge flow on mobile viewports).
+- **Native Android & iOS companion experience (Future extension vision)**: Architectural vision and feasibility study for dedicated native mobile companion applications (Android Kotlin / Jetpack Compose leading to iOS SwiftUI) consuming identical BFF endpoints without backend rewrites. (Reference codebase currently provides the Responsive Web Dual-Viewport experience; native binaries are not implemented).
+- **Proactive annual occasion engagement (Future extension vision)**: Architectural blueprint for integrating native push notification relays (FCM/APNs) with `EngagementCrmService` (`FR-016`) to proactively remind shoppers of upcoming annual occasions (e.g., *Mom's Birthday*) 30 days in advance. (Push relays and live notification delivery are not shipped in the current reference foundation).
 
