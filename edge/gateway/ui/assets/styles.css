@@ -428,16 +428,26 @@ dialog::backdrop { background: rgba(42, 36, 56, .45); }
   }
   /* Header Help already opens ASO (ADR-004). Hide the duplicate FAB so it
      cannot cover full-width Send or other primary actions on T-01. */
+  /* Path B Dual-Viewport: Mobile Linear Concierge (<768px / 40rem) */
   .aso { display: none; }
   .panel { padding: 1rem; border-radius: .75rem; max-width: 100%; }
   .welcome-card { grid-template-columns: 1fr; }
   .messages p { max-width: 92%; overflow-wrap: anywhere; }
   textarea { min-height: 7rem; }
-  .primary, .send { width: 100%; }
+  .primary, .send { width: 100%; box-shadow: 0 4px 12px rgba(99, 68, 169, 0.2); }
   .understanding dl { grid-template-columns: 1fr; }
   .tile-grid, .cards, .tracking-layout { grid-template-columns: 1fr; }
   .composer { flex-direction: column; }
   .notice { left: .5rem; right: .5rem; bottom: max(1rem, env(safe-area-inset-bottom, 0px)); max-width: none; }
+  /* Non-blocking bottom-sheet drawer for Contact Florist & ASO on mobile */
+  dialog {
+    width: 100%;
+    max-width: 100%;
+    margin: auto 0 0 0;
+    border-radius: 1.25rem 1.25rem 0 0;
+    padding: 1.5rem 1.25rem max(1.5rem, env(safe-area-inset-bottom, 0px));
+    box-shadow: 0 -8px 30px rgba(42, 36, 56, 0.35);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
