@@ -8,7 +8,7 @@ source_assessment: 2026-08-27 J1–J4 live clips on https://aea.artof.link
 supersedes:
 issue: #273 (related; #272 was closed by spec)
 branch: docs/273-cf054-clip-verify-after-css
-merge_request:
+merge_request: !304
 
 ## Claim
 
