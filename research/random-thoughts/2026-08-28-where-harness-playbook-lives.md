@@ -1,1 +1,65 @@
-IyBXaGVyZSB0aGUgaGFybmVzcyBwbGF5Ym9vayBhbmQgY29tcGFyaXNvbiBsaXZlICgyMDI2LTA4LTI4KQoKPiAqKlRhZ3MqKjogI2FlYSAjc2Vjb25kLWJyYWluICNoYXJuZXNzICNrbm93bGVkZ2UtZmlyc3QgI3BhdGgtYgo+ICoqQ2FwdHVyZWQqKjogMjAyNi0wOC0yOAo+ICoqR2l0TGFiKio6IFJlbGF0ZWQgIzI3NCAodGhpcyBub3RlKS4gUmVsYXRlZCAjMjczIHZpYSAhMzA0ICgqKm1lcmdlZCoqKS4gIzI3NSBxdWV1ZWQuCj4gKipSZWxhdGVkKio6IFtbMjAyNi0wOC0yNy1wYXRoLWItZHVhbC12aWV3cG9ydC11eC1sb29wLWoxLWo0XV0gW1syMDI2LTA4LTI3LXNlc3Npb24tbWVtb3J5LWxvZy1jZjA1NC1wYXRoLWItdXgtaW4tY29oZXJlbmNlLWxvb3BdXSBbWzIwMjYtMDgtMjYtZGF0ZS1yZS1idXMtYW5kLWFnZW50LXJ1bm5lci1pbWFnZS1yb2xsXV0gW1syMDI2LTA4LTI4LWFlYS1mcmFtZXdvcmstaGFybmVzcy1lbmdpbmVlcmluZ11dIFtbMjAyNi0wOC0yOC1hZWEtdnMtaGFybmVzcy1wbGF5Ym9vay1jb21wYXJpc29uXV0KPiAqKlRoaXMgbm9kZSBpcyBrbm93bGVkZ2UsIG5vdCBEQVRFX1JFLCBub3QgYSBVSSByZXN0eWxlLioqCgpMYXRlciBhZ2VudHM6IHNoYXJlZCBtZW1vcnkgaXMgY29tbWl0dGVkIEdpdExhYiBgbWFpbmAgb25seS4gQSBzdGF0dXMgd29yZCBpcyBhIGNsYWltLiBQcm9iZSBvciB3cml0ZSBVbmtub3duLgoKIyMgMS4gRGVjaXNpb24KClRoZSAyMDI2LTA4LTI4IEFFQSA2LWxheWVyIHBsYXlib29rIGFuZCB0aGUgY29tcGFyaXNvbiB2cyBgaGFybmVzc19maW5hbC5wZGZgIGFyZSAqKlNlY29uZCBCcmFpbiB3b3JraW5nIG5vdGVzKiosIG5vdCBwdWJsaXNoZWQgYXJjaGl0ZWN0dXJlLgoKfCBBcnRpZmFjdCB8IExpdmVzIGluIHwgRG9lcyBub3QgbGl2ZSBpbiB8CnwtLS18LS0tfC0tLXwKfCBGcmFtZXdvcmsgcGxheWJvb2sgKG1kKSB8IGByZXNlYXJjaC9yYW5kb20tdGhvdWdodHMvMjAyNi0wOC0yOC1hZWEtZnJhbWV3b3JrLWhhcm5lc3MtZW5naW5lZXJpbmcubWRgIHwgREFURV9SRSwgYGRvY3MvYCwgR2l0SHViIG1pcnJvciB8CnwgQ29tcGFyaXNvbiAobWQpIHwgYHJlc2VhcmNoL3JhbmRvbS10aG91Z2h0cy8yMDI2LTA4LTI4LWFlYS12cy1oYXJuZXNzLXBsYXlib29rLWNvbXBhcmlzb24ubWRgIHwgREFURV9SRSwgYGRvY3MvYCB8CnwgVGhpcyBwbGFjZW1lbnQgbm90ZSB8IGByZXNlYXJjaC9yYW5kb20tdGhvdWdodHMvMjAyNi0wOC0yOC13aGVyZS1oYXJuZXNzLXBsYXlib29rLWxpdmVzLm1kYCB8IERBVEVfUkUsIGBkb2NzL2AgfAp8IFBERnMgfCBvcHRpb25hbCBsb2NhbCAvIGNoYXQgYXR0YWNobWVudHMgfCBnaXQgKGJpbmFyaWVzIGFyZSBub3QgdGhlIHZhdWx0KSB8CnwgQ2xpcHMgfCBldmlkZW5jZSBwYXRocywgbm90IHZhdWx0IGJvZGllcyB8IERBVEVfUkUgfAp8IEltcGxlbWVudGF0aW9uIHwgR2l0TGFiIGlzc3VlcyAjMjczICMyNzQgIzI3NSwgb25lIGZpbmRpbmcgb25lIE1SIHwgYSAxNXRoIGhhdCB8CgpgZG9jcy9gIGlzIGZvciBjYW5vbmljYWwgcHJvZHVjdC9hcmNoaXRlY3R1cmUgYWZ0ZXIgYEBhZWEtcHJvZHVjdC1vd25lcmAgcHJvbW90ZXMgYSBub3RlLiBVbnRpbCB0aGVuLCBgcmVzZWFyY2gvYCBpcyB0aGUgd29ya2luZyBhcmVhLiBEQVRFX1JFIG1heSBsaXN0IHJlY2VudCBTZWNvbmQgQnJhaW4gZmlsZW5hbWVzIGFmdGVyIGEga25vd2xlZGdlIG1lcmdlLiBEbyBub3QgcGFzdGUgdGhlIHBhcGVyIGludG8gREFURV9SRS4KCldpa2lsaW5rcyBhbmQgYCNhZWFgIGtlZXAgdGhlIGdyYXBoLWd1YXJkIGhhcHB5LiBDaXRlIGV4aXN0aW5nIFtbRlItMDAxXV0gW1tKMV1dIFtbQ0YtMDQ4XV0gW1tDRi0wNTRdXSBJRHMuIERvIG5vdCBpbnZlbnQgQkcvVVMvRlIvTkZSLgoKIyMgMi4gREFURV9SRSBvbmUtZmlsZSBiaW5kaW5nCgpSZWFkIG9uIEdpdExhYiBgbWFpbmAgKG5vIGNsb25lKTogYHNjcmlwdHMvY2hlY2tfZGFpbHlfYnJpZWZfZnJlc2huZXNzLnB5YCBkZWZpbmVzIGBEQVRFX1JFID0gcmUuY29tcGlsZShyIl4oXGR7NH0tXGR7Mn0tXGR7Mn0pXC5tZCQiKWAuIFRoYXQgaXMgdGhlIG9ubHkgbGl2ZSBoYW5kb2ZmIGZpbGVuYW1lLgoKLSBEQVRFX1JFID0gb25seSBgcmVzZWFyY2gvZGFpbHktYnJpZWZzL1lZWVktTU0tREQubWRgLgotIEFyY2hhZW9sb2d5IGJlbG9uZ3MgaW4gYHJlc2VhcmNoL3JhbmRvbS10aG91Z2h0cy9gLgotIENhZGVuY2Ugd3JpdGVzIGByZXNlYXJjaC9yYW5kb20tdGhvdWdodHMvWVlZWS1NTS1ERC1kYWlseS1hY3Rpdml0eS5tZGAgYWZ0ZXIgIzI2MyAvICEyODUuIENhZGVuY2UgbXVzdCBub3QgY3JlYXRlLCBlZGl0LCBhcHBlbmQsIHJlc3RvcmUsIG9yIGNvbW1pdCBEQVRFX1JFLgotIERvIG5vdCBwYXN0ZSBwYXBlcnMgaW50byBEQVRFX1JFLgotIERBVEVfUkUgbWF5IGxpc3QgcmVjZW50IFNlY29uZCBCcmFpbiBmaWxlbmFtZXMgYWZ0ZXIgbWVyZ2UsIG5vdCB0aGUgcGFwZXIgYm9keS4KLSBUeXBlZCBoYW5kb2ZmcyBzdGF5IEdpdExhYiBpc3N1ZS9NUiArIHZhdWx0LCBub3Qgc2hhcmVkIGNoYXQuCi0gT3duZXIgb2YgREFURV9SRSByZW1haW5zIGBzY3JpcHRzL2dlbmVyYXRlX2RhaWx5X2JyaWVmLnB5YCBwbHVzIGhvbmVzdCBoYW5kLXJldmlldyAoc2VlIFtbMjAyNi0wOC0yNi1kYXRlLXJlLWJ1cy1hbmQtYWdlbnQtcnVubmVyLWltYWdlLXJvbGxdXSkuCi0gVGhpcyBNUiBkb2VzICoqbm90KiogcmV3cml0ZSBBR0VOVFMubWQgb3Igc2Vzc2lvbi1zdGFydCBTT1AuIEd1aWRlIHBydW5lIGlzICMyNzUgKHF1ZXVlZCkuIE1vbnRobHkgcHJ1bmUgb2YgcnVsZXMgc2Vuc29ycyBhbHJlYWR5IGNvdmVyIHJlbWFpbnMgdW5kb25lIOKAlCBoZW5jZSAqKlJlbGF0ZWQgIzI3NCoqLCBub3QgQ2xvc2VzLgoKIyMgMy4gSG93IGEgbGF0ZXIgc2Vzc2lvbiBzaG91bGQgdXNlIHRoZW0KCjEuIFNlc3Npb24gc3RhcnQ6IERBVEVfUkUsIHRoZW4gdGhpcyBub2RlIGlmIHRoZSB3b3JrIGlzIGhhcm5lc3MvbGVhbi9DRi0wNTQuCjIuIFRyZWF0IHRoZSBwbGF5Ym9vayBhcyBhIG1hcCBvZiB0aGUgb3V0ZXIgaGFybmVzcywgbm90IGFzIHNoaXAgZXZpZGVuY2UuIFRlbXBsYXRlIGJlbmNoZXMgYXJlIHJlbGF0ZWQgd29yaywgbm90IEFFQSByZXN1bHRzLgozLiBMZWFuL2FudGlmcmFnaWxpdHkvbWFpbnRhaW5hYmlsaXR5IHdvcmsgaXMgdGhlIGJhY2tsb2csIG5vdCBtb3JlIHBhcGVyOgogICAtICMyNzMgQ0YtMDU0IGNsaXAgZGF0ZWQgYWZ0ZXIgQ1NTICsgcXVldWUgcmVjb25jaWxlLiBTT1ArcXVldWUgZml4IGlzICEzMDQgKCoqbWVyZ2VkKiogMjggQXVnIDIyOjE0IEJlcmxpbikuIE9uIGBtYWluYCB0aGUgQ0YtMDU0IHF1ZXVlIHJvdyBpcyBgcmVncmVzc2VkYC4gR2l0TGFiIGNsb3NlZCAjMjczIHdpdGggdGhhdCBtZXJnZTsgdGhlIGNsb3NlIGlzIFNPUC9xdWV1ZSBob25lc3R5LCBub3QgY2xpcC12ZXJpZnkuIExpdmUgW1tKMV1dIGNsaXAgYWZ0ZXIgQ1NTICEzMDA6IFVua25vd24uCiAgIC0gIzI3NCBEQVRFX1JFIG9uZSBmaWxlICsgdGhpcyBwbGFjZW1lbnQgKHRoaXMgTVIpLiBEaXNqb2ludCBmaWxlcyBmcm9tICEzMDQuCiAgIC0gIzI3NSBwcnVuZSBndWlkZSBsaW5lcyBzZW5zb3JzIGFscmVhZHkgZW5mb3JjZSAocXVldWVkKS4gRG8gbm90IHN0YXJ0ICMyNzUgaGVyZS4KNC4gTVJDIG1lcmdlcy4gS25vd2xlZGdlIGd1YXJkaWFuIHdyaXRlcyBub3Rlcy4gVVggb3ducyB0aGUgY2xpcC4gQ29oZXJlbmNlIG93bnMgdGhlIENGIHJvdy4KCiMjIDQuIE5leHQgZHJhZnQgb2YgdGhlIHBsYXlib29rCgpNYXJrIHN0ZXBzICoqaW4gcHJvZ3Jlc3MqKiwgbm90IGRvbmU6CgotIENsaXAtdmVyaWZ5IGNsb3NlIHNlbnNvciAoQ0YtMDU0IC8gIzI3Myk6IFNPUCBtZXJnZWQgYXMgITMwNDsgY2xpcCBhZnRlciBDU1MgVW5rbm93bgotIFF1ZXVlIHJlY29uY2lsZSBmcm9tIGBnbGFiYDogb24gYG1haW5gIGFmdGVyICEzMDQgKENGLTA1NCBpcyBgcmVncmVzc2VkYCkKLSBHdWlkZS9za2lsbCBwcnVuZSAoIzI3NSk6IHF1ZXVlZAotIERBVEVfUkUgdGhpbiAoIzI3NCk6IGluIHByb2dyZXNzIHZpYSB0aGlzIG5vdGUKLSBMaXZlIEoxIHJlLXJlY29yZCBhZnRlciAhMzAwOiBVbmtub3duCgpEbyBub3QgbWFyayBDRi0wNTQgYHZlcmlmaWVkYCBpbiB0aGUgcGFwZXIgdW50aWwgdGhvc2UgY2xpcHMgZXhpc3QuIFBhcGVyIGxhbmd1YWdlOiAqKnJlZ3Jlc3NlZCoqIG9uIG1haW4gYWZ0ZXIgITMwNDsgY2xpcCBhZnRlciBDU1MgVW5rbm93bi4KCiMjIDUuIERpc2pvaW50IGZyb20gITMwNAoKITMwNCB0b3VjaGVzIGAuY3Vyc29yL3J1bGVzL2NvaGVyZW5jZS1maW5kaW5ncy1zb3AubWRjYCwgYHJlc2VhcmNoL2NvaGVyZW5jZS1maW5kaW5ncy1sb29wLm1kYCwgYHJlc2VhcmNoL2ZpbmRpbmdzL0NGLTA1NC1wYXRoLWItZHVhbC12aWV3cG9ydC5tZGAsIGFuZCBgcmVzZWFyY2gvcmFuZG9tLXRob3VnaHRzLzIwMjYtMDgtMjgtc2Vzc2lvbi1tZW1vcnktbG9nLWNmMDU0LXJlZ3Jlc3NlZC1jbGlwLXZlcmlmeS5tZGAuIFRoaXMgTVIgZG9lcyBub3QgdG91Y2ggdGhvc2UgZmlsZXMuIE5vIHNob3AgQ1NTLiBCcmFuY2ggaXMgZnJvbSBgbWFpbmAsIG5vdCBmcm9tIHRoZSAjMjczIGJyYW5jaC4K
+# Where the harness playbook and comparison live (2026-08-28)
+
+> **Tags**: #aea #second-brain #harness #knowledge-first #path-b
+> **Captured**: 2026-08-28
+> **GitLab**: Related #274 (this note). Related #273 via !304 (**merged**). #275 queued.
+> **Related**: [[2026-08-27-path-b-dual-viewport-ux-loop-j1-j4]] [[2026-08-27-session-memory-log-cf054-path-b-ux-in-coherence-loop]] [[2026-08-26-date-re-bus-and-agent-runner-image-roll]] [[2026-08-28-aea-framework-harness-engineering]] [[2026-08-28-aea-vs-harness-playbook-comparison]]
+> **This node is knowledge, not DATE_RE, not a UI restyle.**
+
+Later agents: shared memory is committed GitLab `main` only. A status word is a claim. Probe or write Unknown.
+
+## 1. Decision
+
+The 2026-08-28 AEA 6-layer playbook and the comparison vs `harness_final.pdf` are **Second Brain working notes**, not published architecture.
+
+| Artifact | Lives in | Does not live in |
+|---|---|---|
+| Framework playbook (md) | `research/random-thoughts/2026-08-28-aea-framework-harness-engineering.md` | DATE_RE, `docs/`, GitHub mirror |
+| Comparison (md) | `research/random-thoughts/2026-08-28-aea-vs-harness-playbook-comparison.md` | DATE_RE, `docs/` |
+| This placement note | `research/random-thoughts/2026-08-28-where-harness-playbook-lives.md` | DATE_RE, `docs/` |
+| PDFs | optional local / chat attachments | git (binaries are not the vault) |
+| Clips | evidence paths, not vault bodies | DATE_RE |
+| Implementation | GitLab issues #273 #274 #275, one finding one MR | a 15th hat |
+
+`docs/` is for canonical product/architecture after `@aea-product-owner` promotes a note. Until then, `research/` is the working area. DATE_RE may list recent Second Brain filenames after a knowledge merge. Do not paste the paper into DATE_RE.
+
+Wikilinks and `#aea` keep the graph-guard happy. Cite existing [[FR-001]] [[J1]] [[CF-048]] [[CF-054]] IDs. Do not invent BG/US/FR/NFR.
+
+## 2. DATE_RE one-file binding
+
+Read on GitLab `main` (no clone): `scripts/check_daily_brief_freshness.py` defines `DATE_RE = re.compile(r"^(\\d{4}-\\d{2}-\\d{2})\\.md$")`. That is the only live handoff filename.
+
+- DATE_RE = only `research/daily-briefs/YYYY-MM-DD.md`.
+- Archaeology belongs in `research/random-thoughts/`.
+- Cadence writes `research/random-thoughts/YYYY-MM-DD-daily-activity.md` after #263 / !285. Cadence must not create, edit, append, restore, or commit DATE_RE.
+- Do not paste papers into DATE_RE.
+- DATE_RE may list recent Second Brain filenames after merge, not the paper body.
+- Typed handoffs stay GitLab issue/MR + vault, not shared chat.
+- Owner of DATE_RE remains `scripts/generate_daily_brief.py` plus honest hand-review (see [[2026-08-26-date-re-bus-and-agent-runner-image-roll]]).
+- This MR does **not** rewrite AGENTS.md or session-start SOP. Guide prune is #275 (queued). Monthly prune of rules sensors already cover remains undone — hence **Related #274**, not Closes.
+
+## 3. How a later session should use them
+
+1. Session start: DATE_RE, then this node if the work is harness/lean/CF-054.
+2. Treat the playbook as a map of the outer harness, not as ship evidence. Template benches are related work, not AEA results.
+3. Lean/antifragility/maintainability work is the backlog, not more paper:
+   - #273 CF-054 clip dated after CSS + queue reconcile. SOP+queue fix is !304 (**merged** 28 Aug 22:14 Berlin). On `main` the CF-054 queue row is `regressed`. GitLab closed #273 with that merge; the close is SOP/queue honesty, not clip-verify. Live [[J1]] clip after CSS !300: Unknown.
+   - #274 DATE_RE one file + this placement (this MR). Disjoint files from !304.
+   - #275 prune guide lines sensors already enforce (queued). Do not start #275 here.
+4. MRC merges. Knowledge guardian writes notes. UX owns the clip. Coherence owns the CF row.
+
+## 4. Next draft of the playbook
+
+Mark steps **in progress**, not done:
+
+- Clip-verify close sensor (CF-054 / #273): SOP merged as !304; clip after CSS Unknown
+- Queue reconcile from `glab`: on `main` after !304 (CF-054 is `regressed`)
+- Guide/skill prune (#275): queued
+- DATE_RE thin (#274): in progress via this note
+- Live J1 re-record after !300: Unknown
+
+Do not mark CF-054 `verified` in the paper until those clips exist. Paper language: **regressed** on main after !304; clip after CSS Unknown.
+
+## 5. Disjoint from !304
+
+!304 touches `.cursor/rules/coherence-findings-sop.mdc`, `research/coherence-findings-loop.md`, `research/findings/CF-054-path-b-dual-viewport.md`, and `research/random-thoughts/2026-08-28-session-memory-log-cf054-regressed-clip-verify.md`. This MR does not touch those files. No shop CSS. Branch is from `main`, not from the #273 branch.
