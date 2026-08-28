@@ -1,1 +1,143 @@
-IyEvdXNyL2Jpbi9lbnYgcHl0aG9uMwoiIiJCdWlsZCBhcmNoaXRlY3R1cmUuYXJ0b2YubGluayBmcm9tIGFuIGFsbG93bGlzdCBvZiBkb2NzL2ZyYW1ld29yayBtYXJrZG93bi4KClN0ZGxpYiBvbmx5LiBHaXRMYWIgUGFnZXMgcHVibGlzaGVzIHRoZSBwdWJsaWMvIGFydGlmYWN0IGZyb20gdGhlIGBwYWdlc2Agam9iCm9uIG1haW4uIEFkZGluZyBhIHBhZ2UgbWVhbnMgY2hhbmdpbmcgUEFHRVMgYmVsb3cg4oCUIGRvIG5vdCBnbG9iIHRoZSByZXBvLgoiIiIKCmZyb20gX19mdXR1cmVfXyBpbXBvcnQgYW5ub3RhdGlvbnMKCmltcG9ydCBodG1sCmltcG9ydCByZQppbXBvcnQgc3lzCmZyb20gcGF0aGxpYiBpbXBvcnQgUGF0aAoKUk9PVCA9IFBhdGgoX19maWxlX18pLnJlc29sdmUoKS5wYXJlbnRzWzFdClNSQ19ESVIgPSBST09UIC8gImRvY3MiIC8gImZyYW1ld29yayIKT1VUX0RJUiA9IFJPT1QgLyAicHVibGljIgoKIyBzbHVnIC0+IHNvdXJjZSBmaWxlbmFtZSAoYWxsb3dsaXN0OyBSRUFETUUgaXMgU09QLW9ubHkgYW5kIHN0YXlzIG9mZiB0aGUgc2l0ZSkKUEFHRVM6IGxpc3RbdHVwbGVbc3RyLCBzdHIsIHN0cl1dID0gWwogICAgKCJpbmRleCIsICJpbmRleC5tZCIsICJBZGFwdGl2ZSBFeHBlcmllbmNlIEFyY2hpdGVjdHVyZSIpLAogICAgKCJwYXRoLWIiLCAicGF0aC1iLm1kIiwgIlBhdGggQiDigJQgY2FzZSBzdHVkeSIpLApdCgpTSVRFX05BTUUgPSAiQWRhcHRpdmUgRXhwZXJpZW5jZSBBcmNoaXRlY3R1cmUiClNJVEVfVEFHID0gImFyY2hpdGVjdHVyZS5hcnRvZi5saW5rIgoKQ1NTID0gIiIiCjpyb290IHsKICBjb2xvci1zY2hlbWU6IGRhcms7CiAgLS1iZzogIzEyMTQxNzsKICAtLWZnOiAjZTdlNGRjOwogIC0tbXV0ZWQ6ICM5YTk1ODg7CiAgLS1ydWxlOiAjMmEyZTMzOwogIC0tYWNjZW50OiAjYzRiMDhhOwogIC0tbGluazogI2Q3YzQ5YTsKICAtLXdhcm46ICNkNGEwN2E7Cn0KKiB7IGJveC1zaXppbmc6IGJvcmRlci1ib3g7IH0KaHRtbCB7IGZvbnQtc2l6ZTogMThweDsgfQpib2R5IHsKICBtYXJnaW46IDA7CiAgYmFja2dyb3VuZDogdmFyKC0tYmcpOwogIGNvbG9yOiB2YXIoLS1mZyk7CiAgZm9udC1mYW1pbHk6ICJJb3dhbiBPbGQgU3R5bGUiLCAiUGFsYXRpbm8gTGlub3R5cGUiLCBQYWxhdGlubywgIlRpbWVzIE5ldyBSb21hbiIsIHNlcmlmOwogIGxpbmUtaGVpZ2h0OiAxLjU1Owp9CmhlYWRlciwgbWFpbiwgZm9vdGVyIHsKICBtYXgtd2lkdGg6IDQwcmVtOwogIG1hcmdpbjogMCBhdXRvOwogIHBhZGRpbmc6IDAgMS4yNXJlbTsKfQpoZWFkZXIgewogIHBhZGRpbmctdG9wOiAyLjVyZW07CiAgcGFkZGluZy1ib3R0b206IDEuMjVyZW07CiAgYm9yZGVyLWJvdHRvbTogMXB4IHNvbGlkIHZhcigtLXJ1bGUpOwp9CmhlYWRlciBhIHsKICBjb2xvcjogdmFyKC0tbXV0ZWQpOwogIHRleHQtZGVjb3JhdGlvbjogbm9uZTsKICBsZXR0ZXItc3BhY2luZzogMC4wNGVtOwogIGZvbnQtc2l6ZTogMC44NXJlbTsKICBmb250LWZhbWlseTogdWktc2Fucy1zZXJpZiwgc3lzdGVtLXVpLCBzYW5zLXNlcmlmOwp9CmhlYWRlciBhOmhvdmVyIHsgY29sb3I6IHZhcigtLWxpbmspOyB9CmgxLCBoMiwgaDMgewogIGZvbnQtd2VpZ2h0OiA2MDA7CiAgbGluZS1oZWlnaHQ6IDEuMjU7CiAgbGV0dGVyLXNwYWNpbmc6IC0wLjAxZW07Cn0KaDEgeyBmb250LXNpemU6IDJyZW07IG1hcmdpbjogMS40cmVtIDAgMC44cmVtOyB9CmgyIHsgZm9udC1zaXplOiAxLjI1cmVtOyBtYXJnaW46IDJyZW0gMCAwLjZyZW07IH0KaDMgeyBmb250LXNpemU6IDEuMDVyZW07IG1hcmdpbjogMS40cmVtIDAgMC41cmVtOyB9CnAsIGxpIHsgY29sb3I6IHZhcigtLWZnKTsgfQpwIHsgbWFyZ2luOiAwLjc1cmVtIDA7IH0KLm11dGVkLCBmb290ZXIgeyBjb2xvcjogdmFyKC0tbXV0ZWQpOyB9CmEgeyBjb2xvcjogdmFyKC0tbGluayk7IH0KYTpob3ZlciB7IGNvbG9yOiB2YXIoLS1hY2NlbnQpOyB9CnN0cm9uZyB7IGNvbG9yOiAjZjFlZWU2OyB9CmNvZGUgewogIGZvbnQtZmFtaWx5OiB1aS1tb25vc3BhY2UsICJDYXNjYWRpYSBDb2RlIiwgTWVubG8sIG1vbm9zcGFjZTsKICBmb250LXNpemU6IDAuODhlbTsKICBiYWNrZ3JvdW5kOiAjMWMyMDI0OwogIHBhZGRpbmc6IDAuMWVtIDAuMzVlbTsKfQpociB7CiAgYm9yZGVyOiAwOwogIGJvcmRlci10b3A6IDFweCBzb2xpZCB2YXIoLS1ydWxlKTsKICBtYXJnaW46IDJyZW0gMDsKfQpvbCwgdWwgeyBwYWRkaW5nLWxlZnQ6IDEuM3JlbTsgfQpsaSArIGxpIHsgbWFyZ2luLXRvcDogMC4zNXJlbTsgfQpmb290ZXIgewogIG1hcmdpbi10b3A6IDNyZW07CiAgcGFkZGluZzogMS41cmVtIDEuMjVyZW0gM3JlbTsKICBib3JkZXItdG9wOiAxcHggc29saWQgdmFyKC0tcnVsZSk7CiAgZm9udC1mYW1pbHk6IHVpLXNhbnMtc2VyaWYsIHN5c3RlbS11aSwgc2Fucy1zZXJpZjsKICBmb250LXNpemU6IDAuODJyZW07Cn0KLmZvcm11bGEgewogIGJvcmRlci1sZWZ0OiAzcHggc29saWQgdmFyKC0tYWNjZW50KTsKICBwYWRkaW5nOiAwLjJyZW0gMCAwLjJyZW0gMXJlbTsKICBtYXJnaW46IDEuMjVyZW0gMDsKfQoud2FybiB7IGNvbG9yOiB2YXIoLS13YXJuKTsgfQpuYXYuc2l0ZSB7CiAgZGlzcGxheTogZmxleDsKICBnYXA6IDFyZW07CiAgZm9udC1mYW1pbHk6IHVpLXNhbnMtc2VyaWYsIHN5c3RlbS11aSwgc2Fucy1zZXJpZjsKICBmb250LXNpemU6IDAuODVyZW07CiAgbWFyZ2luLXRvcDogMC43NXJlbTsKfQpuYXYuc2l0ZSBhIHsgY29sb3I6IHZhcigtLW11dGVkKTsgdGV4dC1kZWNvcmF0aW9uOiBub25lOyB9Cm5hdi5zaXRlIGE6aG92ZXIsIG5hdi5zaXRlIGFbYXJpYS1jdXJyZW50PSJwYWdlIl0geyBjb2xvcjogdmFyKC0tbGluayk7IH0KIiIiLnN0cmlwKCkKCgpkZWYgaW5saW5lX21kKHRleHQ6IHN0cikgLT4gc3RyOgogICAgIiIiRXNjYXBlIHRoZW4gYXBwbHkgYSBzbWFsbCBzZXQgb2YgaW5saW5lIG1hcmtkb3duIG1hcmtlcnMuIiIiCiAgICBwYXJ0czogbGlzdFtzdHJdID0gW10KICAgIGkgPSAwCiAgICAjIFByb3RlY3QgY29kZSBzcGFucyBmaXJzdAogICAgcGF0dGVybiA9IHJlLmNvbXBpbGUociJgKFteYF0rKWB8XFsoW15cXV0rKVxdXCgoW14pXSspXCl8XCpcKihbXipdKylcKlwqfFwqKFteKl0rKVwqIikKICAgIGZvciBtIGluIHBhdHRlcm4uZmluZGl0ZXIodGV4dCk6CiAgICAgICAgcGFydHMuYXBwZW5kKGh0bWwuZXNjYXBlKHRleHRbaTptLnN0YXJ0KCldKSkKICAgICAgICBpZiBtLmdyb3VwKDEpIGlzIG5vdCBOb25lOgogICAgICAgICAgICBwYXJ0cy5hcHBlbmQoZiI8Y29kZT57aHRtbC5lc2NhcGUobS5ncm91cCgxKSl9PC9jb2RlPiIpCiAgICAgICAgZWxpZiBtLmdyb3VwKDIpIGlzIG5vdCBOb25lOgogICAgICAgICAgICBsYWJlbCA9IGh0bWwuZXNjYXBlKG0uZ3JvdXAoMikpCiAgICAgICAgICAgIGhyZWYgPSBodG1sLmVzY2FwZShtLmdyb3VwKDMpLCBxdW90ZT1UcnVlKQogICAgICAgICAgICBwYXJ0cy5hcHBlbmQoZic8YSBocmVmPSJ7aHJlZn0iPntsYWJlbH08L2E+JykKICAgICAgICBlbGlmIG0uZ3JvdXAoNCkgaXMgbm90IE5vbmU6CiAgICAgICAgICAgIHBhcnRzLmFwcGVuZChmIjxzdHJvbmc+e2h0bWwuZXNjYXBlKG0uZ3JvdXAoNCkpfTwvc3Ryb25nPiIpCiAgICAgICAgZWxzZToKICAgICAgICAgICAgcGFydHMuYXBwZW5kKGYiPGVtPntodG1sLmVzY2FwZShtLmdyb3VwKDUpKX08L2VtPiIpCiAgICAgICAgaSA9IG0uZW5kKCkKICAgIHBhcnRzLmFwcGVuZChodG1sLmVzY2FwZSh0ZXh0W2k6XSkpCiAgICByZXR1cm4gIiIuam9pbihwYXJ0cykKCgpkZWYgbWRfdG9faHRtbChzb3VyY2U6IHN0cikgLT4gc3RyOgogICAgbGluZXMgPSBzb3VyY2Uuc3BsaXRsaW5lcygpCiAgICBvdXQ6IGxpc3Rbc3RyXSA9IFtdCiAgICBpID0gMAogICAgaW5fbGlzdDogc3RyIHwgTm9uZSA9IE5vbmUKCiAgICBkZWYgY2xvc2VfbGlzdCgpIC0+IE5vbmU6CiAgICAgICAgbm9ubG9jYWwgaW5fbGlzdAogICAgICAgIGlmIGluX2xpc3Q6CiAgICAgICAgICAgIG91dC5hcHBlbmQoZiI8L3tpbl9saXN0fT4iKQogICAgICAgICAgICBpbl9saXN0ID0gTm9uZQoKICAgIHdoaWxlIGkgPCBsZW4obGluZXMpOgogICAgICAgIGxpbmUgPSBsaW5lc1tpXQogICAgICAgIHN0cmlwcGVkID0gbGluZS5zdHJpcCgpCgogICAgICAgIGlmIHN0cmlwcGVkID09ICIiOgogICAgICAgICAgICBjbG9zZV9saXN0KCkKICAgICAgICAgICAgaSArPSAxCiAgICAgICAgICAgIGNvbnRpbnVlCgogICAgICAgIGhlYWRpbmcgPSByZS5tYXRjaChyIl4oI3sxLDN9KVxzKyguKikkIiwgc3RyaXBwZWQpCiAgICAgICAgaWYgaGVhZGluZzoKICAgICAgICAgICAgY2xvc2VfbGlzdCgpCiAgICAgICAgICAgIGxldmVsID0gbGVuKGhlYWRpbmcuZ3JvdXAoMSkpCiAgICAgICAgICAgIGJvZHkgPSBpbmxpbmVfbWQoaGVhZGluZy5ncm91cCgyKSkKICAgICAgICAgICAgZXh0cmEgPSAnIGNsYXNzPSJmb3JtdWxhIicgaWYgIkFkYXB0aXZlIEV4cGVyaWVuY2UgPSIgaW4gaGVhZGluZy5ncm91cCgyKSBlbHNlICIiCiAgICAgICAgICAgICMgVGhlIGZvcm11bGEgbGl2ZXMgaW4gYSBib2xkIHBhcmFncmFwaCwgbm90IG9ubHkgaGVhZGluZ3M7IGhhbmRsZSBiZWxvdy4KICAgICAgICAgICAgb3V0LmFwcGVuZChmIjxoe2xldmVsfXtleHRyYX0+e2JvZHl9PC9oe2xldmVsfT4iKQogICAgICAgICAgICBpICs9IDEKICAgICAgICAgICAgY29udGludWUKCiAgICAgICAgaWYgc3RyaXBwZWQgaW4gKCItLS0iLCAiKioqIik6CiAgICAgICAgICAgIGNsb3NlX2xpc3QoKQogICAgICAgICAgICBvdXQuYXBwZW5kKCI8aHI+IikKICAgICAgICAgICAgaSArPSAxCiAgICAgICAgICAgIGNvbnRpbnVlCgogICAgICAgIHVsID0gcmUubWF0Y2gociJeWy0qXVxzKyguKikkIiwgc3RyaXBwZWQpCiAgICAgICAgb2wgPSByZS5tYXRjaChyIl5cZCtcLlxzKyguKikkIiwgc3RyaXBwZWQpCiAgICAgICAgaWYgdWwgb3Igb2w6CiAgICAgICAgICAgIGtpbmQgPSAidWwiIGlmIHVsIGVsc2UgIm9sIgogICAgICAgICAgICBpdGVtID0gdWwuZ3JvdXAoMSkgaWYgdWwgZWxzZSBvbC5ncm91cCgxKQogICAgICAgICAgICBpZiBpbl9saXN0ICE9IGtpbmQ6CiAgICAgICAgICAgICAgICBjbG9zZV9saXN0KCkKICAgICAgICAgICAgICAgIG91dC5hcHBlbmQoZiI8e2tpbmR9PiIpCiAgICAgICAgICAgICAgICBpbl9saXN0ID0ga2luZAogICAgICAgICAgICBvdXQuYXBwZW5kKGYiPGxpPntpbmxpbmVfbWQoaXRlbSl9PC9saT4iKQogICAgICAgICAgICBpICs9IDEKICAgICAgICAgICAgY29udGludWUKCiAgICAgICAgY2xvc2VfbGlzdCgpCiAgICAgICAgcGFyYSA9IGlubGluZV9tZChzdHJpcHBlZCkKICAgICAgICBjbHMgPSAiIgogICAgICAgIGlmIHN0cmlwcGVkLnN0YXJ0c3dpdGgoIioqQWRhcHRpdmUgRXhwZXJpZW5jZSA9Iik6CiAgICAgICAgICAgIGNscyA9ICcgY2xhc3M9ImZvcm11bGEiJwogICAgICAgIGlmICJyZWdyZXNzZWQiIGluIHN0cmlwcGVkLmxvd2VyKCkgYW5kICJDRi0wNTQiIGluIHN0cmlwcGVkOgogICAgICAgICAgICBjbHMgPSAnIGNsYXNzPSJ3YXJuIicgaWYgbm90IGNscyBlbHNlIGNscwogICAgICAgIG91dC5hcHBlbmQoZiI8cHtjbHN9PntwYXJhfTwvcD4iKQogICAgICAgIGkgKz0gMQoKICAgIGNsb3NlX2xpc3QoKQogICAgcmV0dXJuICJcbiIuam9pbihvdXQpCgoKZGVmIHdyYXAodGl0bGU6IHN0ciwgc2x1Zzogc3RyLCBib2R5OiBzdHIpIC0+IHN0cjoKICAgIG5hdiA9IFtdCiAgICBmb3Igb3RoZXJfc2x1ZywgX3NyYywgb3RoZXJfdGl0bGUgaW4gUEFHRVM6CiAgICAgICAgaHJlZiA9ICJpbmRleC5odG1sIiBpZiBvdGhlcl9zbHVnID09ICJpbmRleCIgZWxzZSBmIntvdGhlcl9zbHVnfS5odG1sIgogICAgICAgIGN1cnJlbnQgPSAnIGFyaWEtY3VycmVudD0icGFnZSInIGlmIG90aGVyX3NsdWcgPT0gc2x1ZyBlbHNlICIiCiAgICAgICAgbGFiZWwgPSAiRnJhbWV3b3JrIiBpZiBvdGhlcl9zbHVnID09ICJpbmRleCIgZWxzZSBvdGhlcl90aXRsZQogICAgICAgIG5hdi5hcHBlbmQoZic8YSBocmVmPSJ7aHJlZn0ie2N1cnJlbnR9PntodG1sLmVzY2FwZShsYWJlbCl9PC9hPicpCiAgICBuYXZfaHRtbCA9ICJcbiAgICAgICIuam9pbihuYXYpCiAgICByZXR1cm4gZiIiIjwhRE9DVFlQRSBodG1sPgo8aHRtbCBsYW5nPSJlbiI+CjxoZWFkPgogIDxtZXRhIGNoYXJzZXQ9InV0Zi04Ij4KICA8bWV0YSBuYW1lPSJ2aWV3cG9ydCIgY29udGVudD0id2lkdGg9ZGV2aWNlLXdpZHRoLCBpbml0aWFsLXNjYWxlPTEiPgogIDx0aXRsZT57aHRtbC5lc2NhcGUodGl0bGUpfSDigJQge2h0bWwuZXNjYXBlKFNJVEVfTkFNRSl9PC90aXRsZT4KICA8bWV0YSBuYW1lPSJkZXNjcmlwdGlvbiIgY29udGVudD0iQUVBIGZyYW1ld29yazogU2hhcmVkIFVuZGVyc3RhbmRpbmcgKyBEb21haW4gU2VydmljZXMgKyBPdXRlciBIYXJuZXNzLiI+CiAgPHN0eWxlPgp7Q1NTfQogIDwvc3R5bGU+CjwvaGVhZD4KPGJvZHk+CiAgPGhlYWRlcj4KICAgIDxhIGhyZWY9ImluZGV4Lmh0bWwiPntodG1sLmVzY2FwZShTSVRFX1RBRyl9PC9hPgogICAgPG5hdiBjbGFzcz0ic2l0ZSI+CiAgICAgIHtuYXZfaHRtbH0KICAgIDwvbmF2PgogIDwvaGVhZGVyPgogIDxtYWluPgp7Ym9keX0KICA8L21haW4+CiAgPGZvb3Rlcj4KICAgIFB1YmxpYyBmcmFtZXdvcmsgc3VyZmFjZS4gU291cmNlOiBhbGxvd2xpc3RlZCBtYXJrZG93biBvbiBHaXRMYWIgbWFpbi4KICAgIFBhdGggQiBzaG9wIHN0YXlzIGF0IGFlYS5hcnRvZi5saW5rLiBNZXJnZSBwdWJsaXNoZXMuIE5vIENNUy4KICA8L2Zvb3Rlcj4KPC9ib2R5Pgo8L2h0bWw+CiIiIgoKCmRlZiBidWlsZCgpIC0+IGludDoKICAgIE9VVF9ESVIubWtkaXIocGFyZW50cz1UcnVlLCBleGlzdF9vaz1UcnVlKQogICAgbWlzc2luZyA9IDAKICAgIGZvciBzbHVnLCBmaWxlbmFtZSwgdGl0bGUgaW4gUEFHRVM6CiAgICAgICAgcGF0aCA9IFNSQ19ESVIgLyBmaWxlbmFtZQogICAgICAgIGlmIG5vdCBwYXRoLmlzX2ZpbGUoKToKICAgICAgICAgICAgcHJpbnQoZiJGQUlMOiBtaXNzaW5nIGFsbG93bGlzdGVkIHNvdXJjZSB7cGF0aH0iLCBmaWxlPXN5cy5zdGRlcnIpCiAgICAgICAgICAgIG1pc3NpbmcgPSAxCiAgICAgICAgICAgIGNvbnRpbnVlCiAgICAgICAgc291cmNlID0gcGF0aC5yZWFkX3RleHQoZW5jb2Rpbmc9InV0Zi04IikKICAgICAgICBib2R5ID0gbWRfdG9faHRtbChzb3VyY2UpCiAgICAgICAgZGVzdCA9IE9VVF9ESVIgLyAoImluZGV4Lmh0bWwiIGlmIHNsdWcgPT0gImluZGV4IiBlbHNlIGYie3NsdWd9Lmh0bWwiKQogICAgICAgIGRlc3Qud3JpdGVfdGV4dCh3cmFwKHRpdGxlLCBzbHVnLCBib2R5KSwgZW5jb2Rpbmc9InV0Zi04IikKICAgICAgICBwcmludChmIm9rOiB7cGF0aC5yZWxhdGl2ZV90byhST09UKX0gLT4ge2Rlc3QucmVsYXRpdmVfdG8oUk9PVCl9IikKICAgIHJldHVybiBtaXNzaW5nCgoKaWYgX19uYW1lX18gPT0gIl9fbWFpbl9fIjoKICAgIHJhaXNlIFN5c3RlbUV4aXQoYnVpbGQoKSkK
+#!/usr/bin/env python3
+"""Build architecture.artof.link from an allowlist of docs/framework markdown.
+
+Stdlib only. Adding a page means changing PAGES below. Do not glob the repo.
+"""
+from __future__ import annotations
+
+import html
+import re
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+SRC = ROOT / 'docs' / 'framework'
+OUT = ROOT / 'public'
+PAGES = [
+    ('index', 'index.md', 'Adaptive Experience Architecture'),
+    ('path-b', 'path-b.md', 'Path B case study'),
+]
+SITE = 'architecture.artof.link'
+CSS = (
+    ':root{color-scheme:dark;--bg:#121417;--fg:#e7e4dc;--muted:#9a9588;'
+    '--rule:#2a2e33;--accent:#c4b08a;--link:#d7c49a;--warn:#d4a07a}'
+    '*{box-sizing:border-box}html{font-size:18px}'
+    'body{margin:0;background:var(--bg);color:var(--fg);'
+    'font-family:Palatino,Times New Roman,serif;line-height:1.55}'
+    'header,main,footer{max-width:40rem;margin:0 auto;padding:0 1.25rem}'
+    'header{padding-top:2.5rem;padding-bottom:1.25rem;border-bottom:1px solid var(--rule)}'
+    'header a,nav.site a{color:var(--muted);text-decoration:none;'
+    'font-family:ui-sans-serif,system-ui,sans-serif;font-size:.85rem}'
+    'h1{font-size:2rem}h2{font-size:1.25rem;margin:2rem 0 .6rem}'
+    'a{color:var(--link)}code{font-family:ui-monospace,Menlo,monospace;'
+    'background:#1c2024;padding:.1em .35em}'
+    '.formula{border-left:3px solid var(--accent);padding-left:1rem}'
+    '.warn{color:var(--warn)}nav.site{display:flex;gap:1rem;margin-top:.75rem}'
+    'footer{margin-top:3rem;padding:1.5rem 1.25rem 3rem;border-top:1px solid var(--rule);'
+    'color:var(--muted);font-family:ui-sans-serif,system-ui,sans-serif;font-size:.82rem}'
+)
+INLINE = re.compile(
+    r'`([^`]+)`|\[([^\]]+)\]\(([^)]+)\)|\*\*([^*]+)\*\*|\*([^*]+)\*'
+)
+
+
+def inline_md(text: str) -> str:
+    parts = []
+    i = 0
+    for m in INLINE.finditer(text):
+        parts.append(html.escape(text[i:m.start()]))
+        if m.group(1) is not None:
+            parts.append('<code>' + html.escape(m.group(1)) + '</code>')
+        elif m.group(2) is not None:
+            href = html.escape(m.group(3), quote=True)
+            parts.append('<a href="' + href + '">' + html.escape(m.group(2)) + '</a>')
+        elif m.group(4) is not None:
+            parts.append('<strong>' + html.escape(m.group(4)) + '</strong>')
+        else:
+            parts.append('<em>' + html.escape(m.group(5)) + '</em>')
+        i = m.end()
+    parts.append(html.escape(text[i:]))
+    return ''.join(parts)
+
+
+def md_to_html(source: str) -> str:
+    out: list[str] = []
+    in_list: str | None = None
+
+    def close() -> None:
+        nonlocal in_list
+        if in_list:
+            out.append('</' + in_list + '>')
+            in_list = None
+
+    for raw in source.splitlines():
+        line = raw.strip()
+        if not line:
+            close()
+            continue
+        h = re.match(r'^(#{1,3})\s+(.*)$', line)
+        if h:
+            close()
+            n = str(len(h.group(1)))
+            out.append('<h' + n + '>' + inline_md(h.group(2)) + '</h' + n + '>')
+            continue
+        ul = re.match(r'^[-*]\s+(.*)$', line)
+        ol = re.match(r'^\d+\.\s+(.*)$', line)
+        if ul or ol:
+            kind = 'ul' if ul else 'ol'
+            item = (ul or ol).group(1)
+            if in_list != kind:
+                close()
+                out.append('<' + kind + '>')
+                in_list = kind
+            out.append('<li>' + inline_md(item) + '</li>')
+            continue
+        close()
+        cls = ''
+        if line.startswith('**Adaptive Experience ='):
+            cls = ' class="formula"'
+        if 'CF-054' in line and 'regressed' in line.lower():
+            cls = ' class="warn"'
+        out.append('<p' + cls + '>' + inline_md(line) + '</p>')
+    close()
+    return '\n'.join(out)
+
+
+def wrap(title: str, slug: str, body: str) -> str:
+    nav = []
+    for other, _src, other_title in PAGES:
+        href = 'index.html' if other == 'index' else other + '.html'
+        cur = ' aria-current="page"' if other == slug else ''
+        label = 'Framework' if other == 'index' else other_title
+        nav.append('<a href="' + href + '"' + cur + '>' + html.escape(label) + '</a>')
+    return (
+        '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">'
+        '<meta name="viewport" content="width=device-width, initial-scale=1">'
+        '<title>' + html.escape(title) + ' — ' + html.escape(SITE) + '</title>'
+        '<style>' + CSS + '</style></head><body><header>'
+        '<a href="index.html">' + html.escape(SITE) + '</a>'
+        '<nav class="site">' + ''.join(nav) + '</nav></header><main>'
+        + body +
+        '</main><footer>Public framework surface. Allowlisted markdown on GitLab main. '
+        'Path B shop stays at aea.artof.link. Merge publishes. No CMS.</footer>'
+        '</body></html>'
+    )
+
+
+def build() -> int:
+    OUT.mkdir(parents=True, exist_ok=True)
+    fail = 0
+    for slug, name, title in PAGES:
+        path = SRC / name
+        if not path.is_file():
+            print('FAIL: missing ' + str(path), file=sys.stderr)
+            fail = 1
+            continue
+        dest = OUT / ('index.html' if slug == 'index' else slug + '.html')
+        dest.write_text(wrap(title, slug, md_to_html(path.read_text(encoding='utf-8'))), encoding='utf-8')
+        print('ok: ' + str(path.relative_to(ROOT)) + ' -> ' + str(dest.relative_to(ROOT)))
+    return fail
+
+
+if __name__ == '__main__':
+    raise SystemExit(build())
