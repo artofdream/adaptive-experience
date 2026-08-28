@@ -10,6 +10,7 @@ Graph-guard (`scripts/check_knowledge_graph.py`) scans `research/random-thoughts
 |--------|----------------|
 | `docs/framework/index.md` | `public/index.html` |
 | `docs/framework/schema.md` | `public/schema.html` |
+| `docs/framework/comparison.md` | `public/comparison.html` |
 | `docs/framework/path-b.md` | `public/path-b.html` |
 
 This README is operator SOP. It is **not** in the allowlist and is not published.
@@ -20,7 +21,7 @@ Adding a public page means:
 2. Add a row to `PAGES` in `scripts/build_framework_site.py`.
 3. MR. MRC merges. The `pages` job on `main` rebuilds `public/`.
 
-Do not glob the whole repo. Do not paste DATE_RE, vault papers, TAM/raise, or 3DX Lab onto the public site. Do not restyle the shop.
+Do not glob the whole repo. Do not paste DATE_RE, vault papers, TAM/raise, or 3DX Lab onto the public site. A lean [comparison](comparison.md) page is allowlisted; the 715-line vault working paper is not. Do not restyle the shop.
 
 ## Sync SOP
 

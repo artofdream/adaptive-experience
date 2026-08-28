@@ -16,6 +16,7 @@ OUT = ROOT / 'public'
 PAGES = [
     ('index', 'index.md', 'Adaptive Experience Architecture'),
     ('schema', 'schema.md', 'Schema'),
+    ('comparison', 'comparison.md', 'Comparison'),
     ('path-b', 'path-b.md', 'Path B case study'),
 ]
 SITE = 'architecture.artof.link'

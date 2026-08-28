@@ -4,7 +4,7 @@
 
 This site is the public surface for that formula and the six layers around it. It is not a shop, not a CMS, and not a pitch deck.
 
-The Path B florist at [aea.artof.link](https://aea.artof.link) is one [case study](path-b.html), not the home. The [schema](schema.html) is the public map (formula, layers, loop, roles, named journeys).
+The Path B florist at [aea.artof.link](https://aea.artof.link) is one [case study](path-b.html), not the home. The [schema](schema.html) is the public map (formula, layers, loop, roles, named journeys). A [comparison](comparison.html) names sources and says what the related-work mapping is and is not.
 
 ## Formula
 
@@ -21,15 +21,19 @@ AI may interpret. Domain services decide. Status words are claims; they need a p
 5. **Permissions** — who may change what. Domain services stay authoritative; the outer harness does not silently restyle or redeploy a live shop.
 6. **Observability** — evidence for every status word. If the probe is missing, write **Unknown**.
 
-## Honesty
+## Honesty, knowledge, antifragility
 
 A status word (`verified`, `shipped`, `complete`) is a claim. Probe it with the same journey, the same viewport, or a mechanical check — or write Unknown. Do not treat a merged spec or a CSS change as verification.
+
+**Knowledge First.** Read committed shared memory before rediscovering. Shared memory is GitLab `main`. Chat is not shared memory.
+
+**Antifragility.** A repeated miss is a harness gap. Add a sensor or a gate so the same miss cannot recur. AEA is not claiming that bar yet.
 
 Fourteen hats are lenses. Three executable jobs: implement, verify, merge (MRC only).
 
 ## What this site is
 
-- The AEA **framework** (formula + six layers), published from allowlisted markdown on GitLab `main`. See [schema](schema.html) for the communication map.
+- The AEA **framework** (formula + six layers), published from allowlisted markdown on GitLab `main`. See [schema](schema.html) for the communication map and [comparison](comparison.html) for sources.
 - Edit `docs/framework/`, open an MR, MRC merges, GitLab Pages publishes. No CMS.
 - Intended hostname: `architecture.artof.link` (CNAME to `artof-group.gitlab.io` is live; GitLab Pages domain verification and Let's Encrypt remain). Until Pages publishes, treat the site as not up.
 

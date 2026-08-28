@@ -2,7 +2,7 @@
 
 This page is the public map of Adaptive Experience. Use it when talking about the framework. It is not the shop and not a trophy.
 
-[Home](index.html) · [Path B case study](path-b.html)
+[Home](index.html) · [Path B case study](path-b.html) · [Comparison](comparison.html)
 
 ## Formula
 
@@ -38,9 +38,15 @@ project manager, product owner, UX designer, customer journey, support coordinat
 
 Three executable jobs: implement, verify, merge. Only the MR coordinator merges.
 
-## Honesty
+## Honesty, knowledge, antifragility
 
 `verified`, `shipped`, and `complete` are claims. Probe them or write Unknown. A merged spec or a CSS change is not verification. GitLab closing an issue is not the site being up and is not a journey clip.
+
+**Knowledge First.** Committed GitLab `main` is shared memory. Chat and uncommitted files are not. Read that vault before new work.
+
+**Antifragility.** The same miss twice is a missing sensor or gate, not a missing pep talk. This map does not claim Path B is antifragile. Dual-viewport is still **regressed**.
+
+See the [comparison](comparison.html) for sources and what related work is not.
 
 ## Journeys (Path B case study)
 
@@ -59,4 +65,4 @@ Named scripts used to probe the florist instantiation at [aea.artof.link](https:
 - Not AGENTS.md and not a 14/14 scoreboard.
 - Not a request to restyle the florist.
 
-Back to the [framework](index.html) or the [Path B case study](path-b.html).
+Back to the [framework](index.html), the [Path B case study](path-b.html), or the [comparison](comparison.html).
