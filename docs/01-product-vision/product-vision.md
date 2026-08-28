@@ -20,3 +20,9 @@ Create an AI-native florist experience where customers express needs naturally a
 - Continuity before immediacy
 - Latest relevant intent wins
 - AI interprets; domain services validate
+
+## Multi-surface & native mobile vision
+- **Single session, multi-surface presentation**: A unified session model (`ADR-001`), Contract-First API (`ADR-008`), and Zero-PII security (`NFR-017`) project adaptively across both Web Adaptive Workspaces (desktop 8-Tile spatial layout) and Native Mobile Concierge apps (3-Stage *Need → Pick → Pay* linear flow).
+- **Native Android & iOS companion experience**: High-performance, native mobile applications (Android Kotlin / Jetpack Compose leading to iOS SwiftUI) consuming identical BFF endpoints without backend rewrites.
+- **Proactive annual occasion engagement**: Integration of native push notification relays (FCM/APNs) with `EngagementCrmService` (`FR-016`) to proactively remind shoppers of upcoming annual occasions (e.g., *Mom's Birthday*) 30 days in advance.
+
