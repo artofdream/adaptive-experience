@@ -331,5 +331,142 @@ A production harness needs telemetry. Required on Path B: CF queue Last seen / s
 
 **TABLE VII — AEA TRIP WIRE TRIGGERS**
 
+| Trip wire | Indicates | Response |
+|---|---|---|
+| DATE_RE honesty (CF-048) | Unprobed status words | Reject the brief |
+| graph-guard fail | ID or link drift | Block the MR |
+| Cadence writes DATE_RE | Handoff pollution | Stop the job |
+| Stale observed_at | Inventory demo-mode | unknown + Select disabled |
+| CF row vs merged CSS | False verified ([[CF-054]] class) | Reconcile from `glab`; require post-CSS clip |
+| NFR-003 breach | LiteLLM SLA miss | Inspect CloudWatch |
+
+**TABLE VIII — HARNESS HEALTH (NO FAKE TARGETS)**
+
+| Signal | Definition | Direction |
+|---|---|---|
+| Verified CFs | Rows with an actual probe | Up, honestly |
+| Unprobed status words | Claims without evidence | Down to zero |
+| Queue lag / false verified | Merged CSS still `in-mr`, or `verified` without a post-CSS clip | Down |
+| Fail-closed trips | unknown shown when stale | Must fire |
+| MRC merges | Non-MRC merges | Down to zero |
+| DATE_RE pollution | Non-handoff writers | Down to zero |
+
+### A. The Real Metric
+
+Do not count tokens, messages, or hats invoked. The cost metric is **cost per verified CF** (and per clip-backed UX claim), not tokens. This paper states no completion-rate percentage and does not copy template `$5` / 3 retries / 80% completion. Those numbers were not probed here. Unknown is the correct word when the probe is missing.
+
+### B. Observability as Debugging Infrastructure
+
+When Path B is wrong, the first question is where. Grafana, CloudWatch, the CF row, and the MR pipeline should answer without replaying the whole conversation. Observability is not overhead. It is how CF-048 was catchable.
+
+### C. Cost Attribution
+
+Cost-guardian exists as a hat. This compilation does not publish a dollars-per-journey figure. Unknown. Track cost per verified CF, and per clip-backed UX claim, when the probe exists — not per chatty session and not per token. LiteLLM spend without an honest shop is not efficiency.
+
+**Operational Review Questions**
+
+- Can you name the CF that last changed status, and the probe that justified it?
+- Can you see LiteLLM latency against NFR-003 in CloudWatch?
+- Can you tell DATE_RE from a random-thoughts log in one glance?
+- Would you know if cadence wrote the handoff file?
+- Would you know if the queue said `verified` while the finding note still said `in-mr` after CSS merged?
+
+## IX. THE IMPROVEMENT LOOP
+
+*The ratchet is CF intake. Clip re-record is a sensor, not a launch party*
+
+**TABLE IX — FAILURE CLASSIFICATION (AEA)**
+
+| Failure class | Weak fix (avoid) | Strong fix (prefer) |
+|---|---|---|
+| Unprobed status (CF-048) | Rewrite the sentence | Honesty rule + DATE_RE trip |
+| Invented FR/NFR ID | Correct in chat | graph-guard + ID freeze |
+| Knowledge MR closes UI CF | Comment on the MR | Permission + MRC policy |
+| Stale availability | Softer copy | Fail-closed Select disable |
+| Dual-viewport drift | "Looks fine on my laptop" | Spec + UX-owned CSS + clip probe |
+| False verified Path B ([[CF-054]]) | Close issue from spec/CSS MR | Post-CSS clip + `glab` reconcile sensor |
+| Loop tick merge | Revert later | MRC-only merge |
+| Lost session context | Re-explain Path B | Committed DATE_RE brief |
+
+> "Prompts guide behavior. Environments prevent entire classes of failure."
+>
+> — Lauren Tan, Cursor [10], applied to Path B environments
+
+CF intake is the ratchet, and the ratchet belongs at the **strongest** layer (sensor/CI), not another paragraph. Each failure that lands as a numbered finding, with one issue and one MR, reduces the chance the next session repeats it. The same error three times becomes a sensor. Early in a vault, guide growth is fast. A mature harness adds fewer rules and more guards. Lean by subtraction. This paper does not claim a rules-per-week rate. Unknown.
+
+### A. The Six-Step Engineering Loop
+
+When Path B fails: (1) Reproduce with the same journey and viewport. (2) Classify: missing guide, absent sensor, permission gap, state loss, or observability blind spot. (3) Pick the strongest layer (sensor/CI before a new sentence). (4) Encode the fix. (5) Verify on the original case. (6) Run guards so you did not break [[FR-011]] while fixing copy. Skip no step. Skipping (1) fixes a phantom. Skipping (5) is how [[CF-054]] became a false verified: CSS merged, issue closed, queue said `verified`, no post-CSS clip.
+
+### B. Clip Re-record as Ratchet
+
+Re-record [[J1]]–[[J4]] when the dual-viewport spec or CSS changes. A clip that predates !300 is not evidence that !300 works on the live shop. Encode the class: Path B `verified` requires a clip dated after the CSS/product merge; hourly ticks must reconcile Issue/MR from `glab` (not from the queue text). The 2026-08-28 trail, probed again that evening Berlin: knowledge !298 merged; spec !299 merged and closed #272; feat(ux) CSS !300 merged as `63aaa4ce`; queue row on main is `regressed` after !304 (was `verified` with #272 / !298, !299, !300 — a **false verified**). Finding note on main after !304: `regressed` / #273. Live [[J1]] phone+desktop re-record after !300: Unknown. [[CF-054]] is **regressed**. Do not invent CF-055.
+
+**TABLE X — CONTROL RELIABILITY LADDER**
+
+| Layer | AEA example | Reliability |
+|---|---|---|
+| Memory | Correction in chat | Low |
+| Prompt | "Be honest in the brief" | Low-Medium |
+| Guide | AGENTS.md + skill rule | Medium |
+| Sensor | check_coherence.py / fail-closed | High |
+| Environment | MRC merge + CI + ID freeze | Highest |
+
+## X. BUILD PATH: HOW AEA ALREADY INSTANTIATED THE LAYERS
+
+*Not a fake seven-day greenfield. The vault is the path*
+
+Do not pretend AEA was stood up in a week on an empty repo. The six layers are already instantiated, unevenly. The build path is to notice which layer is thin and strengthen it from real CFs. Roadmap group milestones are M0-M7 MVP, M8-M12 post-MVP, then Future Backlog. DATE_RE 2026-08-28 listed Active Focus Unknown. Milestone lines are roadmap labels, not ship-counts. Do not claim M14-M18 production-ready.
+
+**TABLE XI — AEA LAYER INSTANTIATION (AUGUST 2026)**
+
+| Layer | Already in vault | Honest gap |
+|---|---|---|
+| Guides | AGENTS.md, 4 rules, 14 skills, ADRs, Path B spec | Lean by subtraction (#275 queued) |
+| Sensors | coherence / graph / guards / CI / fail-closed | DATE_RE 14/14 unprobed here |
+| Loop | CF queue, one-finding rule, MRC merge | [[CF-054]] false verified; clip Unknown |
+| Memory | DATE_RE one file; random-thoughts archaeology | Uncommitted-as-memory temptation |
+| Permissions | 14 hats, ID freeze, UX CSS ownership | 15th-hat gravity |
+| Observability | Grafana, CF Last seen, CloudWatch, honesty | Live [[J1]] re-record after !300 Unknown |
+
+### A. What MVP Actually Includes
+
+Requirements count is 23 FR + 17 NFR = 40. Source of truth: `archive/Quantic_Project_Consolidated_Coherence_Validated.xlsx`. Cite existing IDs only. MVP includes conversational discovery, editable Shared Understanding ([[FR-001]]/021), validated recommendations ([[FR-007]]), T-03 Available badge ([[FR-011]]/[[NFR-009]]), thin T-04 [[FR-003]] (size, card message, flower_type/colour/ribbon per ADR-006), delivery, itemized summary FR-018, payment FR-019 (mockup / not live Stripe), tracking FR-023, FAQ [[FR-009]].
+
+### B. What Is Not Shipped
+
+Future / not shipped: live Stripe, browser LCP / Edge SSR, staff live chat, WebRTC, full CRM analytics FR-017, inventory forecasting FR-012. Thin CRM occasion reminders landed as #254/!297 and remain FR-016 Future in the workbook. Naming a merge is not the same as moving the workbook ID.
+
+### C. Expansion Pattern
+
+After the layers exist, expansion follows the ratchet. Run Path B. Every failure names a layer. Same error twice: guide hole. Same error three times: become a sensor. Subtly wrong shop: sensor hole. Scope creep: permission too broad. Cannot diagnose: observability hole. Change one layer at a time. Do not scale hats because the model is impressive. Do not restyle Path B CSS from a knowledge MR.
+
+**Scale Gate — Expand Only When These Are True**
+
+- MRC, not the producer, is the only merger on main.
+- Fail-closed inventory has tripped on a stale observation, not only on happy path.
+- DATE_RE recovery test passed on a new session.
+- Honesty rule has caught at least one unprobed status word.
+- A clip probe exists for the journey you claim, dated after the CSS that claimed it.
+- No fifteenth hat has been introduced as "just this once."
+
+### D. Draft status (28 August 2026, evening Berlin)
+
+Backlog opened ~22:02 Berlin. Steps are **in progress**, not done.
+
+- #273 `cf-054: Path B verified requires clip dated after CSS (queue reconcile)` — SOP merged as !304; clip after CSS Unknown. Do not treat that merge as clip-verify.
+- #274 `harness: DATE_RE stays one file; date and prune guide rules` — in progress (vault placement)
+- #275 `harness: prune guide/skill lines that CI sensors already enforce` — queued
+- Live [[J1]] re-record after !300: Unknown
+
+Do not mark [[CF-054]] `verified` in this note until those clips exist. The queue word `verified` on main was a false verified until !304. Status on main (probed after merge): **regressed**, pending a clip dated after the CSS merge. !304 is the SOP+queue correction and **merged** 28 Aug 22:14 Berlin. Clip after CSS still Unknown.
+
+## XI. DECISION FRAMEWORK
+
+*Start at the simplest layer that matches the observed failure*
+
+**TABLE XII — ARCHITECTURE DECISION FRAMEWORK (AEA)**
+
+
 
 
