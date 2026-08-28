@@ -49,12 +49,12 @@ def check_knowledge_graph() -> int:
         for target in wikilinks:
             clean_target = target.strip()
 
-            # Canonical requirement / ADR / Milestone / Gap / Nginx pattern matchers
+            # Canonical requirement / ADR / Milestone / Gap / Nginx / CF pattern matchers
             if (clean_target.startswith("ADR-") or clean_target.startswith("BG-")
                     or clean_target.startswith("US-") or clean_target.startswith("FR-")
                     or clean_target.startswith("NFR-") or clean_target.startswith("M")
                     or clean_target.startswith("J") or clean_target.startswith("Gap-")
-                    or clean_target.startswith("Nginx-")
+                    or clean_target.startswith("Nginx-") or clean_target.startswith("CF-")
                     or clean_target.lower() in ("wikilink", "wikilinks", "note-name")):
                 continue
 
@@ -66,7 +66,7 @@ def check_knowledge_graph() -> int:
                 DOCS / clean_target,
                 ROOT / f"{clean_target}.md",
                 ROOT / clean_target,
-            ]
+            ] + list(DOCS.rglob(f"{clean_target}.md")) + list(ROOT.glob(f"research/**/{clean_target}.md"))
 
             if not any(p.exists() for p in possible_paths):
                 errors.append(f"{md_file.relative_to(ROOT)}: broken [[wikilink]] target '{clean_target}'")
