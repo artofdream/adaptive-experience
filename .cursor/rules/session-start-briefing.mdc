@@ -6,10 +6,17 @@ alwaysApply: true
 
 # Session-start briefing SOP
 
+> **Captured/Updated**: 2026-08-28  
+> **Owner**: `@aea-knowledge-guardian` with `@aea-coherence-guardian`  
+> **Traceability**: Issue #274, CF-048  
+> **Scope**: Harness Rule (single live handoff file; monthly prune schedule)  
+
 Before taking any repo action in a new session — Cursor, Codex, Claude Code,
 Copilot, or Antigravity — read the most recent file in `research/daily-briefs/` (sort by
 filename date, open the latest `YYYY-MM-DD.md`). That DATE_RE name is the
 only live handoff. Historical `YYYY-MM-DD-daily-brief.md` files are not.
+Cadence records live exclusively in `research/random-thoughts/YYYY-MM-DD-daily-activity.md`.
+Typed handoffs stay committed GitLab issues/MRs and Second Brain vault nodes—never uncommitted disk files or chat transcripts.
 
 ## Why
 
@@ -66,6 +73,12 @@ Before concluding any session:
 2. Run `python scripts/generate_daily_brief.py` to regenerate `research/daily-briefs/YYYY-MM-DD.md`.
 3. Run `python scripts/run_all_guards.py` to verify 14/14 pre-flight quality guards pass cleanly.
 4. Stage and commit knowledge notes (`git add research/random-thoughts/ research/daily-briefs/`) so all assistant tools inherit updated Second Brain memory.
+
+## Rule Maintenance & Monthly Prune Cadence
+
+1. **Date New Rules**: All new guide or skill rules added to `.cursor/rules/` or `.cursor/skills/` must include a capture date and owner header (`Captured: YYYY-MM-DD`, `Owner: @aea-knowledge-guardian`).
+2. **Monthly Prune**: Perform a monthly audit of guide rules against automated CI sensors (`check_coherence.py`, `run_all_guards.py`, `run_verify_job.py`). Prune prose instructions that sensors already enforce mechanically.
+3. **Single Live Handoff**: `research/daily-briefs/YYYY-MM-DD.md` remains the only live cross-session bus; historical notes belong in `research/random-thoughts/`.
 
 ## Enforcement across tools
 

@@ -6,6 +6,10 @@ alwaysApply: true
 
 # Cursor/Codex/Claude/Copilot/Gemini/Grok stakeholder-skill portability SOP
 
+> **Captured/Updated**: 2026-08-28  
+> **Owner**: `@aea-devsecops-platform` with `@aea-knowledge-guardian`  
+> **Traceability**: Issue #274, Stakeholder 6-Way Portability SOP  
+
 Every AEA stakeholder role must remain available to Cursor, Codex, Claude,
 Copilot, Gemini, and Grok with equivalent scope, authority, safety boundaries,
 routing, and trigger intent. There are currently **14 roles**:

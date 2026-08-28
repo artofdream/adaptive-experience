@@ -5,6 +5,10 @@ globs: platform/docker/grafana/**/*, infra/aws/ecs.tf, edge/gateway/nginx-alb.co
 
 # Cloud Grafana & AWS CloudWatch Telemetry Verification SOP
 
+> **Captured/Updated**: 2026-08-28  
+> **Owner**: `@aea-devsecops-platform` with `@aea-cost-guardian`  
+> **Traceability**: Issue #274, Cloud Observability SOP  
+
 When configuring, deploying, or debugging Cloud Grafana or CloudWatch metrics in this repository, agents MUST follow this SOP and checklist to prevent empty panel errors (`"No data"`) or IAM authorization failures.
 
 ## Canonical Knowledge Reference
