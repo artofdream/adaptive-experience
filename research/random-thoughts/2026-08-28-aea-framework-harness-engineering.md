@@ -599,6 +599,116 @@ Cadence jobs writing DATE_RE, or sessions dumping random-thoughts into the hando
 
 ### C. Claiming Verified Without a Probe
 
+[[CF-054]] is the object lesson — and the live regression. Knowledge !298 merged. Spec !299 merged and closed #272. CSS !300 merged as `63aaa4ce` on 2026-08-28. The queue row on main is `regressed` after !304 (was `verified` with #272 / !298, !299, !300 — a **false verified**). The finding note on main after !304 is `regressed` / #273. Live [[J1]] re-record after !300 is Unknown. Treat [[CF-054]] as **regressed**, pending a clip dated after the CSS merge. Closing a GitLab issue from a spec/CSS MR is not verification. Do not invent CF-055. Sensors that only confirm formatting will pass a shop that still fails [[J3]] reorder and [[J4]] tracking.
+
+### D. Memory Without Cleanup
+
+`random-thoughts/` accumulates. Old notes reference MRs that were superseded. A new session that treats them as DATE_RE will relitigate closed work. Keep the handoff thin. Leave archaeology in labeled logs.
+
+### E. The Harness Does Not Fix Bad Objectives
+
+If the workbook said FR-019 is live Stripe, sensors would faithfully implement a false shop. The harness amplifies the objective. Review the FR/NFR source of truth before ratcheting. Do not invent IDs to make the objective prettier.
+
+**TABLE XV — COMMON AEA HARNESS MISTAKES**
+
+| Mistake | Symptom | Fix |
+|---|---|---|
+| 15th hat | Shadow implementer | Stay at 14 |
+| DATE_RE pollution | Handoff lies | Filename freeze + trip wire |
+| False verified ([[CF-054]]) | Queue `verified`, finding note `in-mr`, no post-CSS clip | Clip-after-CSS sensor + `glab` reconcile |
+| No computational sensors | Expensive judges | Guards first; same error 3× → sensor |
+| Casual merge | Producer bias | MRC only; escalation is a successful stop |
+| Wrong FR status | Workbook drift | Human confirm + ID freeze |
+| Clip as trophy | Stale evidence | Re-record after CSS; spec is not shop evidence |
+
+## XV. AEA CASE EVIDENCE (HONEST)
+
+*Lily's Florist Path B; no borrowed benches*
+
+### A. Lily's Florist, Path B
+
+The product is an AI-native florist. Customers speak naturally. The interface evolves as understanding grows. Dual presentation: one session, desktop Adaptive Workspace, phone linear concierge. Live shop: https://aea.artof.link. Canonical remote: https://gitlab.com/artof-group/adaptive-experience-architecture. This is the case, not a coding-agent leaderboard.
+
+### B. CF-048, Daily-Brief Honesty
+
+CF-048 is the AEA exhibit for demos that never ship. Status language outran probes. Verification: GitLab #259 / !280. The harness fix is the honesty rule plus the DATE_RE trip wire. That is a real ratchet step. It is not a 44-point bench swing, and this paper does not dress it up as one.
+
+### C. Dual-Viewport Trail (CF-054)
+
+On GitLab main (probed 28 August 2026, evening Berlin): knowledge !298 merged; spec !299 merged and closed #272; feat(ux) CSS !300 merged as `63aaa4ce`; queue row said `verified` until !304 merged (28 Aug 22:14 Berlin) — a **false verified**; main is now `regressed`; finding note after !304 is `regressed` / #273. Live shop re-record of [[J1]] phone+desktop after !300 is Unknown. [[CF-054]] is **regressed**, not clip-verified. Closing a GitLab issue from a spec/CSS MR is not verification. Path B `verified` requires a clip dated after the CSS/product merge. Do not invent CF-055. Report the trail. Do not round it up to verified. The SOP+queue fix is !304 (**merged** 28 Aug 22:14 Berlin, Related #273). Clip after CSS still Unknown.
+
+The Path B / UI evidence section already on main states: after the product MR merges, re-record the same script on both viewports; mark `verified` only if the new clip shows the fix; otherwise leave it open or set `regressed`; Unknown until those clips exist. Hourly ticks must not restyle Path B CSS/JS unless `@aea-ux-designer` was invoked. A knowledge or intake MR may land first; that does not close a UI finding.
+
+### D. Journeys and Leftovers
+
+[[J1]] Urgent Sam, [[J2]] Planner Sarah, [[J3]] Loyal Alex, [[J4]] Tracker Chris. Honest leftovers from 2026-08-27 clips remain: [[J3]] recall without reorder badge; [[J4]] ASO fail-closed not T-08; Track gated until checkout. Those leftovers are evidence of the sensor layer doing its job when humans look. They are also evidence the shop is not a finished trophy. They are not evidence that !300 works.
+
+### E. What This Case Does Not Show
+
+It does not show GAIA deltas, Terminal Bench ranks, or a million generated lines. It does not show live Stripe, Edge SSR LCP, staff live chat, WebRTC, FR-017, or FR-012. It does not show 14/14 skills independently probed. It does not show [[CF-054]] clip-verified. Related work remains related work [1]-[15].
+
+## APPENDIX: GLOSSARY
+
+**TABLE XIV — KEY TERMS**
+
+| Term | Operational definition |
+|---|---|---|
+| Adaptive Experience | Shared Understanding + Domain Services + Outer Harness |
+| Outer harness | 14 hats, vault, CF loop, CI guards, DATE_RE, honesty |
+| Inner runtime | Edge BFF + domain services + PostgreSQL + broker (ADRs) |
+| Guide | Feedforward: AGENTS.md, rules, skills, ADRs, Path B spec |
+| Sensor | Feedback: python guards, CI, fail-closed, clip probes |
+| CF loop | One finding -> one issue -> one branch -> one MR |
+| DATE_RE | One file: research/daily-briefs/YYYY-MM-DD.md; only live handoff. Cadence writes YYYY-MM-DD-daily-activity.md. Do not paste papers here. |
+| Honesty rule | Status words need a probe ([[CF-048]] / [[CF-054]] class) |
+| Fail-closed | Missing/stale observed_at -> unknown -> Select disabled |
+| MRC | @aea-mr-coordinator; independent merge verifier |
+| Path B | Dual viewport: desktop Adaptive Workspace + phone concierge |
+| Path B verified | Clip dated after the CSS/product merge; issue-close is not a probe |
+| False verified | Queue says `verified` without the required probe ([[CF-054]] on 28 Aug) |
+| Unknown | Required label when a probe was not run |
+
+## REFERENCES
+
+[1] M. Hashimoto, "My AI Adoption Journey," mitchellh.com, Feb. 5, 2026. Related work.
+
+[2] R. Lopopolo, "Harness Engineering: Leveraging Codex in an Agent-First World," OpenAI, Feb. 11, 2026. Related work; 1M-line figure is not an AEA result.
+
+[3] B. Böckeler, "Harness Engineering for Coding Agent Users," martinfowler.com, Apr. 2026.
+
+[4] E. Mollick, "A Guide to Which AI to Use in the Agentic Era," 2026.
+
+[5] V. Trivedy, "The Anatomy of an Agent Harness," LangChain Blog, Mar. 10, 2026.
+
+[6] A. Masood, "Agentic Harness Engineering," Google Cloud / Medium, Jun. 2026. GAIA deltas are not AEA results.
+
+[7] LangChain Eng., "Improving Deep Agents with Harness Engineering," Feb. 17, 2026. Terminal Bench ranks are not AEA results.
+
+[8] Faros AI, "AI Engineering Report 2026: Acceleration Whiplash," Aug. 2026.
+
+[9] Can.ac, "I Improved 15 LLMs at Coding in One Afternoon. Only the Harness Changed," 2026.
+
+[10] L. Tan, "How Cursor Turned AI Agents Into Better Engineers," Aug. 12, 2026.
+
+[11] Google Cloud, "Harness Eng. for Multi-Agent Systems Using Google ADK 2.0," Jul. 2026. Not an official Google research paper; cited as related public material.
+
+[12] Anthropic, "Building Effective AI Agents," anthropic.com, Dec. 2024.
+
+[13] A. Osmani, "Agent Harness Engineering," addyosmani.com, Apr. 2026.
+
+[14] OpenAI, "Codex Agent Best Practices," 2026.
+
+[15] Independent compilation, "Production Agent Engineering Practice 2026 / Harness Engineering / Agent = Model + Harness: The 6-Layer Production Playbook" (harness_final.pdf). Independently compiled, not affiliated with Google, OpenAI, or Anthropic. Used as document-design template only.
+
+[16] Art of Group, Adaptive Experience Architecture, GitLab: https://gitlab.com/artof-group/adaptive-experience-architecture (AGENTS.md; .cursor/rules; .cursor/skills/aea-*/; research/coherence-findings-loop.md; research/daily-briefs/; docs/01-product-vision/product-vision.md; docs/05-ux-design-guide/path-b-dual-viewport-specification.md; archive/Quantic_Project_Consolidated_Coherence_Validated.xlsx).
+
+[17] Lily's Florist Path B live shop, https://aea.artof.link, and Grafana, https://aea.artof.link/grafana/.
+
+[18] GitLab issues/MRs cited as already probed: [[CF-048]] #259/!280; dual-viewport !298/!299/!300 (`63aaa4ce`) and #272 (closed by spec !299); [[CF-054]] was a false `verified` until !304; main is now `regressed`; live [[J1]] re-record after !300 Unknown; harness backlog #273 (SOP merged as !304; clip after CSS Unknown) #274 (in progress) #275 (queued); thin CRM #254/!297.
+
+*Source Method.* This document is an independent practical synthesis of AEA vault facts and of the public harness-engineering materials cited above. It is not affiliated with Google, OpenAI, Anthropic, or HashiCorp, and is not endorsed by them. Product behavior may change. This revision (28 August 2026, evening Berlin) read GitLab `main` via MCP `get_repository_file` / `get_work_item` / `get_merge_request` (no clone): `research/coherence-findings-loop.md` (queue row 54 is `regressed` after !304; was a false `verified` with #272 / !298, !299, !300); `research/findings/CF-054-path-b-dual-viewport.md` (`status: regressed`, `merge_request: !304`); issues #272 closed, #273 closed with !304 (close is SOP/queue honesty, not clip-verify), #274 #275 open; MRs !298, !299 (closed #272), !300 merged as `63aaa4ce`; !304 **merged** 28 Aug 22:14 Berlin (Related #273) and is the SOP+queue fix — do not treat !304 as clip-verify. Live [[J1]] after CSS remains Unknown. Recommendations, templates, pseudocode, and decision rules are the author's adaptation for AEA Path B and are not official specifications of any organization mentioned in related work. All diagrams are original. Unknowns are labeled. Comparison or field feedback that would change a claim, a sensor, or a limitation revises this note.
+
+
 
 
 
