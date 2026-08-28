@@ -27,7 +27,7 @@ Wikilinks and `#aea` keep the graph-guard happy. Cite existing [[FR-001]] [[J1]]
 
 ## 2. DATE_RE one-file binding
 
-Read on GitLab `main` (no clone): `scripts/check_daily_brief_freshness.py` defines `DATE_RE = re.compile(r"^(\\d{4}-\\d{2}-\\d{2})\\.md$")`. That is the only live handoff filename.
+Read on GitLab `main` (no clone): `scripts/check_daily_brief_freshness.py` defines `DATE_RE = re.compile(r"^(\d{4}-\d{2}-\d{2})\.md$")`. That is the only live handoff filename.
 
 - DATE_RE = only `research/daily-briefs/YYYY-MM-DD.md`.
 - Archaeology belongs in `research/random-thoughts/`.
