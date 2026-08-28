@@ -2,7 +2,11 @@
 
 Path B is one instantiation of Adaptive Experience: a live florist workspace at [https://aea.artof.link](https://aea.artof.link). It is not this site, not the framework home, and not a trophy.
 
-[Framework home](index.html)
+[Framework home](index.html) · [Schema](schema.html)
+
+## Journeys
+
+Named scripts (J1 Urgent Sam, J2 Planner Sarah, J3 Loyal Alex, J4 Tracker Chris) live on the [schema](schema.html). They are how we talk about Path B. Video files are not on this site. A clip after dual-viewport CSS is **Unknown**.
 
 ## What Path B instantiates
 

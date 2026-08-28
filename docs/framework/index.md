@@ -4,7 +4,7 @@
 
 This site is the public surface for that formula and the six layers around it. It is not a shop, not a CMS, and not a pitch deck.
 
-The Path B florist at [aea.artof.link](https://aea.artof.link) is one [case study](path-b.html), not the home.
+The Path B florist at [aea.artof.link](https://aea.artof.link) is one [case study](path-b.html), not the home. The [schema](schema.html) is the public map (formula, layers, loop, roles, named journeys).
 
 ## Formula
 
@@ -29,7 +29,7 @@ Fourteen hats are lenses. Three executable jobs: implement, verify, merge (MRC o
 
 ## What this site is
 
-- The AEA **framework** (formula + six layers), published from allowlisted markdown on GitLab `main`.
+- The AEA **framework** (formula + six layers), published from allowlisted markdown on GitLab `main`. See [schema](schema.html) for the communication map.
 - Edit `docs/framework/`, open an MR, MRC merges, GitLab Pages publishes. No CMS.
 - Intended hostname: `architecture.artof.link` (CNAME to `artof-group.gitlab.io` is live; GitLab Pages domain verification and Let's Encrypt remain). Until Pages publishes, treat the site as not up.
 
