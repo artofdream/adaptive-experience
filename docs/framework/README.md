@@ -9,6 +9,7 @@ Graph-guard (`scripts/check_knowledge_graph.py`) scans `research/random-thoughts
 | Source | Published as |
 |--------|----------------|
 | `docs/framework/index.md` | `public/index.html` |
+| `docs/framework/schema.md` | `public/schema.html` |
 | `docs/framework/path-b.md` | `public/path-b.html` |
 
 This README is operator SOP. It is **not** in the allowlist and is not published.

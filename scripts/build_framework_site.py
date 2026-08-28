@@ -15,6 +15,7 @@ SRC = ROOT / 'docs' / 'framework'
 OUT = ROOT / 'public'
 PAGES = [
     ('index', 'index.md', 'Adaptive Experience Architecture'),
+    ('schema', 'schema.md', 'Schema'),
     ('path-b', 'path-b.md', 'Path B case study'),
 ]
 SITE = 'architecture.artof.link'
