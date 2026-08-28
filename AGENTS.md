@@ -48,10 +48,7 @@ adapters with `python scripts/generate_codex_stakeholder_skills.py`.
 ## Edit style
 
 - Match existing markdown tone; keep diffs focused.
-- Run `python scripts/check_coherence.py` when ID inventories or counts move.
-- Before `git push` and opening or updating an MR, run local Docker
-  integration tests for every impacted component
-  (`.cursor/rules/docker-integration-before-mr.mdc`).
-- Do not commit `.obsidian/` or secrets.
-- Use `glab`, not GitHub CLI/PR tooling — this repository's tracker is
-  GitLab, not GitHub.
+- Run `python scripts/run_verify_job.py` to verify 14/14 quality guards and coherence evidence.
+- Before `git push` on edge/platform code, run local Docker integration tests (`.cursor/rules/docker-integration-before-mr.mdc`).
+- Do not commit `.obsidian/` or secrets (enforced by `python scripts/check_secrets_posture.py`).
+- Use `glab`, not GitHub CLI/PR tooling — this repository's tracker is GitLab, not GitHub.
