@@ -1,8 +1,8 @@
 > **Tags**: #aea #second-brain #harness #path-b #knowledge-first
 > **Captured**: 2026-08-28
 > **Draft status**: in progress (not canonical `docs/`)
-> **Backlog**: #273 clip-verify (!304 open, unmerged) · #274 vault placement (this MR) · #275 prune (queued)
-> **CF-054**: CSS !300 merged; live J1 after CSS Unknown; main queue `verified` is false; !304 sets `regressed`
+> **Backlog**: #273 clip-verify (!304 merged; clip after CSS Unknown) · #274 vault placement (this MR) · #275 prune (queued)
+> **CF-054**: CSS !300 merged; live J1 after CSS Unknown; main queue is `regressed` after !304 (was false `verified`)
 
 # Production Experience Engineering Practice 2026
 
