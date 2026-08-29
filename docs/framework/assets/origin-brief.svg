@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 440" width="100%" height="100%">
+  <rect width="800" height="440" rx="8" fill="#121417"/>
+  <rect x="1" y="1" width="798" height="438" rx="7" fill="none" stroke="#2a2e33" stroke-width="1.5"/>
+  <text x="400" y="52" fill="#e7e4dc" font-family="Palatino, Times New Roman, serif" font-size="30" font-weight="bold" text-anchor="middle">From brief to live</text>
+
+  <g transform="translate(36, 88)">
+    <rect width="224" height="230" rx="6" fill="#181c22" stroke="#383e47" stroke-width="1.5"/>
+    <text x="112" y="36" fill="#9a9588" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" text-anchor="middle" letter-spacing="1.4">COURSE BRIEF</text>
+    <text x="112" y="78" fill="#e7e4dc" font-family="Palatino, Times New Roman, serif" font-size="18" font-weight="bold" text-anchor="middle">Interview Lily</text>
+    <line x1="24" y1="98" x2="200" y2="98" stroke="#2a2e33" stroke-width="1"/>
+    <text x="24" y="128" fill="#9a9588" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13">Stories and a journey</text>
+    <text x="24" y="152" fill="#9a9588" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13">Requirements, not a list</text>
+    <text x="24" y="176" fill="#9a9588" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13">Annotated mockups</text>
+    <text x="24" y="200" fill="#9a9588" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13">A PDF to submit</text>
+  </g>
+
+  <g transform="translate(288, 88)">
+    <rect width="224" height="230" rx="6" fill="#181c22" stroke="#c4b08a" stroke-width="1.5"/>
+    <text x="112" y="36" fill="#c4b08a" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" text-anchor="middle" letter-spacing="1.4">GROUP DELIVERY</text>
+    <text x="112" y="78" fill="#e7e4dc" font-family="Palatino, Times New Roman, serif" font-size="18" font-weight="bold" text-anchor="middle">One workspace</text>
+    <line x1="24" y1="98" x2="200" y2="98" stroke="#2a2e33" stroke-width="1"/>
+    <text x="24" y="128" fill="#9a9588" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13">AI interprets</text>
+    <text x="24" y="152" fill="#9a9588" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13">Services validate</text>
+    <text x="24" y="176" fill="#9a9588" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13">Eight tiles, a topic bus</text>
+    <text x="24" y="200" fill="#9a9588" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13">Implementation-neutral</text>
+  </g>
+
+  <g transform="translate(540, 88)">
+    <rect width="224" height="230" rx="6" fill="#181c22" stroke="#383e47" stroke-width="1.5"/>
+    <text x="112" y="36" fill="#9a9588" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" text-anchor="middle" letter-spacing="1.4">WHAT FOLLOWED</text>
+    <text x="112" y="78" fill="#e7e4dc" font-family="Palatino, Times New Roman, serif" font-size="18" font-weight="bold" text-anchor="middle">Shop + harness</text>
+    <line x1="24" y1="98" x2="200" y2="98" stroke="#2a2e33" stroke-width="1"/>
+    <text x="24" y="128" fill="#9a9588" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13">Live florist, own host</text>
+    <text x="24" y="152" fill="#9a9588" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13">Public framework site</text>
+    <text x="24" y="176" fill="#9a9588" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13">A claim needs a probe</text>
+    <text x="24" y="200" fill="#9a9588" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13">Payment still mockup</text>
+  </g>
+
+  <line x1="260" y1="200" x2="288" y2="200" stroke="#2a2e33" stroke-width="1.5"/>
+  <polygon points="288,196 296,200 288,204" fill="#c4b08a"/>
+  <line x1="512" y1="200" x2="540" y2="200" stroke="#2a2e33" stroke-width="1.5"/>
+  <polygon points="540,196 548,200 540,204" fill="#c4b08a"/>
+
+  <text x="400" y="368" fill="#c4b08a" font-family="Palatino, serif" font-size="17" text-anchor="middle">The packet ended. The split stayed.</text>
+  <text x="400" y="398" fill="#9a9588" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" text-anchor="middle">Dual-viewport after CSS remains Unknown.</text>
+</svg>
