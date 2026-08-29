@@ -7,19 +7,25 @@ alwaysApply: true
 
 > **Captured/Updated**: 2026-08-29
 > **Owner**: `@aea-project-manager` with `@aea-mr-coordinator`
-> **Traceability**: Issue #316, Blocked escalation SOP
+> **Traceability**: Issue #316, Issue #317, Blocked escalation SOP
 
-If you are **blocked**, do not sit silent and do not invent a lane that is
-not yours.
+Be **proactive** at the **first** stuck point. Do not wait for the sponsor
+or another role to notice, and do not wait for “please help” or “MRC
+proceed”. Sitting silent is a fail.
 
-1. If you can name the owner, **request that specialist** (comment on the
-   issue/MR, or in-session handoff). Say what is blocked and the evidence
-   (job URL, error, file).
+If you are **blocked**, do not invent a lane that is not yours.
+
+1. If you can name the owner, **request that specialist now** (comment on
+   the issue/MR, or in-session handoff). Say what is blocked and the
+   evidence (job URL, error, file).
 2. If you **cannot** name the owner, reach out to `@aea-project-manager`
-   to route.
+   to route — in the same turn.
 3. Also reach out to the **sponsor** when the block is secrets, budget,
    or CI-only **production** risk. Product accept/reject stays
    `@aea-product-owner`.
+
+Each **new** red required job or new conflict is a **new** request. A
+handoff on an earlier fail does not cover the next crash.
 
 Typical owners (do not invent a second map):
 
