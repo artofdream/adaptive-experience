@@ -2,6 +2,8 @@
 
 This page is a short public comparison: Adaptive Experience Architecture next to a six-layer harness taxonomy used for coding agents. It exists so a reader can see the sources and the limits in one place.
 
+[What this is](#what-this-is) · [Core principles](#core-principles) · [Sources](#sources) · [Six layers compared](#same-layers-different-product) · [Agreements & differences](#where-they-agree)
+
 ## What this is
 
 An independent Art of Group note. It maps AEA onto six harness layers (guides, sensors, loop, memory, permissions, observability) that public writing on coding agents already uses. The AEA formula stays: Shared Understanding + Domain Services + Outer Harness. Path B at [aea.artof.link](https://aea.artof.link) is the case study, not a trophy.

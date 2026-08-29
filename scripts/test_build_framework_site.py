@@ -26,7 +26,7 @@ class TestBuildFrameworkSite(unittest.TestCase):
         body = md_to_html(md)
         self.assertIn("<h1>Heading 1</h1>", body)
         self.assertIn("<p>Paragraph text.</p>", body)
-        self.assertIn("<h2>Heading 2</h2>", body)
+        self.assertIn('<h2 id="heading-2">Heading 2</h2>', body)
         self.assertIn("<ul>", body)
         self.assertIn("<li>Item 1</li>", body)
 
