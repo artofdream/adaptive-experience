@@ -63,8 +63,12 @@ but `edge/` or `platform/` changed.
   CI-only **production** risk → **sponsor**
 - Conflicts, rebase uncertainty, force-with-lease onto a shared branch you
   did not author. Conflicts → **do not merge** and **do not rebase**.
-  Hand review/resolution to `@aea-senior-software-engineer` (comment /
-  assign). Do not invent a rebase unless SSE owns it.
+  Request `@aea-senior-software-engineer` (comment / assign). Do not
+  invent a rebase unless SSE owns it.
+- Required job failed or the pipeline crashed. **Must** request
+  `@aea-senior-software-engineer` (or `@aea-devsecops-platform` for
+  runner / image / compose). Comment with job URL and error. Do not sit
+  on a red required job.
 - Security/privacy/cloud apply (`terraform apply`) — DSO operates; this
   skill does not apply as part of merge
 - Secrets, `.env`, vault credentials, or `infra/aws/terraform.tfvars` →
@@ -72,7 +76,8 @@ but `edge/` or `platform/` changed.
 - Canonical scope / new FR-NFR IDs / archive workbook → **sponsor**
 - Force-push to `main` / `master`
 - Disagreement between MR description and diff → **PM-SM**
-- This skill was not invoked (loop tick / sibling skill)
+- This skill was not invoked and there is no create/push handoff
+  (loop tick / sibling skill)
 
 ## Commands
 

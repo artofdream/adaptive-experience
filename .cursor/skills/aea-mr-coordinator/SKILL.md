@@ -75,10 +75,13 @@ skip GitLab merge checks.
   or CI-only production risk. Do not merge and do not set auto-merge.
 - Never force-push `main` / `master`. Not a merge of `main` into itself.
 - Never `terraform apply` or cloud-apply as part of merge.
-- **Conflicts:** If GitLab reports merge conflicts, **do not merge** and
-  **do not rebase**. `@aea-senior-software-engineer` holds authority on
-  development topics, including conflict review and resolution. Comment
-  on the MR (assign or ping SSE). Do not invent a rebase unless SSE
+- **Conflicts and crashing required pipelines:** **do not merge**, **do
+  not rebase**, and **do not sit on the red job**. Request support from
+  the owning specialist. Default is `@aea-senior-software-engineer`
+  (conflicts, Gradle/CI script crash, compile/test fail on the MR HEAD).
+  Route CI image / runner / compose to `@aea-devsecops-platform` when
+  that is the surface. Comment on the MR with the job URL and the
+  error. Do not invent a rebase or a product fix unless that specialist
   owns it.
 - Do not invent BG/US/FR/NFR IDs. Do not commit secrets or
   `infra/aws/terraform.tfvars`.
@@ -118,13 +121,21 @@ Checklist detail: [gates.md](gates.md).
 
 ## Must reach out (do not merge, do not set auto-merge) when
 
+- **Blocked** and the owner is clear → that specialist (see
+  `.cursor/rules/blocked-reach-out.mdc`). Cannot name the owner →
+  **PM-SM**. Secrets / budget / production-risk CI-only → **sponsor**.
 - Scope is mixed or unclear → **PM-SM**
 - Validation is missing or skipped → **PM-SM**. “CI only” without acceptance
   for that named MR: PM-SM may accept or wait (prefer wait). CI-only
   **production** risk → **sponsor**
-- Conflicts, rebase uncertainty, force-with-lease onto a shared branch you did not author.
-  Conflicts → **do not rebase**; hand review/resolution to
+- Conflicts, rebase uncertainty, force-with-lease onto a shared branch you
+  did not author. Conflicts → **do not rebase**; request
   `@aea-senior-software-engineer`
+- Required job **failed** or the pipeline **crashed** (script_failure,
+  Gradle, compile, test). Do not wait for the sponsor to notice. Request
+  `@aea-senior-software-engineer` (or DSO when the surface is the runner
+  / image / compose). Comment with job URL and error. Re-gate after they
+  push.
 - Security/privacy/cloud apply (`terraform apply`) — DSO operates Path B;
   this skill does not apply as part of merge
 - Secrets, `.env`, vault credentials, or `infra/aws/terraform.tfvars` → **sponsor**
@@ -188,7 +199,7 @@ branch in the same turn unless the user asked.
 | `aea-support-coordinator` | Batch-route a queue |
 | `aea-ai-engineer` | Implement AI gaps |
 | `aea-devsecops-platform` | Apply Terraform or redesign cloud |
-| `aea-senior-software-engineer` | Design, architect, or implement platform/edge; they own MR conflict review/resolution — do not rebase for them |
+| `aea-senior-software-engineer` | Design, architect, or implement platform/edge; they own MR conflict review/resolution **and** crashing required-job fixes — request them; do not rebase or sit silent |
 
 You **must** auto-merge an MR those skills produced, if this skill was
 invoked and the gates pass.

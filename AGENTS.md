@@ -49,6 +49,6 @@ adapters with `python scripts/generate_codex_stakeholder_skills.py`.
 
 - Match existing markdown tone; keep diffs focused.
 - Run `python scripts/run_verify_job.py` to verify 14/14 quality guards and coherence evidence.
-- Before `git push` on edge/platform code, run local Docker integration tests (`.cursor/rules/docker-integration-before-mr.mdc`). After create or push, notify MRC (`.cursor/rules/mr-handoff-to-mrc.mdc`).
+- Before `git push` on edge/platform code, run local Docker integration tests (`.cursor/rules/docker-integration-before-mr.mdc`). After create or push, notify MRC (`.cursor/rules/mr-handoff-to-mrc.mdc`). If blocked, request the owning specialist, or PM and/or sponsor (`.cursor/rules/blocked-reach-out.mdc`).
 - Do not commit `.obsidian/` or secrets (enforced by `python scripts/check_secrets_posture.py`).
 - Use `glab`, not GitHub CLI/PR tooling — this repository's tracker is GitLab, not GitHub.

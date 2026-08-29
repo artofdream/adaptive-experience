@@ -46,5 +46,7 @@ Full SOP: `research/claude-obsidian-loop.md`
 - Before `git push` and opening or updating an MR, run local Docker
   integration tests for every impacted component
   (`.cursor/rules/docker-integration-before-mr.mdc`). After create or
-  push, notify MRC (`.cursor/rules/mr-handoff-to-mrc.mdc`).
+  push, notify MRC (`.cursor/rules/mr-handoff-to-mrc.mdc`). If blocked,
+  request the owning specialist, or PM and/or sponsor
+  (`.cursor/rules/blocked-reach-out.mdc`).
 - Do not commit `.obsidian/` or secrets.
