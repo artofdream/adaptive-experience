@@ -45,6 +45,7 @@ adapters with `python scripts/generate_codex_stakeholder_skills.py`.
 - Run `python scripts/check_coherence.py` when ID inventories or counts move.
 - Before opening or updating a merge request, run local Docker integration
   tests for every impacted component
-  (`.cursor/rules/docker-integration-before-mr.mdc`).
+  (`.cursor/rules/docker-integration-before-mr.mdc`). After create or
+  push, notify MRC (`.cursor/rules/mr-handoff-to-mrc.mdc`).
 - Do not commit `.obsidian/` or secrets.
 - Use `glab`, not `gh` — this repository's tracker is GitLab, not GitHub.

@@ -86,7 +86,8 @@ glab mr merge <n> --yes --auto-merge
 `--auto-merge` is GitLab MWPS (`merge_when_pipeline_succeeds`). After
 gates pass, **must** set it. Prefer MWPS while the pipeline is running.
 `--yes` skips the interactive prompt only. Do not wait for a second
-“please merge this named MR” prompt.
+“please merge this named MR” prompt. An author create/push handoff is
+enough to start this checklist (`.cursor/rules/mr-handoff-to-mrc.mdc`).
 
 Never: `git push --force` to `main`, merge unless this skill was invoked,
 `--auto-merge=false` to skip a running pipeline, `terraform apply`.

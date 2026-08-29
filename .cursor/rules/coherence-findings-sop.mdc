@@ -27,7 +27,9 @@ iteration).
    Implement the finding as stated (docs, scripts, CI, or matrix) — do not
    substitute a drive-by refactor.
 5. **MR** — Open one merge request linked to the issue (`Closes #N`), with a
-   short summary and test plan.
+   short summary and test plan. After create or a push that updates that
+   MR, notify `@aea-mr-coordinator`
+   (`.cursor/rules/mr-handoff-to-mrc.mdc`).
 
 ## Path B / UI findings
 

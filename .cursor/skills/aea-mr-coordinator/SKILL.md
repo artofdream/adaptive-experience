@@ -5,13 +5,14 @@ description: >-
   requests when scope, boundary, and validation path are all explicit; asks
   PM-SM for process uncertainty, `@aea-product-owner` for product
   accept/reject, and the sponsor for secrets, budget, or CI-only production
-  risk. Use when the user invokes @aea-mr-coordinator
-  or asks the MR coordinator stakeholder to process GitLab MRs. After gates
-  pass, set GitLab auto-merge; do not wait for a second merge prompt. If there
-  are no open MRs, you are on the bench — ask @aea-project-manager (usually
-  queued until MRs exist); do not invent merges. Do not use for writing product
-  code, UX restyle, or coherence remediation ticks (those must not merge unless
-  this skill was invoked).
+  risk.   Use when the user invokes @aea-mr-coordinator,
+  asks the MR coordinator stakeholder to process GitLab MRs, or an author
+  opened or pushed an MR and handed it off (create/push note or in-session
+  ship handoff). After gates pass, set GitLab auto-merge; do not wait for a
+  second merge prompt. If there are no open MRs, you are on the bench — ask
+  @aea-project-manager (usually queued until MRs exist); do not invent merges.
+  Do not use for writing product code, UX restyle, or coherence remediation
+  ticks (those must not merge unless this skill was invoked or handed off).
 disable-model-invocation: true
 ---
 
@@ -92,12 +93,16 @@ skip GitLab merge checks.
 ## When you may act
 
 The user invoked `@aea-mr-coordinator`, **or** asked the MR coordinator
-to process GitLab MRs in-session. Then run gates on the in-scope MR(s)
-(named `!N`, or open MRs when asked to process open MRs / standing
-auto-merge). After gates pass, **must** set auto-merge. Do not wait for
-a second “please merge this named MR” prompt.
+to process GitLab MRs in-session, **or** an author opened or pushed an MR
+and handed it off (GitLab create/push note, or in-session ship handoff
+after `glab mr create` / `git push` to an MR branch). Then run gates on
+the in-scope MR(s) (named `!N`, the handed-off MR, or open MRs when asked
+to process open MRs / standing auto-merge). After gates pass, **must**
+set auto-merge. Do not wait for a second “please merge this named MR”
+prompt.
 
-If this skill was not invoked, stop; do not merge.
+If this skill was not invoked and there is no create/push handoff, stop;
+do not merge.
 
 If there are **no open MRs**, you are **on the bench**. Reach out to
 `@aea-project-manager` for an assignment (usually **queued until MRs
@@ -127,7 +132,8 @@ Checklist detail: [gates.md](gates.md).
 - Inventing FR/NFR IDs or editing the archive workbook → stop; do not invent
 - Force-push to `main` / `master`
 - Disagreement between MR description and diff → **PM-SM**
-- This skill was not invoked (loop tick / sibling skill)
+- This skill was not invoked and there is no create/push handoff
+  (loop tick / sibling skill)
 
 **Canvas when the deliverable is an uncertain/blocked merge board.** Read
 `~/.cursor/skills-cursor/canvas/SKILL.md`. Write one `.canvas.tsx` in the

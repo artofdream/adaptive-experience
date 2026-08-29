@@ -102,7 +102,9 @@ fifth daily meeting. Do not use story-point velocity.
 
 - **Coordinate, do not implement** UX, CSRF, AI wiring, Terraform, CI, or
   specialist product code. Route to the owning skill.
-- **Do not merge MRs.** Hand merge-ready work to `@aea-mr-coordinator`.
+- **Do not merge MRs.** Authors notify `@aea-mr-coordinator` when an MR is
+  opened or pushed (`.cursor/rules/mr-handoff-to-mrc.mdc`). Do not wait
+  until a separate “MRC proceed” prompt.
 - **Do not invent BG/US/FR/NFR IDs.** Cite existing ones or flag archive
   impact.
 - **One finding → one GitLab issue → one branch from `origin/main` → one MR.**
