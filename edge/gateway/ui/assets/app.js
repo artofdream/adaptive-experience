@@ -197,6 +197,12 @@ function journeyStepsFor(node) {
   return String(node.dataset.journeySteps || "").split(",").map((value) => Number(value.trim())).filter(Boolean);
 }
 
+function phaseForStep(step) {
+  if (step <= 2) return "need";
+  if (step <= 5) return "pick";
+  return "pay";
+}
+
 function updateJourneyChrome() {
   const f = facets();
   state.unlockedThrough = unlockedThrough(f);
@@ -211,6 +217,25 @@ function updateJourneyChrome() {
     if (step === state.step) button.setAttribute("aria-current", "step");
     else button.removeAttribute("aria-current");
   });
+  const currentPhase = phaseForStep(state.step);
+  const phaseOrder = ["need", "pick", "pay"];
+  document.querySelectorAll("#journey-phases [data-phase]").forEach((button) => {
+    const from = Number(button.dataset.phaseFrom);
+    const unlocked = from <= state.unlockedThrough;
+    button.disabled = !unlocked;
+    button.setAttribute("aria-disabled", unlocked ? "false" : "true");
+    button.classList.toggle("is-locked", !unlocked);
+    button.classList.toggle("is-complete", unlocked && phaseOrder.indexOf(button.dataset.phase) < phaseOrder.indexOf(currentPhase));
+    button.title = unlocked ? "" : "Complete earlier steps to unlock";
+    if (button.dataset.phase === currentPhase) button.setAttribute("aria-current", "step");
+    else button.removeAttribute("aria-current");
+  });
+  const phaseCaption = document.querySelector("#phase-caption");
+  if (phaseCaption) {
+    const index = phaseOrder.indexOf(currentPhase) + 1;
+    const label = currentPhase.charAt(0).toUpperCase() + currentPhase.slice(1);
+    phaseCaption.textContent = `${index} of 3 · ${label}`;
+  }
   document.querySelectorAll("[data-requires-unlock]").forEach((button) => {
     const need = Number(button.dataset.requiresUnlock);
     const ok = need <= state.unlockedThrough;
@@ -435,6 +460,8 @@ function renderSuggestions(items) {
   }
   root.replaceChildren();
   root.hidden = list.length === 0;
+  const hint = document.querySelector("#suggestions-hint");
+  if (hint) hint.hidden = list.length === 0;
   for (const text of list) {
     const chip = document.createElement("button");
     chip.type = "button";
@@ -882,6 +909,8 @@ async function selectProduct(productId) {
   const intent = ((state.workspace && state.workspace.facets || {}).shared_understanding || {}).structured_intent || {};
   const budget = intent.budget;
 
+  state.step = 4;
+  setJourneyStep(4);
   const result = await api("/api/v1/selection", {
     method: "POST",
     body: { product_id: productId, items: currentItems, options, observed_context_version: state.contextVersion },
@@ -1030,7 +1059,8 @@ document.querySelector("#selection-form").addEventListener("submit", async (even
     state.contextVersion = result.context_version;
     await refreshWorkspace();
     await pullStream();
-    showNotice("Selection updated.");
+    setJourneyStep(5);
+    showNotice("Selection saved. Confirm delivery next.");
   } catch (error) {
     const copy = friendlyError(error, "Update failed");
     showFormError("selection-form-error", copy);
@@ -1206,6 +1236,18 @@ document.querySelectorAll("#journey-steps [data-step]").forEach((button) => {
       return;
     }
     setJourneyStep(button.dataset.step);
+  });
+});
+document.querySelectorAll("#journey-phases [data-phase]").forEach((button) => {
+  button.addEventListener("click", () => {
+    if (button.disabled) {
+      showNotice("Complete earlier steps to unlock this stage.");
+      return;
+    }
+    const from = Number(button.dataset.phaseFrom);
+    const to = Number(button.dataset.phaseTo);
+    if (state.step >= from && state.step <= to) return;
+    setJourneyStep(Math.min(from, state.unlockedThrough));
   });
 });
 document.querySelectorAll("[data-goto-step]").forEach((button) => {

@@ -121,8 +121,13 @@ class BrowserUiTests(unittest.TestCase):
         mobile = self.css.split("@media (max-width: 40rem)", 1)[1].split("@media", 1)[0]
         self.assertNotIn("overflow-x: hidden", mobile)
         self.assertNotIn("min-width: 3.25rem", mobile)
-        self.assertIn(".journey-nav .steps li { flex: 1 1 0; min-width: 0; }", mobile)
-        self.assertIn('data-short="Track"', self.html)
+        self.assertIn(".journey-nav .steps { display: none; }", mobile)
+        self.assertIn(".journey-nav .phases {", mobile)
+        self.assertIn('id="journey-phases"', self.html)
+        self.assertIn('data-phase="need"', self.html)
+        self.assertIn('data-phase="pick"', self.html)
+        self.assertIn('data-phase="pay"', self.html)
+        self.assertNotIn("data-short", self.html)
         self.assertIn('data-step="7"', self.html)
         self.assertIn('inline: "nearest"', self.script)
 
@@ -161,6 +166,10 @@ class BrowserUiTests(unittest.TestCase):
         self.assertNotIn('return String(productId || "").replace(/-/g, " ");', self.script)
         self.assertNotIn("gift card", self.html.lower())
         self.assertNotIn("gift_card", self.script.lower())
+        self.assertEqual(1, self.html.count(">Continue to delivery<"))
+        self.assertNotIn(">Update</button>", self.html)
+        self.assertIn('type="submit">Continue to delivery</button>', self.html)
+        self.assertIn("setJourneyStep(5);", self.script)
 
     def test_t03_ranking_skus_use_vendored_attributed_photos(self):
         assets = ROOT / "ui" / "assets"
@@ -308,6 +317,9 @@ class BrowserUiTests(unittest.TestCase):
         self.assertIn("shared.suggestions", self.script)
         self.assertIn("chip.dataset.suggest", self.script)
         self.assertIn("chip.textContent", self.script)
+        self.assertIn('id="suggestions-hint"', self.html)
+        self.assertIn("They are not filters on the shop.", self.html)
+        self.assertIn(".chip::before { content: \"+ \";", self.css)
 
     def test_checkout_is_confirmation_driven(self):
         self.assertIn('id="checkout-confirm"', self.html)
@@ -328,7 +340,8 @@ class BrowserUiTests(unittest.TestCase):
         self.assertIn('id="step-empty"', self.html)
         self.assertIn('id="step-empty-cta"', self.html)
         self.assertIn("is-locked", self.css)
-        self.assertIn("data-short", self.html)
+        self.assertIn("phaseForStep", self.script)
+        self.assertIn('id="journey-phases"', self.html)
         self.assertIn("data-requires-unlock", self.html)
         self.assertIn("Complete earlier steps to unlock", self.script)
         # Product selection suggests Customize (4), not Delivery (5).
@@ -336,6 +349,9 @@ class BrowserUiTests(unittest.TestCase):
         self.assertIn("prior_order_hint", self.script)
         self.assertIn("Ordered earlier in this browser", self.script)
         self.assertIn('item.prior_order_hint ? "Reorder" : "Select"', self.script)  # FR-008
+        self.assertIn("state.step = 4;", self.script)
+        select_fn = self.script.split("async function selectProduct", 1)[1].split("function openHelp", 1)[0]
+        self.assertLess(select_fn.find("state.step = 4;"), select_fn.find("await refreshWorkspace()"))
 
     def test_shell_uses_edge_apis_without_data_plane_secrets(self):
         for path in ("/api/v1/session", "/api/v1/conversation/messages",

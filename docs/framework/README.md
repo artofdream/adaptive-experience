@@ -10,6 +10,7 @@ Graph-guard (`scripts/check_knowledge_graph.py`) scans `research/random-thoughts
 |--------|----------------|
 | `docs/framework/index.md` | `public/index.html` |
 | `docs/framework/schema.md` | `public/schema.html` |
+| `docs/framework/stack.md` | `public/stack.html` |
 | `docs/framework/comparison.md` | `public/comparison.html` |
 | `docs/framework/path-b.md` | `public/path-b.html` |
 | `docs/framework/journal.md` | `public/journal.html` |

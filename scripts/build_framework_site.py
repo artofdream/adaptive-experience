@@ -17,6 +17,7 @@ OUT = ROOT / 'public'
 PAGES = [
     ('index', 'index.md', 'Adaptive Experience Architecture'),
     ('schema', 'schema.md', 'Schema'),
+    ('stack', 'stack.md', 'Stack'),
     ('comparison', 'comparison.md', 'Comparison'),
     ('path-b', 'path-b.md', 'Path B case study'),
     ('glossary', 'glossary.md', 'Glossary'),

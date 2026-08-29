@@ -83,6 +83,8 @@ button { cursor: pointer; }
   margin: 0 auto;
   padding: .85rem 0 0;
 }
+.journey-nav .phases,
+.journey-nav .phase-caption { display: none; }
 .journey-nav .steps {
   display: flex;
   gap: .35rem;
@@ -227,16 +229,23 @@ h2 { font-size: 1.15rem; }
 .customer-message.is-pending { opacity: .72; }
 .disclosure { margin: 0 0 .85rem; }
 .suggestions { display: flex; flex-wrap: wrap; gap: .4rem; margin: .35rem 0 .65rem; }
+.suggestions-hint {
+  margin: .15rem 0 .35rem;
+  color: var(--muted);
+  font-size: .8rem;
+  font-weight: 500;
+}
 .chip {
-  border: 1px solid var(--line);
+  border: 1px dashed var(--purple);
   border-radius: 999px;
-  background: var(--card);
-  color: var(--purple-deep);
+  background: transparent;
+  color: var(--purple);
   padding: .3rem .7rem;
   font-size: .8rem;
-  font-weight: 650;
+  font-weight: 500;
 }
-.chip:hover { border-color: var(--purple); }
+.chip::before { content: "+ "; font-weight: 700; }
+.chip:hover { background: var(--lavender-soft); }
 .composer { display: flex; gap: .5rem; align-items: flex-end; }
 .composer textarea { flex: 1; }
 label { display: block; margin: .55rem 0 .3rem; font-weight: 700; }
@@ -390,30 +399,71 @@ dialog::backdrop { background: rgba(42, 36, 56, .45); }
     padding-bottom: .35rem;
     min-width: 0;
   }
-  .journey-nav .steps {
-    gap: .12rem;
+  .journey-nav .steps { display: none; }
+  .journey-nav .phases {
+    display: flex;
+    gap: .35rem;
     width: 100%;
     min-width: 0;
-    overflow-x: auto;
+    padding: 0;
+    margin: 0;
+    list-style: none;
   }
-  .journey-nav .steps li { flex: 1 1 0; min-width: 0; }
-  .journey-nav .steps button {
+  .journey-nav .phases li { flex: 1 1 0; min-width: 0; }
+  .journey-nav .phases button {
+    width: 100%;
+    display: flex;
     flex-direction: column;
     align-items: center;
-    font-size: .7rem;
+    gap: .12rem;
+    border: 0;
+    border-top: 2px solid var(--line);
+    border-radius: 0;
+    background: transparent;
+    color: var(--muted);
     padding: .45rem 0 0;
     min-width: 0;
     min-height: 44px;
-    gap: .12rem;
+    font: inherit;
+    font-size: .7rem;
   }
-  .journey-nav .steps .step-num { width: 1.35rem; height: 1.35rem; font-size: .68rem; }
-  .journey-nav .steps .step-label { font-size: 0; max-width: 100%; }
-  .journey-nav .steps .step-label::after {
-    content: attr(data-short);
+  .journey-nav .phases .phase-num {
+    display: grid;
+    place-items: center;
+    width: 1.35rem;
+    height: 1.35rem;
+    border-radius: 50%;
+    background: var(--lavender);
+    color: var(--purple-deep);
+    font-size: .68rem;
+    font-weight: 800;
+  }
+  .journey-nav .phases [aria-current="step"] {
+    color: var(--purple-deep);
+    border-color: var(--purple);
+    font-weight: 700;
+  }
+  .journey-nav .phases [aria-current="step"] .phase-num {
+    color: #fff;
+    background: var(--purple);
+  }
+  .journey-nav .phases button.is-complete {
+    border-color: var(--green);
+    color: var(--ink);
+  }
+  .journey-nav .phases button.is-complete .phase-num {
+    background: var(--green-soft);
+    color: var(--green);
+  }
+  .journey-nav .phases button.is-locked {
+    opacity: .45;
+    cursor: not-allowed;
+  }
+  .journey-nav .phase-caption {
     display: block;
-    font-size: .62rem;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    margin: .35rem 0 0;
+    color: var(--muted);
+    font-size: .8rem;
   }
   main.workspace {
     width: min(calc(100% - 2rem), 1440px);
