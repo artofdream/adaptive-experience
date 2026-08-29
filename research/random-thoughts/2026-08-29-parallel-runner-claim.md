@@ -1,5 +1,7 @@
 # Evaluate: parallel-runner path and scope claim (29 Aug 2026)
 
+> **Tags**: #aea #second-brain
+
 Related: #297. Proposed. Not adopted. Not a sensor yet.
 
 ## Why this note exists
