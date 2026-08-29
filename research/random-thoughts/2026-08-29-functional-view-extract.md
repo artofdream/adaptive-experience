@@ -1,5 +1,7 @@
 # Functional view extract (29 Aug 2026)
 
+> **Tags**: #aea #second-brain
+
 Related: #295. Public ancestor slice is #296 (Path B only). Journal origin is #293 / !322 (merged). Copyright rule is #294. Quantic assignment packet is not in this repo.
 
 This note is what later agents should read instead of rediscovering the workbook.
