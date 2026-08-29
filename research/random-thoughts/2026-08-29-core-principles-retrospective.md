@@ -1,5 +1,7 @@
 # 29 Aug 2026 — did the core principles stand?
 
+> **Tags**: #aea #second-brain
+
 Related: #298. Written 29 Aug 2026, Europe/Berlin. Status words below point at a probe from this session, or say Unknown.
 
 This is a vault retrospective, not a public journal episode. Operator dialect stays here.
