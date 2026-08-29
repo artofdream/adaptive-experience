@@ -3,7 +3,7 @@
 > **Tags**: #aea #second-brain #native-mobile #android #compose #ci-cd #firebase #knowledge-first
 > **Captured**: 2026-08-29
 > **Author**: @aea-senior-software-engineer, @aea-devsecops-platform, @aea-ux-designer, @aea-mr-coordinator
-> **GitLab**: Closes #307, Closes #308
+> **GitLab**: Closes #307 (Firebase Crashlytics / App Distribution stay on #308)
 > **Owners to inherit**: @aea-senior-software-engineer, @aea-devsecops-platform, @aea-mr-coordinator
 
 ---
@@ -17,8 +17,8 @@ Following the chartering of Milestone **M19 (Native Mobile Companion — Android
    - Enforces single-CTA per screen, fail-closed inventory badges (`NFR-009`), zero-PII checkout (`NFR-017`), destination reference (`ADR-013`), and ASO automated concierge disclaimers (`FR-009`).
    - Clean type-safe HTTP client consuming existing Gateway/BFF endpoints (`/api/v1/session`, `/api/v1/conversation/messages`, `/api/v1/selection`, `/api/v1/checkout`).
 2. **24/7 Cloud GitLab CI Pipeline (`.gitlab-ci.yml`)**:
-   - Automated `android-build-debug` job on shared Linux container runners (`cimg/android:2024.01`).
-   - Runs compilation and unit tests, producing downloadable `app-debug.apk` job artifacts without requiring a dedicated macOS runner.
+   - Required `android-build-debug` on `cimg/android:2024.04` (OpenJDK 21, matching the app `jvmTarget`). `2024.01` is JDK 17 and cannot load those unit tests.
+   - Runs `assembleDebug` and `testDebugUnitTest` in the same required job. Do not `allow_failure` this job.
 
 ---
 

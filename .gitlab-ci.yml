@@ -274,11 +274,17 @@ edge-perimeter-unit:
 
 android-build-debug:
   stage: verify
-  image: cimg/android:2024.01
+  # 2024.01 is OpenJDK 17; the app compiles to Java 21. Unit tests then die
+  # on UnsupportedClassVersionError. 2024.04 is the first cimg tag whose
+  # default is OpenJDK 21. Do not target JDK 22+ — AGP 8.7 / D8 still cap
+  # the Android toolchain at 21. Keep assemble and testDebugUnitTest in
+  # this required job — do not allow_failure.
+  image: cimg/android:2024.04
   variables:
     GRADLE_OPTS: "-Dorg.gradle.daemon=false"
   before_script:
     - cd clients/mobile/android
+    - java -version
   script:
     # cimg/android runs as circleci; GitLab checkout is root-owned, so chmod +x
     # fails with Operation not permitted. Invoke via sh (file is 100644).
