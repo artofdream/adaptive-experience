@@ -2,8 +2,6 @@
 
 This page is the public map of Adaptive Experience. Use it when talking about the framework. It is not the shop and not a trophy.
 
-[Home](index.html) · [Path B case study](path-b.html) · [Comparison](comparison.html) · [Journal](journal.html)
-
 ## Formula
 
 **Adaptive Experience = Shared Understanding + Domain Services + Outer Harness.**

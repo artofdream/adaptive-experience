@@ -2,8 +2,6 @@
 
 A short public history of Adaptive Experience Architecture: what was hard, what we solved, what shipped, and what we learned. Not a ticket dump. Not a daily log.
 
-[Home](index.html) · [Schema](schema.html) · [Comparison](comparison.html) · [Path B](path-b.html)
-
 ## Claim vs probe
 
 **Challenge.** Status words started standing in for evidence. "Verified" and "shipped" felt finished because a ticket closed.

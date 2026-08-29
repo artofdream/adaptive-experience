@@ -47,7 +47,9 @@ CSS = (
     'header a:hover,nav.site a:hover{color:var(--fg);text-decoration:underline}'
     'nav.site a[aria-current="page"]{color:var(--fg);font-weight:600}'
     'h1{font-size:2rem}h2{font-size:1.25rem;margin:2rem 0 .6rem}'
-    'a{color:var(--link)}code{font-family:ui-monospace,Menlo,monospace;'
+    'a{color:var(--link)}a[href^="http"]:not([href*="architecture.artof.link"])::after{'
+    'content:" ↗";font-size:.8em;vertical-align:super;text-decoration:none}'
+    'code{font-family:ui-monospace,Menlo,monospace;'
     'background:var(--code-bg);padding:.1em .35em;border-radius:3px}'
     '.formula{border-left:3px solid var(--accent);padding-left:1rem}'
     '.warn{color:var(--warn)}nav.site{display:flex;flex-wrap:wrap;gap:1rem;margin-top:.5rem}'
@@ -169,7 +171,8 @@ def wrap(title: str, slug: str, body: str) -> str:
         '<nav class="site">' + ''.join(nav) + '</nav></header><main id="main">'
         + body +
         '</main><footer>Public framework surface. Allowlisted markdown on GitLab main. '
-        'Path B shop stays at aea.artof.link. Merge publishes. No CMS.</footer>'
+        'Updated: 29 Aug 2026. Path B shop stays at <a href="https://aea.artof.link">aea.artof.link</a>. '
+        'Merge publishes. No CMS.</footer>'
         '</body></html>'
     )
 
