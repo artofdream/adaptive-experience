@@ -50,7 +50,7 @@ SKILLS = {
         "Maintain bi-directional wikilinks and graph tags. Do not replace devsecops, senior software engineer, or product owner domain authority.",
     ),
     "aea-mr-coordinator": (
-        "Review and process AEA GitLab merge requests when explicitly invoked, applying scope, boundary, validation, conflict, and pipeline gates before enabling auto-merge. Use only when the user invokes the AEA MR coordinator or explicitly asks that stakeholder to process GitLab MRs.",
+        "Review and process AEA GitLab merge requests when invoked, when an author opens or pushes an MR and hands it off, or when asked to process open MRs. Apply scope, boundary, validation, conflict, and pipeline gates before enabling auto-merge.",
         "Read the linked `gates.md` completely before any MR action.",
         "Use `glab`, not GitHub tooling. Do not delegate conflict resolution unless the user explicitly requests it; report the handoff to `$aea-senior-software-engineer`.",
     ),
@@ -71,7 +71,7 @@ SKILLS = {
     ),
     "aea-senior-software-engineer": (
         "Design, architect, implement, and enhance AEA platform and edge code against repository ADRs and engineering best practices. Use only when the user invokes the AEA senior software engineer or asks that stakeholder to implement, architect, resolve integration conflicts, or enhance the repository.",
-        "Preserve its specialist handoffs and Docker-before-MR requirements.",
+        "Preserve its specialist handoffs, Docker-before-MR requirements, and notify-MRC-on-create step.",
         "Do not create subagents or tasks for collaboration unless the user explicitly requests delegation. Ignore Cursor canvas paths and use Codex visualization only when useful.",
     ),
     "aea-support-coordinator": (

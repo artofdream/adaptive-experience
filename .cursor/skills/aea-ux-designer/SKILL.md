@@ -152,6 +152,8 @@ kitchen-sink restyle.
 3. Focused MR via `glab mr create` linked to the issue (`Closes #N`).
 4. Before push: `python edge/scripts/run_integration_tests.py` (edge UI
    impact). Do not push as if integrations passed if Docker is unavailable.
+5. After create or a push that updates the open MR, notify
+   `@aea-mr-coordinator` (`.cursor/rules/mr-handoff-to-mrc.mdc`).
 
 Do not auto-merge. Do not commit unless the user asked.
 

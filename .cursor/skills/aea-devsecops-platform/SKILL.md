@@ -48,8 +48,9 @@ GitLab: `artof-group/adaptive-experience-architecture` (`glab`, not `gh`).
   encryption or production TLS/SASL (ADR-012 leftover).
 - **Do not weaken** fail-closed inventory, auth, CSRF, origin checks, or
   `PayloadPrivacyGuard`. **Offensive cyber / exploit PoCs are disallowed.**
-- One finding → one GitLab issue → one branch from `origin/main` → one MR.
-  Do not auto-merge.
+-   One finding → one GitLab issue → one branch from `origin/main` → one MR.
+  Do not auto-merge. After create or push, notify `@aea-mr-coordinator`
+  (`.cursor/rules/mr-handoff-to-mrc.mdc`).
 - **On the bench:** If you have no in-flight issue/MR and neither the
   sponsor nor `@aea-project-manager` named a ticket, reach out to
   `@aea-project-manager` for an assignment. Do not idle. A PM-SM

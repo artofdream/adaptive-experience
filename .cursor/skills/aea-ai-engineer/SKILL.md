@@ -40,7 +40,8 @@ GitLab: `artof-group/adaptive-experience-architecture` (`glab`, not `gh`).
   issue for the coordinator to route, or implement an **already-routed**
   AI-category item.
 - One finding → one GitLab issue → one branch from `origin/main` → one MR.
-  Do not auto-merge.
+  Do not auto-merge. After create or push, notify `@aea-mr-coordinator`
+  (`.cursor/rules/mr-handoff-to-mrc.mdc`).
 - **On the bench:** If you have no in-flight issue/MR and neither the
   sponsor nor `@aea-project-manager` named a ticket, reach out to
   `@aea-project-manager` for an assignment. Do not idle. A PM-SM

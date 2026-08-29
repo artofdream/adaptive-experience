@@ -123,6 +123,9 @@ extraction ADR.
    - Platform / Postgres / Kafka: `python platform/scripts/run_integration_tests.py`
    - Edge / BFF / gateway / UI: `python edge/scripts/run_integration_tests.py`
    - Docs-only: no Docker.
+5. After `glab mr create` or a push that updates the open MR, notify
+   `@aea-mr-coordinator` (`.cursor/rules/mr-handoff-to-mrc.mdc`). Do not
+   wait for the sponsor to say “MRC proceed”.
 
 Do not auto-merge. Do not commit unless the user asked.
 

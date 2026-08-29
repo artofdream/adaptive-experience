@@ -45,5 +45,6 @@ Full SOP: `research/claude-obsidian-loop.md`
 - Run `python scripts/check_coherence.py` when ID inventories or counts move.
 - Before `git push` and opening or updating an MR, run local Docker
   integration tests for every impacted component
-  (`.cursor/rules/docker-integration-before-mr.mdc`).
+  (`.cursor/rules/docker-integration-before-mr.mdc`). After create or
+  push, notify MRC (`.cursor/rules/mr-handoff-to-mrc.mdc`).
 - Do not commit `.obsidian/` or secrets.
