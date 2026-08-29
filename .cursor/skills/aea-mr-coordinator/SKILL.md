@@ -132,9 +132,10 @@ Checklist detail: [gates.md](gates.md).
   did not author. Conflicts → **do not rebase**; request
   `@aea-senior-software-engineer`
 - Required job **failed** or the pipeline **crashed** (script_failure,
-  Gradle, compile, test). Do not wait for the sponsor to notice. Request
-  `@aea-senior-software-engineer` (or DSO when the surface is the runner
-  / image / compose). Comment with job URL and error. Re-gate after they
+  Gradle, compile, test). Be proactive at this fail — do not wait for
+  the sponsor to notice. Request `@aea-senior-software-engineer` (or DSO
+  when the surface is the runner / image / compose). Comment with job
+  URL and error. Each new red job is a new request. Re-gate after they
   push.
 - Security/privacy/cloud apply (`terraform apply`) — DSO operates Path B;
   this skill does not apply as part of merge
