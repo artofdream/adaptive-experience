@@ -121,8 +121,13 @@ class BrowserUiTests(unittest.TestCase):
         mobile = self.css.split("@media (max-width: 40rem)", 1)[1].split("@media", 1)[0]
         self.assertNotIn("overflow-x: hidden", mobile)
         self.assertNotIn("min-width: 3.25rem", mobile)
-        self.assertIn(".journey-nav .steps li { flex: 1 1 0; min-width: 0; }", mobile)
-        self.assertIn('data-short="Track"', self.html)
+        self.assertIn(".journey-nav .steps { display: none; }", mobile)
+        self.assertIn(".journey-nav .phases {", mobile)
+        self.assertIn('id="journey-phases"', self.html)
+        self.assertIn('data-phase="need"', self.html)
+        self.assertIn('data-phase="pick"', self.html)
+        self.assertIn('data-phase="pay"', self.html)
+        self.assertNotIn("data-short", self.html)
         self.assertIn('data-step="7"', self.html)
         self.assertIn('inline: "nearest"', self.script)
 
@@ -328,7 +333,8 @@ class BrowserUiTests(unittest.TestCase):
         self.assertIn('id="step-empty"', self.html)
         self.assertIn('id="step-empty-cta"', self.html)
         self.assertIn("is-locked", self.css)
-        self.assertIn("data-short", self.html)
+        self.assertIn("phaseForStep", self.script)
+        self.assertIn('id="journey-phases"', self.html)
         self.assertIn("data-requires-unlock", self.html)
         self.assertIn("Complete earlier steps to unlock", self.script)
         # Product selection suggests Customize (4), not Delivery (5).
