@@ -36,9 +36,11 @@ This skill **does not merge**. Only `@aea-mr-coordinator` may set auto-merge.
 - **Do not** `terraform apply`. That is `@aea-devsecops-platform`. Path B
   is already unparked; DSO operates. Do not ask the sponsor to apply.
 - **Do not merge MRs.** Hand merge-ready work to `@aea-mr-coordinator`.
-  When the coordinator reports conflicts, **this skill owns** review and
-  resolution (rebase or merge from updated `origin/main` as needed);
-  the coordinator must not rebase.
+  When the coordinator reports conflicts **or a crashing / red required
+  pipeline**, **this skill owns** the fix on that MR branch (rebase,
+  compile, Gradle, tests) unless the surface is runner / image / compose
+  (`@aea-devsecops-platform`). The coordinator must not rebase or sit
+  silent on a red job.
 - One finding → one GitLab issue → one branch from `origin/main` → one MR.
 - PowerShell: no bash `&&` or HEREDOC; `glab`, not `gh`.
 - **On the bench:** If you have no in-flight issue/MR and neither the

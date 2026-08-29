@@ -37,5 +37,10 @@ A create/push note, or an in-session author handoff after `glab mr create` /
 After they pass, set `glab mr merge <n> --yes --auto-merge`. Do not wait for
 a second named-MR merge prompt.
 
+If a **required** job fails or the pipeline crashes, MRC **must** request
+`@aea-senior-software-engineer` (or `@aea-devsecops-platform` for runner /
+image / compose). Comment with the job URL and error. Do not sit on a red
+required job. Do not rebase or invent a product fix.
+
 Loop ticks still must not merge unless this handoff or an explicit MRC
 invocation happened.

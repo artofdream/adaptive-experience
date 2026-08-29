@@ -52,7 +52,7 @@ SKILLS = {
     "aea-mr-coordinator": (
         "Review and process AEA GitLab merge requests when invoked, when an author opens or pushes an MR and hands it off, or when asked to process open MRs. Apply scope, boundary, validation, conflict, and pipeline gates before enabling auto-merge.",
         "Read the linked `gates.md` completely before any MR action.",
-        "Use `glab`, not GitHub tooling. Do not delegate conflict resolution unless the user explicitly requests it; report the handoff to `$aea-senior-software-engineer`.",
+        "Use `glab`, not GitHub tooling. When a required job crashes or the MR has conflicts, must request `$aea-senior-software-engineer` (or DSO for runner/image/compose). Do not sit on a red required pipeline.",
     ),
     "aea-performance-guardian": (
         "Own AEA frontend performance, sub-100ms Largest Contentful Paint (LCP), Cumulative Layout Shift (CLS), DOM progressive hydration timing, Web Vitals telemetry, and client frame budget enforcement. Use for frontend performance optimization, LCP benchmarking, hydration timing, or the AEA performance guardian stakeholder.",
@@ -71,7 +71,7 @@ SKILLS = {
     ),
     "aea-senior-software-engineer": (
         "Design, architect, implement, and enhance AEA platform and edge code against repository ADRs and engineering best practices. Use only when the user invokes the AEA senior software engineer or asks that stakeholder to implement, architect, resolve integration conflicts, or enhance the repository.",
-        "Preserve its specialist handoffs, Docker-before-MR requirements, and notify-MRC-on-create step.",
+        "Preserve its specialist handoffs, Docker-before-MR requirements, notify-MRC-on-create step, and ownership of MRC-requested conflict or crashing-pipeline fixes.",
         "Do not create subagents or tasks for collaboration unless the user explicitly requests delegation. Ignore Cursor canvas paths and use Codex visualization only when useful.",
     ),
     "aea-support-coordinator": (
