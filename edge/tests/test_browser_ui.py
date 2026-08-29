@@ -317,6 +317,9 @@ class BrowserUiTests(unittest.TestCase):
         self.assertIn("shared.suggestions", self.script)
         self.assertIn("chip.dataset.suggest", self.script)
         self.assertIn("chip.textContent", self.script)
+        self.assertIn('id="suggestions-hint"', self.html)
+        self.assertIn("They are not filters on the shop.", self.html)
+        self.assertIn(".chip::before { content: \"+ \";", self.css)
 
     def test_checkout_is_confirmation_driven(self):
         self.assertIn('id="checkout-confirm"', self.html)

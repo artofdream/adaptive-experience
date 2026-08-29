@@ -61,6 +61,7 @@
       <p id="disclosure" class="disclosure">AI-generated interpretation; review and correct before ordering.</p>
       <form id="message-form" aria-describedby="message-hint message-form-error" onsubmit="event.preventDefault()">
         <label for="message">Your message</label>
+        <p id="suggestions-hint" class="suggestions-hint" hidden>Optional prompts — tap to add to your message. They are not filters on the shop.</p>
         <div class="suggestions" id="suggestions" aria-label="Optional thought-completion suggestions" hidden></div>
         <div class="composer">
           <textarea id="message" name="message" rows="2" maxlength="2000" required
