@@ -1,0 +1,11 @@
+#!/bin/sh
+APP_BASE_NAME=`basename "$0"`
+APP_HOME="`dirname "$0"`"
+
+if [ -z "$JAVA_HOME" ] && [ -d "/usr/lib/jvm/java-21-openjdk-amd64" ]; then
+    export JAVA_HOME="/usr/lib/jvm/java-21-openjdk-amd64"
+fi
+
+CLASSPATH=$APP_HOME/gradle/wrapper/gradle-wrapper.jar
+
+exec "${JAVA_HOME:-java}/bin/java" -classpath "$CLASSPATH" org.gradle.wrapper.GradleWrapperMain "$@"

@@ -272,6 +272,31 @@ edge-perimeter-unit:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_COMMIT_BRANCH == "main"'
 
+android-build-debug:
+  stage: verify
+  image: cimg/android:2024.01
+  variables:
+    GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+  before_script:
+    - cd clients/mobile/android
+    - chmod +x gradlew
+  script:
+    - ./gradlew assembleDebug testDebugUnitTest
+  artifacts:
+    paths:
+      - clients/mobile/android/app/build/outputs/apk/debug/app-debug.apk
+      - clients/mobile/android/app/build/reports/tests/testDebugUnitTest/
+    expire_in: 7 days
+  rules:
+    - changes:
+        - "clients/mobile/android/**/*"
+        - ".gitlab-ci.yml"
+      if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      changes:
+        - "clients/mobile/android/**/*"
+        - ".gitlab-ci.yml"
+
 platform-foundation-integration:
   stage: integration
   image: python:3.12
