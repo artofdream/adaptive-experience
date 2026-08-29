@@ -10,7 +10,7 @@ A short public history of Adaptive Experience Architecture: what was hard, what 
 
 **Ship.** The original functional view named eight tiles on a topic bus and stayed implementation-neutral so wireframes and services could move together. That view is the ancestor of the live florist, not the live florist. The course asked for a PDF and Figma. What lasted is the split, plus a later harness: two hostnames, and a rule that a status word is a claim until a probe.
 
-**Lesson.** Requirements are elicited, not gathered. The assignment ended at a packet. The work that followed is the shop you can open and the framework that refuses to treat a closed ticket as a clip. Payment is still a mockup. After the dual-viewport CSS landed, a fresh clip is still Unknown.
+**Lesson.** The customer's ask is an interview, not the spec. The course ended at a packet. What followed is the shop you can open and the framework that refuses to treat a closed ticket as a clip. Payment is still a mockup. After the dual-viewport CSS landed, a fresh clip is still Unknown.
 
 ![From a course brief to a group delivery to a live shop and a public framework](assets/origin-brief.svg)
 
@@ -55,5 +55,6 @@ A short public history of Adaptive Experience Architecture: what was hard, what 
 - Curated episodes only. No daily dump.
 - Pictures that explain a lesson. No screenshot gallery of the shop.
 - If a later check is missing, the page says so. It does not borrow a status from chat.
+- Third-party course or paper text is our paraphrase, or a short marked quote with a source. Packets stay off this site.
 
 Back to the [framework](index.html), the [schema](schema.html), the [comparison](comparison.html), or the [Path B case study](path-b.html).

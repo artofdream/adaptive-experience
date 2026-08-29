@@ -14,7 +14,7 @@ Related: #293. Public page: `docs/framework/journal.md` episode "Why this starte
 
 ## What the public episode may say
 
-- Elicit, do not copy the ask as a feature list.
+- The customer's ask is an interview, not the spec.
 - Course asked for a packet. Group delivered one workspace and the interpret/validate split.
 - Functional view is the ancestor of the live florist, not the live florist.
 - Later harness: two hostnames, claim-vs-probe.
