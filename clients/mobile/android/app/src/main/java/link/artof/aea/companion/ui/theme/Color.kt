@@ -1,4 +1,4 @@
-﻿package link.artof.aea.companion.ui.theme
+package link.artof.aea.companion.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

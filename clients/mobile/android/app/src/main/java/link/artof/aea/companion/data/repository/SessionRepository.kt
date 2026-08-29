@@ -1,4 +1,4 @@
-﻿package link.artof.aea.companion.data.repository
+package link.artof.aea.companion.data.repository
 
 import link.artof.aea.companion.data.api.BffClient
 import link.artof.aea.companion.data.model.*

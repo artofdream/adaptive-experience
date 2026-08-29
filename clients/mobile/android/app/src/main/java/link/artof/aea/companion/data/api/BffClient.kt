@@ -1,4 +1,4 @@
-﻿package link.artof.aea.companion.data.api
+package link.artof.aea.companion.data.api
 
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body

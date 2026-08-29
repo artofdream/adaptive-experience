@@ -1,4 +1,4 @@
-﻿package link.artof.aea.companion.ui.theme
+package link.artof.aea.companion.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

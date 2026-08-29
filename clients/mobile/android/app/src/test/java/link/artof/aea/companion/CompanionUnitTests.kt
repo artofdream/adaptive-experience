@@ -1,4 +1,4 @@
-﻿package link.artof.aea.companion
+package link.artof.aea.companion
 
 import link.artof.aea.companion.data.model.*
 import link.artof.aea.companion.data.repository.JourneyStage

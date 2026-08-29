@@ -1,4 +1,4 @@
-﻿package link.artof.aea.companion.data.model
+package link.artof.aea.companion.data.model
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

@@ -1,4 +1,4 @@
-﻿package link.artof.aea.companion
+package link.artof.aea.companion
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
