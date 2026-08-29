@@ -435,6 +435,8 @@ function renderSuggestions(items) {
   }
   root.replaceChildren();
   root.hidden = list.length === 0;
+  const hint = document.querySelector("#suggestions-hint");
+  if (hint) hint.hidden = list.length === 0;
   for (const text of list) {
     const chip = document.createElement("button");
     chip.type = "button";

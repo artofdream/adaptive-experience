@@ -227,16 +227,23 @@ h2 { font-size: 1.15rem; }
 .customer-message.is-pending { opacity: .72; }
 .disclosure { margin: 0 0 .85rem; }
 .suggestions { display: flex; flex-wrap: wrap; gap: .4rem; margin: .35rem 0 .65rem; }
+.suggestions-hint {
+  margin: .15rem 0 .35rem;
+  color: var(--muted);
+  font-size: .8rem;
+  font-weight: 500;
+}
 .chip {
-  border: 1px solid var(--line);
+  border: 1px dashed var(--purple);
   border-radius: 999px;
-  background: var(--card);
-  color: var(--purple-deep);
+  background: transparent;
+  color: var(--purple);
   padding: .3rem .7rem;
   font-size: .8rem;
-  font-weight: 650;
+  font-weight: 500;
 }
-.chip:hover { border-color: var(--purple); }
+.chip::before { content: "+ "; font-weight: 700; }
+.chip:hover { background: var(--lavender-soft); }
 .composer { display: flex; gap: .5rem; align-items: flex-end; }
 .composer textarea { flex: 1; }
 label { display: block; margin: .55rem 0 .3rem; font-weight: 700; }
