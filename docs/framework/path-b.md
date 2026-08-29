@@ -1,31 +1,29 @@
 # Path B — case study, not the home
 
-Path B is one instantiation of Adaptive Experience: a live florist workspace at [https://aea.artof.link](https://aea.artof.link). It is not this site, not the framework home, and not a trophy.
-
-## Journeys
-
-Named scripts (J1 Urgent Sam, J2 Planner Sarah, J3 Loyal Alex, J4 Tracker Chris) live on the [schema](schema.html). They are how we talk about Path B. Video files are not on this site. A clip after dual-viewport CSS is **Unknown**.
+Path B is one real-world instantiation of Adaptive Experience: a live florist workspace at [https://aea.artof.link](https://aea.artof.link). It is an exploratory reference design, not this framework site.
 
 ## What Path B instantiates
 
-The formula still holds: Shared Understanding + Domain Services + Outer Harness. On Path B that looks like a dual-viewport shop — desktop as a spatial Adaptive Workspace, phone as a linear concierge — on one session. Dual-viewport is the intended presentation, not a verified result.
+The core formula holds: **Shared Understanding + Domain Services + Outer Harness**.
 
-Live shop (pilot, ECS Fargate): [https://aea.artof.link](https://aea.artof.link)
+On Path B, that produces a dual-viewport shopping experience sharing a single persistent session:
+- **Desktop (16:9)**: An interactive spatial Adaptive Workspace with reviewable context tiles.
+- **Mobile (9:16)**: A linear, focused concierge interface.
 
-This framework site does not restyle that shop and does not share its ALB.
+Live reference shop: [https://aea.artof.link](https://aea.artof.link)
 
-## Honesty: CF-054 is regressed
+## Named Journeys
 
-**CF-054** (Path B dual viewport) is **regressed**. CSS for dual-viewport merged. A journey×viewport clip dated after that CSS is **Unknown**. Path B is **not verified**.
+Four primary journeys define the customer walkthrough:
+- **Urgent Sam** — Same-day rose delivery with rapid checkout.
+- **Planner Sarah** — Scheduled celebration with custom ribbon and vase selection.
+- **Loyal Alex** — Returning customer with persistent session memory across reloads.
+- **Tracker Chris** — Order tracking and gated florist support.
 
-Closing GitLab from a spec or CSS merge is not verification. A status word needs a probe: the same J1 script on phone 9:16 and desktop 16:9 after CSS. Until that clip exists, do not present Path B as done.
+## Honesty: Intended vs Verified
 
-This page mentions CF-054 so the public case study stays honest. It is not a badge.
+Dual-viewport presentation is the intended architectural design. While layout updates have shipped, end-to-end visual walkthrough evidence across both mobile and desktop viewports remains **Unknown**. Path B is marked **not fully verified** until verified by a fresh dual-viewport probe.
 
-## What this page is not
+Status words require empirical proof. Until verified, the case study stays honest.
 
-- Not a shop screenshot as hero.
-- Not internal vault papers, fundraising materials, or lab prototypes.
-- Not a request to restyle Path B CSS.
-
-The [journal](journal.html) is the curated history. Back to the [framework](index.html).
+Explore the [journal](journal.html) for how these lessons were learned, or return to the [framework home](index.html).
