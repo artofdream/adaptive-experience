@@ -166,6 +166,10 @@ class BrowserUiTests(unittest.TestCase):
         self.assertNotIn('return String(productId || "").replace(/-/g, " ");', self.script)
         self.assertNotIn("gift card", self.html.lower())
         self.assertNotIn("gift_card", self.script.lower())
+        self.assertEqual(1, self.html.count(">Continue to delivery<"))
+        self.assertNotIn(">Update</button>", self.html)
+        self.assertIn('type="submit">Continue to delivery</button>', self.html)
+        self.assertIn("setJourneyStep(5);", self.script)
 
     def test_t03_ranking_skus_use_vendored_attributed_photos(self):
         assets = ROOT / "ui" / "assets"

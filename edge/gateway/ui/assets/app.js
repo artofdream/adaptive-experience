@@ -1055,7 +1055,8 @@ document.querySelector("#selection-form").addEventListener("submit", async (even
     state.contextVersion = result.context_version;
     await refreshWorkspace();
     await pullStream();
-    showNotice("Selection updated.");
+    setJourneyStep(5);
+    showNotice("Selection saved. Confirm delivery next.");
   } catch (error) {
     const copy = friendlyError(error, "Update failed");
     showFormError("selection-form-error", copy);
