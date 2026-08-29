@@ -12,7 +12,7 @@ A short public history of Adaptive Experience Architecture: what was hard, what 
 
 **Lesson.** Closing a tracker is not a clip. Probe the same journey on both a phone and a desktop, or leave it Unknown.
 
-![Claim vs probe: a merged ticket is not verified until the same journey is probed on phone and desktop](assets/claim-vs-probe.jpg)
+![Claim vs probe: a merged ticket is not verified until the same journey is probed on phone and desktop](assets/claim-vs-probe.svg)
 
 ## Two hostnames
 
@@ -24,7 +24,7 @@ A short public history of Adaptive Experience Architecture: what was hard, what 
 
 **Lesson.** Merge is not "the site is up." Two hostnames, two jobs.
 
-![Two hostnames: framework Pages versus the live shop](assets/two-hostnames.jpg)
+![Two hostnames: framework Pages versus the live shop](assets/two-hostnames.svg)
 
 ## Four lines, one day
 
@@ -36,7 +36,7 @@ A short public history of Adaptive Experience Architecture: what was hard, what 
 
 **Lesson.** Written must match implemented. The first line can be wrong. The work is to notice, not to decorate.
 
-![Four named journeys, one live shop, two viewports](assets/four-lines.jpg)
+![Four named journeys, one live shop, two viewports](assets/four-lines.svg)
 
 ## How this journal stays honest
 
