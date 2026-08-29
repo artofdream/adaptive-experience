@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """Unit tests for scripts/build_framework_site.py."""
 
 import sys
@@ -36,6 +36,9 @@ class TestBuildFrameworkSite(unittest.TestCase):
         self.assertIn("architecture.artof.link", html_doc)
         self.assertIn("<p>Hello</p>", html_doc)
         self.assertIn('aria-current="page"', html_doc)
+        self.assertIn('href="#main"', html_doc)
+        self.assertIn('<main id="main">', html_doc)
+        self.assertIn('color-scheme:light dark', html_doc)
 
     def test_build(self):
         res = build()
