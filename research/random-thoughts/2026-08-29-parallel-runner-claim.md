@@ -2,7 +2,7 @@
 
 > **Tags**: #aea #second-brain
 
-Related: #297. Proposed. Not adopted. Not a sensor yet.
+Related: #297. **Adopted as sensor** 29 Aug 2026 14:25 Europe/Berlin. The rule is #301 and `2026-08-29-parallel-runner-claim-rule.md`.
 
 ## Why this note exists
 
