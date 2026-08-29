@@ -882,6 +882,8 @@ async function selectProduct(productId) {
   const intent = ((state.workspace && state.workspace.facets || {}).shared_understanding || {}).structured_intent || {};
   const budget = intent.budget;
 
+  state.step = 4;
+  setJourneyStep(4);
   const result = await api("/api/v1/selection", {
     method: "POST",
     body: { product_id: productId, items: currentItems, options, observed_context_version: state.contextVersion },
