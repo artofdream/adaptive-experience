@@ -54,6 +54,10 @@ Three executable jobs: implement, verify, merge. Only the MR coordinator merges.
 
 See the [comparison](comparison.html) for sources and related work.
 
+## Actual stack
+
+What is running today (this site versus the florist, two hostnames, the cloud path used so far) is on the [stack](stack.html) page. This schema stays the formula and layers.
+
 ## Journeys (Path B case study)
 
 Named scripts used to probe the florist instantiation at [aea.artof.link](https://aea.artof.link):
@@ -68,4 +72,4 @@ Named scripts used to probe the florist instantiation at [aea.artof.link](https:
 - Not the live shop, not internal working papers, and not a pitch deck.
 - Not a request to restyle the florist reference implementation.
 
-Back to the [framework](index.html), the [comparison](comparison.html), the [glossary](glossary.html), the [Path B case study](path-b.html), or the [journal](journal.html).
+Back to the [framework](index.html), the [stack](stack.html), the [comparison](comparison.html), the [glossary](glossary.html), the [Path B case study](path-b.html), or the [journal](journal.html).
