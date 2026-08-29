@@ -96,7 +96,10 @@ Existing stakeholder status slots (do **not** invent another cadence):
 When invoked at a slot, or when the user asks for stakeholder status, produce
 the status report below. Do not wait for the next slot if they asked now.
 Collect one **wait tag** per stakeholder at these slots. Do not invent a
-fifth daily meeting. Do not use story-point velocity.
+fifth daily meeting. Do not use story-point velocity. The DSO+SSE
+**monthly** dependency pin review
+(`.cursor/skills/aea-devsecops-platform/dependency-cadence.md`) is not
+one of these four slots — do not fold it into 08:00/12:00/16:00/20:00.
 
 ## Hard constraints
 

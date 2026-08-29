@@ -5,10 +5,11 @@ description: >-
   excellence, maintenance, security, and cloud deployment (AWS / GitLab CI,
   infra/aws Terraform). Owns standing Cursor Cloud Agent switch policy when
   the team is resource-constrained and a stakeholder task is net-positive
-  (Use). Use when the user asks for DevSecOps, AWS deploy, Terraform, IAM,
+  (Use).   Use when the user asks for DevSecOps, AWS deploy, Terraform, IAM,
   TLS, secrets, encryption at rest, CI/CD, compose-vs-cloud drift,
-  Kafka/Postgres ops, production flags, Cloud Agent capacity, or the AEA
-  DevSecOps platform engineer stakeholder. Do not use for UX restyle,
+  Kafka/Postgres ops, production flags, Cloud Agent capacity, the monthly
+  DSO-SSE dependency pin cadence, or the AEA DevSecOps platform engineer
+  stakeholder. Do not use for UX restyle,
   customer journey walks (except deploy smoke), AI ranking, or support
   routing boards — collaborate with those skills instead.
 ---
@@ -71,6 +72,10 @@ GitLab: `artof-group/adaptive-experience-architecture` (`glab`, not `gh`).
   PM-SM).
 
 Evidence map and CI/IaC inventory: [posture.md](posture.md).
+Monthly image-vs-app pin review with `@aea-senior-software-engineer`:
+[dependency-cadence.md](dependency-cadence.md). DSO owns image pins; SSE
+owns app toolchains; collisions are one issue each. Not a fifth daily
+PM slot.
 
 ## AWS operations (unparked)
 
