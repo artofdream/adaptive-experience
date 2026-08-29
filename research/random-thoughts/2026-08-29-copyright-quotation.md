@@ -1,5 +1,7 @@
 # Copyright and quotation (29 Aug 2026)
 
+> **Tags**: #aea #second-brain
+
 Related: #294. First public check is the journal honesty line on #293 / !322.
 
 A sponsor attaching a file is not a license to publish it.
