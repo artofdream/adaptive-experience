@@ -7,7 +7,7 @@ This note is what later agents should read instead of rediscovering the workbook
 ## Sources in the vault
 
 - `archive/Lilys_Florist_final.pdf` — group delivery (Meghna Desai, Hiren Vadalia, Claude Tsarafidy). Already on `main`.
-- `archive/Lilys_Florist_MVP_Functional_Architecture.pdf` — original 9-page functional view. Team-authored. Added with this note.
+- The 9-page functional view is team-authored. This note is the extract. The binary is not on this branch yet (too large for this commit path). Do not treat the missing binary as a vanished source: the sponsor still has the PDF, and the facts below were read from it on 29 Aug 2026.
 - `archive/Quantic_Project_Consolidated_Coherence_Validated.xlsx` and `archive/canonical-requirements.csv` — already on `main`. Do not treat them as live shop evidence.
 - Quantic *Managing AI Engineering Project* brief: cited, not stored. A sponsor attachment is not a publish license.
 
