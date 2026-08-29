@@ -121,6 +121,9 @@ Checklist detail: [gates.md](gates.md).
 
 ## Must reach out (do not merge, do not set auto-merge) when
 
+- **Blocked** and the owner is clear → that specialist (see
+  `.cursor/rules/blocked-reach-out.mdc`). Cannot name the owner →
+  **PM-SM**. Secrets / budget / production-risk CI-only → **sponsor**.
 - Scope is mixed or unclear → **PM-SM**
 - Validation is missing or skipped → **PM-SM**. “CI only” without acceptance
   for that named MR: PM-SM may accept or wait (prefer wait). CI-only

@@ -1,0 +1,33 @@
+---
+description: When blocked, request the owning specialist, or PM and/or sponsor
+alwaysApply: true
+---
+
+# Blocked — reach out
+
+> **Captured/Updated**: 2026-08-29
+> **Owner**: `@aea-project-manager` with `@aea-mr-coordinator`
+> **Traceability**: Issue #316, Blocked escalation SOP
+
+If you are **blocked**, do not sit silent and do not invent a lane that is
+not yours.
+
+1. If you can name the owner, **request that specialist** (comment on the
+   issue/MR, or in-session handoff). Say what is blocked and the evidence
+   (job URL, error, file).
+2. If you **cannot** name the owner, reach out to `@aea-project-manager`
+   to route.
+3. Also reach out to the **sponsor** when the block is secrets, budget,
+   or CI-only **production** risk. Product accept/reject stays
+   `@aea-product-owner`.
+
+Typical owners (do not invent a second map):
+
+- Conflicts, compile, Gradle, tests on an MR HEAD → `@aea-senior-software-engineer`
+- Runner, image, compose, Terraform apply → `@aea-devsecops-platform`
+- Workspace restyle / tiles → `@aea-ux-designer`
+- Live shop walk evidence → `@aea-customer-journey`
+- Merge gates → `@aea-mr-coordinator`
+
+The named specialist **must** take the request. MRC still does not rebase
+or merge past a failed required job.

@@ -192,6 +192,11 @@ by this skill or the sponsor) reach out here. Do not leave them idle. The
 sponsor is not required to name every ticket; a PM-SM assignment counts.
 `@aea-product-owner` sets which milestone/slice is in vs out.
 
+Anyone who is **blocked** and **cannot name** the owning specialist also
+reaches out here to route (`.cursor/rules/blocked-reach-out.mdc`). If they
+can name the owner, they request that specialist directly. Secrets, budget,
+and production-risk CI-only still go to the **sponsor**.
+
 When a stakeholder **asks for work**, or is **idle at cadence**, assign the
 **next priority task** (**Future included**). One task per stakeholder.
 SOP: one GitLab issue → one branch from updated `origin/main` → one MR.
