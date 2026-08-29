@@ -2,6 +2,18 @@
 
 A short public history of Adaptive Experience Architecture: what was hard, what we solved, what shipped, and what we learned. Not a ticket dump. Not a daily log.
 
+## Why this started
+
+**Challenge.** A florist asked for a website that could take more orders, keep inventory straight, and offer generative support at all hours. The easy mistake is to copy that ask as a feature list.
+
+**Solve.** It began as a Quantic Managing AI Engineering project: interview the proprietor, write stories and a journey, then requirements and annotated mockups. The group delivery (Meghna Desai, Hiren Vadalia, Claude Tsarafidy) turned that into one adaptive workspace. Conversation stays in place. The assistant may interpret. Dedicated services still decide catalog, inventory, price, delivery, payment, and the order.
+
+**Ship.** The original functional view named eight tiles on a topic bus and stayed implementation-neutral so wireframes and services could move together. That view is the ancestor of the live florist, not the live florist. The course asked for a PDF and Figma. What lasted is the split, plus a later harness: two hostnames, and a rule that a status word is a claim until a probe.
+
+**Lesson.** Requirements are elicited, not gathered. The assignment ended at a packet. The work that followed is the shop you can open and the framework that refuses to treat a closed ticket as a clip. Payment is still a mockup. After the dual-viewport CSS landed, a fresh clip is still Unknown.
+
+![From a course brief to a group delivery to a live shop and a public framework](assets/origin-brief.svg)
+
 ## Claim vs probe
 
 **Challenge.** Status words started standing in for evidence. "Verified" and "shipped" felt finished because a ticket closed.
