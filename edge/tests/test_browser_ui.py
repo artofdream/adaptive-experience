@@ -346,6 +346,9 @@ class BrowserUiTests(unittest.TestCase):
         self.assertIn("prior_order_hint", self.script)
         self.assertIn("Ordered earlier in this browser", self.script)
         self.assertIn('item.prior_order_hint ? "Reorder" : "Select"', self.script)  # FR-008
+        self.assertIn("state.step = 4;", self.script)
+        select_fn = self.script.split("async function selectProduct", 1)[1].split("function openHelp", 1)[0]
+        self.assertLess(select_fn.find("state.step = 4;"), select_fn.find("await refreshWorkspace()"))
 
     def test_shell_uses_edge_apis_without_data_plane_secrets(self):
         for path in ("/api/v1/session", "/api/v1/conversation/messages",
