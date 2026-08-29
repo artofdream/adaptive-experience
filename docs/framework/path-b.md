@@ -12,6 +12,10 @@ On Path B, that produces a dual-viewport shopping experience sharing a single pe
 
 Live reference shop: [https://aea.artof.link](https://aea.artof.link)
 
+## Ancestor
+
+The live shop started as an implementation-neutral functional view for the original florist delivery: one workspace, tiles that come and go on a topic bus, the assistant may interpret, domain services still decide. That view is the ancestor of this case study, not a reprint of it. Payment is still a mockup.
+
 ## Named Journeys
 
 Four primary journeys define the customer walkthrough:
