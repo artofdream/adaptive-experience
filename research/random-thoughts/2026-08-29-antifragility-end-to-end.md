@@ -1,5 +1,7 @@
 # Antifragility is the end-to-end goal (29 Aug 2026)
 
+> **Tags**: #aea #second-brain
+
 Related: #299. Sponsor: apply antifragility end to end, not only to the framework or Path B. Intent for now. It is the **goal to achieve and pursue**, not a claim that AEA already is antifragile.
 
 ## Intent
