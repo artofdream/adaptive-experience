@@ -9,7 +9,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import link.artof.aea.companion.data.model.Arrangement
+import androidx.compose.foundation.layout.Arrangement
+import link.artof.aea.companion.data.model.Arrangement as FloristArrangement
 import link.artof.aea.companion.data.model.ChatMessage
 import link.artof.aea.companion.data.model.OrderResult
 import link.artof.aea.companion.data.model.SharedUnderstanding
@@ -105,9 +106,9 @@ fun NeedScreen(
 
 @Composable
 fun PickScreen(
-    arrangements: List<Arrangement>,
-    selectedArrangement: Arrangement?,
-    onSelectArrangement: (Arrangement) -> Unit,
+    arrangements: List<FloristArrangement>,
+    selectedArrangement: FloristArrangement?,
+    onSelectArrangement: (FloristArrangement) -> Unit,
     onContinueToPay: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -159,7 +160,7 @@ fun PickScreen(
 
 @Composable
 fun PayScreen(
-    selectedArrangement: Arrangement?,
+    selectedArrangement: FloristArrangement?,
     sharedUnderstanding: SharedUnderstanding,
     onCheckout: (String) -> Unit,
     modifier: Modifier = Modifier

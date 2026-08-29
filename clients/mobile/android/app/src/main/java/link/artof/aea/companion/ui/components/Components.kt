@@ -14,7 +14,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import link.artof.aea.companion.data.model.Arrangement
+import androidx.compose.foundation.layout.Arrangement
+import link.artof.aea.companion.data.model.Arrangement as FloristArrangement
 import link.artof.aea.companion.data.repository.JourneyStage
 import link.artof.aea.companion.ui.theme.*
 
@@ -109,7 +110,7 @@ fun ChatBubble(
 
 @Composable
 fun ArrangementCard(
-    arrangement: Arrangement,
+    arrangement: FloristArrangement,
     isSelected: Boolean,
     onSelect: () -> Unit,
     modifier: Modifier = Modifier
