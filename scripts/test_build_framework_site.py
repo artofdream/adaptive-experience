@@ -30,6 +30,14 @@ class TestBuildFrameworkSite(unittest.TestCase):
         self.assertIn("<ul>", body)
         self.assertIn("<li>Item 1</li>", body)
 
+    def test_video_md(self):
+        body = md_to_html("![Urgent Sam 30s](assets/j1-urgent-sam-30s.mp4)")
+        self.assertIn("<video", body)
+        self.assertIn("controls", body)
+        self.assertIn("/assets/j1-urgent-sam-30s.mp4", body)
+        self.assertIn('poster="/assets/j1-urgent-sam-30s.jpg"', body)
+        self.assertIn("<figcaption>Urgent Sam 30s</figcaption>", body)
+
     def test_wrap(self):
         html_doc = wrap("Test Title", "index", "<p>Hello</p>")
         self.assertIn("<title>Test Title", html_doc)

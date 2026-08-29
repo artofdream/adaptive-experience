@@ -18,15 +18,35 @@ The live shop started as an implementation-neutral functional view for the origi
 
 ## Named Journeys
 
-Four primary journeys define the customer walkthrough:
-- **Urgent Sam** — Same-day rose delivery with rapid checkout.
-- **Planner Sarah** — Scheduled celebration with custom ribbon and vase selection.
-- **Loyal Alex** — Returning customer with persistent session memory across reloads.
-- **Tracker Chris** — Order tracking and gated florist support.
+Four 30-second phone tapes from 27 August 2026. They are that evening's evidence, not a fresh dual-viewport probe. Dual-viewport after CSS remains **Unknown**. Payment is still a mockup.
+
+### Urgent Sam
+
+Same-day rose delivery with rapid checkout.
+
+![Urgent Sam, 27 August 2026 phone tape, 30 seconds](assets/j1-urgent-sam-30s.mp4)
+
+### Planner Sarah
+
+Scheduled celebration with custom ribbon and vase selection.
+
+![Planner Sarah, 27 August 2026 phone tape, 30 seconds](assets/j2-planner-sarah-30s.mp4)
+
+### Loyal Alex
+
+Returning customer with persistent session memory across reloads.
+
+![Loyal Alex, 27 August 2026 phone tape, 30 seconds](assets/j3-loyal-alex-30s.mp4)
+
+### Tracker Chris
+
+Order tracking and gated florist support.
+
+![Tracker Chris, 27 August 2026 phone tape, 30 seconds](assets/j4-tracker-chris-30s.mp4)
 
 ## Honesty: Intended vs Verified
 
-Dual-viewport presentation is the intended architectural design. While layout updates have shipped, end-to-end visual walkthrough evidence across both mobile and desktop viewports remains **Unknown**. Path B is marked **not fully verified** until verified by a fresh dual-viewport probe.
+Dual-viewport presentation is the intended architectural design. While layout updates have shipped, end-to-end visual walkthrough evidence across both mobile and desktop viewports remains **Unknown**. Path B is marked **not fully verified** until verified by a fresh dual-viewport probe. The tapes above do not close that gap.
 
 Status words require empirical proof. Until verified, the case study stays honest.
 
