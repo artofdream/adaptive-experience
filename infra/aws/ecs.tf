@@ -165,6 +165,10 @@ resource "aws_ecs_task_definition" "orchestration" {
   memory                   = "1024"
   execution_role_arn       = aws_iam_role.ecs_execution.arn
   task_role_arn            = aws_iam_role.ecs_task.arn
+  runtime_platform {
+    operating_system_family = "LINUX"
+    cpu_architecture        = "ARM64"
+  }
   container_definitions = jsonencode([{
     name         = "orchestration"
     image        = local.orchestration_image
@@ -200,6 +204,10 @@ resource "aws_ecs_task_definition" "bff" {
   memory                   = "512"
   execution_role_arn       = aws_iam_role.ecs_execution.arn
   task_role_arn            = aws_iam_role.ecs_task.arn
+  runtime_platform {
+    operating_system_family = "LINUX"
+    cpu_architecture        = "ARM64"
+  }
   container_definitions = jsonencode([{
     name         = "bff"
     image        = local.bff_image
@@ -239,6 +247,10 @@ resource "aws_ecs_task_definition" "gateway" {
   memory                   = "512"
   execution_role_arn       = aws_iam_role.ecs_execution.arn
   task_role_arn            = aws_iam_role.ecs_task.arn
+  runtime_platform {
+    operating_system_family = "LINUX"
+    cpu_architecture        = "ARM64"
+  }
   container_definitions = jsonencode([{
     name         = "gateway"
     image        = local.gateway_image
@@ -269,6 +281,10 @@ resource "aws_ecs_task_definition" "relay" {
   memory                   = "512"
   execution_role_arn       = aws_iam_role.ecs_execution.arn
   task_role_arn            = aws_iam_role.ecs_task.arn
+  runtime_platform {
+    operating_system_family = "LINUX"
+    cpu_architecture        = "ARM64"
+  }
   container_definitions = jsonencode([{
     name      = "relay"
     image     = local.orchestration_image
@@ -304,6 +320,10 @@ resource "aws_ecs_task_definition" "consumer_workspace" {
   memory                   = "512"
   execution_role_arn       = aws_iam_role.ecs_execution.arn
   task_role_arn            = aws_iam_role.ecs_task.arn
+  runtime_platform {
+    operating_system_family = "LINUX"
+    cpu_architecture        = "ARM64"
+  }
   container_definitions = jsonencode([{
     name      = "consumer"
     image     = local.orchestration_image
@@ -339,6 +359,10 @@ resource "aws_ecs_task_definition" "lily_reference_live_test" {
   memory                   = "512"
   execution_role_arn       = aws_iam_role.ecs_execution.arn
   task_role_arn            = aws_iam_role.ecs_task.arn
+  runtime_platform {
+    operating_system_family = "LINUX"
+    cpu_architecture        = "ARM64"
+  }
   container_definitions = jsonencode([{
     name      = "lily-reference-live-test"
     image     = local.orchestration_image
@@ -535,6 +559,10 @@ resource "aws_ecs_task_definition" "agent_runner" {
   memory                   = "1024"
   execution_role_arn       = aws_iam_role.ecs_execution.arn
   task_role_arn            = aws_iam_role.ecs_task.arn
+  runtime_platform {
+    operating_system_family = "LINUX"
+    cpu_architecture        = "ARM64"
+  }
   container_definitions = jsonencode([{
     name         = "agent-runner"
     image        = "${aws_ecr_repository.agent_runner.repository_url}:${var.container_image_tag}"
