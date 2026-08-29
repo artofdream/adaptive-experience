@@ -279,9 +279,10 @@ android-build-debug:
     GRADLE_OPTS: "-Dorg.gradle.daemon=false"
   before_script:
     - cd clients/mobile/android
-    - chmod +x gradlew
   script:
-    - ./gradlew assembleDebug testDebugUnitTest
+    # cimg/android runs as circleci; GitLab checkout is root-owned, so chmod +x
+    # fails with Operation not permitted. Invoke via sh (file is 100644).
+    - sh ./gradlew assembleDebug testDebugUnitTest
   artifacts:
     paths:
       - clients/mobile/android/app/build/outputs/apk/debug/app-debug.apk
