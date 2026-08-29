@@ -22,14 +22,20 @@
 
   <nav class="journey-nav" aria-label="Journey stages">
     <ol class="steps" id="journey-steps">
-      <li><button type="button" data-step="1" aria-current="step"><span class="step-num">1</span><span class="step-label" data-full="Discover" data-short="Start">Discover</span></button></li>
-      <li><button type="button" data-step="2"><span class="step-num">2</span><span class="step-label" data-full="Understand" data-short="Intent">Understand</span></button></li>
-      <li><button type="button" data-step="3"><span class="step-num">3</span><span class="step-label" data-full="Choose" data-short="Pick">Choose</span></button></li>
-      <li><button type="button" data-step="4"><span class="step-num">4</span><span class="step-label" data-full="Customize" data-short="Edit">Customize</span></button></li>
-      <li><button type="button" data-step="5"><span class="step-num">5</span><span class="step-label" data-full="Deliver" data-short="Ship">Deliver</span></button></li>
-      <li><button type="button" data-step="6"><span class="step-num">6</span><span class="step-label" data-full="Review &amp; pay" data-short="Pay">Review &amp; pay</span></button></li>
-      <li><button type="button" data-step="7"><span class="step-num">7</span><span class="step-label" data-full="Track" data-short="Track">Track</span></button></li>
+      <li><button type="button" data-step="1" aria-current="step"><span class="step-num">1</span><span class="step-label">Discover</span></button></li>
+      <li><button type="button" data-step="2"><span class="step-num">2</span><span class="step-label">Understand</span></button></li>
+      <li><button type="button" data-step="3"><span class="step-num">3</span><span class="step-label">Choose</span></button></li>
+      <li><button type="button" data-step="4"><span class="step-num">4</span><span class="step-label">Customize</span></button></li>
+      <li><button type="button" data-step="5"><span class="step-num">5</span><span class="step-label">Deliver</span></button></li>
+      <li><button type="button" data-step="6"><span class="step-num">6</span><span class="step-label">Review &amp; pay</span></button></li>
+      <li><button type="button" data-step="7"><span class="step-num">7</span><span class="step-label">Track</span></button></li>
     </ol>
+    <ol class="phases" id="journey-phases">
+      <li><button type="button" data-phase="need" data-phase-from="1" data-phase-to="2"><span class="phase-num">1</span><span class="phase-label">Need</span></button></li>
+      <li><button type="button" data-phase="pick" data-phase-from="3" data-phase-to="5"><span class="phase-num">2</span><span class="phase-label">Pick</span></button></li>
+      <li><button type="button" data-phase="pay" data-phase-from="6" data-phase-to="7"><span class="phase-num">3</span><span class="phase-label">Pay</span></button></li>
+    </ol>
+    <p id="phase-caption" class="phase-caption">1 of 3 · Need</p>
   </nav>
 
   <main class="workspace" data-name="adaptive-workspace-mvp" data-visual="sample-layout-3" data-journey-mode="steps">
