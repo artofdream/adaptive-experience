@@ -19,6 +19,7 @@ PAGES = [
     ('schema', 'schema.md', 'Schema'),
     ('comparison', 'comparison.md', 'Comparison'),
     ('path-b', 'path-b.md', 'Path B case study'),
+    ('glossary', 'glossary.md', 'Glossary'),
     ('journal', 'journal.md', 'Journal'),
 ]
 SITE = 'architecture.artof.link'

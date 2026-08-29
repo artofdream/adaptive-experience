@@ -6,7 +6,7 @@ This page is a short public comparison: Adaptive Experience Architecture next to
 
 ## What this is
 
-An independent Art of Group note. It maps AEA onto six harness layers (guides, sensors, loop, memory, permissions, observability) that public writing on coding agents already uses. The AEA formula stays: Shared Understanding + Domain Services + Outer Harness. Path B at [aea.artof.link](https://aea.artof.link) is the case study, not a trophy.
+An independent Art of Group note. It maps AEA onto six harness layers (guides, sensors, loop, memory, permissions, observability) that public writing on coding agents already uses. The AEA formula stays: Shared Understanding + Domain Services + Outer Harness. [Path B](glossary.html#path-b) at [aea.artof.link](https://aea.artof.link) is the case study, not a trophy.
 
 ## What this is not
 
@@ -15,7 +15,7 @@ An independent Art of Group note. It maps AEA onto six harness layers (guides, s
 - Not a reprint of the internal vault working paper.
 - Not a leaderboard. Related-work benches (GAIA swings, Terminal Bench ranks, a million generated lines) are **not** AEA results. They were not run on Lily's Florist.
 - Not AGENTS.md, not DATE_RE, not a pitch deck, not 3DX Lab.
-- Not proof that Path B dual-viewport is done. That clip after the CSS is **Unknown**. **CF-054** is **regressed**.
+- Not proof that Path B dual-viewport is done. That clip after the CSS is **Unknown**. **[CF-054](glossary.html#cf-nnn-coherence-finding-codes)** is **regressed**.
 
 ## Core principles
 
@@ -54,11 +54,11 @@ Related work often writes Agent = Model + Harness. AEA restates that for an expe
 
 The six layers match by name:
 
-1. **Guides** — feedforward. Related work: AGENTS.md and stop conditions for a coding agent. AEA: session-start rules, fourteen roles, Path B dual-viewport contract. Motivational language is not a guide.
+1. **Guides** — feedforward. Related work: AGENTS.md and stop conditions for a coding agent. AEA: session-start rules, [fourteen roles](glossary.html#fourteen-hats-roles), Path B dual-viewport contract. Motivational language is not a guide.
 2. **Sensors** — feedback. Related work: tests and computational checks first. AEA: the same idea, plus fail-closed inventory and journey×viewport clips. A clip is a probe, not a trophy.
 3. **Loop** — related work: plan, act, retry inside a context window. AEA: one finding, one issue, one branch, one merge request. Only the MR coordinator merges. A loop tick must not merge.
 4. **Memory** — related work: the model forgets. AEA: one live handoff filename for the next session. Chat is not shared memory. Uncommitted files are not shared memory.
-5. **Permissions** — the model cannot restrict itself. AEA: fourteen hats, no fifteenth implementer, ID freeze, human confirmation for secrets and spend.
+5. **Permissions** — the model cannot restrict itself. AEA: fourteen hats, no fifteenth implementer, [ID freeze](glossary.html#id-freeze), human confirmation for secrets and spend.
 6. **Observability** — status words need a probe. Grafana is not a vibe check. Unknown is required when the probe was not run.
 
 ## Where they agree
@@ -89,4 +89,4 @@ Only what has a probe, or Unknown:
 - Live Stripe, a finished dual-viewport, a 14/14 skill score, GAIA, Terminal Bench, or a million generated lines.
 - Endorsement by any organization named in related work.
 
-Back to the [framework](index.html), the [schema](schema.html), the [Path B case study](path-b.html), or the [journal](journal.html).
+Back to the [framework](index.html), the [schema](schema.html), the [glossary](glossary.html), the [Path B case study](path-b.html), or the [journal](journal.html).
