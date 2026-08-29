@@ -63,7 +63,7 @@ variable "pilot_ingress_cidrs" {
 
 variable "db_instance_class" {
   type    = string
-  default = "db.t4g.medium"
+  default = "db.t4g.small"
 }
 
 variable "msk_broker_nodes" {
