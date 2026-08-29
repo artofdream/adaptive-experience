@@ -87,3 +87,16 @@ Engagement is the conversation hook on both; the layout is what changes.
 #272 / CF-054 is the tracker. Implementer: `@aea-ux-designer`. This MR only commits knowledge (this note, the session log, the finding note, the loop/SOP Path B path). No CSS/JS restyle here. Do not batch CRM #254, HLD #231, or !297. Do not mark CF-054 `verified` from !298.
 
 Re-probe after a UX MR: same [[J1]] script on phone and desktop. Unknown until those clips exist.
+
+---
+
+## 6. Forward pointer — native mobile (added 2026-08-29)
+
+This note's J1–J4 clip evidence and the resulting dual-presentation
+principle (§4) were carried forward into a native (Android/iOS) companion
+exploration: [[2026-08-29-native-mobile-companion-system-docs-and-toolkit]].
+That note translates the *same* Need→Pick→Pay target flow — not the
+as-shipped seven-step phone copy this note found broken — into native
+screens, and captures the sponsor's 2026-08-29 direction to proceed,
+Android first. It is a candidate/proposal, not a merged change; nothing in
+this note's `verified`/`regressed` status for CF-054 changes because of it.
