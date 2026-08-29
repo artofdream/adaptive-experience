@@ -68,4 +68,4 @@ Named scripts used to probe the florist instantiation at [aea.artof.link](https:
 - Not the live shop, not internal working papers, and not a pitch deck.
 - Not a request to restyle the florist reference implementation.
 
-Back to the [framework](index.html), the [Path B case study](path-b.html), the [comparison](comparison.html), or the [journal](journal.html).
+Back to the [framework](index.html), the [comparison](comparison.html), the [glossary](glossary.html), the [Path B case study](path-b.html), or the [journal](journal.html).

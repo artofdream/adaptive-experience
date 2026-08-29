@@ -1,6 +1,6 @@
 # Path B — case study, not the home
 
-Path B is one real-world instantiation of Adaptive Experience: a live florist workspace at [https://aea.artof.link](https://aea.artof.link). It is an exploratory reference design, not this framework site.
+[Path B](glossary.html#path-b) is one real-world instantiation of Adaptive Experience: a live florist workspace at [https://aea.artof.link](https://aea.artof.link). It is an exploratory reference design, not this framework site.
 
 ## What Path B instantiates
 
@@ -26,4 +26,4 @@ Dual-viewport presentation is the intended architectural design. While layout up
 
 Status words require empirical proof. Until verified, the case study stays honest.
 
-Explore the [journal](journal.html) for how these lessons were learned, or return to the [framework home](index.html).
+Explore the [journal](journal.html) for how these lessons were learned, see the [glossary](glossary.html) for terms used here, or return to the [framework home](index.html).
