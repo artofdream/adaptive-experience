@@ -53,8 +53,15 @@ CSS = (
     'background:var(--code-bg);padding:.1em .35em;border-radius:3px}'
     '.formula{border-left:3px solid var(--accent);padding-left:1rem}'
     '.warn{color:var(--warn)}nav.site{display:flex;flex-wrap:wrap;gap:1rem;margin-top:.5rem}'
+    'html{scroll-behavior:smooth}'
+    'p.toc{margin:1.25rem 0 2rem;padding:.75rem 1rem;background:var(--code-bg);'
+    'border:1px solid var(--rule);border-radius:4px;font-family:ui-sans-serif,system-ui,sans-serif;'
+    'font-size:.85rem;display:flex;flex-wrap:wrap;gap:.75rem}'
+    'p.toc a{text-decoration:none}'
+    'p.toc a:hover{text-decoration:underline}'
     'figure{margin:1.75rem 0}figure img{max-width:100%;height:auto;display:block;'
     'border:1px solid var(--rule);border-radius:4px}'
+    '@media(max-width:480px){figure{margin:1.25rem -0.5rem}figure img{border-radius:0}}'
     'footer{margin-top:3rem;padding:1.5rem 1.25rem 3rem;border-top:1px solid var(--rule);'
     'color:var(--muted);font-family:ui-sans-serif,system-ui,sans-serif;font-size:.82rem}'
 )
@@ -129,7 +136,10 @@ def md_to_html(source: str) -> str:
         if h:
             close()
             n = str(len(h.group(1)))
-            out.append('<h' + n + '>' + inline_md(h.group(2)) + '</h' + n + '>')
+            raw_title = h.group(2)
+            slug = re.sub(r'[^a-z0-9]+', '-', raw_title.lower()).strip('-')
+            id_attr = f' id="{slug}"' if slug and len(h.group(1)) > 1 else ''
+            out.append('<h' + n + id_attr + '>' + inline_md(raw_title) + '</h' + n + '>')
             continue
         ul = re.match(r'^[-*]\s+(.*)$', line)
         ol = re.match(r'^\d+\.\s+(.*)$', line)
@@ -146,7 +156,9 @@ def md_to_html(source: str) -> str:
         cls = ''
         if line.startswith('**Adaptive Experience ='):
             cls = ' class="formula"'
-        if 'CF-054' in line and 'regressed' in line.lower():
+        elif line.startswith('[') and '](#' in line:
+            cls = ' class="toc"'
+        elif 'CF-054' in line and 'regressed' in line.lower():
             cls = ' class="warn"'
         out.append('<p' + cls + '>' + inline_md(line) + '</p>')
     close()
