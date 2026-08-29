@@ -1,0 +1,36 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 480" width="100%" height="100%">
+  <rect width="800" height="480" rx="8" fill="#121417"/>
+  <rect x="1" y="1" width="798" height="478" rx="7" fill="none" stroke="#2a2e33" stroke-width="1.5"/>
+  <text x="400" y="65" fill="#e7e4dc" font-family="Palatino, Times New Roman, serif" font-size="34" font-weight="bold" text-anchor="middle">Four lines, one day</text>
+  
+  <g transform="translate(100, 110)">
+    <g transform="translate(0, 0)">
+      <text x="0" y="25" fill="#d4a07a" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" letter-spacing="1.5">CHALLENGE</text>
+      <line x1="115" y1="20" x2="190" y2="20" stroke="#383e47" stroke-width="1"/>
+      <text x="215" y="25" fill="#e7e4dc" font-family="Palatino, serif" font-size="18">What made today hard.</text>
+    </g>
+    
+    <g transform="translate(0, 65)">
+      <text x="0" y="25" fill="#c4b08a" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" letter-spacing="1.5">SOLVE</text>
+      <line x1="115" y1="20" x2="190" y2="20" stroke="#383e47" stroke-width="1"/>
+      <text x="215" y="25" fill="#e7e4dc" font-family="Palatino, serif" font-size="18">What I did about it.</text>
+    </g>
+    
+    <g transform="translate(0, 130)">
+      <text x="0" y="25" fill="#9a9588" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" letter-spacing="1.5">SHIP</text>
+      <line x1="115" y1="20" x2="190" y2="20" stroke="#383e47" stroke-width="1"/>
+      <text x="215" y="25" fill="#e7e4dc" font-family="Palatino, serif" font-size="18">What I put into the world.</text>
+    </g>
+    
+    <g transform="translate(0, 195)">
+      <text x="0" y="25" fill="#c4b08a" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" letter-spacing="1.5">LESSON</text>
+      <line x1="115" y1="20" x2="190" y2="20" stroke="#383e47" stroke-width="1"/>
+      <text x="215" y="25" fill="#e7e4dc" font-family="Palatino, serif" font-size="18">What I'll do differently.</text>
+    </g>
+  </g>
+  
+  <line x1="150" y1="390" x2="310" y2="390" stroke="#2a2e33" stroke-width="1"/>
+  <polygon points="400,385 405,390 400,395 395,390" fill="#c4b08a"/>
+  <line x1="490" y1="390" x2="650" y2="390" stroke="#2a2e33" stroke-width="1"/>
+  <text x="400" y="425" fill="#9a9588" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" letter-spacing="2" text-anchor="middle">A JOURNAL IS NOT A LOG DUMP.</text>
+</svg>
