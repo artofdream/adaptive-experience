@@ -54,6 +54,7 @@ class TestBuildFrameworkSite(unittest.TestCase):
         root = Path(__file__).resolve().parents[1]
         self.assertTrue((root / "public" / "index.html").exists())
         self.assertTrue((root / "public" / "path-b.html").exists())
+        self.assertTrue((root / "public" / "stack.html").exists())
 
 
 if __name__ == "__main__":

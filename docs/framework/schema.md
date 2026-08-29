@@ -2,7 +2,7 @@
 
 This page is the public map of Adaptive Experience. Use it when talking about the framework. It is not the shop and not a trophy.
 
-[Formula](#formula) · [Six layers](#six-layers) · [The loop](#the-loop) · [Hats & jobs](#fourteen-hats-three-jobs) · [Journeys](#journeys-path-b-case-study)
+[Formula](#formula) · [Six layers](#six-layers) · [The loop](#the-loop) · [Hats & jobs](#fourteen-hats-three-jobs) · [Journeys](#journeys-path-b-case-study) · [Stack](stack.html)
 
 ## Formula
 

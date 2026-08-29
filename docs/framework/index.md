@@ -31,6 +31,7 @@ The live florist at [aea.artof.link](https://aea.artof.link) is one case study, 
 
 - Read the [journal](journal.html) for curated stories of challenge, solve, ship, and lesson.
 - Explore the [schema](schema.html) for the full architectural map, layers, loop, and named journeys.
+- See the [stack](stack.html) for the high-level design used so far (two hostnames, this site, the florist runtime).
 - See the [comparison](comparison.html) for sources and how this taxonomy relates to other agent architectures.
 - Review the [Path B case study](path-b.html) for implementation details.
 - See the [glossary](glossary.html) for terms used across this site (Path B, CF-NNN, ID freeze, and more).
