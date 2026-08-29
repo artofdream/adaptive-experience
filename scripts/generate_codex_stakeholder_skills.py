@@ -40,8 +40,8 @@ SKILLS = {
         "Maintain AWS resource cost caps and LLM token efficiency. Do not replace devsecops platform architecture or senior software engineer domain authority.",
     ),
     "aea-devsecops-platform": (
-        "Assess and improve AEA platform excellence, maintenance, security, AWS deployment, Terraform, GitLab CI, Kafka and PostgreSQL operations, secrets, encryption, and production posture. Use for DevSecOps, cloud infrastructure, CI/CD, deployment drift, production flags, or the AEA DevSecOps platform stakeholder.",
-        "Read the linked `posture.md` whenever the canonical workflow requires posture or AWS state.",
+        "Assess and improve AEA platform excellence, maintenance, security, AWS deployment, Terraform, GitLab CI, Kafka and PostgreSQL operations, secrets, encryption, and production posture. Use for DevSecOps, cloud infrastructure, CI/CD, deployment drift, production flags, the monthly DSO-SSE dependency pin cadence, or the AEA DevSecOps platform stakeholder.",
+        "Read the linked `posture.md` whenever the canonical workflow requires posture or AWS state. Read the linked `dependency-cadence.md` for the monthly image-and-app pin review with the senior software engineer.",
         "Cursor Cloud Agent policy is informational only. Do not create Codex tasks, threads, or subagents unless the user explicitly requests delegation. Use applicable Codex AWS skills without replacing the established Terraform architecture.",
     ),
     "aea-knowledge-guardian": (
@@ -70,8 +70,8 @@ SKILLS = {
         "Exercise full Scrum/process authority within approved scope. A routed role does not authorize creating a Codex task, thread, or subagent unless the user explicitly requests delegation. Do not absorb product, specialist, merge, secret, or destructive cloud authority.",
     ),
     "aea-senior-software-engineer": (
-        "Design, architect, implement, and enhance AEA platform and edge code against repository ADRs and engineering best practices. Use only when the user invokes the AEA senior software engineer or asks that stakeholder to implement, architect, resolve integration conflicts, or enhance the repository.",
-        "Preserve its specialist handoffs, Docker-before-MR requirements, notify-MRC-on-create step, and ownership of MRC-requested conflict or crashing-pipeline fixes.",
+        "Design, architect, implement, and enhance AEA platform and edge code against repository ADRs and engineering best practices. Use only when the user invokes the AEA senior software engineer or asks that stakeholder to implement, architect, resolve integration conflicts, enhance the repository, or run the monthly dependency pin cadence with DevSecOps.",
+        "Preserve its specialist handoffs, Docker-before-MR requirements, notify-MRC-on-create step, ownership of MRC-requested conflict or crashing-pipeline fixes, and the app-toolchain half of the monthly pin cadence in `aea-devsecops-platform/dependency-cadence.md`.",
         "Do not create subagents or tasks for collaboration unless the user explicitly requests delegation. Ignore Cursor canvas paths and use Codex visualization only when useful.",
     ),
     "aea-support-coordinator": (

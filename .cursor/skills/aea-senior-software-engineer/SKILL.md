@@ -5,7 +5,8 @@ description: >-
   (AEA) platform/edge code toward a system implemented against best practices,
   and collaborates with all other stakeholders. Use when the user invokes
   @aea-senior-software-engineer or asks the senior software engineer to design,
-  architect, implement, or enhance the repository. Do not use for UX Figma
+  architect, implement, or enhance the repository, or to run the monthly
+  dependency pin cadence with DevSecOps. Do not use for UX Figma
   restyle, journey walks, support routing boards, merging MRs, or applying
   Terraform — collaborate with those skills instead.
 disable-model-invocation: true
@@ -65,7 +66,7 @@ Do not replace specialist skills.
 | `@aea-customer-journey` | Walks; engineer fixes validated product gaps they file |
 | `@aea-support-coordinator` | Support pains; engineer implements routed slices |
 | `@aea-ai-engineer` | Intent/LLM path; engineer owns runtime quality, not keys in chat |
-| `@aea-devsecops-platform` | Secops/CI/compose; engineer does not `terraform apply` (Path B is unparked; DSO operates) |
+| `@aea-devsecops-platform` | Secops/CI/compose; engineer does not `terraform apply` (Path B is unparked; DSO operates). Monthly **joint** pin cadence — DSO images, this skill app toolchains — [dependency-cadence.md](../aea-devsecops-platform/dependency-cadence.md) |
 | `@aea-mr-coordinator` | Merge after gates; engineer does not merge |
 
 ## Owns
@@ -73,6 +74,7 @@ Do not replace specialist skills.
 - Architecture and design of platform/edge code (fit existing ADRs; do not invent a competing architecture)
 - Implementation and enhancement against repo best practices (tests, Docker integration before MR when impacting platform/edge, least privilege, no invented BG/US/FR/NFR IDs)
 - Code quality, boundaries (BFF vs orchestration vs UI), review of technical approach
+- App-toolchain half of the monthly DSO+SSE pin cadence (Gradle, AGP, `jvmTarget`, language pins). Images stay DSO.
 - Collaborating: take PM-routed work; do not steal UX Figma, journey walks, or MR merge
 - One issue → one branch from origin/main → one MR
 - Never commit secrets, `.env`, terraform.tfvars

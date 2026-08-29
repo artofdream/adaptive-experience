@@ -67,6 +67,8 @@ stakeholder-cadence-guard:
   script:
     - python scripts/check_stakeholder_cadence.py || true
     - python scripts/test_stakeholder_cadence.py -v
+    - python scripts/check_dependency_pin_cadence.py --check
+    - python scripts/test_check_dependency_pin_cadence.py -v
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
