@@ -57,4 +57,4 @@ A short public history of Adaptive Experience Architecture: what was hard, what 
 - If a later check is missing, the page says so. It does not borrow a status from chat.
 - Third-party course or paper text is our paraphrase, or a short marked quote with a source. Packets stay off this site.
 
-Back to the [framework](index.html), the [schema](schema.html), the [comparison](comparison.html), or the [Path B case study](path-b.html).
+Back to the [framework](index.html), the [schema](schema.html), the [comparison](comparison.html), the [glossary](glossary.html), or the [Path B case study](path-b.html).
