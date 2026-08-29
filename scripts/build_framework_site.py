@@ -2,7 +2,7 @@
 """Build architecture.artof.link from an allowlist of docs/framework markdown.
 
 Stdlib only. Adding a page means changing PAGES below. Do not glob the repo.
-Images may only come from docs/framework/assets/ with a safe filename.
+Images and short local videos may only come from docs/framework/assets/ with a safe filename.
 """
 from __future__ import annotations
 
@@ -60,9 +60,11 @@ CSS = (
     'font-size:.85rem;display:flex;flex-wrap:wrap;gap:.75rem}'
     'p.toc a{text-decoration:none}'
     'p.toc a:hover{text-decoration:underline}'
-    'figure{margin:1.75rem 0}figure img{max-width:100%;height:auto;display:block;'
+    'figure{margin:1.75rem 0}figure img,figure video{max-width:100%;height:auto;display:block;'
     'border:1px solid var(--rule);border-radius:4px}'
-    '@media(max-width:480px){figure{margin:1.25rem -0.5rem}figure img{border-radius:0}}'
+    'figure figcaption{margin-top:.5rem;color:var(--muted);'
+    'font-family:ui-sans-serif,system-ui,sans-serif;font-size:.82rem}'
+    '@media(max-width:480px){figure{margin:1.25rem -0.5rem}figure img,figure video{border-radius:0}}'
     'footer{margin-top:3rem;padding:1.5rem 1.25rem 3rem;border-top:1px solid var(--rule);'
     'color:var(--muted);font-family:ui-sans-serif,system-ui,sans-serif;font-size:.82rem}'
 )
@@ -70,7 +72,8 @@ INLINE = re.compile(
     r'`([^`]+)`|\[([^\]]+)\]\(([^)]+)\)|\*\*([^*]+)\*\*|\*([^*]+)\*'
 )
 IMG_LINE = re.compile(r'^!\[([^\]]*)\]\(([^)]+)\)$')
-SAFE_ASSET = re.compile(r'^assets/[A-Za-z0-9._-]+\.(?:png|jpe?g|webp|svg)$')
+SAFE_ASSET = re.compile(r'^assets/[A-Za-z0-9._-]+\.(?:png|jpe?g|webp|svg|mp4|webm)$')
+SAFE_VIDEO = re.compile(r'^assets/[A-Za-z0-9._-]+\.(?:mp4|webm)$')
 LOCAL_PAGE = re.compile(r'^(?:index|[A-Za-z0-9._-]+)\.html$')
 
 
@@ -121,7 +124,26 @@ def md_to_html(source: str) -> str:
         if img:
             close()
             alt, src = img.group(1), img.group(2)
-            if SAFE_ASSET.match(src):
+            if SAFE_VIDEO.match(src):
+                href = src if src.startswith('/') else '/' + src
+                poster = re.sub(r'\.(mp4|webm)$', '.jpg', src)
+                poster_href = poster if poster.startswith('/') else '/' + poster
+                mime = 'video/webm' if src.endswith('.webm') else 'video/mp4'
+                poster_attr = ''
+                if SAFE_ASSET.match(poster):
+                    poster_attr = ' poster="' + html.escape(poster_href, quote=True) + '"'
+                out.append(
+                    '<figure><video controls preload="metadata" playsinline'
+                    + poster_attr
+                    + '><source src="'
+                    + html.escape(href, quote=True)
+                    + '" type="'
+                    + mime
+                    + '"></video><figcaption>'
+                    + html.escape(alt)
+                    + '</figcaption></figure>'
+                )
+            elif SAFE_ASSET.match(src):
                 href = src if src.startswith('/') else '/' + src
                 out.append(
                     '<figure><img src="'

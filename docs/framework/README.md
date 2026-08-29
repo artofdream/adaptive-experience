@@ -23,7 +23,7 @@ Adding a public page means:
 2. Add a row to `PAGES` in `scripts/build_framework_site.py`.
 3. MR. MRC merges. The `pages` job on `main` rebuilds `public/`.
 
-Images are optional. Use `![alt](assets/name.jpg)` on its own line. The builder copies only files whose path matches `assets/[A-Za-z0-9._-]+\.(png|jpg|jpeg|webp)`. No remote URLs. No `..`. No mermaid (the builder does not render it).
+Images and short videos are optional. Use `![alt](assets/name.jpg)` or `![alt](assets/name.mp4)` on its own line. The builder copies only files whose path matches `assets/[A-Za-z0-9._-]+\.(png|jpg|jpeg|webp|svg|mp4|webm)`. An `mp4`/`webm` line becomes a `<video controls>` player; a matching `.jpg` is used as the poster. No remote URLs. No `..`. No mermaid (the builder does not render it).
 
 Do not glob the whole repo. Do not paste DATE_RE, vault papers, TAM/raise, or 3DX Lab onto the public site. A lean [comparison](comparison.md) page is allowlisted; the 715-line vault working paper is not. Do not restyle the shop.
 
