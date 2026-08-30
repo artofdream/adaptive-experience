@@ -3,7 +3,7 @@
 > **Tags**: #aea #second-brain #harness #knowledge-first #path-b
 > **Captured**: 2026-08-28
 > **GitLab**: Related #274 (this note). Related #273 via !304 (**merged**). #275 queued.
-> **Related**: [[2026-08-27-path-b-dual-viewport-ux-loop-j1-j4]] [[2026-08-27-session-memory-log-cf054-path-b-ux-in-coherence-loop]] [[2026-08-26-date-re-bus-and-agent-runner-image-roll]] [[2026-08-28-aea-framework-harness-engineering]] [[2026-08-28-aea-vs-harness-playbook-comparison]]
+> **Related**: [[2026-08-27-path-b-dual-viewport-ux-loop-j1-j4]] [[2026-08-27-session-memory-log-cf054-path-b-ux-in-coherence-loop]] [[2026-08-26-date-re-bus-and-agent-runner-image-roll]] [[2026-08-28-aea-framework-harness-engineering]] [[2026-08-28-aea-vs-harness-playbook-comparison]] [[2026-08-29-aea-framework-harness-engineering]] [[2026-08-30-aea-framework-harness-engineering]] [[2026-08-29-aea-vs-wast3-memory-engineering]]
 > **This node is knowledge, not DATE_RE, not a UI restyle.**
 
 Later agents: shared memory is committed GitLab `main` only. A status word is a claim. Probe or write Unknown.
@@ -16,6 +16,11 @@ The 2026-08-28 AEA 6-layer playbook and the comparison vs `harness_final.pdf` ar
 |---|---|---|
 | Framework playbook (md) | `research/random-thoughts/2026-08-28-aea-framework-harness-engineering.md` | DATE_RE, `docs/`, GitHub mirror |
 | Comparison (md) | `research/random-thoughts/2026-08-28-aea-vs-harness-playbook-comparison.md` | DATE_RE, `docs/` |
+| 29 Aug successor + first [19] pass | `research/random-thoughts/2026-08-29-aea-framework-harness-engineering.md` | DATE_RE, `docs/`, Pages |
+| 29 Aug vs 0xWast3 | `research/random-thoughts/2026-08-29-aea-vs-wast3-memory-engineering.md` | DATE_RE, `docs/` |
+| 30 Aug vs 0xWast3 (flags) | `research/2026-08-30-aea-harness-vs-wast3-memory-engineering.md` | DATE_RE, `docs/`, Pages |
+| 30 Aug proposed next playbook | `research/random-thoughts/2026-08-30-aea-framework-harness-engineering.md` | DATE_RE, `docs/`, Pages (proposed, not adopted) |
+| 30 Aug session memory | `research/random-thoughts/2026-08-30-session-memory-log-wast3-harness-compare.md` | DATE_RE, `docs/` |
 | This placement note | `research/random-thoughts/2026-08-28-where-harness-playbook-lives.md` | DATE_RE, `docs/` |
 | PDFs | optional local / chat attachments | git (binaries are not the vault) |
 | Clips | evidence paths, not vault bodies | DATE_RE |

@@ -3,6 +3,7 @@
 > **Draft status**: in progress (not canonical `docs/`)
 > **Successor of**: [[2026-08-28-aea-framework-harness-engineering]] (do not overwrite)
 > **Comparison**: [[2026-08-29-aea-vs-wast3-memory-engineering]]
+> **30 Aug proposed next version**: [[2026-08-30-aea-framework-harness-engineering]] · `research/2026-08-30-aea-harness-vs-wast3-memory-engineering.md`
 > **Backlog**: #288 (this paper) · #289 constraints (evaluate) · #290 relationship graph (evaluate) · #291 session protocol (evaluate) · #292 contradiction surface (evaluate) · #274 DATE_RE one file · #275 prune · #273 / [[CF-054]]
 > **CF-054**: CSS !300 merged; live J1 after CSS Unknown; queue on main is `regressed` after !304
 > **Honesty on this revision**: proposed memory items are **identified**. They are not adopted, not implemented, and not verified. The team evaluates #289–#292.

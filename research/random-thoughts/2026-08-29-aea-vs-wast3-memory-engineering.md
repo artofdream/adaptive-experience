@@ -5,6 +5,7 @@
 > **Source**: 0xWast3, *Memory Engineering for Kimi: Why a 1M-Token Window Isn't Memory, and What Actually Is*, X article 13 Aug 2026, https://x.com/0xWast3/status/2087872696109449303 (article 2087776707063271424). Independently compiled related work. Not Moonshot. Not an AEA result.
 > **AEA paper (28 Aug)**: [[2026-08-28-aea-framework-harness-engineering]]
 > **Successor paper (29 Aug)**: [[2026-08-29-aea-framework-harness-engineering]]
+> **30 Aug re-flag**: `research/2026-08-30-aea-harness-vs-wast3-memory-engineering.md` · [[2026-08-30-aea-framework-harness-engineering]]
 > **CF-054**: **regressed**. Live J1 after !300 Unknown. Do not invent CF-055.
 
 # AEA vs 0xWast3 memory engineering (29 Aug 2026)
