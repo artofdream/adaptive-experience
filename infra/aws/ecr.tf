@@ -34,7 +34,7 @@ resource "aws_ecr_repository" "grafana" {
 }
 
 resource "aws_ecr_lifecycle_policy" "keep_last_20" {
-  for_each   = {
+  for_each = {
     orchestration = aws_ecr_repository.orchestration.name
     bff           = aws_ecr_repository.bff.name
     gateway       = aws_ecr_repository.gateway.name
