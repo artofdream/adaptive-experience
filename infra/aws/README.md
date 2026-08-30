@@ -134,8 +134,13 @@ Gateway task defs set `AEA_GATEWAY_MODE=alb`. The gateway image uses
 
 ## Soft launch
 
-Keep `pilot_ingress_cidrs` as `["0.0.0.0/0"]` for open public access (current
-decision). To restrict later, set office/VPN CIDRs and re-apply.
+`pilot_ingress_cidrs = ["0.0.0.0/0"]` is the **accepted** Path B public shop
+policy (sponsor, 2026-08-30, #335). Risk on the ALB edge is accepted for now
+(DSO profile: public gateway only; BFF/RDS/MSK/LiteLLM stay SG-private; no
+WAF in this Terraform). Re-evaluate and tighten CIDRs only if
+`@aea-devsecops-platform`, `@aea-cost-guardian`, or the sponsor raises a new
+residual. Do not invent office/VPN CIDRs in the meantime. Internal services
+must stay non-public.
 
 ## Path B LiteLLM
 

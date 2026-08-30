@@ -10,7 +10,8 @@ domain_name         = "aea.artof.link"
 # replace the placeholders. Never commit a live ARN or account id.
 acm_certificate_arn = "arn:aws:acm:us-east-1:ACCOUNT_ID:certificate/CERTIFICATE_ID"
 container_image_tag = "latest" # Prefer a git SHA from cloud build-ecr for real deploys
-# Public web: ALB open to the internet (soft-launch CIDR restriction not used).
+# Public Path B shop (accepted 2026-08-30, #335). Re-evaluate only if DSO,
+# Cost Guardian, or the sponsor raises a new residual.
 pilot_ingress_cidrs = ["0.0.0.0/0"]
 db_instance_class   = "db.t4g.medium"
 # Pilot Kafka: 2 brokers / RF=2 / MinISR=1 (must match the two private subnets).
