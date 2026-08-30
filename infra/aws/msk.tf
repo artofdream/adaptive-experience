@@ -72,7 +72,7 @@ resource "aws_cloudwatch_log_group" "msk" {
 }
 
 resource "aws_msk_cluster" "main" {
-  cluster_name           = "${local.prefix}-kafka"
+  cluster_name = "${local.prefix}-kafka"
   # MSK recommended string is 3.9.x (not 3.9.0). AWS Health: 3.6.0 EOL 8 Sep 2026.
   kafka_version          = "3.9.x"
   number_of_broker_nodes = var.msk_broker_nodes
