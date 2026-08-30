@@ -27,7 +27,7 @@ class J2ReorderShopperJourney(SequentialTaskSet):
 
 class J3SupportLiveChatJourney(SequentialTaskSet):
     @task
-    def ask_delivery_faq*self):
+    def ask_delivery_faq(self):
         self.client.get("/api/v1/support/faq?q=delivery_policy", name="J3: Ask Delivery FAQ")
 
     @task
