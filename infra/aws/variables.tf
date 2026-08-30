@@ -57,8 +57,12 @@ variable "vpc_cidr" {
 
 variable "pilot_ingress_cidrs" {
   type        = list(string)
-  description = "CIDRs allowed to reach the ALB during soft launch. Use [\"0.0.0.0/0\"] only when opening publicly."
+  description = "CIDRs allowed to reach the public ALB. Path B shop policy accepted 2026-08-30: keep [\"0.0.0.0/0\"]. Re-evaluate only if @aea-devsecops-platform, @aea-cost-guardian, or the sponsor raises a new residual. Private office/VPN CIDRs remain valid later; do not invent them here."
   default     = ["0.0.0.0/0"]
+  validation {
+    condition     = length(var.pilot_ingress_cidrs) > 0
+    error_message = "pilot_ingress_cidrs must be a non-empty list. Public Path B uses [\"0.0.0.0/0\"]; omit is not allowed once this variable is set in tfvars."
+  }
 }
 
 variable "db_instance_class" {
