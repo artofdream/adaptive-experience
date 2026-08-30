@@ -24,6 +24,7 @@ from check_secrets_posture import (
     check_unignored_secret_candidates,
     is_secret_candidate_name,
     main,
+    path_ignored_by_gitignore,
 )
 
 
@@ -192,6 +193,30 @@ class TestSecretCandidateFixtures(unittest.TestCase):
         _write(self.root / "certs/dev.pem", CANARY)
         _write(self.root / "certs/dev.key", CANARY)
         ok, errors = check_unignored_secret_candidates(self.root)
+        self.assertTrue(ok, errors)
+        self.assertEqual(errors, [])
+
+    def test_walk_fallback_fails_on_unignored_google_services(self):
+        _write(self.root / ".gitignore", ".env\n")
+        _write(
+            self.root / "app/google-services.json",
+            f'{{"current_key":"{CANARY}"}}\n',
+        )
+        ok, errors = check_unignored_secret_candidates(self.root, prefer_walk=True)
+        self.assertFalse(ok)
+        joined = "\n".join(errors)
+        self.assertIn("google-services.json", joined)
+        self.assertNotIn(CANARY, joined)
+
+    def test_walk_fallback_respects_gitignore(self):
+        _write(self.root / ".env", f"SECRET={CANARY}\n")
+        _write(
+            self.root / "app/google-services.json",
+            f'{{"current_key":"{CANARY}"}}\n',
+        )
+        self.assertTrue(path_ignored_by_gitignore(".env", self.root))
+        self.assertTrue(path_ignored_by_gitignore("app/google-services.json", self.root))
+        ok, errors = check_unignored_secret_candidates(self.root, prefer_walk=True)
         self.assertTrue(ok, errors)
         self.assertEqual(errors, [])
 
