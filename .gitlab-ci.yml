@@ -287,6 +287,15 @@ android-build-debug:
   before_script:
     - cd clients/mobile/android
     - java -version
+    # Protected file variable name: GOOGLE_SERVICES_JSON (sponsor pastes).
+    # Never attach the live file as an artifact. Dummy example keeps assemble
+    # compiling when the variable is still missing.
+    - |
+      if [ -n "${GOOGLE_SERVICES_JSON:-}" ] && [ -f "${GOOGLE_SERVICES_JSON}" ]; then
+        cp "${GOOGLE_SERVICES_JSON}" app/google-services.json
+      else
+        cp app/google-services.json.example app/google-services.json
+      fi
   script:
     # cimg/android runs as circleci; GitLab checkout is root-owned, so chmod +x
     # fails with Operation not permitted. Invoke via sh (file is 100644).
