@@ -91,9 +91,9 @@ To validate requirement execution across active tiles (T-01 through T-09), the d
   those controls; it does not defer their first implementation until the end of
   the MVP.
 - M8–M12 are delivery milestones pulled from Future. They do not promote
-  those requirements to MVP in the workbook. M8 first slices (#190 same-session
-  T-03 hint, #193 durable same-browser recall) may land before the rest of
-  FR-008. Do not start M12 while M8 is open. AWS stays parked and is not a
-  milestone.
+  those requirements to MVP in the workbook. M8 (returning shopper / FR-008)
+  and M12 (engagement CRM / FR-016, FR-017) are Completed delivery labels;
+  staff live chat and ticketing remain M16 reference-extension scope. AWS
+  Path B is unparked and is not a milestone.
 
 

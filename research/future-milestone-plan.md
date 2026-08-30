@@ -19,15 +19,15 @@ Workbook MVP/Future split does not change. No new FR/NFR IDs.
 | **M12** | Engagement CRM | FR-016, FR-017 |
 
 Unscheduled Future Backlog: voice, semantic caching, progressive hydration,
-other industries, AWS unpark.
+other industries. AWS Path B is unparked (not a milestone).
 
 ## M8 slices (specialists open their own issues)
 
-Parent #27 stays open.
+Parent #27 stays open as workbook Future; roadmap delivery labels for M8
+and M12 are Completed. Do not treat the old “Do not start M12 while M8 is
+open” sequencing command as current.
 
-1. #190 / !194 — same-session ranking hint (in flight).
+1. #190 / !194 — same-session ranking hint (merged).
 2. Durable prior-order recall — no login. Child of #27.
 3. Reorder from recalled product + destination reference (ADR-013).
 4. Modify-before-reorder.
-
-Do not start M12 while M8 is open.
