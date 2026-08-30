@@ -18,6 +18,8 @@ __pycache__/
 *.key
 *.tfvars
 !.*.tfvars.example
+**/google-services.json
+!**/google-services.json.example
 
 # Terraform plugin cache / working directory (never commit)
 .terraform/
