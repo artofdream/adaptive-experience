@@ -69,7 +69,7 @@ completed rows because the queue is also the audit trail.
 | 53 | CF-053 | M17 calls pgvector Future although migration 013 and local Compose already enable the retrieval extension | Medium | verified | 2026-08-23 | 2026-08-27 | `docs/07-roadmap/roadmap.md` · `platform/migrations/013_retrieval_pgvector.sql` |
 | 54 | CF-054 | Path B phone copies the 7-step desktop Adaptive Workspace; dual viewport (phone linear, desktop spatial) not used (J1–J4 clips 2026-08-27) | Medium | regressed | 2026-08-27 | 2026-08-28 | #273 / #272 · !298 !299 !300 (CSS merged; clip after CSS Unknown) |
 | 55 | CF-055 | Public framework docs use undefined terms (Path B, CF-NNN, ID freeze) with no glossary or first-use links | Low | verified | 2026-08-29 | 2026-08-31 | #300 · !331 (glossary on main; not a contradiction CF) |
-| 56 | CF-056 | Same incident named two ways across pages ("Daily-brief honesty" vs. "Claim vs probe") with no cross-link | Low | queued | 2026-08-29 | 2026-08-29 | none |
+| 56 | CF-056 | Same incident named two ways across pages ("Daily-brief honesty" vs. "Claim vs probe") with no cross-link | Low | in-mr | 2026-08-29 | 2026-08-31 | #342 · !361 |
 
 Allowed statuses: `queued`, `investigating`, `ready`, `in-progress`, `in-mr`,
 `verified`, `regressed`, `duplicate`, `not-reproducible`, and `blocked`.

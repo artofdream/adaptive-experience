@@ -34,7 +34,7 @@ The fourteen named responsibility lenses AEA organizes work through — not fift
 
 A verification action: reproducing a claim on the same journey and the same viewport as the claim it checks, or a mechanical/computational check — rather than inferring status from an artifact like a closed ticket or a merged CSS change.
 
-- Example: see the [journal](journal.html#claim-vs-probe)'s "Claim vs probe" episode, or the Honesty section of the [comparison](comparison.html#core-principles) page.
+- Example: see the [journal](journal.html#claim-vs-probe)'s "Claim vs probe" episode (the comparison page names the same incident [Daily-brief honesty](comparison.html#what-aea-claims-here)), or the Honesty section of the [comparison](comparison.html#core-principles) page.
 - Source: AEA original term. Related idea in cited external work: Birgitta Böckeler, "Harness Engineering for Coding Agent Users," martinfowler.com, Apr 2026 (computational sensors over asking a model if it "feels" done); Mitchell Hashimoto, "My AI Adoption Journey," mitchellh.com, 5 Feb 2026 (environment/sensor changes, not prompt patches, survive the next session) — both already listed in the [comparison](comparison.html#sources) page's Sources.
 
 Back to the [framework](index.html), the [schema](schema.html), the [comparison](comparison.html), the [Path B case study](path-b.html), or the [journal](journal.html).

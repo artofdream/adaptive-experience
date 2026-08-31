@@ -83,7 +83,7 @@ Only what has a probe, or Unknown:
 
 - The formula and six layers are the public map.
 - Path B exists as a live shop. Dual-viewport is the **intended** presentation.
-- Daily-brief honesty (unprobed status words) was a real finding and was corrected in GitLab.
+- Daily-brief honesty (unprobed status words; same incident as [Claim vs probe](journal.html#claim-vs-probe) in the journal) was a real finding and was corrected in GitLab.
 - Dual-viewport CSS merged. A journey on phone and desktop **after** that CSS is still **Unknown**. Do not round that up to verified.
 
 ## What AEA does not claim here

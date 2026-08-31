@@ -16,6 +16,8 @@ A short public history of Adaptive Experience Architecture: what was hard, what 
 
 ## Claim vs probe
 
+Also named **Daily-brief honesty** on the [comparison](comparison.html#what-aea-claims-here) page — same incident, two titles.
+
 **Challenge.** Status words started standing in for evidence. "Verified" and "shipped" felt finished because a ticket closed.
 
 **Solve.** A status word is a claim. In the same session, point at a probe, or write Unknown.
