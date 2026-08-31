@@ -8,6 +8,19 @@ plugins {
     alias(libs.plugins.firebase.appdistribution)
 }
 
+// Play upload signing (#347). Env only — never a committed keystore.
+// Debug builds stay debug-signed as today when these are unset.
+val uploadKeystorePath = System.getenv("ANDROID_UPLOAD_KEYSTORE")
+val uploadKeystorePassword = System.getenv("ANDROID_UPLOAD_KEYSTORE_PASSWORD")
+val uploadKeyAlias = System.getenv("ANDROID_UPLOAD_KEY_ALIAS")
+val uploadKeyPassword = System.getenv("ANDROID_UPLOAD_KEY_PASSWORD")
+val releaseSigningReady =
+    !uploadKeystorePath.isNullOrBlank() &&
+        !uploadKeystorePassword.isNullOrBlank() &&
+        !uploadKeyAlias.isNullOrBlank() &&
+        !uploadKeyPassword.isNullOrBlank() &&
+        file(uploadKeystorePath).isFile
+
 android {
     namespace = "link.artof.aea.companion"
     compileSdk = 35
@@ -25,6 +38,17 @@ android {
         }
     }
 
+    signingConfigs {
+        if (releaseSigningReady) {
+            create("release") {
+                storeFile = file(requireNotNull(uploadKeystorePath))
+                storePassword = requireNotNull(uploadKeystorePassword)
+                keyAlias = requireNotNull(uploadKeyAlias)
+                keyPassword = requireNotNull(uploadKeyPassword)
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -32,6 +56,9 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            if (releaseSigningReady) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
         debug {
             applicationIdSuffix = ".debug"
@@ -51,6 +78,16 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
+    }
+}
+
+tasks.matching { it.name == "bundleRelease" }.configureEach {
+    doFirst {
+        check(releaseSigningReady) {
+            "bundleRelease requires env ANDROID_UPLOAD_KEYSTORE (keystore file path), " +
+                "ANDROID_UPLOAD_KEYSTORE_PASSWORD, ANDROID_UPLOAD_KEY_ALIAS, and " +
+                "ANDROID_UPLOAD_KEY_PASSWORD. Do not commit a keystore."
         }
     }
 }

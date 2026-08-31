@@ -28,3 +28,37 @@ commit the live file.
 Crashlytics and App Distribution Gradle plugins are wired. No FCM / push
 (ADR-019). Key restriction or rotation stays on #321 as date + package
 only — no key values.
+
+## Signed Play App Bundle (closed testing, #347)
+
+CI job `android-bundle-release` runs Gradle `bundleRelease` for package
+`link.artof.aea.companion` and artifacts `app-release.aab` only. Debug APKs
+stay debug-signed as today. This is not a production track.
+
+The job is **manual** with `allow_failure: true`. It is listed on Android /
+`.gitlab-ci.yml` MRs and on `main` (including web pipelines). It is **not**
+an MR gate. **Protected** CI variables are typically not injected on
+unprotected MR source branches — do not expect this job to produce an `.aab`
+on every MR. The job is created only when `$ANDROID_UPLOAD_KEYSTORE` is set
+in that pipeline; otherwise it is omitted (not a skip-green). Job result is
+Unknown until a run with sponsor-pasted secrets produces the artifact. Play closed-track install
+and Play App Signing SHA-1 in Firebase remain Unknown until a tester can
+install from the closed track.
+
+Release `signingConfig` reads these env vars **only when all are set**:
+
+- `ANDROID_UPLOAD_KEYSTORE` — GitLab **file** variable; Gradle `storeFile`
+- `ANDROID_UPLOAD_KEYSTORE_PASSWORD`
+- `ANDROID_UPLOAD_KEY_ALIAS`
+- `ANDROID_UPLOAD_KEY_PASSWORD`
+
+**Remaining sponsor step:** paste the upload keystore and passwords into
+GitLab CI/CD → Variables (do not paste values in issues, MRs, or chat):
+
+- `ANDROID_UPLOAD_KEYSTORE` — File, protected (binary; masking may not apply)
+- `ANDROID_UPLOAD_KEYSTORE_PASSWORD` — Variable, protected, masked
+- `ANDROID_UPLOAD_KEY_ALIAS` — Variable, protected
+- `ANDROID_UPLOAD_KEY_PASSWORD` — Variable, protected, masked
+
+Do not create those variables from an agent. Do not commit a keystore, PEM,
+or SHA-1. Same paste pattern as `GOOGLE_SERVICES_JSON`.
