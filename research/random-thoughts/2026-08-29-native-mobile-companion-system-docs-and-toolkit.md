@@ -16,8 +16,7 @@ to happen** — not deferred further. Constraints given directly:
 
 - **Gradual implementation.** Not a big-bang native release.
 - **Android first.** iOS sequenced after Android's first phase is validated.
-- **Known blocker named up front**: Google Play Developer account is not
-  yet fully activated — Google confirmation still pending.
+- **Known blocker named up front**: Google Play Developer account **validated 2026-08-31** (sponsor). Remaining Slice D work is first `.aab` / Play App Signing SHA-1 in Firebase / install-from-closed-track — Unknown until a bundle exists ([#346](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/346), [#347](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/347)).
 
 This is a sponsor steer, not yet a `@aea-product-owner` formal go/no-go
 against a named milestone (no milestone exists for this — see §Vision below).
@@ -55,7 +54,7 @@ engineering lead time the moment the account clears.
 | 5 | Phase 0 Android scaffold: Compose + client generated from the existing BFF OpenAPI contract (ADR-008) + J1 happy path only, sideload-only build | No | Not started — depends on #1, #2 landing first | `@aea-senior-software-engineer` |
 | 6 | CI: Android build pipeline + crash reporting (e.g. Firebase Crashlytics) + Firebase App Distribution for internal testers | **No** — Firebase App Distribution and Crashlytics are separate from Play Console | Not started | `@aea-devsecops-platform` |
 | 7 | Native journey-walker port (J1–J4, Compose UI test), parallel to the existing Playwright web walker | No | Not started — depends on #5 existing first | `@aea-senior-software-engineer` / `@aea-customer-journey` |
-| — | Play Console: closed testing track, store listing, signing upload, public rollout | **Yes** | **Blocked** on Google confirmation | `@aea-devsecops-platform` (once unblocked) |
+| — | Play Console: closed testing track, store listing, signing upload, public rollout | **Yes** | Play Developer account validated and Android app created 2026-08-31 (sponsor confirmation; package `link.artof.aea.companion`; display name Lily's Florist Companion; closed testers email list exists). Store listing / public rollout still out of this slice. First `.aab`, Play App Signing SHA-1 in Firebase, and install-from-track are **Unknown** (CI on `main` is `assembleDebug` APK only). Probe: [#346](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/346). Follow-on bundle: [#347](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/347). | `@aea-devsecops-platform` |
 
 **Dependency order** (docs before code, always): `1, 2, 3, 4` (docs-only, no
 Docker integration, can run in parallel) → `5, 6` (5 needs 1+2 merged; 6 has
@@ -70,9 +69,7 @@ rough relative sizing, not a date commitment:
 - **Slice B (build, parallel where possible)**: item 6 can start the moment
   Slice A starts (no dependency). Item 5 waits on ADRs 1+2.
 - **Slice C (validate)**: item 7, after item 5 has a running scaffold.
-- **Slice D (blocked, external)**: Play Console track — starts the instant
-  Google confirms, with zero engineering delay *if* Slices A–C are already
-  done by then. This is the entire point of doing A–C now.
+- **Slice D (Play Console, in progress)**: account + app + closed testers list exist 2026-08-31 ([#346](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/346)). Do not claim testers can install, and do not claim SHA-1 is in Firebase, until a first `.aab` is uploaded ([#347](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/347)).
 
 ### Sign-off
 
@@ -362,7 +359,7 @@ Phasing that works whether or not the Play account activates on time:
 
 | Blocker | Owner | Blocks | Wait tag |
 |---|---|---|---|
-| Google Play Developer account not yet fully activated (Google confirmation pending) | Sponsor | Phase 1 closed testing and Phase 2 public release **only** — does not block Phase 0 (sideload/Firebase) or any design/dev work | `user` |
+| Google Play Developer account was the named blocker; validated 2026-08-31 | Sponsor (done) | Remaining: first `.aab` + SHA-1 + closed-track install ([#347](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/347)) — does not block Phase 0 (sideload/Firebase) | `user` (keystore / first Play upload if Console requires Google login) |
 | No named milestone yet (M19 not added to roadmap.md) | `@aea-product-owner` | Any bench assignment — PM cannot pull-forward unscoped work, only prep for a *named* milestone | `main`-adjacent process gate, not a stakeholder wait tag |
 | No ADRs yet for native client architecture, mobile session/auth, or push | `@aea-senior-software-engineer` (draft) → review | Any code landing, even Phase 0 — "fit existing ADRs" means these get written *before* the first native commit, not after | — |
 
