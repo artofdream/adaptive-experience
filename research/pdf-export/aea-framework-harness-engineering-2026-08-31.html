@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Adaptive Experience Architecture — Harness Engineering (31 Aug 2026)</title>
+<style>
+@page {
+    size: A4;
+    margin: 20mm 15mm 20mm 15mm;
+    @bottom-right {
+        content: counter(page) " / " counter(pages);
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        font-size: 8pt;
+        color: #6b665c;
+    }
+}
+body {
+    font-family: Palatino, "Times New Roman", Georgia, serif;
+    color: #1c2024;
+    background-color: #ffffff;
+    line-height: 1.55;
+    font-size: 10pt;
+    margin: 0;
+}
+h1 {
+    font-size: 18pt;
+    color: #1c2024;
+    border-bottom: 2px solid #9c7c38;
+    padding-bottom: 6px;
+    margin-top: 0;
+    margin-bottom: 12pt;
+    font-family: Palatino, serif;
+}
+h2 {
+    font-size: 13pt;
+    color: #9c7c38;
+    border-bottom: 1px solid #e3ded2;
+    padding-bottom: 4px;
+    margin-top: 16pt;
+    margin-bottom: 8pt;
+    page-break-after: avoid;
+}
+h3 {
+    font-size: 11pt;
+    color: #1c2024;
+    margin-top: 12pt;
+    margin-bottom: 6pt;
+    page-break-after: avoid;
+}
+h4 {
+    font-size: 10pt;
+    color: #6b665c;
+    margin-top: 10pt;
+    margin-bottom: 4pt;
+}
+code {
+    background-color: #efebe0;
+    color: #1c2024;
+    font-family: ui-monospace, Menlo, Monaco, Consolas, monospace;
+    font-size: 8.5pt;
+    padding: 1px 4px;
+    border-radius: 3px;
+}
+pre {
+    background-color: #fbf8f1;
+    border: 1px solid #e3ded2;
+    padding: 8px 12px;
+    border-radius: 4px;
+    overflow: auto;
+    font-size: 8pt;
+    font-family: ui-monospace, Menlo, Monaco, Consolas, monospace;
+    line-height: 1.35;
+    page-break-inside: avoid;
+    white-space: pre-wrap;
+}
+pre code {
+    background-color: transparent;
+    padding: 0;
+}
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 12pt 0;
+    font-size: 8.5pt;
+    font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+    page-break-inside: avoid;
+}
+th, td {
+    border: 1px solid #e3ded2;
+    padding: 5px 8px;
+    text-align: left;
+}
+th {
+    background-color: #efebe0;
+    color: #1c2024;
+    font-weight: 600;
+}
+blockquote {
+    border-left: 3px solid #9c7c38;
+    background-color: #fbf8f1;
+    color: #6b665c;
+    margin: 10pt 0;
+    padding: 6px 12px;
+    font-style: italic;
+    font-size: 9pt;
+}
+a {
+    color: #1b6b93;
+    text-decoration: none;
+}
+hr {
+    border: 0;
+    border-top: 1px solid #e3ded2;
+    margin: 16pt 0;
+}
+p {
+    margin: 6pt 0;
+}
+</style>
+</head>
+<body>
+<p>﻿&gt; <strong>Tags</strong>: #aea #second-brain #harness #path-b #knowledge-first #kocer</p>
+<blockquote>**Captured**: 2026-08-31</blockquote>
+<blockquote>**Draft status**: in progress (not canonical `docs/`)</blockquote>
+<blockquote>**Successor of**: [[2026-08-29-aea-framework-harness-engineering]] (do not overwrite)</blockquote>
+<blockquote>**Comparisons**: [[2026-08-31-aea-vs-kocer-five-layers-agent-engineering]], [[2026-08-29-aea-vs-wast3-memory-engineering]]</blockquote>
+<blockquote>**Related**: #337 (this paper revision) · #289 · #290 · #291 · #292 · #307 · #308</blockquote>
+<blockquote>**Honesty on this revision**: Kocer 5-layer nesting is **integrated as an architectural taxonomy**. Proposed runtime components (Context Curator, Orthogonal Reviewer Node) are **identified and proposed**. They are not in production.</blockquote>
+<h1>Production Experience Engineering Practice 2026</h1>
+<h1>Adaptive Experience Architecture</h1>
+<h2>Adaptive Experience = Shared Understanding + Domain Services + Outer Harness</h2>
+<h3>Revision of 31 August 2026 (Europe/Berlin) — Five Concentric Floors of Agent Engineering</h3>
+<p><em>Instantiated on Lily&#x27;s Florist Path B (Art of Group). Canonical remote: GitLab https://gitlab.com/artof-group/adaptive-experience-architecture. Live shop: https://aea.artof.link. Live documentation: https://architecture.artof.link. Tracker is GitLab (<code>glab</code>), not GitHub.</em></p>
+<p><em>Independently compiled — Art of Group / AEA knowledge guardian — not affiliated with Google, OpenAI, Anthropic, HashiCorp, or Moonshot AI. This revision synthesizes related work from Hashimoto [1], 0xWast3 (Memory Engineering, 13 Aug 2026) [19], and Kocer (Five Layers of Agent Engineering, 30 Aug 2026) [21].</em></p>
+<p><em>Vault: #aea. Existing IDs only: [[FR-001]] [[FR-003]] [[FR-007]] [[FR-008]] [[FR-009]] [[FR-011]] [[NFR-005]] [[NFR-009]] [[NFR-017]] [[J1]] [[J2]] [[J3]] [[J4]] [[CF-048]] [[CF-054]] [[CF-055]]. Do not invent fake IDs. Do not paste this into DATE_RE.</em></p>
+<hr>
+<h2>Abstract</h2>
+<p>The 28 Aug edition stated the core formula and mapped AEA onto six harness layers. The 29 Aug revision integrated memory engineering primitives (context is not memory; procedure vs. correction vs. relationship). This <strong>31 Aug 2026 revision</strong> incorporates Kocer&#x27;s unifying insight [21]: <strong>harness, loop, and graph are not competing choices; they are five concentric wrapping floors</strong>. </p>
+<p>Each layer wraps and assumes the stability of the floor beneath it:</p>
+<p>1. <strong>01 | Prompt Engineering</strong> (The Message) wraps the raw model.</p>
+<p>2. <strong>02 | Context Engineering</strong> (The Memory / Curator) wraps the prompt.</p>
+<p>3. <strong>03 | Harness Engineering</strong> (The Machine / Execution Environment) wraps context.</p>
+<p>4. <strong>04 | Loop Engineering</strong> (The System / Goal + Iterations + Budget) wraps the harness.</p>
+<p>5. <strong>05 | Graph Engineering</strong> (The Topology / Multi-Node Orchestration + Reviewer) wraps the loop.</p>
+<p>AEA adopts this 5-floor wrapping hierarchy within its <strong>Outer Harness</strong>, while maintaining its fundamental architectural differentiator: <strong>the cognitive stack is anchored to deterministic Domain Services (PostgreSQL, Kafka, pricing, fail-closed inventory)</strong> rather than operating in an ungrounded hallucination loop.</p>
+<hr>
+<h2>I. WHAT THIS REVISION CHANGES</h2>
+<table><thead><tr><th>Kept from 28 &amp; 29 Aug</th><th>Added 31 Aug (Kocer Pass)</th><th>Proposed Extensions</th></tr></thead><tbody>
+<tr><td>Core Formula: `SU + Domain Services + Outer Harness`</td><td>Concentric 5-Floor Hierarchy (Prompt $\to$ Context $\to$ Harness $\to$ Loop $\to$ Graph) [21]</td><td>Layer 02 Dynamic Context Curator component</td></tr>
+<tr><td>6 Outer Harness Layers (Guides, Sensors, Loop, Memory, Permissions, Observability)</td><td>Resolves &quot;Harness vs Loop vs Graph&quot; as nested wrapping floors</td><td>Layer 05 Orthogonal Reviewer Node with fresh context</td></tr>
+<tr><td>14 Stakeholder Roles &amp; MRC Auto-Merge Gate</td><td>Layer Failure Root-Cause Principle (&quot;Skip Layer 2 $\to$ Layer 3/5 fails&quot;)</td><td>Concentric Stack Diagnostic Sensor</td></tr>
+<tr><td>Deterministic Domain Services (PostgreSQL 16, Kafka, Fail-Closed)</td><td>Economic Moat Law: Model is commodity (1-day swap); Stack is IP (1-quarter swap)</td><td>Formalized in GitLab Backlog</td></tr>
+</tbody></table>
+<hr>
+<h2>II. THE UNIFIED FIVE-FLOOR WRAPPING STACK IN AEA</h2>
+<pre><code>┌────────────────────────────────────────────────────────────────────────────────────────┐
+│ 05 | GRAPH ENGINEERING (Stakeholder Topology &amp; Orthogonal Review)                      │
+│      • 14 Specialized Roles (@aea-*) + Typed Edges (derived_from, constrains, verifies)│
+│      • Independent Reviewer Gate (MRC / GitLab Duo / CI Quality Ratchet)               │
+│  ┌──────────────────────────────────────────────────────────────────────────────────┐  │
+│  │ 04 | LOOP ENGINEERING (The System Run &amp; Coherence Finding Cycles)                │  │
+│  │      • Single-Finding Invariant: 1 Finding -&gt; 1 Issue -&gt; 1 Branch -&gt; 1 MR        │  │
+│  │      • Execution Budgets, Cadence Ticks, &amp; Max Iteration Bounds                  │  │
+│  │  ┌────────────────────────────────────────────────────────────────────────────┐  │  │
+│  │  │ 03 | HARNESS ENGINEERING (The Execution Machine &amp; Pre-Flight Verifiers)    │  │  │
+│  │  │      • Edge BFF + Gateway + LiteLLM Mock/Live Proxy (ADR-016)              │  │  │
+│  │  │      • 14/14 Pre-Flight Quality Guards (scripts/run_all_guards.py)         │  │  │
+│  │  │  ┌──────────────────────────────────────────────────────────────────────┐  │  │  │
+│  │  │  │ 02 | CONTEXT ENGINEERING (The Memory &amp; Curator Layer)                │  │  │  │
+│  │  │  │      • Read-Before / Write-After Session Memory Protocol             │  │  │  │
+│  │  │  │      • Second Brain Vault (research/random-thoughts/) + Daily Briefs │  │  │  │
+│  │  │  │      • Dynamic Pruning, Compression, &amp; Negative Constraints Memory   │  │  │  │
+│  │  │  │  ┌────────────────────────────────────────────────────────────────┐  │  │  │  │
+│  │  │  │  │ 01 | PROMPT ENGINEERING (The Role &amp; Message Boundary)          │  │  │  │  │
+│  │  │  │  │      • Canonical System Prompts (.cursor/skills/aea-*/SKILL.md)   │  │  │  │  │
+│  │  │  │  │      • Single Primary CTA, Zero-PII, &amp; Anti-Hallucination Rules   │  │  │  │  │
+│  │  │  │  └────────────────────────────────────────────────────────────────┘  │  │  │  │
+│  │  │  └──────────────────────────────────────────────────────────────────────┘  │  │  │
+│  │  └────────────────────────────────────────────────────────────────────────────┘  │  │
+│  └──────────────────────────────────────────────────────────────────────────────────┘  │
+└────────────────────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼ Anchored via Type-Safe Contracts to
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│ DETERMINISTIC DOMAIN SERVICES (The Source of Truth)                                    │
+│ • PostgreSQL 16 Datastore (Unified Session State &amp; pgvector semantic embeddings)       │
+│ • Amazon MSK / Kafka Event Streaming &amp; Transactional Outbox (ADR-008)                  │
+│ • Fail-Closed Inventory Availability (NFR-009) &amp; Zero-PII Payment Simulation (NFR-017) │
+└────────────────────────────────────────────────────────────────────────────────────────┘</code></pre>
+<hr>
+<h2>III. THE CONCENTRIC LAYER INVARIANTS</h2>
+<p>Kocer&#x27;s analysis provides three architectural laws that govern this revision:</p>
+<h3>Law 1: The Dependency of Higher Floors</h3>
+<p>Layer 5 assumes Layer 4 works. Layer 4 assumes Layer 3 works. Layer 3 assumes Layer 2 works. Layer 2 assumes Layer 1 works.</p>
+<p>* If a multi-agent graph or reviewer node produces erratic outputs, the root cause is almost never the graph topology — it is a context curator failure in Layer 02 (contaminated window, stale state, unpruned tool chatter).</p>
+<h3>Law 2: The Independent Fresh-Context Reviewer</h3>
+<p>In Layer 05, the agent that created an implementation must never be the sole entity that verifies it. Verification requires:</p>
+<p>1. An <strong>orthogonal model instance</strong> (preventing symmetric model-family blindspots).</p>
+<p>2. A <strong>fresh, unpolluted context window</strong> containing only the diff, the requirements, and the verification sensor criteria.</p>
+<h3>Law 3: The Economic Asymmetry</h3>
+<p>* Foundation models are interchangeable commodities (swappable in 1 day via LiteLLM abstraction under <code>ADR-016</code>).</p>
+<p>* The <strong>5-layer wrapping stack, deterministic domain contracts, and Second Brain institutional memory</strong> constitute the durable proprietary asset (swapping takes a quarter).</p>
+<hr>
+<h2>IV. PROPOSED HARNESS EXTENSIONS (HONESTY AUDIT)</h2>
+<p>The following enhancements are <strong>identified and proposed</strong> for evaluation by the stakeholder team:</p>
+<p>1. <strong>Layer 02 Runtime Context Curator (<code>platform/agent/context_curator.py</code>)</strong>:</p>
+<p>   * Programmatic pre-prompt pipeline that compresses prior conversational turns, prunes voluminous tool logs, and injects only relevant negative constraints before LLM calls.</p>
+<p>2. <strong>Layer 05 Orthogonal Reviewer Gate</strong>:</p>
+<p>   * Automated CI/MRC gate invoking an isolated reviewer agent with fresh context to audit MR diffs against canonical requirements before auto-merge.</p>
+<p>3. <strong>Concentric Stack Diagnostic Sensor (<code>scripts/check_agent_stack_layers.py</code>)</strong>:</p>
+<p>   * Pre-flight diagnostic tool checking lower-layer invariants before allowing loop/graph ticks.</p>
+<hr>
+<h2>V. REFERENCES</h2>
+<p>[1] Hashimoto, M., <em>Agent Harness Design &amp; The Ratchet Principle</em>, 2026.  </p>
+<p>[2]–[18] Canonical architectural references as in [[2026-08-28-aea-framework-harness-engineering]].  </p>
+<p>[19] 0xWast3 (wast3), <em>Memory Engineering for Kimi</em>, X article, 13 Aug 2026.  </p>
+<p>[20] GitLab Issues #288–#292 (Memory Engineering evaluations).  </p>
+<p>[21] Kocer (@kocer_eth), <em>Five Layers of Agent Engineering: Each One Wraps the One Below It</em>, X post/article, 30 Aug 2026, https://x.com/kocer_eth/status/2094053231949177111.</p>
+</body>
+</html>
