@@ -1,8 +1,8 @@
 # Stack
 
-This page is the high-level design **used so far**. The formula and layers stay on the [schema](schema.html). Dual-viewport after CSS remains **Unknown**. Payment is still a mockup.
+This page is the high-level design **used so far**, plus an intended native to-be. The formula and layers stay on the [schema](schema.html). Dual-viewport after CSS remains **Unknown**. Payment is still a mockup.
 
-[Two hostnames](#two-hostnames) · [This site](#this-site) · [Florist runtime](#florist-runtime) · [Honesty](#honesty)
+[Two hostnames](#two-hostnames) · [This site](#this-site) · [Florist runtime](#florist-runtime) · [As-is HLD](#as-is-hld) · [As-is flow](#as-is-flow) · [Native to-be](#native-to-be) · [Honesty](#honesty)
 
 ## Two hostnames
 
@@ -33,11 +33,31 @@ A laptop path exists too: Docker Compose with the same edge / BFF / platform spl
 
 Probed 29 August 2026: `GET https://aea.artof.link/` returned 200. That is not a dual-viewport probe and not a payment probe.
 
+## As-is HLD
+
+Path B as used so far, through the florist lens. Native is dashed: later client, not this stack.
+
+![Path B high-level design as used so far](assets/path-b-hld-as-is.svg)
+
+## As-is flow
+
+Same path, left to right. This Pages builder does not render mermaid, so the publishable form is SVG. The mermaid source is in the vault note for this finding, not on this page.
+
+![Path B as-is flow from clients through TLS edge, BFF, orchestration, bus, and domain services](assets/path-b-flow-as-is.svg)
+
+## Native to-be
+
+Intended, not a live probe. An Android companion would be another client of the **same** TLS edge and BFF. Domain services, bus, and PostgreSQL stay. It is not a second shop.
+
+A Phase 0 Android scaffold exists in the repository. It is **not** claimed as part of the live florist stack. Companion crash and distribution tooling is still open. Play Store is out of Phase 0.
+
+![Path B to-be high-level design with a native Android companion on the same BFF](assets/path-b-hld-to-be-native.svg)
+
 ## Honesty
 
 - Payment is still a mockup.
 - Dual-viewport after CSS remains **Unknown**.
-- Native mobile is a later client for the same backend, not this stack.
+- Native mobile is a later client for the same backend, not this live stack. The to-be diagram is intended architecture, not a shop probe.
 - This page does not dump internal runbooks, and it does not include 3DX Lab.
 
 See the [schema](schema.html) for the formula, the [Path B case study](path-b.html) for the florist journeys, or the [journal](journal.html) for how this was learned.

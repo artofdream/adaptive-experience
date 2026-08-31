@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 980" width="100%" height="100%">
+  <rect width="1280" height="980" rx="8" fill="#121417"/>
+  <rect x="1" y="1" width="1278" height="978" rx="7" fill="none" stroke="#2a2e33" stroke-width="1.5"/>
+  <text x="640" y="38" fill="#e7e4dc" font-family="Palatino, Times New Roman, serif" font-size="26" font-weight="bold" text-anchor="middle">AEA framework HLD — Path B to-be (native included)</text>
+  <text x="640" y="62" fill="#c4b08a" font-family="ui-sans-serif, system-ui, sans-serif" font-size="14" text-anchor="middle">TO-BE — intended architecture, not a live probe</text>
+  <text x="640" y="84" fill="#9a9588" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" text-anchor="middle">Same TLS edge, BFF, bus, domain services, and PostgreSQL. Native is another client of that BFF, not a second shop.</text>
+
+  <rect x="40" y="106" width="380" height="148" rx="8" fill="#181c22" stroke="#383e47"/>
+  <text x="230" y="132" fill="#9a9588" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" text-anchor="middle" letter-spacing="1.4">PUBLIC FRAMEWORK SURFACE</text>
+  <text x="230" y="158" fill="#e7e4dc" font-family="ui-monospace, monospace" font-size="15" font-weight="bold" text-anchor="middle">architecture.artof.link</text>
+  <text x="60" y="186" fill="#9a9588" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13">Unchanged. GitLab Pages, not the shop.</text>
+  <text x="60" y="208" fill="#9a9588" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13">Native does not publish here.</text>
+  <text x="60" y="230" fill="#9a9588" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13">Probe 29 Aug 2026: GET / → 200</text>
+
+  <rect x="450" y="106" width="790" height="148" rx="8" fill="#181c22" stroke="#c4b08a" stroke-width="1.5"/>
+  <text x="845" y="132" fill="#c4b08a" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" text-anchor="middle" letter-spacing="1.4">PATH B RUNTIME — SAME BACKEND</text>
+  <text x="845" y="158" fill="#e7e4dc" font-family="ui-monospace, monospace" font-size="15" font-weight="bold" text-anchor="middle">aea.artof.link</text>
+  <text x="470" y="186" fill="#9a9588" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13">Browser workspace stays. Android companion is intended as another client of the same BFF.</text>
+  <text x="470" y="208" fill="#9a9588" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13">Sideload first. Play Store is out of Phase 0. Companion telemetry is not this florist stack.</text>
+  <text x="470" y="230" fill="#9a9588" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13">Not verified as a live shop client. Domain services still decide.</text>
+
+  <rect x="40" y="278" width="200" height="222" rx="8" fill="#181c22" stroke="#c4b08a"/>
+  <text x="140" y="304" fill="#c4b08a" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" text-anchor="middle" letter-spacing="1.2">CLIENTS</text>
+  <rect x="56" y="322" width="168" height="40" rx="5" fill="#1e232b" stroke="#2a2e33"/>
+  <text x="140" y="347" fill="#e7e4dc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" text-anchor="middle">Desktop 16:9 workspace</text>
+  <rect x="56" y="372" width="168" height="40" rx="5" fill="#1e232b" stroke="#2a2e33"/>
+  <text x="140" y="397" fill="#e7e4dc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" text-anchor="middle">Mobile 9:16 concierge</text>
+  <rect x="56" y="422" width="168" height="56" rx="5" fill="#1e232b" stroke="#c4b08a"/>
+  <text x="140" y="446" fill="#e7e4dc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" text-anchor="middle">Android companion</text>
+  <text x="140" y="464" fill="#c4b08a" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" text-anchor="middle">INTENDED · same BFF</text>
+
+  <rect x="268" y="348" width="168" height="108" rx="8" fill="#181c22" stroke="#c4b08a"/>
+  <text x="352" y="378" fill="#c4b08a" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" text-anchor="middle">TLS EDGE</text>
+  <text x="352" y="404" fill="#e7e4dc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" text-anchor="middle">Public HTTPS LB</text>
+  <text x="352" y="426" fill="#9a9588" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" text-anchor="middle">Same gateway</text>
+
+  <line x1="240" y1="402" x2="268" y2="402" stroke="#c4b08a" stroke-width="1.5"/>
+  <polygon points="268,402 260,398 260,406" fill="#c4b08a"/>
+
+  <rect x="464" y="304" width="280" height="196" rx="8" fill="#181c22" stroke="#c4b08a"/>
+  <text x="604" y="330" fill="#c4b08a" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" text-anchor="middle" letter-spacing="1.2">SHARED UNDERSTANDING</text>
+  <rect x="484" y="348" width="240" height="52" rx="5" fill="#1e232b" stroke="#2a2e33"/>
+  <text x="604" y="370" fill="#e7e4dc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" text-anchor="middle">Same BFF</text>
+  <text x="604" y="388" fill="#9a9588" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" text-anchor="middle">Not a second shop backend</text>
+  <rect x="484" y="412" width="240" height="68" rx="5" fill="#1e232b" stroke="#2a2e33"/>
+  <text x="604" y="436" fill="#e7e4dc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" text-anchor="middle">Session memory (agreed state)</text>
+  <text x="604" y="456" fill="#9a9588" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" text-anchor="middle">Reviewable · not invented intent</text>
+
+  <line x1="436" y1="402" x2="464" y2="402" stroke="#c4b08a" stroke-width="1.5"/>
+  <polygon points="464,402 456,398 456,406" fill="#c4b08a"/>
+
+  <rect x="772" y="304" width="236" height="196" rx="8" fill="#181c22" stroke="#383e47"/>
+  <text x="890" y="330" fill="#c4b08a" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" text-anchor="middle" letter-spacing="1.2">INTERPRET  ·  PRIVATE</text>
+  <rect x="792" y="348" width="196" height="52" rx="5" fill="#1e232b" stroke="#2a2e33"/>
+  <text x="890" y="370" fill="#e7e4dc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" text-anchor="middle">Orchestration</text>
+  <text x="890" y="388" fill="#9a9588" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" text-anchor="middle">Unchanged path</text>
+  <rect x="792" y="412" width="196" height="68" rx="5" fill="#1e232b" stroke="#2a2e33"/>
+  <text x="890" y="436" fill="#e7e4dc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" text-anchor="middle">Model gateway</text>
+  <text x="890" y="456" fill="#9a9588" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" text-anchor="middle">Still private</text>
+
+  <line x1="744" y1="402" x2="772" y2="402" stroke="#c4b08a" stroke-width="1.5"/>
+  <polygon points="772,402 764,398 764,406" fill="#c4b08a"/>
+
+  <rect x="1036" y="348" width="204" height="108" rx="8" fill="#181c22" stroke="#c4b08a"/>
+  <text x="1138" y="384" fill="#c4b08a" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" text-anchor="middle">CONTRACT BUS</text>
+  <text x="1138" y="410" fill="#e7e4dc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" text-anchor="middle">Kafka-compatible</text>
+  <text x="1138" y="430" fill="#9a9588" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" text-anchor="middle">Not client-reachable</text>
+
+  <line x1="1008" y1="402" x2="1036" y2="402" stroke="#c4b08a" stroke-width="1.5"/>
+  <polygon points="1036,402 1028,398 1028,406" fill="#c4b08a"/>
+
+  <rect x="40" y="528" width="1200" height="196" rx="8" fill="#181c22" stroke="#c4b08a" stroke-width="1.5"/>
+  <text x="640" y="554" fill="#c4b08a" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" text-anchor="middle" letter-spacing="1.4">DOMAIN SERVICES UNCHANGED  ·  AUTHORITATIVE  ·  WRITE POSTGRESQL</text>
+  <g font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" fill="#e7e4dc" text-anchor="middle">
+    <rect x="64" y="576" width="148" height="52" rx="5" fill="#1e232b" stroke="#2a2e33"/><text x="138" y="608">Catalog</text>
+    <rect x="228" y="576" width="148" height="52" rx="5" fill="#1e232b" stroke="#2a2e33"/><text x="302" y="608">Inventory</text>
+    <rect x="392" y="576" width="148" height="52" rx="5" fill="#1e232b" stroke="#2a2e33"/><text x="466" y="608">Recommendations</text>
+    <rect x="556" y="576" width="148" height="52" rx="5" fill="#1e232b" stroke="#2a2e33"/><text x="630" y="608">Pricing</text>
+    <rect x="720" y="576" width="148" height="52" rx="5" fill="#1e232b" stroke="#2a2e33"/><text x="794" y="608">Delivery</text>
+    <rect x="884" y="576" width="148" height="52" rx="5" fill="#1e232b" stroke="#2a2e33"/><text x="958" y="608">Order</text>
+    <rect x="1048" y="576" width="168" height="52" rx="5" fill="#1e232b" stroke="#2a2e33"/><text x="1132" y="608">Payment (mockup)</text>
+  </g>
+  <rect x="228" y="648" width="824" height="52" rx="5" fill="#1e232b" stroke="#2a2e33"/>
+  <text x="640" y="680" fill="#e7e4dc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="14" text-anchor="middle">Managed PostgreSQL  ·  AWS us-east-1  ·  same database</text>
+
+  <line x1="1138" y1="456" x2="1138" y2="528" stroke="#c4b08a" stroke-width="1.5"/>
+  <polygon points="1138,528 1134,520 1142,520" fill="#c4b08a"/>
+  <line x1="890" y1="500" x2="890" y2="528" stroke="#9a9588" stroke-width="1"/>
+  <line x1="604" y1="500" x2="604" y2="528" stroke="#9a9588" stroke-width="1"/>
+
+  <rect x="40" y="748" width="1200" height="88" rx="8" fill="#181c22" stroke="#383e47"/>
+  <text x="640" y="776" fill="#c4b08a" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" text-anchor="middle" letter-spacing="1.4">OUTER HARNESS UNCHANGED</text>
+  <text x="640" y="804" fill="#e7e4dc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" text-anchor="middle">Guides  ·  Sensors  ·  Loop (interpret · act · verify · remember)  ·  Memory  ·  Permissions  ·  Observability</text>
+  <text x="640" y="824" fill="#9a9588" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" text-anchor="middle">Native does not add a second domain path.</text>
+
+  <rect x="40" y="856" width="1200" height="96" rx="8" fill="#16191e" stroke="#c4b08a"/>
+  <text x="640" y="882" fill="#c4b08a" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" text-anchor="middle" letter-spacing="1.4">HONESTY — INTENDED, NOT VERIFIED LIVE</text>
+  <text x="640" y="906" fill="#9a9588" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" text-anchor="middle">A Phase 0 Android scaffold exists in the repo. It is not claimed as part of the live florist stack. Companion crash/distribution tooling is still open work.</text>
+  <text x="640" y="928" fill="#9a9588" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" text-anchor="middle">Payment is still a mockup. Dual-viewport after CSS remains Unknown. Play Store is out of Phase 0. 3DX Lab is out of this picture.</text>
+</svg>

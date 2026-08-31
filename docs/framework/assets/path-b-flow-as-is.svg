@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 360" width="100%" height="100%">
+  <rect width="1280" height="360" rx="8" fill="#121417"/>
+  <rect x="1" y="1" width="1278" height="358" rx="7" fill="none" stroke="#2a2e33" stroke-width="1.5"/>
+  <text x="640" y="42" fill="#e7e4dc" font-family="Palatino, Times New Roman, serif" font-size="24" font-weight="bold" text-anchor="middle">Path B flow — as-is</text>
+  <text x="640" y="66" fill="#9a9588" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" text-anchor="middle">SVG equivalent of the mermaid topology. Native is not in this picture.</text>
+
+  <rect x="36" y="108" width="168" height="56" rx="6" fill="#181c22" stroke="#383e47"/>
+  <text x="120" y="142" fill="#e7e4dc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" text-anchor="middle">Desktop 16:9</text>
+  <rect x="36" y="180" width="168" height="56" rx="6" fill="#181c22" stroke="#383e47"/>
+  <text x="120" y="214" fill="#e7e4dc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" text-anchor="middle">Mobile 9:16</text>
+
+  <line x1="204" y1="136" x2="248" y2="164" stroke="#c4b08a" stroke-width="1.5"/>
+  <line x1="204" y1="208" x2="248" y2="180" stroke="#c4b08a" stroke-width="1.5"/>
+
+  <rect x="248" y="132" width="176" height="80" rx="6" fill="#181c22" stroke="#c4b08a"/>
+  <text x="336" y="164" fill="#c4b08a" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" text-anchor="middle">TLS EDGE</text>
+  <text x="336" y="186" fill="#e7e4dc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" text-anchor="middle">Public HTTPS LB</text>
+
+  <line x1="424" y1="172" x2="456" y2="172" stroke="#c4b08a" stroke-width="1.5"/>
+  <polygon points="456,172 448,168 448,176" fill="#c4b08a"/>
+
+  <rect x="456" y="124" width="220" height="96" rx="6" fill="#181c22" stroke="#c4b08a"/>
+  <text x="566" y="156" fill="#c4b08a" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" text-anchor="middle">BFF</text>
+  <text x="566" y="178" fill="#e7e4dc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" text-anchor="middle">Shared Understanding</text>
+  <text x="566" y="198" fill="#9a9588" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" text-anchor="middle">Session memory</text>
+
+  <line x1="676" y1="172" x2="708" y2="172" stroke="#c4b08a" stroke-width="1.5"/>
+  <polygon points="708,172 700,168 700,176" fill="#c4b08a"/>
+
+  <rect x="708" y="124" width="220" height="96" rx="6" fill="#181c22" stroke="#383e47"/>
+  <text x="818" y="156" fill="#c4b08a" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" text-anchor="middle">ORCHESTRATION</text>
+  <text x="818" y="178" fill="#e7e4dc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" text-anchor="middle">+ model gateway</text>
+  <text x="818" y="198" fill="#9a9588" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" text-anchor="middle">Private · interpret</text>
+
+  <line x1="928" y1="172" x2="960" y2="172" stroke="#c4b08a" stroke-width="1.5"/>
+  <polygon points="960,172 952,168 952,176" fill="#c4b08a"/>
+
+  <rect x="960" y="108" width="280" height="128" rx="6" fill="#181c22" stroke="#c4b08a"/>
+  <text x="1100" y="144" fill="#c4b08a" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="600" text-anchor="middle">BUS + DOMAIN</text>
+  <text x="1100" y="168" fill="#e7e4dc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" text-anchor="middle">Kafka-compatible bus</text>
+  <text x="1100" y="190" fill="#e7e4dc" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" text-anchor="middle">Domain services · PostgreSQL</text>
+  <text x="1100" y="212" fill="#9a9588" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" text-anchor="middle">Browser never talks to these</text>
+
+  <text x="640" y="300" fill="#9a9588" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" text-anchor="middle">Payment mockup. Dual-viewport after CSS remains Unknown. Native later, same BFF, not this stack.</text>
+  <text x="640" y="324" fill="#9a9588" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" text-anchor="middle">This site does not render mermaid. The mermaid source lives in the vault note for this finding.</text>
+</svg>
