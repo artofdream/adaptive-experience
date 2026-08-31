@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>AEA vs Kocer Five Layers of Agent Engineering (31 Aug 2026)</title>
+<style>
+@page {
+    size: A4;
+    margin: 20mm 15mm 20mm 15mm;
+    @bottom-right {
+        content: counter(page) " / " counter(pages);
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        font-size: 8pt;
+        color: #6b665c;
+    }
+}
+body {
+    font-family: Palatino, "Times New Roman", Georgia, serif;
+    color: #1c2024;
+    background-color: #ffffff;
+    line-height: 1.55;
+    font-size: 10pt;
+    margin: 0;
+}
+h1 {
+    font-size: 18pt;
+    color: #1c2024;
+    border-bottom: 2px solid #9c7c38;
+    padding-bottom: 6px;
+    margin-top: 0;
+    margin-bottom: 12pt;
+    font-family: Palatino, serif;
+}
+h2 {
+    font-size: 13pt;
+    color: #9c7c38;
+    border-bottom: 1px solid #e3ded2;
+    padding-bottom: 4px;
+    margin-top: 16pt;
+    margin-bottom: 8pt;
+    page-break-after: avoid;
+}
+h3 {
+    font-size: 11pt;
+    color: #1c2024;
+    margin-top: 12pt;
+    margin-bottom: 6pt;
+    page-break-after: avoid;
+}
+h4 {
+    font-size: 10pt;
+    color: #6b665c;
+    margin-top: 10pt;
+    margin-bottom: 4pt;
+}
+code {
+    background-color: #efebe0;
+    color: #1c2024;
+    font-family: ui-monospace, Menlo, Monaco, Consolas, monospace;
+    font-size: 8.5pt;
+    padding: 1px 4px;
+    border-radius: 3px;
+}
+pre {
+    background-color: #fbf8f1;
+    border: 1px solid #e3ded2;
+    padding: 8px 12px;
+    border-radius: 4px;
+    overflow: auto;
+    font-size: 8pt;
+    font-family: ui-monospace, Menlo, Monaco, Consolas, monospace;
+    line-height: 1.35;
+    page-break-inside: avoid;
+    white-space: pre-wrap;
+}
+pre code {
+    background-color: transparent;
+    padding: 0;
+}
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 12pt 0;
+    font-size: 8.5pt;
+    font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+    page-break-inside: avoid;
+}
+th, td {
+    border: 1px solid #e3ded2;
+    padding: 5px 8px;
+    text-align: left;
+}
+th {
+    background-color: #efebe0;
+    color: #1c2024;
+    font-weight: 600;
+}
+blockquote {
+    border-left: 3px solid #9c7c38;
+    background-color: #fbf8f1;
+    color: #6b665c;
+    margin: 10pt 0;
+    padding: 6px 12px;
+    font-style: italic;
+    font-size: 9pt;
+}
+a {
+    color: #1b6b93;
+    text-decoration: none;
+}
+hr {
+    border: 0;
+    border-top: 1px solid #e3ded2;
+    margin: 16pt 0;
+}
+p {
+    margin: 6pt 0;
+}
+</style>
+</head>
+<body>
+<p>﻿&gt; <strong>Tags</strong>: #aea #second-brain #harness #kocer #architecture #knowledge-first</p>
+<blockquote>**Captured**: 2026-08-31</blockquote>
+<blockquote>**Draft status**: vault note (not canonical `docs/`)</blockquote>
+<blockquote>**Related**: #337 (harness revision) · #288 · #289 · #290 · #291 · #292</blockquote>
+<blockquote>**Source**: kocer (@kocer_eth), *Five Layers of Agent Engineering: Each One Wraps the One Below It*, X post / article, 30 Aug 2026, https://x.com/kocer_eth/status/2094053231949177111. Independently compiled related work. Not endorsed. Not an AEA result.</blockquote>
+<blockquote>**AEA predecessor papers**: [[2026-08-28-aea-framework-harness-engineering]], [[2026-08-29-aea-framework-harness-engineering]]</blockquote>
+<blockquote>**Memory predecessor**: [[2026-08-29-aea-vs-wast3-memory-engineering]]</blockquote>
+<h1>AEA vs. Kocer Five Layers of Agent Engineering (31 Aug 2026)</h1>
+<p>#aea #second-brain</p>
+<hr>
+<h2>1. What Kocer Actually Postulates (The 5 Wrapping Floors)</h2>
+<p>In his 30 Aug 2026 analysis, Kocer resolves the industry debate between &quot;harness vs. loop vs. graph&quot; not as competing paradigms, but as <strong>concentric hierarchical wrapping floors</strong>:</p>
+<pre><code>┌────────────────────────────────────────────────────────────────────────┐
+│ 05 | GRAPH ENGINEERING (The Topology)                                  │
+│      Unit: The Graph Run (Goal + Nodes + Edges + Reviewer Node)        │
+│  ┌──────────────────────────────────────────────────────────────────┐  │
+│  │ 04 | LOOP ENGINEERING (The System)                               │  │
+│  │      Unit: The Run (Goal + Criteria + Iterations + Budget)       │  │
+│  │  ┌────────────────────────────────────────────────────────────┐  │  │
+│  │  │ 03 | HARNESS ENGINEERING (The Machine / Operating Env)     │  │  │
+│  │  │      Unit: The Execution (Context + Prompt -&gt; LLM -&gt; Tools)│  │  │
+│  │  │  ┌──────────────────────────────────────────────────────┐  │  │  │
+│  │  │  │ 02 | CONTEXT ENGINEERING (The Memory)                │  │  │  │
+│  │  │  │      Unit: Window Curator (Select, Compress, Prune)  │  │  │  │
+│  │  │  │  ┌────────────────────────────────────────────────┐  │  │  │  │
+│  │  │  │  │ 01 | PROMPT ENGINEERING (The Message)          │  │  │  │  │
+│  │  │  │  │      Unit: One Input (Role, Task, Rules)       │  │  │  │  │
+│  │  │  │  └────────────────────────────────────────────────┘  │  │  │  │
+│  │  │  └──────────────────────────────────────────────────────┘  │  │  │
+│  │  └────────────────────────────────────────────────────────────┘  │  │
+│  └──────────────────────────────────────────────────────────────────┘  │
+└────────────────────────────────────────────────────────────────────────┘</code></pre>
+<h3>Core Axioms from Kocer:</h3>
+<p>1. <strong>The Wrapping Invariant</strong>: Each layer assumes the one below it functions. If you skip Layer 02 (Context Engineering), Layer 03&#x27;s verifier keeps failing for obscure reasons, and Layer 05 (Graph) looks broken when it is actually standing on nothing.</p>
+<p>2. <strong>Economic Moat</strong>: Swapping the model is a 1-day task; swapping the 5-layer engineering stack takes a quarter. The model is a commodity; the five wrapping layers around it are the actual engineering.</p>
+<p>3. <strong>Orthogonal Reviewer Node</strong>: In Layer 05, the final answer must be verified by an independent reviewer node operating with a <strong>different model</strong> and <strong>fresh context</strong> (zero contaminated history).</p>
+<hr>
+<h2>2. Side-by-Side Architectural Comparison</h2>
+<table><thead><tr><th>Dimension</th><th>Kocer 5-Layer Stack (30 Aug 2026)</th><th>AEA Framework (`Shared Understanding + Domain Services + Outer Harness`)</th><th>Overlap &amp; Contrast</th></tr></thead><tbody>
+<tr><td>**Paradigm**</td><td>Pure agentic cognitive hierarchy (Prompt $\to$ Context $\to$ Harness $\to$ Loop $\to$ Graph).</td><td>Socio-technical product architecture combining transactional services with agentic governance.</td><td>AEA&#x27;s Outer Harness embeds Kocer&#x27;s 5 floors but anchors them to deterministic domain services.</td></tr>
+<tr><td>**Layer 01 (Prompt)**</td><td>Unit of work: One input (role, instructions, format).</td><td>Specialized stakeholder system prompts (14 canonical roles in `.cursor/skills/aea-*/`).</td><td>Identical unit: role + strict instruction boundaries.</td></tr>
+<tr><td>**Layer 02 (Context)**</td><td>Dynamic Curator selects, compresses, and drops prior turns, tools, docs.</td><td>Second Brain Obsidian Vault (`research/random-thoughts/`) + `daily-briefs/` + Read-Before/Write-After SOP.</td><td>Partial overlap. AEA has durable files but lacks an active in-memory runtime curator.</td></tr>
+<tr><td>**Layer 03 (Harness)**</td><td>Gather (context + prompt) $\to$ LLM $\to$ tools $\to$ verifier $\to$ response.</td><td>Edge BFF + Gateway + LiteLLM mock/live proxy (`ADR-016`) + 14 pre-flight quality guards.</td><td>Strong match: AEA&#x27;s `scripts/run_all_guards.py` is the execution verifier.</td></tr>
+<tr><td>**Layer 04 (Loop)**</td><td>Goal + success criteria + max iterations + budget + failure retry.</td><td>Coherence Finding (CF) loop: Intake $\to$ Assessment $\to$ 1-Finding/1-Issue/1-MR $\to$ MRC auto-merge.</td><td>Match: AEA enforces single-finding iterative cycles with strict budget caps.</td></tr>
+<tr><td>**Layer 05 (Graph)**</td><td>Graph run: nodes, edges, state schema + independent fresh-context reviewer node.</td><td>14-role stakeholder graph + Second Brain typed edges (`derived_from`, `constrains`, `verifies`) + MRC merge gate.</td><td>AEA uses human-in-the-loop / role-specialized hats rather than an arbitrary multi-agent swarm.</td></tr>
+<tr><td>**Source of Truth**</td><td>In-memory graph state schema + context window.</td><td>PostgreSQL 16 + Kafka + Git `main` (uncommitted files are never shared memory).</td><td>**AEA Advantage**: Immutable persistent datastores prevent hallucinated state drift.</td></tr>
+<tr><td>**Authoritative Logic**</td><td>Delegated to agent/tool nodes.</td><td>Deterministic Domain Services (pricing, inventory availability, zero-PII checkout).</td><td>**AEA Advantage**: Client/agent presents intent; domain services mutate state.</td></tr>
+</tbody></table>
+<hr>
+<h2>3. Advantages of Kocer&#x27;s Model (Ideas for AEA to Steal)</h2>
+<p>1. <strong>Resolves Harness vs. Loop vs. Graph Debates</strong>: Proves these are not competing architectural alternatives, but concentric floors of abstraction.</p>
+<p>2. <strong>Failure Diagnosis by Layer Root Cause</strong>: Provides a clear diagnostic heuristic: when a complex agent fails, inspect the layer immediately below it (e.g., verifier failure $\to$ context curator deficiency).</p>
+<p>3. <strong>Orthogonal Reviewer Node with Fresh Context</strong>: Prevents self-reinforcing LLM confirmation bias by requiring the final verification pass to run in an isolated environment with a different model family.</p>
+<p>4. <strong>Economic Clarity</strong>: Articulates why investing in the harness/context stack creates durable intellectual property independent of underlying foundation model churn.</p>
+<hr>
+<h2>4. Drawbacks &amp; Gaps of Kocer&#x27;s Model (What AEA Must Not Copy)</h2>
+<p>1. <strong>Absence of Transactional Domain Services</strong>: Kocer models agent workflows as closed cognitive loops. In enterprise products (like Lily&#x27;s Florist), agents cannot be allowed to hallucinate inventory, price calculations, or payment confirmations.</p>
+<p>2. <strong>Missing Deterministic Security &amp; Role Ratchets</strong>: Does not specify permission boundaries, ID freezes, or fail-closed state machines.</p>
+<p>3. <strong>No Presentation / Dual-Viewport Consumer Layer</strong>: Focuses exclusively on backend developer agents, omitting multi-surface adaptive UI rendering.</p>
+<hr>
+<h2>5. Concrete Actionable Gaps Identified for AEA</h2>
+<p>To strengthen AEA&#x27;s Outer Harness against Kocer&#x27;s 5-floor hierarchy:</p>
+<p>1. <strong>Gap 1 (Layer 02 — Context Curator Component)</strong>: Build a dedicated runtime context curator (<code>platform/agent/context_curator.py</code>) that systematically selects, compresses, and prunes context before LLM invocation.</p>
+<p>2. <strong>Gap 2 (Layer 05 — Isolated Reviewer Node with Fresh Context)</strong>: Formalize an independent review gate in CI / MRC that evaluates PR diffs using an orthogonal model in an isolated context window.</p>
+<p>3. <strong>Gap 3 (Concentric Layer Invariant Sensor)</strong>: Add a pre-flight guard that verifies lower-layer health before executing higher-layer loop ticks.</p>
+<p>Existing IDs: [[2026-08-29-harness-memory-engineering-evaluation-synthesis]], [[2026-08-29-parallel-runner-claim-rule]], [[2026-08-29-core-principles-retrospective]].</p>
+</body>
+</html>
