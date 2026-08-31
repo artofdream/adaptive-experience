@@ -325,6 +325,74 @@ android-build-debug:
         - "clients/mobile/android/**/*"
         - ".gitlab-ci.yml"
 
+# Signed Play upload bundle for closed testing (#347). Not production.
+# Artifact is the .aab only. Never attach the keystore or google-services.json.
+# Sponsor pastes CI secrets (same file-variable pattern as GOOGLE_SERVICES_JSON):
+#   ANDROID_UPLOAD_KEYSTORE          file variable (upload keystore bytes)
+#   ANDROID_UPLOAD_KEYSTORE_PASSWORD protected, masked variable
+#   ANDROID_UPLOAD_KEY_ALIAS         protected variable (alias name only)
+#   ANDROID_UPLOAD_KEY_PASSWORD      protected, masked variable
+# Gating: manual + allow_failure. Script exits 0 (honest SKIP) when the
+# keystore vars are absent. Protected CI variables are typically unavailable
+# on unprotected MR source branches — this job is not an MR gate and must not
+# turn MRs red. Do not expect it to run on every MR. Pipeline result of this
+# job is Unknown until a run with sponsor-pasted secrets produces the .aab.
+android-bundle-release:
+  stage: verify
+  image: cimg/android:2024.04
+  timeout: 45m
+  variables:
+    GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+  before_script:
+    - cd clients/mobile/android
+    - java -version
+    # Protected file variable name: GOOGLE_SERVICES_JSON (sponsor pastes).
+    # Never attach the live file as an artifact. Dummy example keeps the
+    # Google Services plugin compiling when the variable is still missing.
+    - |
+      if [ -n "${GOOGLE_SERVICES_JSON:-}" ] && [ -f "${GOOGLE_SERVICES_JSON}" ]; then
+        cp "${GOOGLE_SERVICES_JSON}" app/google-services.json
+      else
+        cp app/google-services.json.example app/google-services.json
+      fi
+  script:
+    - |
+      if [ -z "${ANDROID_UPLOAD_KEYSTORE:-}" ] || [ ! -f "${ANDROID_UPLOAD_KEYSTORE}" ] \
+        || [ -z "${ANDROID_UPLOAD_KEYSTORE_PASSWORD:-}" ] \
+        || [ -z "${ANDROID_UPLOAD_KEY_ALIAS:-}" ] \
+        || [ -z "${ANDROID_UPLOAD_KEY_PASSWORD:-}" ]; then
+        echo "SKIP: upload-keystore CI variables are not available in this pipeline."
+        echo "Protected file/variable secrets are typically unset on unprotected branches."
+        echo "Sponsor must add ANDROID_UPLOAD_KEYSTORE (file), ANDROID_UPLOAD_KEYSTORE_PASSWORD,"
+        echo "ANDROID_UPLOAD_KEY_ALIAS, and ANDROID_UPLOAD_KEY_PASSWORD in GitLab CI/CD settings."
+        echo "Do not paste those values in issues. This skip is not a signed .aab."
+        exit 0
+      fi
+    - sh ./gradlew bundleRelease
+    - test -f app/build/outputs/bundle/release/app-release.aab
+  artifacts:
+    paths:
+      - clients/mobile/android/app/build/outputs/bundle/release/app-release.aab
+    expire_in: 14 days
+    when: on_success
+    optional: true
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      changes:
+        - "clients/mobile/android/**/*"
+        - ".gitlab-ci.yml"
+      when: manual
+      allow_failure: true
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      changes:
+        - "clients/mobile/android/**/*"
+        - ".gitlab-ci.yml"
+      when: manual
+      allow_failure: true
+    - if: '$CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "web"'
+      when: manual
+      allow_failure: true
+
 platform-foundation-integration:
   stage: integration
   image: python:3.12
