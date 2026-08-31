@@ -39,9 +39,9 @@ The job is **manual** with `allow_failure: true`. It is listed on Android /
 `.gitlab-ci.yml` MRs and on `main` (including web pipelines). It is **not**
 an MR gate. **Protected** CI variables are typically not injected on
 unprotected MR source branches — do not expect this job to produce an `.aab`
-on every MR. When the upload-keystore variables are absent the script exits 0
-with an honest SKIP (not a signed bundle). Job result is Unknown until a run
-with sponsor-pasted secrets produces the artifact. Play closed-track install
+on every MR. The job is created only when `$ANDROID_UPLOAD_KEYSTORE` is set
+in that pipeline; otherwise it is omitted (not a skip-green). Job result is
+Unknown until a run with sponsor-pasted secrets produces the artifact. Play closed-track install
 and Play App Signing SHA-1 in Firebase remain Unknown until a tester can
 install from the closed track.
 

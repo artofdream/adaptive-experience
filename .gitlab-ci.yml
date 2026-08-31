@@ -365,8 +365,8 @@ android-bundle-release:
         echo "Protected file/variable secrets are typically unset on unprotected branches."
         echo "Sponsor must add ANDROID_UPLOAD_KEYSTORE (file), ANDROID_UPLOAD_KEYSTORE_PASSWORD,"
         echo "ANDROID_UPLOAD_KEY_ALIAS, and ANDROID_UPLOAD_KEY_PASSWORD in GitLab CI/CD settings."
-        echo "Do not paste those values in issues. This skip is not a signed .aab."
-        exit 0
+        echo "Do not paste those values in issues. This is not a signed .aab."
+        exit 1
       fi
     - sh ./gradlew bundleRelease
     - test -f app/build/outputs/bundle/release/app-release.aab
@@ -375,21 +375,20 @@ android-bundle-release:
       - clients/mobile/android/app/build/outputs/bundle/release/app-release.aab
     expire_in: 14 days
     when: on_success
-    optional: true
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $ANDROID_UPLOAD_KEYSTORE'
       changes:
         - "clients/mobile/android/**/*"
         - ".gitlab-ci.yml"
       when: manual
       allow_failure: true
-    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_BRANCH == "main" && $ANDROID_UPLOAD_KEYSTORE'
       changes:
         - "clients/mobile/android/**/*"
         - ".gitlab-ci.yml"
       when: manual
       allow_failure: true
-    - if: '$CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "web"'
+    - if: '$CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "web" && $ANDROID_UPLOAD_KEYSTORE'
       when: manual
       allow_failure: true
 
