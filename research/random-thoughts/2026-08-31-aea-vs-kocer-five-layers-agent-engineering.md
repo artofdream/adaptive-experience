@@ -1,10 +1,10 @@
 ﻿> **Tags**: #aea #second-brain #harness #kocer #architecture #knowledge-first
 > **Captured**: 2026-08-31
 > **Draft status**: vault note (not canonical `docs/`)
-> **Related**: #337 (harness revision) · #288 · #289 · #290 · #291 · #292
+> **Related**: #341 (honesty) · #337 (PO decisions) · #288 · #289 · #290 · #291 · #292 · #338 parked · #339 rejected · #340 deferred
 > **Source**: kocer (@kocer_eth), *Five Layers of Agent Engineering: Each One Wraps the One Below It*, X post / article, 30 Aug 2026, https://x.com/kocer_eth/status/2094053231949177111. Independently compiled related work. Not endorsed. Not an AEA result.
-> **AEA predecessor papers**: [[2026-08-28-aea-framework-harness-engineering]], [[2026-08-29-aea-framework-harness-engineering]]
-> **Memory predecessor**: [[2026-08-29-aea-vs-wast3-memory-engineering]]
+> **AEA predecessor papers**: [[2026-08-28-aea-framework-harness-engineering]], [[2026-08-29-aea-framework-harness-engineering]], [[2026-08-30-aea-framework-harness-engineering]]
+> **Memory predecessor**: [[2026-08-29-aea-vs-wast3-memory-engineering]], `research/2026-08-31-aea-harness-30aug-vs-31aug.md`
 
 # AEA vs. Kocer Five Layers of Agent Engineering (31 Aug 2026)
 
@@ -52,10 +52,10 @@ In his 30 Aug 2026 analysis, Kocer resolves the industry debate between "harness
 |---|---|---|---|
 | **Paradigm** | Pure agentic cognitive hierarchy (Prompt $\to$ Context $\to$ Harness $\to$ Loop $\to$ Graph). | Socio-technical product architecture combining transactional services with agentic governance. | AEA's Outer Harness embeds Kocer's 5 floors but anchors them to deterministic domain services. |
 | **Layer 01 (Prompt)** | Unit of work: One input (role, instructions, format). | Specialized stakeholder system prompts (14 canonical roles in `.cursor/skills/aea-*/`). | Identical unit: role + strict instruction boundaries. |
-| **Layer 02 (Context)** | Dynamic Curator selects, compresses, and drops prior turns, tools, docs. | Second Brain Obsidian Vault (`research/random-thoughts/`) + `daily-briefs/` + Read-Before/Write-After SOP. | Partial overlap. AEA has durable files but lacks an active in-memory runtime curator. |
+| **Layer 02 (Context)** | Dynamic Curator selects, compresses, and drops prior turns, tools, docs. | DATE_RE + Second Brain vault + session SOP. Runtime curator is K4 **parked** (#338). | Files exist. A curator process does not. |
 | **Layer 03 (Harness)** | Gather (context + prompt) $\to$ LLM $\to$ tools $\to$ verifier $\to$ response. | Edge BFF + Gateway + LiteLLM mock/live proxy (`ADR-016`) + 14 pre-flight quality guards. | Strong match: AEA's `scripts/run_all_guards.py` is the execution verifier. |
 | **Layer 04 (Loop)** | Goal + success criteria + max iterations + budget + failure retry. | Coherence Finding (CF) loop: Intake $\to$ Assessment $\to$ 1-Finding/1-Issue/1-MR $\to$ MRC auto-merge. | Match: AEA enforces single-finding iterative cycles with strict budget caps. |
-| **Layer 05 (Graph)** | Graph run: nodes, edges, state schema + independent fresh-context reviewer node. | 14-role stakeholder graph + Second Brain typed edges (`derived_from`, `constrains`, `verifies`) + MRC merge gate. | AEA uses human-in-the-loop / role-specialized hats rather than an arbitrary multi-agent swarm. |
+| **Layer 05 (Graph)** | Graph run: nodes, edges, state schema + independent fresh-context reviewer node. | 14-role hats + MRC merge gate. Vault typed edges (`derived_from`, `constrains`, `verifies`) are I7 **deferred**, not inventory. | AEA uses human-in-the-loop hats. Orthogonal LLM reviewer is **rejected** (K6). |
 | **Source of Truth** | In-memory graph state schema + context window. | PostgreSQL 16 + Kafka + Git `main` (uncommitted files are never shared memory). | **AEA Advantage**: Immutable persistent datastores prevent hallucinated state drift. |
 | **Authoritative Logic** | Delegated to agent/tool nodes. | Deterministic Domain Services (pricing, inventory availability, zero-PII checkout). | **AEA Advantage**: Client/agent presents intent; domain services mutate state. |
 
@@ -65,7 +65,7 @@ In his 30 Aug 2026 analysis, Kocer resolves the industry debate between "harness
 
 1. **Resolves Harness vs. Loop vs. Graph Debates**: Proves these are not competing architectural alternatives, but concentric floors of abstraction.
 2. **Failure Diagnosis by Layer Root Cause**: Provides a clear diagnostic heuristic: when a complex agent fails, inspect the layer immediately below it (e.g., verifier failure $\to$ context curator deficiency).
-3. **Orthogonal Reviewer Node with Fresh Context**: Prevents self-reinforcing LLM confirmation bias by requiring the final verification pass to run in an isolated environment with a different model family.
+3. **Independent fresh-context review**: Steal the *independence* (already MRC + CI). Do **not** steal a different model family as the merger (K6 **reject**).
 4. **Economic Clarity**: Articulates why investing in the harness/context stack creates durable intellectual property independent of underlying foundation model churn.
 
 ---
@@ -78,11 +78,12 @@ In his 30 Aug 2026 analysis, Kocer resolves the industry debate between "harness
 
 ---
 
-## 5. Concrete Actionable Gaps Identified for AEA
+## 5. Gaps — flagged, not a build list
 
-To strengthen AEA's Outer Harness against Kocer's 5-floor hierarchy:
-1. **Gap 1 (Layer 02 — Context Curator Component)**: Build a dedicated runtime context curator (`platform/agent/context_curator.py`) that systematically selects, compresses, and prunes context before LLM invocation.
-2. **Gap 2 (Layer 05 — Isolated Reviewer Node with Fresh Context)**: Formalize an independent review gate in CI / MRC that evaluates PR diffs using an orthogonal model in an isolated context window.
-3. **Gap 3 (Concentric Layer Invariant Sensor)**: Add a pre-flight guard that verifies lower-layer health before executing higher-layer loop ticks.
+PO (31 Aug 2026) on #337 / #338–#340. Do not treat this section as implement-now.
+
+1. **Gap 1 — runtime context curator**: **park** (K4). #338 closed. Easy to become I11 CONSTRAINTS injection.
+2. **Gap 2 — orthogonal LLM reviewer**: **reject** (K6). Fresh-window **MRC + required CI** is already true (K5). #339 closed.
+3. **Gap 3 — new stack-layer sensor**: **defer** (K7). #340 closed. Must not weaken the 14-guard ratchet or assume a curator that does not exist.
 
 Existing IDs: [[2026-08-29-harness-memory-engineering-evaluation-synthesis]], [[2026-08-29-parallel-runner-claim-rule]], [[2026-08-29-core-principles-retrospective]].

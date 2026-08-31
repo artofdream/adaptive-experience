@@ -5,6 +5,7 @@
 > **Author**: @aea-ai-engineer, @aea-product-owner, @aea-project-manager, @aea-knowledge-guardian
 > **GitLab**: Evaluates #289, #290, #291, #292
 > **Owners to inherit**: @aea-project-manager, @aea-ai-engineer, @aea-knowledge-guardian, @aea-mr-coordinator
+> **Honesty (31 Aug 2026)**: Section 2 “Resolved / Adopted” lines are a **proposal**, not a ship probe. PO Done-when comments landed on those issues on 31 Aug (I5 fold / I11 reject; I7 defer; I6 naming; I8 guide-only). `AGENTS.md` still has no CONSTRAINTS.md, typed-frontmatter schema, or contradiction sensor. Do not cite this file as evidence those four items shipped.
 
 ---
 

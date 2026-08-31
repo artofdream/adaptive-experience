@@ -21,6 +21,9 @@ The 2026-08-28 AEA 6-layer playbook and the comparison vs `harness_final.pdf` ar
 | 30 Aug vs 0xWast3 (flags) | `research/2026-08-30-aea-harness-vs-wast3-memory-engineering.md` | DATE_RE, `docs/`, Pages |
 | 30 Aug proposed next playbook | `research/random-thoughts/2026-08-30-aea-framework-harness-engineering.md` | DATE_RE, `docs/`, Pages (proposed, not adopted) |
 | 30 Aug session memory | `research/random-thoughts/2026-08-30-session-memory-log-wast3-harness-compare.md` | DATE_RE, `docs/` |
+| 31 Aug playbook (Kocer floors) | `research/random-thoughts/2026-08-31-aea-framework-harness-engineering.md` | DATE_RE, `docs/`, Pages (taxonomy pass; does not absorb 30 Aug flags) |
+| 31 Aug vs Kocer | `research/random-thoughts/2026-08-31-aea-vs-kocer-five-layers-agent-engineering.md` | DATE_RE, `docs/` |
+| 30 Aug vs 31 Aug playbooks | `research/2026-08-31-aea-harness-30aug-vs-31aug.md` | DATE_RE, `docs/`, Pages |
 | This placement note | `research/random-thoughts/2026-08-28-where-harness-playbook-lives.md` | DATE_RE, `docs/` |
 | PDFs | optional local / chat attachments | git (binaries are not the vault) |
 | Clips | evidence paths, not vault bodies | DATE_RE |
