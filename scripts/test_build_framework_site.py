@@ -56,6 +56,31 @@ class TestBuildFrameworkSite(unittest.TestCase):
         self.assertTrue((root / "public" / "path-b.html").exists())
         self.assertTrue((root / "public" / "stack.html").exists())
 
+    def test_cf056_honesty_incident_cross_links(self):
+        """Daily-brief honesty and Claim vs probe name the same incident and link."""
+        root = Path(__file__).resolve().parents[1]
+        comparison = (root / "docs" / "framework" / "comparison.md").read_text(
+            encoding="utf-8"
+        )
+        journal = (root / "docs" / "framework" / "journal.md").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("Daily-brief honesty", comparison)
+        self.assertIn("journal.html#claim-vs-probe", comparison)
+        self.assertIn("## Claim vs probe", journal)
+        self.assertIn("Daily-brief honesty", journal)
+        self.assertIn("comparison.html#what-aea-claims-here", journal)
+
+        self.assertEqual(build(), 0)
+        comparison_html = (root / "public" / "comparison.html").read_text(
+            encoding="utf-8"
+        )
+        journal_html = (root / "public" / "journal.html").read_text(encoding="utf-8")
+        self.assertIn('href="journal.html#claim-vs-probe"', comparison_html)
+        self.assertIn('id="claim-vs-probe"', journal_html)
+        self.assertIn("Daily-brief honesty", journal_html)
+        self.assertIn('href="comparison.html#what-aea-claims-here"', journal_html)
+
 
 if __name__ == "__main__":
     unittest.main()
