@@ -1,13 +1,13 @@
 ---
 tags: #aea #coherence
 finding_id: CF-056
-status: in-progress
+status: in-mr
 severity: low
 source_assessment: 2026-08-29-framework-glossary-and-jargon
 supersedes:
 issue: "#342"
 branch: cursor/docs-cf056-honesty-crosslink-e17d
-merge_request:
+merge_request: "!361"
 ---
 
 ## Claim
@@ -46,7 +46,7 @@ Do not invent IDs. Do not batch with other tickets.
 |------|-------|-------------------|
 | 2026-08-29 | queued | Intake via assessment 2026-08-29-framework-glossary-and-jargon.md |
 | 2026-08-31 | investigating | Reproduced on origin/main `d6b39aa`: comparison.md line names Daily-brief honesty; journal.md `#claim-vs-probe` has no alias. |
-| 2026-08-31 | in-progress | Cross-links applied on this branch. Issue #342 already open (intake). |
+| 2026-08-31 | in-mr | Cross-links applied. Issue #342. MR !361. |
 
 ## Assessment history
 
@@ -60,8 +60,8 @@ Do not invent IDs. Do not batch with other tickets.
 - [x] Not already covered by an open issue or MR
 - [x] GitLab issue created (#342)
 - [x] Dedicated branch created from updated `main`
-- [ ] Focused fix committed and pushed
-- [ ] Relevant checks passed
-- [ ] MR includes `Closes #N`, summary, and test plan
+- [x] Focused fix committed and pushed
+- [x] Relevant checks passed
+- [x] MR includes `Closes #N`, summary, and test plan
 - [ ] MR merged
 - [ ] Post-merge verification passed on `main`
