@@ -75,7 +75,7 @@ Artifact when the job succeeds: `clients/mobile/android/app/build/outputs/bundle
 
 ## Needed (not done)
 
-1. **First signed `.aab`.** Play `android-bundle-release` on `main` and wait for success. In flight 2026-09-01 ~07:54 Berlin on [pipeline 1406](https://gitlab.com/artof-group/adaptive-experience-architecture/-/pipelines/2807961339) / [job 16221506091](https://gitlab.com/artof-group/adaptive-experience-architecture/-/jobs/16221506091). Until that probe is SUCCESS with an `app-release.aab` artifact, first bundle stays Unknown. [#347](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/347) stays open.
+1. **First signed `.aab`.** Still Unknown. Job [16221506091](https://gitlab.com/artof-group/adaptive-experience-architecture/-/jobs/16221506091) failed at `:app:signReleaseBundle` because `$ANDROID_UPLOAD_KEYSTORE` is not a readable JKS/PKCS12. [#347](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/347) stays open. Encoding fix: [#351](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/351).
 2. **Upload that `.aab` to Play closed testing.** Human in Play Console. Do not start this walk until the artifact exists. Not Production. No store listing.
 3. **Play App Signing SHA-1 → Firebase Android app.** DSO waits for the first bundle. Copy from Play (App signing) into Firebase. Do not write the hash into git, issues, or this vault. Unknown until a tester can install.
 4. **Testers install from the closed track.** Unknown until a human on the testers list actually installs.
