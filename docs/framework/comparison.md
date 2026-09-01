@@ -1,4 +1,4 @@
-﻿# Comparison & Visual Guide
+# Comparison & Visual Guide
 
 This page is the public comparative guide to Adaptive Experience Architecture: mapping the six-layer outer harness, the five concentric floors, and the second brain memory plane next to public coding-agent practice.
 
@@ -15,11 +15,9 @@ An independent Art of Group note. It maps AEA onto six harness layers (guides, s
 - Not a reprint of the internal vault working paper.
 - Not a leaderboard. Related-work benches (GAIA swings, Terminal Bench ranks, a million generated lines) are **not** AEA results. They were not run on Lily's Florist.
 - Not AGENTS.md, not DATE_RE, not a pitch deck, not 3DX Lab.
-- Not proof that Path B dual-viewport is done. That clip after the CSS is **Unknown**. **[CF-054](glossary.html#cf-nnn-coherence-finding-codes)** is **regressed**.
+- Not proof that Path B dual-viewport is done. That clip after the CSS is **Unknown**. [**CF-054**](glossary.html#cf-nnn-coherence-finding-codes) is **regressed**.
 
-## Why Most AI Prototypes Never Make It to Production
-
-A chatbot that talks charmingly in a demo is not a finished business. When real customers order flowers, the system must check physical cooler inventory, calculate delivery routes, itemize taxes, and process payments without leaking data. AI language models are probabilistic word predictors—they cannot manage a real warehouse. **The Outer Harness** is the software factory built around the AI to guarantee real-world honesty and safety.
+> **Why Most AI Prototypes Never Make It to Production:** A chatbot that talks charmingly in a demo is not a finished business. When real customers order flowers, the system must check physical cooler inventory, calculate delivery routes, itemize taxes, and process payments without leaking data. AI language models are probabilistic word predictors—they cannot manage a real warehouse. **The Outer Harness** is the software factory built around the AI to guarantee real-world honesty and safety.
 
 ## 1. The Core Formula in Everyday Terms
 

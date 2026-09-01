@@ -69,11 +69,14 @@ CSS = (
     'pre{background:var(--code-bg);border:1px solid var(--rule);border-radius:4px;'
     'padding:.75rem 1rem;overflow-x:auto;font-family:ui-monospace,Menlo,monospace;'
     'font-size:.76rem;line-height:1.35;margin:1.25rem 0}'
-    '.table-wrap{overflow-x:auto;margin:1.25rem 0}'
+    '.table-wrap{overflow-x:auto;margin:1.25rem 0;-webkit-overflow-scrolling:touch}'
     'table{width:100%;border-collapse:collapse;font-family:ui-sans-serif,system-ui,sans-serif;'
     'font-size:.82rem;line-height:1.4}'
     'th,td{border:1px solid var(--rule);padding:.45rem .65rem;text-align:left;vertical-align:top}'
     'th{background:var(--code-bg);font-weight:600}'
+    'blockquote.callout{background:var(--code-bg);border-left:3px solid var(--accent);'
+    'margin:1.25rem 0;padding:.85rem 1.1rem;border-radius:0 4px 4px 0}'
+    'blockquote.callout p{margin:0}'
     'footer{margin-top:3rem;padding:1.5rem 1.25rem 3rem;border-top:1px solid var(--rule);'
     'color:var(--muted);font-family:ui-sans-serif,system-ui,sans-serif;font-size:.82rem}'
 )
@@ -104,11 +107,11 @@ def inline_md(text: str) -> str:
             parts.append('<code>' + html.escape(m.group(1)) + '</code>')
         elif m.group(2) is not None:
             href = html.escape(site_href(m.group(3)), quote=True)
-            parts.append('<a href="' + href + '">' + html.escape(m.group(2)) + '</a>')
+            parts.append('<a href="' + href + '">' + inline_md(m.group(2)) + '</a>')
         elif m.group(4) is not None:
-            parts.append('<strong>' + html.escape(m.group(4)) + '</strong>')
+            parts.append('<strong>' + inline_md(m.group(4)) + '</strong>')
         else:
-            parts.append('<em>' + html.escape(m.group(5)) + '</em>')
+            parts.append('<em>' + inline_md(m.group(5)) + '</em>')
         i = m.end()
     parts.append(html.escape(text[i:]))
     return ''.join(parts)
@@ -143,7 +146,8 @@ def md_to_html(source: str) -> str:
             table_headers = []
             table_rows = []
 
-    for raw in source.splitlines():
+    clean_source = source.lstrip('\ufeff')
+    for raw in clean_source.splitlines():
         if raw.strip().startswith('```'):
             if in_code:
                 out.append('<pre><code>' + html.escape('\n'.join(code_lines)) + '</code></pre>')
@@ -160,6 +164,11 @@ def md_to_html(source: str) -> str:
         line = raw.strip()
         if not line:
             close()
+            continue
+
+        if line.startswith('> '):
+            close()
+            out.append('<blockquote class="callout"><p>' + inline_md(line[2:].strip()) + '</p></blockquote>')
             continue
 
         if line.startswith('|') and line.endswith('|') and '|' in line[1:-1]:
