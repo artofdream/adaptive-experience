@@ -3,14 +3,34 @@ package link.artof.aea.companion
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 import link.artof.aea.companion.data.repository.JourneyStage
 import link.artof.aea.companion.data.repository.SessionRepository
 import link.artof.aea.companion.ui.components.StageProgressBar
-import link.artof.aea.companion.ui.screens.*
+import link.artof.aea.companion.ui.screens.NeedScreen
+import link.artof.aea.companion.ui.screens.PayScreen
+import link.artof.aea.companion.ui.screens.PickScreen
+import link.artof.aea.companion.ui.screens.TrackingScreen
 import link.artof.aea.companion.ui.theme.LilyCompanionTheme
 
 class MainActivity : ComponentActivity() {
@@ -40,13 +60,20 @@ fun LilyCompanionApp(repository: SessionRepository) {
     val selectedArrangement by repository.selectedArrangement.collectAsState()
     val sharedUnderstanding by repository.sharedUnderstanding.collectAsState()
     val orderResult by repository.orderResult.collectAsState()
+    val isLoading by repository.isLoading.collectAsState()
+    val errorMessage by repository.errorMessage.collectAsState()
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(Unit) {
+        repository.ensureSession()
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Text(
-                        text = "Lily\'s Florist Companion",
+                        text = "Lily's Florist Companion",
                         style = MaterialTheme.typography.headlineMedium
                     )
                 },
@@ -66,12 +93,39 @@ fun LilyCompanionApp(repository: SessionRepository) {
                 StageProgressBar(currentStage = stage)
             }
 
+            if (isLoading) {
+                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+            }
+
+            errorMessage?.let { err ->
+                Surface(
+                    color = MaterialTheme.colorScheme.errorContainer,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Text(
+                            text = err,
+                            color = MaterialTheme.colorScheme.onErrorContainer,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        TextButton(onClick = { repository.clearError() }) {
+                            Text("Dismiss")
+                        }
+                    }
+                }
+            }
+
             when (stage) {
                 JourneyStage.NEED -> {
                     NeedScreen(
                         messages = messages,
                         sharedUnderstanding = sharedUnderstanding,
-                        onSendMessage = { repository.postUserMessage(it) },
+                        isLoading = isLoading,
+                        onSendMessage = { text ->
+                            scope.launch { repository.postUserMessage(text) }
+                        },
                         onContinueToPick = { repository.moveToPickStage() }
                     )
                 }
@@ -79,7 +133,10 @@ fun LilyCompanionApp(repository: SessionRepository) {
                     PickScreen(
                         arrangements = arrangements,
                         selectedArrangement = selectedArrangement,
-                        onSelectArrangement = { repository.selectArrangement(it) },
+                        isLoading = isLoading,
+                        onSelectArrangement = { arrangement ->
+                            scope.launch { repository.selectArrangement(arrangement) }
+                        },
                         onContinueToPay = { repository.moveToPayStage() }
                     )
                 }
@@ -87,13 +144,18 @@ fun LilyCompanionApp(repository: SessionRepository) {
                     PayScreen(
                         selectedArrangement = selectedArrangement,
                         sharedUnderstanding = sharedUnderstanding,
-                        onCheckout = { cardMsg -> repository.completeCheckout(cardMsg) }
+                        isLoading = isLoading,
+                        onCheckout = { cardMsg ->
+                            scope.launch { repository.completeCheckout(cardMsg) }
+                        }
                     )
                 }
                 JourneyStage.TRACKING -> {
                     TrackingScreen(
                         orderResult = orderResult,
-                        onStartOver = { repository.startOver() }
+                        onStartOver = {
+                            scope.launch { repository.startOver() }
+                        }
                     )
                 }
             }

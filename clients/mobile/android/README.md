@@ -56,3 +56,20 @@ Release `signingConfig` reads these env vars **only when all are set**:
 Sponsor re-paste of `ANDROID_UPLOAD_KEYSTORE` as base64 is recorded 2026-09-01
 (#351). Do not recreate `GOOGLE_SERVICES_JSON`. Do not commit a keystore, PEM,
 or SHA-1. Do not paste values in issues, MRs, or chat.
+
+## Live BFF wiring (internal testing, #362)
+
+Need / Pick / Pay call the live Edge BFF at `https://aea.artof.link` (cookie
+session + `X-CSRF-Token`, conversation `message_text`, selection/delivery/order/
+checkout). The local Mom-keyword mock path that unlocked occasion without BFF
+shared-understanding is **removed**.
+
+- Sponsor scope: **internal testing only** (not a public Play production claim).
+- Demo mock happy-path for Need chat is removed on the wired path.
+- Catalog may still use a local fallback list (with sold-out fail-closed) when
+  workspace recommendations are unavailable; selection/checkout still POST to BFF.
+- Checkout sends opaque `session_pay_ref` only — no raw card fields (ADR-013).
+- Do not claim website/operator dual-write until sponsor re-probes.
+- CORS is N/A for the native client; residual risks include mobile cookie/`__Host-`
+  CSRF handling and payment_reference source (session vault ref, not a card vault SDK).
+

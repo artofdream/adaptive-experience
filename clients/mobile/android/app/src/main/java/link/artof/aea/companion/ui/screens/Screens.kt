@@ -22,6 +22,7 @@ fun NeedScreen(
     sharedUnderstanding: SharedUnderstanding,
     onSendMessage: (String) -> Unit,
     onContinueToPick: () -> Unit,
+    isLoading: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     var inputText by remember { mutableStateOf("") }
@@ -83,6 +84,7 @@ fun NeedScreen(
                         inputText = ""
                     }
                 },
+                enabled = !isLoading,
                 modifier = Modifier.height(56.dp)
             ) {
                 Text("Send")
@@ -93,7 +95,7 @@ fun NeedScreen(
         val hasOccasion = !sharedUnderstanding.occasion.isNullOrEmpty()
         Button(
             onClick = onContinueToPick,
-            enabled = hasOccasion,
+            enabled = hasOccasion && !isLoading,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 4.dp)
@@ -110,6 +112,7 @@ fun PickScreen(
     selectedArrangement: FloristArrangement?,
     onSelectArrangement: (FloristArrangement) -> Unit,
     onContinueToPay: () -> Unit,
+    isLoading: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -142,7 +145,7 @@ fun PickScreen(
         // Primary Single CTA
         Button(
             onClick = onContinueToPay,
-            enabled = selectedArrangement != null,
+            enabled = selectedArrangement != null && !isLoading,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 4.dp)
@@ -163,6 +166,7 @@ fun PayScreen(
     selectedArrangement: FloristArrangement?,
     sharedUnderstanding: SharedUnderstanding,
     onCheckout: (String) -> Unit,
+    isLoading: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     var cardMessage by remember { mutableStateOf("Happy Birthday Mom! Love always.") }
@@ -229,12 +233,12 @@ fun PayScreen(
         // Single Primary Confirm CTA (NFR-017 zero-PII checkout)
         Button(
             onClick = { onCheckout(cardMessage) },
-            enabled = selectedArrangement != null,
+            enabled = selectedArrangement != null && !isLoading,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(54.dp)
         ) {
-            Text("Confirm & Place Order (Simulation) ✓")
+            Text(if (isLoading) "Placing order…" else "Confirm & Place Order ✓")
         }
     }
 }
