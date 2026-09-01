@@ -8,6 +8,8 @@
 Inherits [[2026-08-27-path-b-dual-viewport-ux-loop-j1-j4]] (J1–J4 clip
 evidence this note's screens were translated from). Journeys
 [[J1]] [[J2]] [[J3]] [[J4]]. Sibling: [[2026-08-27-session-memory-log-cf054-path-b-ux-in-coherence-loop]].
+Operator File-var lesson (Play upload keystore, not Firebase):
+[[2026-09-01-android-upload-keystore-gitlab-file-var]].
 
 ## 2026-08-29 sponsor decision log
 
