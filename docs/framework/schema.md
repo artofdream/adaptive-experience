@@ -29,20 +29,28 @@ These are layers of the harness. They are not extra products.
 
 ## Loop
 
-1. **Interpret** — read intent into Shared Understanding.
-2. **Act** — call domain services; do not fake their answers.
-3. **Verify** — a probe on the same journey and viewport, or a mechanical check. Closing a ticket is not a probe.
-4. **Remember** — write what was actually shown, not what would look good.
+The core execution cycle that drives every adaptive session:
+
+| Step | Action | What It Guarantees |
+|---|---|---|
+| **1. Interpret** | Extract customer intent into Shared Understanding | AI structures the conversation without faking decisions |
+| **2. Act** | Call deterministic Domain Services | Real inventory, pricing, delivery slots, and payment |
+| **3. Verify** | Run mechanical checks and journey probes | No ticket is marked verified without proof on real viewports |
+| **4. Remember** | Persist agreed state to the session memory | Customer cart, occasion, and preferences survive reloads |
 
 ![The four-step execution loop: Interpret, Act, Verify, Remember](assets/the-loop.svg)
 
 ## Roles
 
-Fourteen hats are **roles**, not extra layers and not headcount:
+Fourteen hats are **responsibility lenses**, not extra layers and not headcount:
 
-project manager, product owner, UX designer, customer journey, support coordinator, AI engineer, appsec auditor, devsecops platform, senior software engineer, MR coordinator, coherence guardian, knowledge guardian, cost guardian, performance guardian.
+- **Discovery (3)**: UX Designer, Customer Journey Specialist, Support Coordinator.
+- **Strategy & Delivery (2)**: Product Owner, Project Manager.
+- **Safety & Quality (4)**: AppSec Auditor, Cost Guardian, Performance Guardian, Coherence Guardian.
+- **Builders (3)**: Senior Software Engineer, AI Engineer, DevSecOps Platform.
+- **Governance & Memory (2)**: Merge Request Coordinator (MRC), Knowledge Guardian.
 
-Three executable jobs: implement, verify, merge. Only the MR coordinator merges.
+Three executable jobs: implement, verify, merge. **Only the MR coordinator merges.**
 
 ## Honesty, knowledge, antifragility
 
