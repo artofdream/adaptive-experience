@@ -51,7 +51,7 @@ Dates are Europe/Berlin.
 | 2026-08-31 | Four GitLab CI vars pasted by sponsor | See table below. Do not re-create from an agent. |
 | 2026-08-31 ~19:31 | !365 merged | Vault Slice D honesty. GitLab closed #346 anyway. |
 | 2026-08-31 ~19:32 | !366 merged | `android-bundle-release` job on `main`. |
-| 2026-09-01 ~07:54 | Manual job played on pipeline 1406 | Job `16221506091`. Result **Unknown** at capture (still running). |
+| 2026-09-01 ~07:54–08:02 | Manual `android-bundle-release` played on pipeline 1406 | Job [16221506091](https://gitlab.com/artof-group/adaptive-experience-architecture/-/jobs/16221506091) **failed** at `:app:signReleaseBundle` (keystore file not a readable JKS/PKCS12). No artifact. First `.aab` still Unknown. Follow-on: [#351](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/351). |
 
 ### GitLab CI variables (names and flags only)
 
