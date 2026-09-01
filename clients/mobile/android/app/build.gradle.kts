@@ -76,6 +76,8 @@ android {
     }
     buildFeatures {
         compose = true
+        // Unit test debugApplicationIdMatchesFirebaseClient reads BuildConfig.APPLICATION_ID.
+        buildConfig = true
     }
     packaging {
         resources {
