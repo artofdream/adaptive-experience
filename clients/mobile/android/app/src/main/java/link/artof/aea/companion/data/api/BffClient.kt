@@ -4,8 +4,6 @@ import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.client.plugins.cookies.AcceptAllCookiesStorage
-import io.ktor.client.plugins.cookies.HttpCookies
 import io.ktor.client.request.header
 import io.ktor.client.request.request
 import io.ktor.client.request.setBody
@@ -54,14 +52,12 @@ open class BffClient(
     }
 
     private val csrfToken = AtomicReference("")
+    private val cookieJar = java.util.concurrent.ConcurrentHashMap<String, String>()
 
     // Lazy so FakeBffClient unit doubles never open a socket.
     private val client: HttpClient by lazy {
         httpClient ?: HttpClient(CIO) {
             expectSuccess = false
-            install(HttpCookies) {
-                storage = AcceptAllCookiesStorage()
-            }
             install(HttpTimeout) {
                 requestTimeoutMillis = 30_000
                 connectTimeoutMillis = 15_000
@@ -142,9 +138,17 @@ open class BffClient(
         body: Any? = null,
         csrf: Boolean = false
     ): HttpResponse {
-        return client.request("$baseUrl$path") {
+        // Manual cookie jar: ktor-client-cookies is not published for 3.0.1 on Maven
+        // Central; CIO + core still suffice if we mirror Set-Cookie / Cookie.
+        val response = client.request("$baseUrl$path") {
             this.method = method
             header(HttpHeaders.Authorization, "Bearer $clientBearerToken")
+            if (cookieJar.isNotEmpty()) {
+                header(
+                    HttpHeaders.Cookie,
+                    cookieJar.entries.joinToString("; ") { "${it.key}=${it.value}" }
+                )
+            }
             if (csrf) {
                 val token = csrfToken.get()
                 if (token.isNotBlank()) {
@@ -156,6 +160,19 @@ open class BffClient(
                 setBody(body)
             }
         }
+        // Parse Set-Cookie headers (name=value; attrs...)
+        response.headers.getAll(HttpHeaders.SetCookie).orEmpty().forEach { raw ->
+            val pair = raw.substringBefore(';').trim()
+            val eq = pair.indexOf('=')
+            if (eq > 0) {
+                val name = pair.substring(0, eq).trim()
+                val value = pair.substring(eq + 1).trim()
+                if (name.isNotEmpty()) {
+                    cookieJar[name] = value
+                }
+            }
+        }
+        return response
     }
 
     private suspend inline fun <reified T> decodeOrThrow(
