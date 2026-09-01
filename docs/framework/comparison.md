@@ -43,6 +43,7 @@ Related work (cited, not inherited as AEA evidence):
 9. Independent compilation, “Production Agent Engineering Practice 2026” (`harness_final.pdf`). Independently compiled. Not affiliated with Google, OpenAI, or Anthropic. Used as a **document-design template** only, not as an official source of AEA evidence.
 10. 0xWast3 (wast3), “Memory Engineering for Kimi,” Aug 2026. Context window is a workspace, not memory; splits procedure, correction, and relationship memory.
 11. Kocer (@kocer_eth), “Five Layers of Agent Engineering: Each One Wraps the One Below It,” Aug 2026. Resolves harness vs loop vs graph as five concentric floors (prompt, context, harness, loop, graph).
+12. rvaniaaa (@rvaniaaaa), “The Second Brain That Acts. The Agent Team That Remembers,” Aug 2026. Six non-overlapping roles around a compiled second brain; guardian blocks irreversible acts before executor.
 
 Primary AEA sources (probed on GitLab `main`, not chat):
 
@@ -54,12 +55,50 @@ Primary AEA sources (probed on GitLab `main`, not chat):
 
 Related work often writes Agent = Model + Harness. AEA restates that for an experience: the model may interpret; domain services decide; the outer harness keeps those two honest.
 
-Kocer nests agent engineering into five concentric wrapping floors: Prompt (message) $\to$ Context (curator) $\to$ Harness (machine) $\to$ Loop (run) $\to$ Graph (topology). AEA maps its six outer harness layers onto this hierarchy and anchors the entire stack to deterministic domain services:
+### The Three Eras of Building with AI
+
+| Era | Focus | Optimizes | Limitation |
+|---|---|---|---|
+| **Era 1 (2023–24)** | Single turn | Prompts, tone, magic keywords | Forgets everything when chat ends |
+| **Era 2 (2025)** | What the model sees | RAG, MCP, document stuffing | Info overload; knows facts, no real actions |
+| **Era 3 (2026)** | The entire system | Harness, databases, test guards | Bounded, honest, verified outcomes |
+
+### The Five Concentric Floors
+
+Kocer nests agent engineering into five concentric wrapping floors: Prompt (message) $\to$ Context (curator) $\to$ Harness (machine) $\to$ Loop (run) $\to$ Graph (topology). Each floor rests on the one below it. AEA maps its six outer harness layers onto this hierarchy and anchors the entire stack to deterministic domain services:
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│ 🏢 FLOOR 05: THE AGENT TEAM & GOVERNANCE (Graph Engineering)           │
+│    Specialized stakeholder roles + Independent Reviewer Gate.          │
+│  ┌──────────────────────────────────────────────────────────────────┐  │
+│  │ 🔄 FLOOR 04: THE GOAL RUN & RETRIES (Loop Engineering)           │  │
+│  │    1 Finding -> 1 Issue -> 1 Branch -> 1 MR with FinOps caps.    │  │
+│  │  ┌────────────────────────────────────────────────────────────┐  │  │
+│  │  │ ⚙️ FLOOR 03: THE MACHINE & TESTS (Harness Engineering)     │  │  │
+│  │  │    Edge BFF + Gateway + 14 Automated Quality Guards.       │  │  │
+│  │  │  ┌──────────────────────────────────────────────────────┐  │  │  │
+│  │  │  │ 🧠 FLOOR 02: THE MEMORY CURATOR (Context Engineering)│  │  │  │
+│  │  │  │    Second Brain Vault, Daily Briefs, Active Constraints│  │  │
+│  │  │  │  ┌────────────────────────────────────────────────┐  │  │  │  │
+│  │  │  │  │ 💬 FLOOR 01: THE MESSAGE (Prompt Engineering)  │  │  │  │  │
+│  │  │  │  │    14 Canonical Role Prompts, Single Primary CTA│  │  │  │  │
+│  │  │  │  └────────────────────────────────────────────────┘  │  │  │  │
+│  │  │  └──────────────────────────────────────────────────────┘  │  │  │
+│  │  └────────────────────────────────────────────────────────────┘  │  │
+│  └──────────────────────────────────────────────────────────────────┘  │
+└────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼ Built On Real Infrastructure
+┌────────────────────────────────────────────────────────────────────────┐
+│ 🏛️ SOLID FOUNDATION: REAL DATABASES & INVENTORY (PostgreSQL & Kafka)   │
+└────────────────────────────────────────────────────────────────────────┘
+```
 
 1. **Guides** — feedforward. Related work: AGENTS.md, negative constraints, role system prompts (Layer 01 Prompt Engineering). AEA: session-start rules, [fourteen roles](glossary.html#fourteen-hats-roles), Path B dual-viewport contract.
 2. **Sensors** — feedback. Related work: tests and computational checks first (Layer 03 Harness Verifier). AEA: the same idea, plus fail-closed inventory and journey×viewport clips.
 3. **Loop** — related work: goal, iterations, budget, retry on failure (Layer 04 Loop Engineering). AEA: one finding, one issue, one branch, one merge request. Only the MR coordinator merges.
-4. **Memory** — related work: context window curator and typed relationship graphs (Layer 02 Context Engineering). AEA: Second Brain vault, one daily handoff filename. Chat is not shared memory.
+4. **Memory** — related work: context window curator and typed relationship graphs (Layer 02 Context Engineering). AEA: Second Brain vault with 4 distinct memory vaults (Procedures, Corrections, Relationships, Daily Briefs). Chat is not shared memory.
 5. **Permissions** — the model cannot restrict itself (Layer 05 Graph & Reviewer Governance). AEA: fourteen hats, no fifteenth implementer, [ID freeze](glossary.html#id-freeze), human confirmation for secrets and spend.
 6. **Observability** — status words need a probe. Grafana is not a vibe check. Unknown is required when the probe was not run.
 
@@ -76,6 +115,23 @@ Kocer nests agent engineering into five concentric wrapping floors: Prompt (mess
 - The evidence. This page does not copy third-party bench deltas as if Path B had run them.
 - The merge gate. AEA treats merge as an independent job. The hat that produced the change is not the judge of “verified.”
 - Honesty as a sensor. Closing a ticket, merging CSS, or publishing Pages is not a journey clip.
+
+## Honest Status Ledger
+
+To avoid confusing architecture mental models with live production software, every concept on this site is explicitly flagged:
+
+| Item / Concept | Status Flag | Operational Reality |
+|---|---|---|
+| **Domain Services & Backend** | **Live / Production** | PostgreSQL, Kafka, Nginx, and Edge BFF running on AWS ECS Fargate (`aea.artof.link`). |
+| **Fail-Closed Availability** | **Live / Verified** | Select button automatically disables when inventory or delivery probes are stale or missing. |
+| **14 Pre-Flight Quality Guards** | **Live / Verified** | Automated Python guards blocking secret leaks, skill drift, and broken traceability in CI. |
+| **14 Stakeholder Hats & MRC Gate** | **Live / Operational** | Role separation and independent MR coordinator gate enforced before merging code. |
+| **Second Brain Memory Vaults** | **Live / Operational** | 4-vault curated Obsidian structure (Skills, Constraints, Graph, Daily Briefs) in Git. |
+| **5 Concentric Wrapping Floors** | **Taxonomy Map Only** | Conceptual framing (Kocer) adapted to explain how AEA layers nest; not a separate library. |
+| **rvaniaaaa 6-Role Second Brain** | **Taxonomy Map Only** | Pattern evaluated for pre-irreversible gates; 6 generic role collapse is rejected. |
+| **CF-054 Dual-Viewport Live Re-record** | **Unknown / Regressed** | CSS merged to repo, but dual-viewport side-by-side video clip re-recording remains unprobed. |
+| **Live Stripe Card Gateway** | **Simulated Extension** | Runs deterministic payment simulation engine under ADR-016; live Stripe is not active. |
+| **Third-Party Benchmark Scores** | **Not AEA Evidence** | GAIA, Terminal Bench, and 1M-line metrics belong strictly to cited papers [2], [6], [7]. |
 
 ## What AEA claims here
 
