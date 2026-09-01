@@ -297,6 +297,12 @@ android-build-debug:
   before_script:
     - cd clients/mobile/android
     - java -version
+    # Play requires targetSdk 36 (#355). cimg/android:2024.04 may lack the
+    # platform; install it explicitly. Stay on JDK 21 (AGP 8.7 / D8 cap).
+    - |
+      set -e
+      yes | sdkmanager --licenses >/dev/null || true
+      sdkmanager "platforms;android-36"
     # Protected file variable name: GOOGLE_SERVICES_JSON (sponsor pastes).
     # Never attach the live file as an artifact. Dummy example keeps assemble
     # compiling when the variable is still missing.
@@ -347,6 +353,12 @@ android-bundle-release:
   before_script:
     - cd clients/mobile/android
     - java -version
+    # Play requires targetSdk 36 (#355). cimg/android:2024.04 may lack the
+    # platform; install it explicitly. Stay on JDK 21 (AGP 8.7 / D8 cap).
+    - |
+      set -e
+      yes | sdkmanager --licenses >/dev/null || true
+      sdkmanager "platforms;android-36"
     # Protected file variable name: GOOGLE_SERVICES_JSON (sponsor pastes).
     # Never attach the live file as an artifact. Dummy example keeps the
     # Google Services plugin compiling when the variable is still missing.

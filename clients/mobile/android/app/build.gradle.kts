@@ -23,12 +23,12 @@ val releaseSigningReady =
 
 android {
     namespace = "link.artof.aea.companion"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "link.artof.aea.companion"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 1
         versionName = "0.1.0-alpha"
 
