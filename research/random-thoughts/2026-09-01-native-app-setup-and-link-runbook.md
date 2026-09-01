@@ -109,3 +109,10 @@ Artifact when the job succeeds: `clients/mobile/android/app/build/outputs/bundle
 - Bundle issue: [#347](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/347)
 - Debug JSON mapping: [#348](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/348)
 - Keystore file var: [#351](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/351)
+
+## Alpha probe 2026-09-02 (internal testing)
+
+Sponsor installed versionCode 2 / API 36 on Play **internal** track and walked Need→Pick→Pay→Confirm.
+
+**Honesty:** that build’s journey is a **local mock** (`SessionRepository`), not live BFF. Operator T-09 sample did not show companion order ids. Full write-up: [[2026-09-02-android-companion-alpha-probe-mock-vs-bff]]. Issues [#357](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/357)–[#360](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/360). Real-agent wire requested (internal-only iteration).
+
