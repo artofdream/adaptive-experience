@@ -320,7 +320,9 @@ android-build-debug:
     paths:
       - clients/mobile/android/app/build/outputs/apk/debug/app-debug.apk
       - clients/mobile/android/app/build/reports/tests/testDebugUnitTest/
-    expire_in: 7 days
+    # Debug APK for UX sideload / emulator (#363 Phase A). Explicit path:
+    # clients/mobile/android/app/build/outputs/apk/debug/app-debug.apk
+    expire_in: 14 days
   rules:
     - changes:
         - "clients/mobile/android/**/*"
@@ -330,6 +332,99 @@ android-build-debug:
       changes:
         - "clients/mobile/android/**/*"
         - ".gitlab-ci.yml"
+
+# Phase A follow-up (#363): Paparazzi / Roborazzi / Gradle managed-device
+# Compose screenshots on MRs touching clients/mobile/android/** — upload PNGs
+# as artifacts (+ optional Pages gallery). Do NOT add those Gradle deps here;
+# plugins are not present yet. Keep screenshot CI as a later lightweight MR.
+
+# Companion UX validation docs guard (#363 Phase A). Blocking on android MRs.
+android-ux-checklist:
+  stage: verify
+  image: python:3.12-alpine
+  script:
+    - python scripts/check_companion_ux_validation.py
+  rules:
+    - changes:
+        - "clients/mobile/android/**/*"
+        - "research/random-thoughts/2026-09-02-companion-ux-online-validation-setup.md"
+        - "scripts/check_companion_ux_validation.py"
+        - ".gitlab-ci.yml"
+      if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      allow_failure: false
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      changes:
+        - "clients/mobile/android/**/*"
+        - "research/random-thoughts/2026-09-02-companion-ux-online-validation-setup.md"
+        - "scripts/check_companion_ux_validation.py"
+        - ".gitlab-ci.yml"
+      allow_failure: false
+
+# Firebase App Distribution for UX testers (#363 Phase B). Not Play.
+# FIREBASE_APP_DISTRIBUTION_CREDENTIALS — protected file variable (service
+# account JSON). Never attach as artifact. Never commit.
+# Optional: FIREBASE_APP_DISTRIBUTION_GROUPS (default ux-testers),
+# FIREBASE_APP_DISTRIBUTION_RELEASE_NOTES.
+# Gating: manual + allow_failure. Omitted when credentials var unset (honest,
+# same pattern as android-bundle-release). First successful upload Unknown
+# until sponsor pastes the file variable and runs the job.
+android-app-distribution:
+  stage: verify
+  image: cimg/android:2024.04
+  timeout: 45m
+  variables:
+    GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+  before_script:
+    - cd clients/mobile/android
+    - java -version
+    - |
+      set -e
+      yes | sdkmanager --licenses >/dev/null || true
+      sdkmanager "platforms;android-36"
+    - |
+      if [ -n "${GOOGLE_SERVICES_JSON:-}" ] && [ -f "${GOOGLE_SERVICES_JSON}" ]; then
+        cp "${GOOGLE_SERVICES_JSON}" app/google-services.json
+      else
+        cp app/google-services.json.example app/google-services.json
+      fi
+    - |
+      if [ -z "${FIREBASE_APP_DISTRIBUTION_CREDENTIALS:-}" ] || [ ! -f "${FIREBASE_APP_DISTRIBUTION_CREDENTIALS}" ]; then
+        echo "SKIP: FIREBASE_APP_DISTRIBUTION_CREDENTIALS file variable is not available."
+        echo "Protected file secrets are typically unset on unprotected branches."
+        echo "Sponsor must add FIREBASE_APP_DISTRIBUTION_CREDENTIALS (service-account JSON file)"
+        echo "and create Firebase App Distribution group ux-testers. Do not paste JSON in issues."
+        echo "This is not an App Distribution upload."
+        exit 1
+      fi
+      set +x
+      CRED_OUT=/tmp/aea-fad-credentials.json
+      cp "${FIREBASE_APP_DISTRIBUTION_CREDENTIALS}" "$CRED_OUT"
+      chmod 600 "$CRED_OUT"
+      export FIREBASE_APP_DISTRIBUTION_CREDENTIALS="$CRED_OUT"
+      echo "ok: copied App Distribution credentials to job-local path (not an artifact)"
+  script:
+    - sh ./gradlew assembleDebug appDistributionUploadDebug
+  artifacts:
+    paths:
+      - clients/mobile/android/app/build/outputs/apk/debug/app-debug.apk
+    expire_in: 14 days
+    when: on_success
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $FIREBASE_APP_DISTRIBUTION_CREDENTIALS'
+      changes:
+        - "clients/mobile/android/**/*"
+        - ".gitlab-ci.yml"
+      when: manual
+      allow_failure: true
+    - if: '$CI_COMMIT_BRANCH == "main" && $FIREBASE_APP_DISTRIBUTION_CREDENTIALS'
+      changes:
+        - "clients/mobile/android/**/*"
+        - ".gitlab-ci.yml"
+      when: manual
+      allow_failure: true
+    - if: '$CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "web" && $FIREBASE_APP_DISTRIBUTION_CREDENTIALS'
+      when: manual
+      allow_failure: true
 
 # Signed Play upload bundle for closed testing (#347). Not production.
 # Artifact is the .aab only. Never attach the keystore or google-services.json.

@@ -86,6 +86,25 @@ android {
     }
 }
 
+
+// Firebase App Distribution (#363 Phase B). Credentials from CI env only.
+// Never commit a service-account JSON. Job is manual / omitted when unset.
+val fadCredentials = System.getenv("FIREBASE_APP_DISTRIBUTION_CREDENTIALS")
+val fadGroups = System.getenv("FIREBASE_APP_DISTRIBUTION_GROUPS") ?: "ux-testers"
+val fadReleaseNotes =
+    System.getenv("FIREBASE_APP_DISTRIBUTION_RELEASE_NOTES")
+        ?: "Companion UX validation build (debug). Not Play-signed. Local mock until BFF (#360/#362)."
+
+firebaseAppDistribution {
+    // Plugin reads app id from google-services.json when present.
+    artifactType = "APK"
+    groups = fadGroups
+    releaseNotes = fadReleaseNotes
+    if (!fadCredentials.isNullOrBlank()) {
+        serviceCredentialsFile = fadCredentials
+    }
+}
+
 tasks.matching { it.name == "bundleRelease" }.configureEach {
     doFirst {
         check(releaseSigningReady) {

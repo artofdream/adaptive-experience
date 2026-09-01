@@ -73,3 +73,57 @@ shared-understanding is **removed**.
 - CORS is N/A for the native client; residual risks include mobile cookie/`__Host-`
   CSRF handling and payment_reference source (session vault ref, not a card vault SDK).
 
+## UX validation loop
+
+Fast Need/Pick/Pay review **without** waiting on every Play Console AAB upload.
+Tracked in [#363](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/363).
+Design note + checklist:
+[`research/random-thoughts/2026-09-02-companion-ux-online-validation-setup.md`](../../../research/random-thoughts/2026-09-02-companion-ux-online-validation-setup.md).
+
+### Debug APK from CI (Phase A)
+
+1. Open the MR / `main` pipeline that ran `android-build-debug` (triggers on
+   changes under `clients/mobile/android/**` or `.gitlab-ci.yml`).
+2. Job artifacts include the debug APK path:
+   `clients/mobile/android/app/build/outputs/apk/debug/app-debug.apk`
+   (expire_in 14 days).
+3. Download `app-debug.apk`, sideload (`adb install -r …`) or use an emulator.
+   This build is **debug-signed**, not Play App Signing.
+
+### Sponsor devices today
+
+- **scrcpy** (USB) and **Play internal testing** remain how the sponsor
+  captures screenshots and validates the **store install path**.
+- Play internal is the honesty gate for “installs from Play”. App Distribution
+  and debug APKs do **not** replace that gate.
+
+### Firebase App Distribution (Phase B)
+
+Gradle plugin `com.google.firebase.appdistribution` is already applied. CI job
+`android-app-distribution` runs **manual** with `allow_failure: true`, and is
+**omitted** when the service-account file variable is absent (same honesty
+pattern as `android-bundle-release`).
+
+Sponsor / DSO (do **not** commit secrets; do **not** paste JSON in issues):
+
+1. Firebase Console → App Distribution → create group **`ux-testers`** (or
+   set `FIREBASE_APP_DISTRIBUTION_GROUPS`).
+2. Add UX hat + sponsor emails to that group.
+3. Create a Google Cloud service account with Firebase App Distribution Admin,
+   download JSON key.
+4. GitLab CI/CD → Variables → **protected file** variable
+   `FIREBASE_APP_DISTRIBUTION_CREDENTIALS` = that JSON (job copies to a
+   workspace path only; never artifacted).
+5. Optionally keep `GOOGLE_SERVICES_JSON` as today so the job can assemble with
+   the real Firebase client.
+6. Run `android-app-distribution` manually on a pipeline where the variable is
+   injected. First successful tester invite/upload stays **Unknown** until that
+   run succeeds — do not claim green distribution from wiring alone.
+
+### Honesty
+
+- No live BFF / website / operator write-through from debug or App Distribution
+  builds until #362 is done and dual-probed (#360).
+- Score the vault **UX checklist** (contrast, back stack, single CTA, FR-009,
+  demo banner until BFF, budget ask, chip vs free-text unlock) against every
+  review build.
