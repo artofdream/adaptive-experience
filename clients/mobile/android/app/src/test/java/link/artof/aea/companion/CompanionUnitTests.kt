@@ -20,6 +20,11 @@ class CompanionUnitTests {
     }
 
     @Test
+    fun debugApplicationIdMatchesFirebaseClient() {
+        assertEquals("link.artof.aea.companion", BuildConfig.APPLICATION_ID)
+    }
+
+    @Test
     fun testInitialStageIsNeed() {
         assertEquals(JourneyStage.NEED, repository.currentStage.value)
         assertTrue(repository.messages.value.isNotEmpty())

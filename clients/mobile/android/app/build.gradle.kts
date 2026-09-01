@@ -61,7 +61,9 @@ android {
             }
         }
         debug {
-            applicationIdSuffix = ".debug"
+            // Same applicationId as release so CI google-services.json
+            // (Firebase client link.artof.aea.companion) matches assembleDebug.
+            // Do not add a .debug suffix — that package is not in the #308 client.
             isDebuggable = true
         }
     }
@@ -74,6 +76,8 @@ android {
     }
     buildFeatures {
         compose = true
+        // Unit test debugApplicationIdMatchesFirebaseClient reads BuildConfig.APPLICATION_ID.
+        buildConfig = true
     }
     packaging {
         resources {
