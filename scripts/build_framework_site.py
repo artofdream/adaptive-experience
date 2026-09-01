@@ -66,6 +66,14 @@ CSS = (
     'figure figcaption{margin-top:.5rem;color:var(--muted);'
     'font-family:ui-sans-serif,system-ui,sans-serif;font-size:.82rem}'
     '@media(max-width:480px){figure{margin:1.25rem -0.5rem}figure img,figure video{border-radius:0}}'
+    'pre{background:var(--code-bg);border:1px solid var(--rule);border-radius:4px;'
+    'padding:.75rem 1rem;overflow-x:auto;font-family:ui-monospace,Menlo,monospace;'
+    'font-size:.76rem;line-height:1.35;margin:1.25rem 0}'
+    '.table-wrap{overflow-x:auto;margin:1.25rem 0}'
+    'table{width:100%;border-collapse:collapse;font-family:ui-sans-serif,system-ui,sans-serif;'
+    'font-size:.82rem;line-height:1.4}'
+    'th,td{border:1px solid var(--rule);padding:.45rem .65rem;text-align:left;vertical-align:top}'
+    'th{background:var(--code-bg);font-weight:600}'
     'footer{margin-top:3rem;padding:1.5rem 1.25rem 3rem;border-top:1px solid var(--rule);'
     'color:var(--muted);font-family:ui-sans-serif,system-ui,sans-serif;font-size:.82rem}'
 )
@@ -109,18 +117,67 @@ def inline_md(text: str) -> str:
 def md_to_html(source: str) -> str:
     out: list[str] = []
     in_list: str | None = None
+    in_code: bool = False
+    code_lines: list[str] = []
+    in_table: bool = False
+    table_headers: list[str] = []
+    table_rows: list[list[str]] = []
 
     def close() -> None:
-        nonlocal in_list
+        nonlocal in_list, in_table, table_headers, table_rows
         if in_list:
             out.append('</' + in_list + '>')
             in_list = None
+        if in_table:
+            t = ['<div class="table-wrap"><table>']
+            if table_headers:
+                t.append('<thead><tr>' + ''.join('<th>' + inline_md(h) + '</th>' for h in table_headers) + '</tr></thead>')
+            if table_rows:
+                t.append('<tbody>')
+                for row in table_rows:
+                    t.append('<tr>' + ''.join('<td>' + inline_md(c) + '</td>' for c in row) + '</tr>')
+                t.append('</tbody>')
+            t.append('</table></div>')
+            out.append(''.join(t))
+            in_table = False
+            table_headers = []
+            table_rows = []
 
     for raw in source.splitlines():
+        if raw.strip().startswith('```'):
+            if in_code:
+                out.append('<pre><code>' + html.escape('\n'.join(code_lines)) + '</code></pre>')
+                code_lines = []
+                in_code = False
+            else:
+                close()
+                in_code = True
+            continue
+        if in_code:
+            code_lines.append(raw)
+            continue
+
         line = raw.strip()
         if not line:
             close()
             continue
+
+        if line.startswith('|') and line.endswith('|') and '|' in line[1:-1]:
+            if in_list:
+                close()
+            cells = [c.strip() for c in line[1:-1].split('|')]
+            if all(re.match(r'^:?-+:?$', c) for c in cells if c):
+                continue
+            if not in_table:
+                in_table = True
+                table_headers = cells
+            else:
+                table_rows.append(cells)
+            continue
+        else:
+            if in_table:
+                close()
+
         img = IMG_LINE.match(line)
         if img:
             close()
