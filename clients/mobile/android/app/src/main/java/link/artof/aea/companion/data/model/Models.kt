@@ -200,19 +200,36 @@ data class OrderResult(
     @SerialName("decline_code") val declineCode: String? = null
 )
 
-/** Mapped BFF HTTP failure for clear companion UI (401/403/503). */
+/**
+ * Mapped BFF HTTP failure for clear companion UI.
+ * Prefer `errorCode` from BFF JSON (`code` or `error`) when choosing copy (#365).
+ */
 class BffException(
     val statusCode: Int,
     val errorCode: String,
-    override val message: String
+    override val message: String,
+    val contextVersion: Int? = null
 ) : Exception(message) {
     val userMessage: String
-        get() = when (statusCode) {
-            401 -> "Session expired or authentication required. Restart the companion to continue."
-            403 -> "Request blocked (CSRF or origin). Restart the session, then try again."
-            503 -> "AEA service temporarily unavailable. Try again shortly."
-            429 -> "Too many requests. Wait a moment, then try again."
-            409 -> "Workspace changed while editing. Refresh and retry."
+        get() = when {
+            statusCode == 401 ->
+                "Session expired or authentication required. Restart the companion to continue."
+            statusCode == 403 ->
+                "Request blocked (CSRF or origin). Restart the session, then try again."
+            statusCode == 503 ->
+                "AEA service temporarily unavailable. Try again shortly."
+            statusCode == 429 ->
+                "Too many requests. Wait a moment, then try again."
+            errorCode == "stale_context" ->
+                "Workspace changed while editing. Refresh and retry."
+            errorCode == "total_mismatch" ->
+                "Order total is out of date (product + delivery). Refresh the summary and retry."
+            errorCode == "checkout_conflict" ->
+                "Checkout conflict — this order may already be in progress. Start over or retry."
+            errorCode == "product_unavailable" ->
+                "That product is no longer available. Go back to Pick and choose another."
+            statusCode == 409 ->
+                "Workspace changed while editing. Refresh and retry."
             else -> message.ifBlank { "Request failed ($statusCode $errorCode)" }
         }
 }

@@ -69,9 +69,25 @@ shared-understanding is **removed**.
 - Catalog may still use a local fallback list (with sold-out fail-closed) when
   workspace recommendations are unavailable; selection/checkout still POST to BFF.
 - Checkout sends opaque `session_pay_ref` only — no raw card fields (ADR-013).
-- Do not claim website/operator dual-write until sponsor re-probes.
+- Do not claim website/operator dual-write until sponsor re-probes (dual-probe
+  still required; #360). Debug / App Distribution builds do **not** prove
+  operator write-through.
 - CORS is N/A for the native client; residual risks include mobile cookie/`__Host-`
   CSRF handling and payment_reference source (session vault ref, not a card vault SDK).
+
+### UX / BFF hardening (#365)
+
+- **Back-nav + Start Over:** Pick → Need (clears selection), Pay → Pick; Start Over
+  on Need / Pick / Pay (not only Tracking) via existing `startOver()`. Stage
+  progress remains non-clickable.
+- **Checkout totals:** `completeCheckout` refreshes workspace and posts
+  `observed_total` from `facets.order_summary.total` (product + delivery fee),
+  matching web `confirmAndPay` — not product-only price (avoids `total_mismatch`
+  409 after delivery fee is applied).
+- **409 copy:** `stale_context` / `total_mismatch` / `checkout_conflict` /
+  `product_unavailable` map to distinct user-facing messages. Selection/delivery
+  get a **one-shot** `stale_context` retry after adopting `context_version`;
+  `product_unavailable` is not auto-retried forever.
 
 ## UX validation loop
 

@@ -14,6 +14,7 @@ import link.artof.aea.companion.data.model.OrderResult
 import link.artof.aea.companion.data.model.SelectionRequest
 import link.artof.aea.companion.data.model.SharedUnderstanding
 import link.artof.aea.companion.data.model.SharedUnderstandingResponse
+import link.artof.aea.companion.data.model.WorkspaceResponse
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -104,6 +105,10 @@ class SessionRepository(
     private val _sessionReady = MutableStateFlow(false)
     val sessionReady: StateFlow<Boolean> = _sessionReady.asStateFlow()
 
+    /** Authoritative checkout total from workspace order_summary (product + delivery). */
+    private val _orderSummaryTotal = MutableStateFlow<Double?>(null)
+    val orderSummaryTotal: StateFlow<Double?> = _orderSummaryTotal.asStateFlow()
+
     private var contextVersion: Int = 0
     private var usingLocalCatalogFallback: Boolean = true
 
@@ -179,20 +184,50 @@ class SessionRepository(
         _currentStage.value = JourneyStage.PAY
     }
 
+    /** Pick → Need: clear local selection so Pick does not keep a stale card (#365). */
+    fun backToNeed() {
+        _selectedArrangement.value = null
+        _sharedUnderstanding.value = _sharedUnderstanding.value.copy(selectedSku = null)
+        _orderSummaryTotal.value = null
+        _errorMessage.value = null
+        _currentStage.value = JourneyStage.NEED
+    }
+
+    /** Pay → Pick (#365). */
+    fun backToPick() {
+        _errorMessage.value = null
+        _currentStage.value = JourneyStage.PICK
+    }
+
     /**
-     * Live checkout path: optional card_message via selection options, then delivery,
-     * POST /order, then POST /checkout with opaque session_pay_ref only (no raw card fields).
+     * Display total for Pay: authoritative order_summary when known, else product +
+     * reference delivery fee (mirrors platform REFERENCE_DELIVERY_FEE = 12.0).
+     */
+    fun displayCheckoutTotal(selectedPrice: Double?): Double {
+        orderSummaryTotal.value?.let { return it }
+        val product = selectedPrice ?: return 0.0
+        return product + REFERENCE_DELIVERY_FEE
+    }
+
+    /**
+     * Live checkout path: refresh context_version, optional card_message via selection,
+     * delivery, POST /order, then POST /checkout with opaque session_pay_ref and
+     * observed_total from workspace order_summary (not product-only — #365 total_mismatch).
+     * One-shot stale_context retry on selection/delivery only (not product_unavailable).
      */
     suspend fun completeCheckout(cardMessage: String) {
         val selected = _selectedArrangement.value ?: return
         runGuarded {
             ensureSessionInternal()
+            // Authoritative context_version before the mutation chain (#365).
+            refreshContextFromWorkspace()
+
             val options = if (cardMessage.isNotBlank()) {
                 mapOf("card_message" to cardMessage.take(280))
             } else {
                 emptyMap()
             }
-            val selectAccepted = api.postSelection(
+            val selectAccepted = postSelectionRetryingStale(
                 SelectionRequest(
                     productId = selected.sku,
                     options = options,
@@ -204,7 +239,7 @@ class SessionRepository(
             }
 
             val today = LocalDate.now().toString()
-            val deliveryAccepted = api.postDelivery(
+            val deliveryAccepted = postDeliveryRetryingStale(
                 DeliveryRequest(
                     delivery = DeliveryDetails(
                         timing = DeliveryTiming(date = today, window = "afternoon"),
@@ -217,11 +252,25 @@ class SessionRepository(
                 contextVersion = deliveryAccepted.contextVersion
             }
 
+            // Mirror web confirmAndPay: observed_total = Number(order_summary.total).
+            // Delivery fee is applied after postDelivery; product-only price → total_mismatch.
+            val workspaceAfterDelivery = api.getWorkspace()
+            adoptWorkspace(workspaceAfterDelivery)
+            val summaryTotal = workspaceAfterDelivery.facets.orderSummary?.total
+
             val orderAccepted = api.postOrder()
+            val workspaceAfterOrder = api.getWorkspace()
+            adoptWorkspace(workspaceAfterOrder)
+            val observedTotal = workspaceAfterOrder.facets.orderSummary?.total
+                ?: summaryTotal
+                ?: (selected.price + REFERENCE_DELIVERY_FEE)
+
+            _orderSummaryTotal.value = observedTotal
+
             val checkout = api.postCheckout(
                 CheckoutRequest(
                     paymentReference = BffClient.SESSION_PAYMENT_REFERENCE,
-                    observedTotal = selected.price
+                    observedTotal = observedTotal
                 )
             )
 
@@ -239,7 +288,7 @@ class SessionRepository(
                 orderId = orderId,
                 status = status,
                 estimatedDelivery = "Today ($today afternoon window)",
-                totalAmount = selected.price,
+                totalAmount = observedTotal,
                 declineCode = checkout.declineCode
             )
             _currentStage.value = JourneyStage.TRACKING
@@ -250,6 +299,7 @@ class SessionRepository(
         _currentStage.value = JourneyStage.NEED
         _selectedArrangement.value = null
         _orderResult.value = null
+        _orderSummaryTotal.value = null
         _errorMessage.value = null
         _sharedUnderstanding.value = SharedUnderstanding()
         _messages.value = listOf(
@@ -358,6 +408,59 @@ class SessionRepository(
         }
     }
 
+    private suspend fun refreshContextFromWorkspace() {
+        try {
+            adoptWorkspace(api.getWorkspace())
+        } catch (_: Exception) {
+            // Fall back to last known contextVersion; mutations still CAS.
+        }
+    }
+
+    private fun adoptWorkspace(workspace: WorkspaceResponse) {
+        if (workspace.contextVersion > 0) {
+            contextVersion = maxOf(contextVersion, workspace.contextVersion)
+        }
+        workspace.facets.orderSummary?.total?.let { total ->
+            _orderSummaryTotal.value = total
+        }
+    }
+
+    private fun adoptStaleContext(ex: BffException) {
+        ex.contextVersion?.takeIf { it > 0 }?.let { contextVersion = maxOf(contextVersion, it) }
+    }
+
+    /**
+     * One-shot retry on selection 409 stale_context only.
+     * product_unavailable must surface to the user (no infinite retry).
+     */
+    private suspend fun postSelectionRetryingStale(request: SelectionRequest): AcceptedResponse {
+        return try {
+            api.postSelection(request)
+        } catch (ex: BffException) {
+            if (ex.statusCode == 409 && ex.errorCode == "stale_context") {
+                adoptStaleContext(ex)
+                refreshContextFromWorkspace()
+                api.postSelection(request.copy(observedContextVersion = contextVersion))
+            } else {
+                throw ex
+            }
+        }
+    }
+
+    private suspend fun postDeliveryRetryingStale(request: DeliveryRequest): AcceptedResponse {
+        return try {
+            api.postDelivery(request)
+        } catch (ex: BffException) {
+            if (ex.statusCode == 409 && ex.errorCode == "stale_context") {
+                adoptStaleContext(ex)
+                refreshContextFromWorkspace()
+                api.postDelivery(request.copy(observedContextVersion = contextVersion))
+            } else {
+                throw ex
+            }
+        }
+    }
+
     private suspend fun runGuarded(block: suspend () -> Unit) {
         _isLoading.value = true
         _errorMessage.value = null
@@ -383,5 +486,10 @@ class SessionRepository(
             sender = sender,
             text = text
         )
+    }
+
+    companion object {
+        /** Matches platform aea_platform.pricing.REFERENCE_DELIVERY_FEE. */
+        const val REFERENCE_DELIVERY_FEE = 12.0
     }
 }
