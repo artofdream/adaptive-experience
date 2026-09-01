@@ -47,18 +47,12 @@ install from the closed track.
 
 Release `signingConfig` reads these env vars **only when all are set**:
 
-- `ANDROID_UPLOAD_KEYSTORE` — GitLab **file** variable; Gradle `storeFile`
+- `ANDROID_UPLOAD_KEYSTORE` — GitLab **file** variable; **base64 of the JKS**
+  (not raw binary). The job `base64 -d`s it to a job-local keystore for Gradle.
 - `ANDROID_UPLOAD_KEYSTORE_PASSWORD`
 - `ANDROID_UPLOAD_KEY_ALIAS`
 - `ANDROID_UPLOAD_KEY_PASSWORD`
 
-**Remaining sponsor step:** paste the upload keystore and passwords into
-GitLab CI/CD → Variables (do not paste values in issues, MRs, or chat):
-
-- `ANDROID_UPLOAD_KEYSTORE` — File, protected (binary; masking may not apply)
-- `ANDROID_UPLOAD_KEYSTORE_PASSWORD` — Variable, protected, masked
-- `ANDROID_UPLOAD_KEY_ALIAS` — Variable, protected
-- `ANDROID_UPLOAD_KEY_PASSWORD` — Variable, protected, masked
-
-Do not create those variables from an agent. Do not commit a keystore, PEM,
-or SHA-1. Same paste pattern as `GOOGLE_SERVICES_JSON`.
+Sponsor re-paste of `ANDROID_UPLOAD_KEYSTORE` as base64 is recorded 2026-09-01
+(#351). Do not recreate `GOOGLE_SERVICES_JSON`. Do not commit a keystore, PEM,
+or SHA-1. Do not paste values in issues, MRs, or chat.

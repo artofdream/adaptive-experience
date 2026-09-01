@@ -327,12 +327,13 @@ android-build-debug:
 
 # Signed Play upload bundle for closed testing (#347). Not production.
 # Artifact is the .aab only. Never attach the keystore or google-services.json.
-# Sponsor pastes CI secrets (same file-variable pattern as GOOGLE_SERVICES_JSON):
-#   ANDROID_UPLOAD_KEYSTORE          file variable (upload keystore bytes)
+# ANDROID_UPLOAD_KEYSTORE is a GitLab File variable whose value is **base64**
+# of the upload JKS (#351). Do not paste raw keystore bytes into the textarea.
+#   ANDROID_UPLOAD_KEYSTORE          file variable (base64 of JKS)
 #   ANDROID_UPLOAD_KEYSTORE_PASSWORD protected, masked variable
 #   ANDROID_UPLOAD_KEY_ALIAS         protected variable (alias name only)
 #   ANDROID_UPLOAD_KEY_PASSWORD      protected, masked variable
-# Gating: manual + allow_failure. Script exits 0 (honest SKIP) when the
+# Gating: manual + allow_failure. Script exits 1 (honest fail) when the
 # keystore vars are absent. Protected CI variables are typically unavailable
 # on unprotected MR source branches — this job is not an MR gate and must not
 # turn MRs red. Do not expect it to run on every MR. Pipeline result of this
@@ -363,12 +364,23 @@ android-bundle-release:
         || [ -z "${ANDROID_UPLOAD_KEY_PASSWORD:-}" ]; then
         echo "SKIP: upload-keystore CI variables are not available in this pipeline."
         echo "Protected file/variable secrets are typically unset on unprotected branches."
-        echo "Sponsor must add ANDROID_UPLOAD_KEYSTORE (file), ANDROID_UPLOAD_KEYSTORE_PASSWORD,"
+        echo "Sponsor must add ANDROID_UPLOAD_KEYSTORE (file, base64 of JKS), ANDROID_UPLOAD_KEYSTORE_PASSWORD,"
         echo "ANDROID_UPLOAD_KEY_ALIAS, and ANDROID_UPLOAD_KEY_PASSWORD in GitLab CI/CD settings."
         echo "Do not paste those values in issues. This is not a signed .aab."
         exit 1
       fi
-    - sh ./gradlew bundleRelease
+      set +x
+      KS_OUT=/tmp/aea-upload-keystore.jks
+      rm -f "$KS_OUT"
+      if ! tr -d '\n\r\t ' < "${ANDROID_UPLOAD_KEYSTORE}" | base64 -d > "$KS_OUT" || [ ! -s "$KS_OUT" ]; then
+        echo "FAIL: ANDROID_UPLOAD_KEYSTORE did not decode as base64 to a non-empty keystore."
+        echo "Re-paste the File variable as base64 of the JKS. Do not paste raw keystore bytes."
+        echo "Do not print the file. This is not a signed .aab."
+        exit 1
+      fi
+      echo "ok: decoded ANDROID_UPLOAD_KEYSTORE to job-local keystore (not an artifact)"
+      export ANDROID_UPLOAD_KEYSTORE="$KS_OUT"
+      sh ./gradlew bundleRelease
     - test -f app/build/outputs/bundle/release/app-release.aab
   artifacts:
     paths:
