@@ -37,5 +37,6 @@ The live florist at [aea.artof.link](https://aea.artof.link) is one case study, 
 - Explore the [schema](schema.html) for the complete architectural map, layers, loop, and named journeys.
 - See the [stack](stack.html) for the high-level design used so far (two hostnames, this site, the florist runtime).
 - Review the [Path B case study](path-b.html) for customer journey video recordings and implementation details.
+- See the [Companion](companion.html) page for the thin Android client and native↔web gap-closing loop.
 - Read the [journal](journal.html) for curated stories of challenge, solve, ship, and lesson learned.
 - See the [glossary](glossary.html) for terms used across this site (Path B, CF-NNN, ID freeze, and more).

@@ -57,6 +57,14 @@ Sponsor re-paste of `ANDROID_UPLOAD_KEYSTORE` as base64 is recorded 2026-09-01
 (#351). Do not recreate `GOOGLE_SERVICES_JSON`. Do not commit a keystore, PEM,
 or SHA-1. Do not paste values in issues, MRs, or chat.
 
+## Native↔web parity (gap-closing loop)
+
+Living matrix + detect→decide→ship→prove loop:
+[`research/random-thoughts/2026-09-02-companion-native-web-gap-closing-loop.md`](../../../research/random-thoughts/2026-09-02-companion-native-web-gap-closing-loop.md).
+MVP sequence: contract tests (#367) → `X-AEA-Client` (#368) → weekday probe (#369).
+Public page: [architecture.artof.link/companion](https://architecture.artof.link/companion).
+Dual-probe honesty remains #360. App Distribution ≠ Play. T-09 operator ≠ orders.
+
 ## Live BFF wiring (internal testing, #362)
 
 Need / Pick / Pay call the live Edge BFF at `https://aea.artof.link` (cookie
