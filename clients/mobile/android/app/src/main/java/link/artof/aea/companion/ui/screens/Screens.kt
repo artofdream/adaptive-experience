@@ -49,28 +49,32 @@ fun NeedScreen(
             }
         }
 
-        // Quick Suggestion Chips (J1 Urgent Sam shortcut)
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 4.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            SuggestionChip(
-                onClick = { onSendMessage("I need flowers for Mom\'s birthday, same day") },
-                label = { Text("Mom\'s Birthday (Same-Day)") }
-            )
-            SuggestionChip(
-                onClick = { onSendMessage("Anniversary bouquet under $80") },
-                label = { Text("Anniversary ($80)") }
-            )
+        // Quick Suggestion Chips (only shown on fresh start before occasion or user message)
+        val hasUserMessages = messages.any { it.sender == "user" }
+        val hasOccasion = !sharedUnderstanding.occasion.isNullOrEmpty()
+        if (!hasUserMessages && !hasOccasion) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                SuggestionChip(
+                    onClick = { onSendMessage("I need flowers for Mom\'s birthday, same day") },
+                    label = { Text("Mom\'s Birthday (Same-Day)") }
+                )
+                SuggestionChip(
+                    onClick = { onSendMessage("Anniversary bouquet under $80") },
+                    label = { Text("Anniversary ($80)") }
+                )
+            }
         }
 
         // Text input row
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
+                .padding(horizontal = 16.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             OutlinedTextField(
@@ -95,56 +99,47 @@ fun NeedScreen(
             }
         }
 
-        // Budget ask after occasion unlock (#359) — chips + explicit Skip (Path B honesty).
-        val hasOccasion = !sharedUnderstanding.occasion.isNullOrEmpty()
+        // Budget ask after occasion unlock (#359 / #374) — compact FilterChips with active highlight
         if (hasOccasion) {
-            Text(
-                text = "Budget for this arrangement?",
-                style = MaterialTheme.typography.titleSmall,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
-            )
-            Row(
+            val currentBudget = sharedUnderstanding.budget
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 2.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    .padding(horizontal = 16.dp, vertical = 4.dp)
             ) {
-                SuggestionChip(
-                    onClick = { onBudgetChoice("Under $50", 50.0) },
-                    enabled = !isLoading,
-                    label = { Text("Under $50") }
+                Text(
+                    text = "Budget for this arrangement:",
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onBackground
                 )
-                SuggestionChip(
-                    onClick = { onBudgetChoice("$50–100", 100.0) },
-                    enabled = !isLoading,
-                    label = { Text("$50–100") }
-                )
-                SuggestionChip(
-                    onClick = { onBudgetChoice("$100+", null) },
-                    enabled = !isLoading,
-                    label = { Text("$100+") }
-                )
-            }
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 2.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                TextButton(
-                    onClick = onSkipBudget,
-                    enabled = !isLoading
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text("Skip budget")
-                }
-                val budgetLabel = sharedUnderstanding.budget
-                if (!budgetLabel.isNullOrBlank()) {
-                    Text(
-                        text = if (budgetLabel == "skipped") "Budget: skipped"
-                        else "Budget: $budgetLabel",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    FilterChip(
+                        selected = currentBudget == "Under $50",
+                        onClick = { onBudgetChoice("Under $50", 50.0) },
+                        enabled = !isLoading,
+                        label = { Text("<$50") }
+                    )
+                    FilterChip(
+                        selected = currentBudget == "$50–100",
+                        onClick = { onBudgetChoice("$50–100", 100.0) },
+                        enabled = !isLoading,
+                        label = { Text("$50–100") }
+                    )
+                    FilterChip(
+                        selected = currentBudget == "$100+",
+                        onClick = { onBudgetChoice("$100+", null) },
+                        enabled = !isLoading,
+                        label = { Text("$100+") }
+                    )
+                    FilterChip(
+                        selected = currentBudget == "skipped",
+                        onClick = onSkipBudget,
+                        enabled = !isLoading,
+                        label = { Text("No limit") }
                     )
                 }
             }
@@ -163,7 +158,7 @@ fun NeedScreen(
             Text(
                 when {
                     !hasOccasion -> "Specify Occasion to Continue"
-                    !budgetPromptResolved -> "Set or Skip Budget to Continue"
+                    !budgetPromptResolved -> "Choose a Budget Range to Continue"
                     else -> "View Arrangements (${sharedUnderstanding.occasion}) →"
                 }
             )
@@ -377,6 +372,7 @@ fun PayScreen(
             value = cardMessage,
             onValueChange = { cardMessage = it },
             label = { Text("Enclosure Card Message") },
+            supportingText = { Text("Complimentary handwritten card included with delivery") },
             modifier = Modifier.fillMaxWidth(),
             maxLines = 3
         )
