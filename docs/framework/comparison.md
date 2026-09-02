@@ -23,34 +23,7 @@ An independent Art of Group note. It maps AEA onto six harness layers (guides, s
 
 **Adaptive Experience = Shared Understanding + Domain Services + Outer Harness**
 
-```
-┌────────────────────────────────────────────────────────────────────────┐
-│ 1. THE CUSTOMER TALKS                                                  │
-│    Shopper: "I need bright birthday flowers for my mom today in Berlin"│
-└───────────────────────────────────┬────────────────────────────────────┘
-                                    │
-                                    ▼
-┌────────────────────────────────────────────────────────────────────────┐
-│ 2. THE AI INTERPRETER & LIVE NOTEPAD                                   │
-│    • AI Concierge: Listens and extracts intent (Occasion, Date, Color) │
-│    • Shared Understanding: A digital notepad visible to both parties   │
-└───────────────────────────────────┬────────────────────────────────────┘
-                                    │
-                                    ▼
-┌────────────────────────────────────────────────────────────────────────┐
-│ 3. THE REAL-WORLD SERVICES (The Source of Truth)                       │
-│    • Warehouse: Validates real physical inventory (Fail-Closed)        │
-│    • Delivery Engine: Calculates realistic driver routing & cutoffs    │
-│    • Cash Register: Itemizes pricing, taxes, and zero-PII payment      │
-└───────────────────────────────────┬────────────────────────────────────┘
-                                    │
-                                    ▼
-┌────────────────────────────────────────────────────────────────────────┐
-│ 4. THE OUTER HARNESS (The Factory & Quality Inspectors)                │
-│    • 14 Automated Quality Guards: Verifies facts before showing them   │
-│    • Independent Gatekeeper: Ensures no untested changes reach customers│
-└────────────────────────────────────────────────────────────────────────┘
-```
+![The Core Formula in Everyday Terms: 4-step flow](assets/everyday-formula-flow.svg)
 
 ### The Three Golden Rules:
 - **AI Interprets, Domain Services Decide:** The AI suggests flowers, but only the database confirms they are in stock.
@@ -69,33 +42,7 @@ An independent Art of Group note. It maps AEA onto six harness layers (guides, s
 
 Think of an AI system like a 5-story building. **Each floor rests on the one below it.** If you skip the lower floors, the top floor collapses.
 
-```
-┌────────────────────────────────────────────────────────────────────────┐
-│ 🏢 FLOOR 05: THE AGENT TEAM & GOVERNANCE (Graph Engineering)           │
-│    Specialized human/agent roles + an Independent Reviewer.            │
-│  ┌──────────────────────────────────────────────────────────────────┐  │
-│  │ 🔄 FLOOR 04: THE GOAL RUN & RETRIES (Loop Engineering)           │  │
-│  │    Clear objectives, execution budgets, and single-task focus.   │  │
-│  │  ┌────────────────────────────────────────────────────────────┐  │  │
-│  │  │ ⚙️ FLOOR 03: THE MACHINE & TESTS (Harness Engineering)     │  │  │
-│  │  │    Connecting AI to real tools + automated quality guards. │  │  │
-│  │  │  ┌──────────────────────────────────────────────────────┐  │  │  │
-│  │  │  │ 🧠 FLOOR 02: THE MEMORY CURATOR (Context Engineering)│  │  │  │
-│  │  │  │    Filters noise, keeps lessons, manages active window.│  │  │
-│  │  │  │  ┌────────────────────────────────────────────────┐  │  │  │  │
-│  │  │  │  │ 💬 FLOOR 01: THE MESSAGE (Prompt Engineering)  │  │  │  │  │
-│  │  │  │  │    Clear role, single objective, strict rules. │  │  │  │  │
-│  │  │  │  └────────────────────────────────────────────────┘  │  │  │  │
-│  │  │  └──────────────────────────────────────────────────────┘  │  │  │
-│  │  └────────────────────────────────────────────────────────────┘  │  │
-│  └──────────────────────────────────────────────────────────────────┘  │
-└────────────────────────────────────────────────────────────────────────┘
-                                    │
-                                    ▼ Built On Real Infrastructure
-┌────────────────────────────────────────────────────────────────────────┐
-│ 🏛️ SOLID FOUNDATION: REAL DATABASES & INVENTORY (PostgreSQL & Kafka)   │
-└────────────────────────────────────────────────────────────────────────┘
-```
+![The 5 Concentric Floors: Why AI Apps Break](assets/five-floors-building.svg)
 
 - **The Dependency Law:** If your multi-agent team keeps failing, don't blame the agents—check your memory filter. Bad input on Floor 2 ruins everything above it.
 - **The Economic Law:** Swapping the AI model (like switching from Claude to GPT or Gemini) takes **1 afternoon**. Rebuilding your 5-floor operational harness takes **3 months**. The harness is your real intellectual property.
