@@ -45,3 +45,8 @@ Unprobed claims stay **Unknown**.
 - [Framework home](index.html)
 
 Status words need a probe. AI may interpret; domain services decide.
+
+## Play honesty gate (#390)
+
+ASUS smoke (2026-09-02) re-check showed `DEBUGGABLE` + `installer=null` for versionCode 3 after Need→Pay. Release `buildTypes` now set `isDebuggable = false` explicitly. **Do not claim Play honesty for UX findings until the dedicated ASUS shows Play-signed non-debuggable with installer=`com.android.vending`.** Debug/FAD builds share `applicationId` with release for Firebase client match — sideload can overwrite Play installs.
+

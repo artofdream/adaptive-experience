@@ -52,6 +52,9 @@ android {
 
     buildTypes {
         release {
+            // #390 honesty: release must never be debuggable (Play AABs / ASUS gate).
+            // Android default is false; set explicitly so FAD/debug overwrite is obvious in review.
+            isDebuggable = false
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
