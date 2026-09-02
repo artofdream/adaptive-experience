@@ -34,14 +34,14 @@ Staff list exists. It is not yet a work queue.
 
 | Gap | Ticket | Native needed? |
 |---|---|---|
-| Card, catalog title, channel, paid/declined on the row | #376 | Channel prove = ROG checkout |
+| Card, catalog title, channel, paid/declined on the row | #376 / !409 **merged** | Channel prove = ROG checkout |
 | Today / delayed filter; “order or inbox” copy | #378 | No |
 | T-09 badge when that session also has an order | #379 | No |
 | Fake Claim/Resolve (local JS only) | #380 — **remove buttons** (persist parked) | No |
 | Destination handle without street | #382 — parked (PO) | T-05 collection is #381 |
 | Companion has no T-09; checkout hard-codes today/afternoon/home | #381 grok-bot | Yes — ROG |
 
-Cloud SSE opened stacked MRs (do not re-open the same slices): !409 #376, !412 #378, !415 #379, !417 #380-remove. Merge **!409 first** (targets `main`); then retarget. Do not persist Claim unless PO names it. Channel persist is in !409; live `companion-android` still needs a ROG checkout (#381).
+Cloud SSE opened stacked MRs (do not re-open the same slices): !409 #376 **merged** `d7be014`; !412 #378 MWPS on `main`; !415 #379 and !417 #380-remove still stacked. Do not persist Claim unless PO names it. Channel persist is on `main`; live `companion-android` still needs a ROG checkout (#381). Vault follow-on: #394 / !420.
 
 ## Native ↔ web (operator-relevant only)
 

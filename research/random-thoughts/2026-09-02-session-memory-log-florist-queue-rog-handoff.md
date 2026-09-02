@@ -19,19 +19,20 @@ Sponsor rule: **be proactive**. cts-ai is back; grok-bot holds ADB on the dedica
 ## Already on main
 
 - !401 staff order list (FR-013). #360 closed. Live `/florist` has Staff orders.
+- !409 / #376 staff-row card, catalog title, channel, paid/declined (`d7be014`).
 - Companion Need tape on [architecture.artof.link/companion.html](https://architecture.artof.link/companion.html) (!399 / #373).
 - Need→Pick→Pay BFF contracts shipped (!376/!379/!380). Write-through to **customer** Track is still session-scoped; do not reopen #360 for that.
 
-## Florist slices opened (not yet on `main`)
+## Florist slices (cloud SSE)
 
-[Florist no-sponsor slices](bc-f1e61c7c-9e90-4841-9692-11baa7dc2065) shipped four stacked MRs. MRC merge order: **!409 → !412 → !415 → !417**. Do not merge the later three into the parent feature branch (that would mix !409). After !409 is on `main`, retarget !412 to `main`.
+[Florist no-sponsor slices](bc-f1e61c7c-9e90-4841-9692-11baa7dc2065) opened four stacked MRs. Merge **!409 first**, then retarget; do not merge later slices into the parent feature branch.
 
-| Issue | MR | HEAD | In |
+| Issue | MR | State | In |
 |---|---|---|---|
-| #376 | [!409](https://gitlab.com/artof-group/adaptive-experience-architecture/-/merge_requests/409) → `main` | `6e88a364` | card, catalog title, allowlisted channel (`web` / `companion-android` / `unknown`, migration 023), paid/declined/unpaid |
-| #378 | [!412](https://gitlab.com/artof-group/adaptive-experience-architecture/-/merge_requests/412) → !409 branch | `08ec183d` | Today (live default) / Delayed / All; “order or inbox” copy |
-| #379 | [!415](https://gitlab.com/artof-group/adaptive-experience-architecture/-/merge_requests/415) → !412 branch | `dc0758e1` | read-only Has order / Inbox session badge |
-| #380 | [!417](https://gitlab.com/artof-group/adaptive-experience-architecture/-/merge_requests/417) → !415 branch | `61a18af3` | **remove** fake Claim/Resolve only |
+| #376 | [!409](https://gitlab.com/artof-group/adaptive-experience-architecture/-/merge_requests/409) | **merged** `d7be014` 20:02Z | card, catalog title, allowlisted channel (`web` / `companion-android` / `unknown`, migration 023), paid/declined/unpaid |
+| #378 | [!412](https://gitlab.com/artof-group/adaptive-experience-architecture/-/merge_requests/412) | open → `main`, MWPS `08ec183d` | Today (live default) / Delayed / All; “order or inbox” copy |
+| #379 | [!415](https://gitlab.com/artof-group/adaptive-experience-architecture/-/merge_requests/415) | open → !412 branch `dc0758e1` | read-only Has order / Inbox session badge |
+| #380 | [!417](https://gitlab.com/artof-group/adaptive-experience-architecture/-/merge_requests/417) | open → !415 branch `61a18af3` | **remove** fake Claim/Resolve only |
 
 **Parked:** #382 destination handle (PO). Persist Claim (not in !417).
 
@@ -39,7 +40,7 @@ CI Docker integration already passed on !409 (`platform-foundation-integration` 
 
 ## Native proof grok-bot must run
 
-Companion checkout hard-codes today / afternoon / `home`. No T-09 POST. After #376 merges: ROG Confirm → order id on `/florist` Staff orders; comment UUID on #381. Channel `companion-android` vs `web` is the join.
+Companion checkout hard-codes today / afternoon / `home`. No T-09 POST. !409 is on `main`: ROG Confirm → order id on `/florist` Staff orders with `channel=companion-android`; comment UUID on #381.
 
 ## Out
 
