@@ -79,6 +79,22 @@ class FakeOrchestration:
             "email": "private@example.invalid",
         }]}
 
+    def list_operator_orders(self, **kwargs):
+        return {"status": 200, "items": [{
+            "order_id": "order-9",
+            "session_id": "11111111-1111-4111-8111-111111111111",
+            "status": "confirmed",
+            "delayed": False,
+            "authoritative_status": "confirmed",
+            "product_id": "classic-rose-dozen",
+            "destination_reference": "dest-1",
+            "timing": {"date": "2026-08-16", "window": "morning"},
+            "card_message": "Happy birthday Mum",
+            "updated_at": "2026-09-02T12:00:00+00:00",
+            "secret": "omit",
+            "email": "private@example.invalid",
+        }]}
+
     def operator_session_summary(self, **kwargs):
         if kwargs["session_id"] == "00000000-0000-0000-0000-000000000000":
             return {"status": 404, "code": "session_not_found"}
@@ -94,7 +110,8 @@ class FakeOrchestration:
                 "structured_intent": {"occasion": "birthday", "secret": "omit"}},
             "order": {"order_id": "order-9", "status": "preparing",
                       "delayed": False, "authoritative_status": "preparing"},
-            "selection": {"product_id": "classic-rose-dozen"},
+            "selection": {"product_id": "classic-rose-dozen",
+                          "options": {"card_message": "Happy birthday Mum"}},
             "delivery": {"destination_reference": "dest-1",
                          "timing": {"date": "2026-08-16", "window": "morning"}},
             "availability": [{"product_id": "classic-rose-dozen",
@@ -626,6 +643,7 @@ class PerimeterTests(unittest.TestCase):
         cookie, _csrf = self.session()
         headers = {**self.auth, "cookie": cookie}
         self.assertEqual(404, self.call("GET", "/api/v1/operator/escalations", headers)[0])
+        self.assertEqual(404, self.call("GET", "/api/v1/operator/orders", headers)[0])
         self.assertEqual(404, self.call("GET", "/api/v1/operator/forecasts", headers)[0])
         self.assertEqual(404, self.call(
             "GET", "/api/v1/operator/sessions/11111111-1111-4111-8111-111111111111",
@@ -663,6 +681,18 @@ class PerimeterTests(unittest.TestCase):
         }], inbox["items"])
         self.assertNotIn(b"secret", body)
         self.assertNotIn(b"email", body)
+        status, _, body = call("GET", "/api/v1/operator/orders", auth)
+        self.assertEqual(200, status)
+        orders = json.loads(body)
+        self.assertEqual("order-9", orders["items"][0]["order_id"])
+        self.assertEqual("classic-rose-dozen", orders["items"][0]["product_id"])
+        self.assertEqual({"date": "2026-08-16", "window": "morning"},
+                         orders["items"][0]["timing"])
+        self.assertEqual("Happy birthday Mum", orders["items"][0]["card_message"])
+        self.assertNotIn("secret", orders["items"][0])
+        self.assertNotIn("email", orders["items"][0])
+        self.assertNotIn(b"secret", body)
+        self.assertNotIn(b"email", body)
         status, _, body = call("GET", "/api/v1/operator/forecasts", auth)
         self.assertEqual(200, status)
         forecasts = json.loads(body)
@@ -676,6 +706,9 @@ class PerimeterTests(unittest.TestCase):
         self.assertEqual("roses for mum", summary["conversation"]["messages"][0]["text"])
         self.assertEqual({"occasion": "birthday"}, summary["shared_understanding"]["structured_intent"])
         self.assertEqual("preparing", summary["order"]["authoritative_status"])
+        self.assertEqual("Happy birthday Mum", summary["selection"]["card_message"])
+        self.assertEqual({"date": "2026-08-16", "window": "morning"},
+                         summary["delivery"]["timing"])
         self.assertEqual("available", summary["availability"][0]["availability_status"])
         self.assertEqual("faq", summary["support_answers"][0]["kind"])
         self.assertIn("2 PM", summary["support_answers"][0]["answer"])

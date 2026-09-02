@@ -4,6 +4,8 @@ import uuid
 from datetime import datetime, timezone
 from typing import Callable
 
+from .selection import CARD_MESSAGE_MAX_LENGTH
+
 # Order status lifecycle: creation, checkout submission, payment confirmation
 # (M5), then FR-015/FR-023 fulfillment through completion. Status only moves
 # forward along this sequence; `delayed` is an orthogonal flag (FR-023).
@@ -77,6 +79,47 @@ class OrderService:
 
     def projection(self, *, session_id: str) -> dict | None:
         return self.store.by_session(session_id)
+
+    def list_recent(self, limit: int = 50) -> list[dict]:
+        """Least-data staff order list (FR-013). Not CRM; no email or product dump."""
+        capped = min(max(int(limit), 1), 50)
+        rows = self.store.list_recent(limit=capped)
+        return [self._least_data_operator_item(row) for row in rows
+                if isinstance(row, dict)]
+
+    @staticmethod
+    def _least_data_operator_item(row: dict) -> dict:
+        delayed = bool(row.get("delayed"))
+        status = row.get("status")
+        product = row.get("product") if isinstance(row.get("product"), dict) else {}
+        delivery = row.get("delivery") if isinstance(row.get("delivery"), dict) else {}
+        options = product.get("options") if isinstance(product.get("options"), dict) else {}
+        card = options.get("card_message")
+        if isinstance(card, str):
+            card = card.strip()[:CARD_MESSAGE_MAX_LENGTH] or None
+        else:
+            card = None
+        timing_src = delivery.get("timing") if isinstance(delivery.get("timing"), dict) else {}
+        timing = {key: timing_src[key] for key in ("date", "window") if key in timing_src}
+        updated = row.get("updated_at")
+        if hasattr(updated, "isoformat"):
+            updated = updated.isoformat()
+        elif updated is not None:
+            updated = str(updated)
+        product_id = product.get("product_id")
+        destination = delivery.get("destination_reference")
+        return {
+            "order_id": str(row.get("order_id") or ""),
+            "session_id": str(row.get("session_id") or ""),
+            "status": status,
+            "delayed": delayed,
+            "authoritative_status": "delayed" if delayed else status,
+            "product_id": product_id if isinstance(product_id, str) else None,
+            "destination_reference": destination if isinstance(destination, str) else None,
+            "timing": timing,
+            "card_message": card,
+            "updated_at": updated,
+        }
 
     def session_prior_product_id(self, session_id: str) -> str | None:
         """Same-session accepted-order product for the thin FR-008 T-03 hint.

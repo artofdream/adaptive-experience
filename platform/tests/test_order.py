@@ -51,6 +51,29 @@ class FakeOrderStore:
             "context_version": 1,
         }
 
+    def list_recent(self, *, limit=50):
+        self.listed_limit = limit
+        if not self.exists:
+            return []
+        return [{
+            "order_id": "order-1",
+            "session_id": "sess-1",
+            "status": self.current,
+            "delayed": False,
+            "product": {
+                "product_id": self.product_id,
+                "options": {"card_message": "Happy birthday Mum", "size": "large"},
+                "email": "private@example.invalid",
+            },
+            "delivery": {
+                "destination_reference": "dest-1",
+                "timing": {"date": "2026-09-01", "window": "morning"},
+                "street": "12 Private Lane",
+            },
+            "updated_at": "2026-09-02T12:00:00+00:00",
+            "email": "private@example.invalid",
+        }]
+
 
 class OrderServiceTests(unittest.TestCase):
     def _service(self, store=None):
@@ -163,6 +186,52 @@ class OrderServiceTests(unittest.TestCase):
                 raise RuntimeError("lookup")
 
         self.assertIsNone(OrderService(BrokenStore(current="created")).prior_product_id("s"))
+
+    def test_list_recent_is_least_data_without_email_or_product_dump(self):
+        store = FakeOrderStore(current="confirmed")
+        items = self._service(store).list_recent(limit=50)
+        self.assertEqual(50, store.listed_limit)
+        self.assertEqual(1, len(items))
+        item = items[0]
+        self.assertEqual("order-1", item["order_id"])
+        self.assertEqual("sess-1", item["session_id"])
+        self.assertEqual("confirmed", item["status"])
+        self.assertFalse(item["delayed"])
+        self.assertEqual("confirmed", item["authoritative_status"])
+        self.assertEqual("classic-rose-dozen", item["product_id"])
+        self.assertEqual("dest-1", item["destination_reference"])
+        self.assertEqual({"date": "2026-09-01", "window": "morning"}, item["timing"])
+        self.assertEqual("Happy birthday Mum", item["card_message"])
+        self.assertEqual("2026-09-02T12:00:00+00:00", item["updated_at"])
+        self.assertNotIn("email", item)
+        self.assertNotIn("product", item)
+        self.assertNotIn("delivery", item)
+        self.assertNotIn("street", item)
+        self.assertNotIn("options", item)
+        blob = str(item)
+        self.assertNotIn("private@example.invalid", blob)
+        self.assertNotIn("12 Private Lane", blob)
+
+    def test_list_recent_truncates_card_message_and_marks_delayed(self):
+        store = FakeOrderStore(current="preparing")
+        def delayed_rows(*, limit=50):
+            store.listed_limit = limit
+            return [{
+                "order_id": "order-2",
+                "session_id": "sess-2",
+                "status": "preparing",
+                "delayed": True,
+                "product": {"product_id": "lilac-bouquet",
+                            "options": {"card_message": "x" * 400}},
+                "delivery": {"destination_reference": "dest-2",
+                             "timing": {"date": "2026-09-03", "window": "afternoon"}},
+                "updated_at": "2026-09-02T13:00:00+00:00",
+            }]
+        store.list_recent = delayed_rows
+        item = self._service(store).list_recent()[0]
+        self.assertTrue(item["delayed"])
+        self.assertEqual("delayed", item["authoritative_status"])
+        self.assertEqual(280, len(item["card_message"]))
 
 
 if __name__ == "__main__":

@@ -10,7 +10,7 @@
   <script src="/assets/florist.js" defer></script>
 </head>
 <body class="operator">
-  <a class="skip-link" href="#inbox">Skip to inbox</a>
+  <a class="skip-link" href="#orders">Skip to staff orders</a>
   <header class="site-header">
     <a class="brand" href="/florist" aria-label="Florist operator home">Lily's Florist · Operator</a>
     <p class="header-note">Shop is a separate browser. Do not open this console in the same browser as the customer workspace (CSRF).</p>
@@ -19,7 +19,8 @@
   <main class="operator-shell">
     <p class="operator-banner" role="note">
       <strong>Local florist operator sample.</strong>
-      Read-only T-09 inbox. Not live chat, not billing CRM, and not FR-016 / FR-017 engagement.
+      Staff order list (FR-013) and read-only T-09 inbox. Least-data opaque refs only.
+      Not live chat, not billing CRM, and not FR-016 / FR-017 engagement.
       Inventory here does not enable T-03 Select.
       <details>
         <summary>Flags and least-data rules</summary>
@@ -33,11 +34,34 @@
     <p id="operator-mode" class="status operator-mode" aria-live="polite"></p>
 
     <div class="operator-layout">
+      <section id="orders" class="panel operator-inbox" aria-labelledby="orders-title">
+        <header>
+          <div>
+            <p class="eyebrow">FR-013</p>
+            <h1 id="orders-title">Staff orders</h1>
+            <p class="subtitle">Companion and website checkouts. Least-data. Opaque destination refs. Not CRM.</p>
+          </div>
+        </header>
+        <table class="operator-table">
+          <thead>
+            <tr>
+              <th scope="col">Updated</th>
+              <th scope="col">Order</th>
+              <th scope="col">Status</th>
+              <th scope="col">Arrangement</th>
+              <th scope="col">When</th>
+              <th scope="col">Destination</th>
+            </tr>
+          </thead>
+          <tbody id="order-rows"></tbody>
+        </table>
+      </section>
+
       <section id="inbox" class="panel operator-inbox" aria-labelledby="inbox-title">
         <header>
           <div>
             <p class="eyebrow">T-09 · FR-006</p>
-            <h1 id="inbox-title">Contact Florist inbox</h1>
+            <h2 id="inbox-title">Contact Florist inbox</h2>
             <p class="subtitle">Human follow-up requests. Opaque session references only.</p>
           </div>
         </header>

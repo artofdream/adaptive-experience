@@ -1,4 +1,32 @@
 const TOKEN = "local-browser-token";
+const SAMPLE_ORDERS = [
+  {
+    order_id: "ord-sample-1",
+    session_id: "11111111-1111-4111-8111-111111111111",
+    status: "preparing",
+    delayed: false,
+    authoritative_status: "preparing",
+    product_id: "classic-rose-dozen",
+    destination_reference: "dest-ref-1",
+    timing: { date: "2026-08-16", window: "morning" },
+    card_message: "Happy birthday Mum",
+    updated_at: "2026-08-15T08:20:00+00:00",
+    sample: true,
+  },
+  {
+    order_id: "ord-sample-2",
+    session_id: "22222222-2222-4222-8222-222222222222",
+    status: "dispatched",
+    delayed: true,
+    authoritative_status: "delayed",
+    product_id: "lilac-bouquet",
+    destination_reference: "dest-ref-2",
+    timing: { date: "2026-08-15", window: "afternoon" },
+    card_message: "Thinking of you",
+    updated_at: "2026-08-15T07:50:00+00:00",
+    sample: true,
+  },
+];
 const SAMPLE_INBOX = [
   {
     message_id: "sample-esc-1",
@@ -35,7 +63,7 @@ const SAMPLE_SESSIONS = {
     ] },
     shared_understanding: { structured_intent: { occasion: "birthday", recipient: "Mum", budget: "75" } },
     order: { order_id: "ord-sample-1", status: "preparing", delayed: false, authoritative_status: "preparing" },
-    selection: { product_id: "classic-rose-dozen" },
+    selection: { product_id: "classic-rose-dozen", card_message: "Happy birthday Mum" },
     delivery: { destination_reference: "dest-ref-1", timing: { date: "2026-08-16", window: "morning" } },
     availability: [
       { product_id: "classic-rose-dozen", available: true, availability_status: "available" },
@@ -59,7 +87,7 @@ const SAMPLE_SESSIONS = {
     ] },
     shared_understanding: { structured_intent: { occasion: "anniversary", timing: "this weekend" } },
     order: { order_id: "ord-sample-2", status: "dispatched", delayed: true, authoritative_status: "delayed" },
-    selection: { product_id: "lilac-bouquet" },
+    selection: { product_id: "lilac-bouquet", card_message: "Thinking of you" },
     delivery: { destination_reference: "dest-ref-2", timing: { date: "2026-08-15", window: "afternoon" } },
     availability: [
       { product_id: "lilac-bouquet", available: true, availability_status: "available" },
@@ -142,6 +170,7 @@ const TREND_LABELS = {
 };
 
 const mode = document.querySelector("#operator-mode");
+const orderRows = document.querySelector("#order-rows");
 const inboxRows = document.querySelector("#inbox-rows");
 const forecastRows = document.querySelector("#forecast-rows");
 const transcript = document.querySelector("#transcript");
@@ -150,7 +179,7 @@ const orderFacts = document.querySelector("#order-facts");
 const availability = document.querySelector("#availability");
 const sessionRef = document.querySelector("#session-ref");
 
-const state = { csrf: "", live: false, items: SAMPLE_INBOX, selectedId: "" };
+const state = { csrf: "", live: false, items: SAMPLE_INBOX, orders: SAMPLE_ORDERS, selectedId: "" };
 
 function headers(extra) {
   return {
@@ -249,6 +278,36 @@ function renderForecasts(items) {
   }
 }
 
+function formatWhen(timing) {
+  if (!timing || typeof timing !== "object") return "—";
+  const parts = [timing.date, timing.window].filter(Boolean);
+  return parts.length ? parts.join(" · ") : "—";
+}
+
+function renderOrders(items) {
+  if (!orderRows) return;
+  orderRows.replaceChildren();
+  state.orders = items;
+  if (!items.length) {
+    orderRows.append(emptyRow(6, "No companion or website orders yet. This list stays empty until a checkout writes through."));
+    return;
+  }
+  for (const item of items) {
+    const row = document.createElement("tr");
+    if (item.session_id === state.selectedId) row.className = "is-selected";
+    row.setAttribute("data-session", item.session_id);
+    const sample = item.sample ? ' <span class="status">Sample</span>' : "";
+    const statusText = item.authoritative_status || item.status || "—";
+    row.innerHTML = `<td>${formatRequested(item.updated_at)}</td>
+      <td><button type="button" class="text-link" data-session="${item.session_id}">${shortRef(item.order_id)}</button>${sample}</td>
+      <td><span class="badge">${statusText}</span></td>
+      <td><code>${item.product_id || "—"}</code></td>
+      <td>${formatWhen(item.timing)}</td>
+      <td><code>${shortRef(item.destination_reference)}</code></td>`;
+    orderRows.append(row);
+  }
+}
+
 function renderInbox(items) {
   inboxRows.replaceChildren();
   state.items = items;
@@ -334,8 +393,15 @@ function renderSession(summary, label) {
   if (summary.selection?.product_id) {
     fact("Selection", summary.selection.product_id);
   }
+  if (summary.selection?.card_message) {
+    fact("Card message", summary.selection.card_message);
+  }
   if (summary.delivery?.destination_reference) {
     fact("Saved destination", shortRef(summary.delivery.destination_reference));
+  }
+  const timing = summary.delivery?.timing;
+  if (timing && (timing.date || timing.window)) {
+    fact("When", formatWhen(timing));
   }
   const intent = summary.shared_understanding?.structured_intent || {};
   for (const [key, value] of Object.entries(intent)) {
@@ -377,6 +443,7 @@ function renderSession(summary, label) {
 async function openSession(sessionId) {
   state.selectedId = sessionId;
   renderInbox(state.items);
+  renderOrders(state.orders);
   if (!state.live) {
     const sample = SAMPLE_SESSIONS[sessionId];
     if (sample) {
@@ -399,9 +466,19 @@ inboxRows.addEventListener("click", (event) => {
   }
 });
 
+if (orderRows) {
+  orderRows.addEventListener("click", (event) => {
+    const target = event.target.closest("[data-session]");
+    if (target) {
+      openSession(target.getAttribute("data-session"));
+    }
+  });
+}
+
 function showSampleLayout(modeCopy) {
   state.live = false;
   state.selectedId = SAMPLE_INBOX[0].session_id;
+  renderOrders(SAMPLE_ORDERS);
   renderInbox(SAMPLE_INBOX);
   renderForecasts(SAMPLE_FORECASTS);
   renderSession(SAMPLE_SESSIONS[SAMPLE_INBOX[0].session_id], "Sample session (labeled)");
@@ -482,12 +559,25 @@ async function boot() {
       forecasts = [];
     }
     renderForecasts(forecasts);
+    let orders = [];
+    try {
+      const payload = await api("/api/v1/operator/orders");
+      orders = payload.items || [];
+    } catch (_error) {
+      orders = [];
+    }
+    renderOrders(orders);
     const items = inbox.items || [];
     if (items.length) {
       state.selectedId = items[0].session_id;
       renderInbox(items);
       await openSession(items[0].session_id);
       mode.textContent = "Live operator reads (least-data).";
+    } else if (orders.length) {
+      state.selectedId = orders[0].session_id;
+      renderInbox([]);
+      await openSession(orders[0].session_id);
+      mode.textContent = "Live operator reads (least-data). Staff orders only.";
     } else {
       state.selectedId = "";
       renderInbox([]);

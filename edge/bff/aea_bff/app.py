@@ -485,6 +485,18 @@ class BffApp:
             return await self._json(send, 200, self._least_data_operator_escalations(raw),
                                     correlation_id)
 
+        if path == "/api/v1/operator/orders" and method == "GET":
+            if not self.florist_operator_enabled:
+                return await self._error(send, 404, "not_found", correlation_id)
+            try:
+                raw = self.orchestration.list_operator_orders(subject=subject)
+            except OrchestrationUnavailable:
+                return await self._error(send, 503, "orchestration_unavailable", correlation_id)
+            if int(raw.get("status") or 200) >= 500:
+                return await self._error(send, 503, "orchestration_unavailable", correlation_id)
+            return await self._json(send, 200, self._least_data_operator_orders(raw),
+                                    correlation_id)
+
         if path == "/api/v1/operator/forecasts" and method == "GET":
             if not self.florist_operator_enabled:
                 return await self._error(send, 404, "not_found", correlation_id)
@@ -808,6 +820,25 @@ class BffApp:
         return {"items": items}
 
     @staticmethod
+    def _least_data_operator_orders(raw: dict) -> dict:
+        items = []
+        for item in (raw.get("items") or [])[:50]:
+            if not isinstance(item, dict):
+                continue
+            shaped = {key: item[key] for key in
+                      ("order_id", "session_id", "status", "delayed",
+                       "authoritative_status", "product_id",
+                       "destination_reference", "card_message", "updated_at")
+                      if key in item}
+            if isinstance(item.get("timing"), dict):
+                timing = item["timing"]
+                shaped["timing"] = {key: timing[key] for key in ("date", "window")
+                                    if key in timing}
+            if shaped.get("order_id"):
+                items.append(shaped)
+        return {"items": items}
+
+    @staticmethod
     def _least_data_operator_forecasts(raw: dict) -> dict:
         items = []
         for item in (raw.get("items") or [])[:100]:
@@ -841,6 +872,14 @@ class BffApp:
         selection = None
         if isinstance(raw.get("selection"), dict) and isinstance(raw["selection"].get("product_id"), str):
             selection = {"product_id": raw["selection"]["product_id"]}
+            options = raw["selection"].get("options")
+            card = None
+            if isinstance(options, dict) and isinstance(options.get("card_message"), str):
+                card = options["card_message"].strip()[:280]
+            elif isinstance(raw["selection"].get("card_message"), str):
+                card = raw["selection"]["card_message"].strip()[:280]
+            if card:
+                selection["card_message"] = card
         delivery = None
         if isinstance(raw.get("delivery"), dict):
             delivery = {}
