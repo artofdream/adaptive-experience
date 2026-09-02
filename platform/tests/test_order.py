@@ -265,5 +265,14 @@ class OrderServiceTests(unittest.TestCase):
         self.assertIsNone(item["catalog_title"])
 
 
+    def test_list_recent_includes_observed_total_when_priced(self):
+        """#385: staff list exposes observed basket total without PII."""
+        store = FakeOrderStore(current="confirmed")
+        item = self._service(store).list_recent()[0]
+        self.assertIn("total", item)
+        self.assertIsInstance(item["total"], float)
+        self.assertNotIn("email", item)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -68,8 +68,8 @@ const SAMPLE_SESSIONS = {
       { message_id: "m2", role: "assistant", text: "I can help with a classic rose dozen. Review the interpretation before ordering.", status: "visible", submitted_at: "2026-08-15T08:00:04+00:00" },
     ] },
     shared_understanding: { structured_intent: { occasion: "birthday", recipient: "Mum", budget: "75" } },
-    order: { order_id: "ord-sample-1", status: "preparing", delayed: false, authoritative_status: "preparing" },
-    selection: { product_id: "classic-rose-dozen", card_message: "Happy birthday Mum" },
+    order: { order_id: "ord-sample-1", status: "preparing", delayed: false, authoritative_status: "preparing", channel: "web", total: 82, currency: "EUR", payment_state: "unpaid" },
+    selection: { product_id: "classic-rose-dozen", catalog_title: "Classic Rose Dozen", card_message: "Happy birthday Mum" },
     delivery: { destination_reference: "dest-ref-1", timing: { date: "2026-08-16", window: "morning" } },
     availability: [
       { product_id: "classic-rose-dozen", available: true, availability_status: "available" },
@@ -92,8 +92,8 @@ const SAMPLE_SESSIONS = {
       { message_id: "d1", role: "customer", text: "The window changed and nobody told me.", status: "submitted", submitted_at: "2026-08-15T07:30:00+00:00" },
     ] },
     shared_understanding: { structured_intent: { occasion: "anniversary", timing: "this weekend" } },
-    order: { order_id: "ord-sample-2", status: "dispatched", delayed: true, authoritative_status: "delayed" },
-    selection: { product_id: "lilac-bouquet", card_message: "Thinking of you" },
+    order: { order_id: "ord-sample-2", status: "dispatched", delayed: true, authoritative_status: "delayed", channel: "companion-android", total: 107, currency: "EUR", payment_state: "paid" },
+    selection: { product_id: "lilac-bouquet", catalog_title: "Lilac Bouquet", card_message: "Thinking of you" },
     delivery: { destination_reference: "dest-ref-2", timing: { date: "2026-08-15", window: "afternoon" } },
     availability: [
       { product_id: "lilac-bouquet", available: true, availability_status: "available" },
@@ -463,14 +463,29 @@ function renderSession(summary, label) {
     fact("Status", order.status || "—");
     fact("Authoritative status", order.authoritative_status || "—");
     fact("Delayed", order.delayed ? "yes" : "no");
+    if (order.channel) {
+      fact("Channel", order.channel);
+    }
+    if (order.payment_state) {
+      fact("Payment", order.payment_state);
+    }
+    if (typeof order.total === "number") {
+      const currency = order.currency || "";
+      fact("Total", `${currency ? currency + " " : ""}${order.total.toFixed(2)}`.trim());
+    }
   } else {
     fact("Order", "none yet");
   }
-  if (summary.selection?.product_id) {
-    fact("Selection", summary.selection.product_id);
+  const selectionLabel = summary.selection?.catalog_title || summary.selection?.product_id;
+  if (selectionLabel) {
+    fact("Selection", selectionLabel);
   }
-  if (summary.selection?.card_message) {
-    fact("Card message", summary.selection.card_message);
+  // #383: card may arrive flattened on selection or only on order product options (API shapes it).
+  const cardMessage = summary.selection?.card_message
+    || summary.selection?.options?.card_message
+    || null;
+  if (cardMessage) {
+    fact("Card message", cardMessage);
   }
   if (summary.delivery?.destination_reference) {
     fact("Saved destination", shortRef(summary.delivery.destination_reference));

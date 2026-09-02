@@ -137,6 +137,15 @@ class OrderService:
         channel = normalize_order_channel(row.get("aea_client") or row.get("channel"))
         payment_state = payment_state_for(
             status=status, decline_code=row.get("decline_code"))
+        total = row.get("total")
+        if not isinstance(total, (int, float)) or isinstance(total, bool):
+            # Observed/authoritative basket total from product+delivery snapshot (#385).
+            try:
+                from .pricing import PricingService
+                summary = PricingService().summarize({"product": product, "delivery": delivery})
+                total = summary.get("total") if isinstance(summary, dict) else None
+            except Exception:
+                total = None
         item = {
             "order_id": str(row.get("order_id") or ""),
             "session_id": str(row.get("session_id") or ""),
@@ -152,6 +161,8 @@ class OrderService:
             "payment_state": payment_state,
             "updated_at": updated,
         }
+        if isinstance(total, (int, float)) and not isinstance(total, bool):
+            item["total"] = round(float(total), 2)
         return item
 
     def session_prior_product_id(self, session_id: str) -> str | None:
