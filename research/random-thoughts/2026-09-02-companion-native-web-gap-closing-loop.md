@@ -52,14 +52,14 @@ ASCII twin (for contexts without Mermaid):
 |-----------|------------------------|--------------------------------|-------------|
 | Surface | Full Adaptive Workspace + dual-viewport intent | Need → Pick → Pay (+ Tracking UI) slice | By design — not a port |
 | Session | Browser cookies `__Host-aea_*` + CSRF | OkHttp cookie jar + CSRF (`BffClient`) | Start Over must clear jar (!380) |
-| Auth label | Public browser Bearer (shared) + `X-AEA-Client: web` | Same Bearer + `X-AEA-Client: companion-android` | `#368` landed (header+logs); Grafana panel **partial** |
+| Auth label | Public browser Bearer (shared) + `X-AEA-Client: web` | Same Bearer + `X-AEA-Client: companion-android` | `#368` header+logs + as-code panels; live series need deploy+probe |
 | Catalog | Live recommendations / workspace facets | May fall back to local list; selection still POSTs BFF | Sold-out fail-closed; do not claim full catalog parity |
 | Checkout total | `order_summary.total` (product + delivery fee, e.g. +$12) | Must post same `observed_total` (!379) | `#367` contract tests |
 | Confirm UX | Web `confirmAndPay` | Companion Pay Confirm | Product+$12 confirmed on live BFF path |
 | SSE / tiles | Workspace topic bus / tiles | Not in thin client MVP | Out of companion scope |
 | Contact Florist | Gated support in shop journeys | Not claimed from companion alpha | Dual-probe / product later |
 | Operator / website write-through | Intended after order/checkout | **Unknown** until sponsor dual-probe | **`#360` still gate** |
-| Metrics | Grafana via edge; `aea_client` in BFF/nginx logs | Same log field from companion header | `#368` partial (no as-code request panel) |
+| Metrics | Grafana via edge; `aea_client` in BFF/nginx logs | Same log field from companion header | `#368` query documented / panel as-code (`aea-unified-dashboard`) |
 | Distribution | N/A (web) | App Dist ≠ Play internal ≠ production | Honesty section below |
 | Parity automation | Golden web fixtures | FakeBffClient / recorded JSON | `#367` then `#369` weekday probe |
 
@@ -72,7 +72,7 @@ ASCII twin (for contexts without Mermaid):
 | Pay | Delivery fee → `order_summary.total` → checkout | Totals + back-nav + Start Over cookies shipped | `#367` regression tests |
 | Tracking | Website tracking / atelier visibility | UI after checkout; **write-through Unknown** | **`#360` dual-probe** |
 | SSE / tiles | Workspace bus | Absent (thin client) | N/A |
-| Grafana client | `aea_client=web` in logs | `aea_client=companion-android` | `#368` partial |
+| Grafana client | `aea_client=web` in logs | `aea_client=companion-android` | `#368` panel as-code; live probe after deploy |
 | Distro | HTTPS shop | Debug / App Dist / Play internal | Play = store honesty |
 
 ## Sequenced MVP
@@ -81,7 +81,7 @@ ASCII twin (for contexts without Mermaid):
    Automate detection of totals / Start Over cookie classes of bug. CI on `android-build-debug`. Does **not** close #360.
 
 2. **[#368](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/368) — `X-AEA-Client` header**  
-   Companion `companion-android`, web `web`. Edge/BFF log + echo `aea_client`. **Partial:** header+logs landed; Grafana as-code request panel still open (infra dashboards only). Not auth.
+   Companion `companion-android`, web `web`. Edge/BFF log + echo `aea_client`. **Query documented / panel as-code:** `aea-unified-dashboard` panels + vault Logs Insights note. Live native-vs-web series need edge/BFF+Grafana redeploy + traffic. Not auth.
 
 3. **[#369](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/369) — Weekday API parity probe**  
    Script `scripts/probe_companion_bff_parity.py` + CI job `companion-bff-parity-probe` (manual / weekday schedule via `AEA_COMPANION_PARITY_PROBE=1`). Fail job + correlation ids (no auto-issue spam). Probe ≠ Play honesty; ≠ #360 write-through.  

@@ -64,7 +64,7 @@ The SVG below is the fuller native-on-the-same-BFF vision. Label it honestly: us
 - Play ≠ App Dist: installs from Play (internal testing) are a separate gate from Firebase App Distribution or debug APK alone — see [Companion](companion.html).
 - Dual-probe write-through (companion Confirm → website / atelier tracking) remains **Unknown** until a sponsor dual-probe.
 - Operator sample surfaces are not live billing CRM orders.
-- Grafana native vs web traffic: **partial (#368)** — `X-AEA-Client` on companion/web + BFF/edge `aea_client` access logs; as-code Grafana panels remain infra-level (no request-series panel yet).
+- Grafana native vs web traffic: **query documented / panel as-code (#368)** — `X-AEA-Client` + `aea_client` logs; panels on `aea-unified-dashboard`; live series need edge/BFF+Grafana redeploy + traffic probe (vault note).
 - This page does not dump internal runbooks, and it does not include 3DX Lab.
 
 See the [Companion](companion.html) page for the thin live-BFF client, the [schema](schema.html) for the formula, the [Path B case study](path-b.html) for the florist journeys, or the [journal](journal.html) for how this was learned.
