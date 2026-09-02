@@ -43,3 +43,11 @@ Price locale rendering as **`$70,00`** (comma decimal) noted as **observe-only**
 - DEBUGGABLE + `installer=null` ≠ “installed from Play” proof, even if versionCode matches the Play upload.
 - This note does **not** close #387–#390 (knowledge capture only).
 - Confirm / florist write-through is documented on [[2026-09-02-florist-operator-native-web-completeness-gaps]], not claimed from the Confirm-skipped smoke alone.
+
+## Remediation note (#390) — release `isDebuggable=false`
+
+Explicit `release { isDebuggable = false }` in `clients/mobile/android/app/build.gradle.kts` (default was already false; flag documents the Play honesty gate). Debug/FAD builds share `applicationId` with release for Firebase client match — sideload can overwrite Play installs.
+
+**Gate unchanged:** do not claim Play honesty for #387–#389 until the dedicated ASUS shows Play-signed non-debuggable with installer=`com.android.vending`.
+
+Docs: `docs/framework/companion.md` Play honesty subsection.
