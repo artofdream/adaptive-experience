@@ -1,13 +1,43 @@
 package link.artof.aea.companion.data.model
 
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.JsonDecoder
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonPrimitive
 
 /** POST /api/v1/session → 201 body. Cookies arrive via Set-Cookie. */
 @Serializable
 data class SessionCreateResponse(
     @SerialName("csrf_token") val csrfToken: String
 )
+
+
+/**
+ * BFF may return budget as a JSON number (platform float) or string.
+ * Normalize to string for companion display / local ceiling parse (#359).
+ */
+object BudgetAsStringSerializer : KSerializer<String> {
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("BudgetAsString", PrimitiveKind.STRING)
+
+    override fun serialize(encoder: Encoder, value: String) {
+        encoder.encodeString(value)
+    }
+
+    override fun deserialize(decoder: Decoder): String {
+        val input = decoder as? JsonDecoder ?: return decoder.decodeString()
+        val element = input.decodeJsonElement()
+        val primitive = element as? JsonPrimitive ?: return element.toString()
+        return primitive.content
+    }
+}
 
 @Serializable
 data class ChatMessage(
@@ -38,6 +68,7 @@ data class Arrangement(
 data class SharedUnderstanding(
     val occasion: String? = null,
     val recipient: String? = null,
+    @Serializable(with = BudgetAsStringSerializer::class)
     val budget: String? = null,
     val style: String? = null,
     @SerialName("flower_preference") val flowerPreference: String? = null,
@@ -54,6 +85,7 @@ data class SharedUnderstanding(
 @Serializable
 data class StructuredIntent(
     val occasion: String? = null,
+    @Serializable(with = BudgetAsStringSerializer::class)
     val budget: String? = null,
     val recipient: String? = null,
     val style: String? = null,
@@ -108,6 +140,13 @@ data class AcceptedResponse(
     val pending: Boolean? = null,
     val confirmed: Boolean? = null,
     @SerialName("decline_code") val declineCode: String? = null
+)
+
+/** PATCH /api/v1/shared-understanding — web Path B correction shape (#359). */
+@Serializable
+data class CorrectionRequest(
+    val corrections: Map<String, JsonElement>,
+    @SerialName("observed_context_version") val observedContextVersion: Int
 )
 
 @Serializable

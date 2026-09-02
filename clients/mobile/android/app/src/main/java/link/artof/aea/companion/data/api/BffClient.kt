@@ -20,6 +20,7 @@ import kotlinx.serialization.json.jsonPrimitive
 import link.artof.aea.companion.data.model.AcceptedResponse
 import link.artof.aea.companion.data.model.BffException
 import link.artof.aea.companion.data.model.CheckoutRequest
+import link.artof.aea.companion.data.model.CorrectionRequest
 import link.artof.aea.companion.data.model.ConversationMessageRequest
 import link.artof.aea.companion.data.model.ConversationResponse
 import link.artof.aea.companion.data.model.DeliveryRequest
@@ -94,6 +95,17 @@ open class BffClient(
     open suspend fun getSharedUnderstanding(): SharedUnderstandingResponse {
         val response = rawRequest(HttpMethod.Get, "/api/v1/shared-understanding")
         return decodeOrThrow(response, expected = setOf(200))
+    }
+
+    /** PATCH shared-understanding corrections (Path B web parity; budget chips #359). */
+    open suspend fun patchSharedUnderstanding(request: CorrectionRequest): AcceptedResponse {
+        val response = rawRequest(
+            HttpMethod.Patch,
+            "/api/v1/shared-understanding",
+            body = request,
+            csrf = true
+        )
+        return decodeOrThrow(response, expected = setOf(202))
     }
 
     open suspend fun getConversation(): ConversationResponse {

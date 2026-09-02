@@ -22,6 +22,9 @@ fun NeedScreen(
     sharedUnderstanding: SharedUnderstanding,
     onSendMessage: (String) -> Unit,
     onContinueToPick: () -> Unit,
+    onBudgetChoice: (label: String, ceiling: Double?) -> Unit = { _, _ -> },
+    onSkipBudget: () -> Unit = {},
+    budgetPromptResolved: Boolean = false,
     onStartOver: (() -> Unit)? = null,
     isLoading: Boolean = false,
     modifier: Modifier = Modifier
@@ -92,17 +95,78 @@ fun NeedScreen(
             }
         }
 
-        // Primary Single CTA (UX Rule: exactly one primary CTA per stage)
+        // Budget ask after occasion unlock (#359) — chips + explicit Skip (Path B honesty).
         val hasOccasion = !sharedUnderstanding.occasion.isNullOrEmpty()
+        if (hasOccasion) {
+            Text(
+                text = "Budget for this arrangement?",
+                style = MaterialTheme.typography.titleSmall,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 2.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                SuggestionChip(
+                    onClick = { onBudgetChoice("Under $50", 50.0) },
+                    enabled = !isLoading,
+                    label = { Text("Under $50") }
+                )
+                SuggestionChip(
+                    onClick = { onBudgetChoice("$50–100", 100.0) },
+                    enabled = !isLoading,
+                    label = { Text("$50–100") }
+                )
+                SuggestionChip(
+                    onClick = { onBudgetChoice("$100+", null) },
+                    enabled = !isLoading,
+                    label = { Text("$100+") }
+                )
+            }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 2.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                TextButton(
+                    onClick = onSkipBudget,
+                    enabled = !isLoading
+                ) {
+                    Text("Skip budget")
+                }
+                val budgetLabel = sharedUnderstanding.budget
+                if (!budgetLabel.isNullOrBlank()) {
+                    Text(
+                        text = if (budgetLabel == "skipped") "Budget: skipped"
+                        else "Budget: $budgetLabel",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
+
+        // Primary Single CTA (UX Rule: exactly one primary CTA per stage)
+        val canContinue = hasOccasion && budgetPromptResolved
         Button(
             onClick = onContinueToPick,
-            enabled = hasOccasion && !isLoading,
+            enabled = canContinue && !isLoading,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 4.dp)
                 .height(52.dp)
         ) {
-            Text(if (hasOccasion) "View Arrangements (${sharedUnderstanding.occasion}) →" else "Specify Occasion to Continue")
+            Text(
+                when {
+                    !hasOccasion -> "Specify Occasion to Continue"
+                    !budgetPromptResolved -> "Set or Skip Budget to Continue"
+                    else -> "View Arrangements (${sharedUnderstanding.occasion}) →"
+                }
+            )
         }
 
         if (onStartOver != null) {
@@ -125,6 +189,7 @@ fun PickScreen(
     selectedArrangement: FloristArrangement?,
     onSelectArrangement: (FloristArrangement) -> Unit,
     onContinueToPay: () -> Unit,
+    budgetLabel: String? = null,
     onBack: (() -> Unit)? = null,
     onStartOver: (() -> Unit)? = null,
     isLoading: Boolean = false,
@@ -142,6 +207,18 @@ fun PickScreen(
             style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
         )
+
+        if (!budgetLabel.isNullOrBlank()) {
+            Text(
+                text = if (budgetLabel == "skipped")
+                    "Budget not set (skipped on Need)."
+                else
+                    "Filtering / ranking with budget: $budgetLabel (local price filter when catalog has prices).",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp)
+            )
+        }
 
         LazyColumn(
             modifier = Modifier
@@ -240,6 +317,19 @@ fun PayScreen(
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(text = "Delivery: ${sharedUnderstanding.deliveryDate ?: "Today (Same-Day)"}", style = MaterialTheme.typography.bodyMedium)
                 Text(text = "Destination: Ref# LILY-PARIS-01 (Zero-PII, ADR-013)", style = MaterialTheme.typography.bodyMedium)
+                val budgetHonesty = sharedUnderstanding.budget
+                if (!budgetHonesty.isNullOrBlank()) {
+                    val ceiling = link.artof.aea.companion.data.repository.SessionRepository
+                        .parseBudgetCeiling(budgetHonesty)
+                    val selectedPrice = selectedArrangement?.price
+                    val honesty = when {
+                        budgetHonesty == "skipped" -> "Budget: skipped on Need"
+                        ceiling != null && selectedPrice != null && selectedPrice > ceiling ->
+                            "Budget: $budgetHonesty — selected price exceeds ceiling"
+                        else -> "Budget: $budgetHonesty"
+                    }
+                    Text(text = honesty, style = MaterialTheme.typography.bodyMedium)
+                }
                 Spacer(modifier = Modifier.height(8.dp))
                 Divider()
                 Spacer(modifier = Modifier.height(8.dp))

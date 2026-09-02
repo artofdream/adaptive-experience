@@ -306,3 +306,9 @@ install path and **not** dual-probe evidence.
 - Live BFF is wired for internal testing (#362); still score the vault **UX
   checklist** (contrast, back stack, single CTA, FR-009, demo banner honesty,
   budget ask, chip vs free-text unlock) against every review build.
+- **Budget ask (#359):** After occasion unlock on Need, companion shows budget
+  chips (Under $50 / $50–100 / $100+) plus **Skip**. Choice PATCHes
+  `/api/v1/shared-understanding` (web Path B correction). Pick applies a
+  **local** `arrangement.price` ceiling filter when a ceiling is set; Pay shows
+  budget honesty. Live BFF recommendation re-rank is best-effort via existing
+  workspace refresh — not a new API.
