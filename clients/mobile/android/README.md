@@ -65,6 +65,14 @@ MVP sequence: contract tests (#367) → `X-AEA-Client` (#368) → weekday probe 
 Public page: [architecture.artof.link/companion](https://architecture.artof.link/companion).
 Dual-probe honesty remains #360. App Distribution ≠ Play. T-09 operator ≠ orders.
 
+### BFF contract tests (#367)
+
+`android-build-debug` runs `testDebugUnitTest`, including `BffWebContractTests` plus
+golden JSON under `app/src/test/resources/bff_golden/` (web `confirmAndPay` shapes).
+CI fails on native↔web drift classes: product-only `observed_total` (pre-!379) and
+Start Over without `clearSessionState` before `createSession` (pre-!380). Unit
+fixtures ≠ live dual-probe (#360) and ≠ weekday API probe (#369).
+
 ## Live BFF wiring (internal testing, #362)
 
 Need / Pick / Pay call the live Edge BFF at `https://aea.artof.link` (cookie
