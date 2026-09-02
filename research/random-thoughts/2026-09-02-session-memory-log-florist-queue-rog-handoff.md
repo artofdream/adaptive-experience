@@ -34,4 +34,4 @@ Companion checkout hard-codes today / afternoon / `home`. No T-09 POST. After #3
 
 CRM #35/#36. Shop CSS restyle. Street/PII. Sharing ADB while grok-bot has the ROG.
 
-[[2026-09-02-companion-native-web-gap-closing-loop]]
+[[2026-09-02-session-memory-log-dual-probe-florist-rog]] · [[2026-09-02-companion-native-web-gap-closing-loop]]
