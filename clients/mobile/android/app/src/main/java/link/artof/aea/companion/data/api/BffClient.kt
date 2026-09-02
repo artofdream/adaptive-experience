@@ -126,6 +126,18 @@ open class BffClient(
 
     fun currentCsrfToken(): String = csrfToken.get()
 
+    /**
+     * Drop session cookies + CSRF so the next [createSession] mints a new BFF
+     * session. Required for Start Over (#366): POST /api/v1/session reuses a
+     * valid same-subject cookie jar (see edge BFF), so clearing must happen
+     * *before* createSession on explicit reset — not inside createSession
+     * (which also refreshes CSRF while keeping cookies for cold/multi-tab use).
+     */
+    open fun clearSessionState() {
+        cookieJar.clear()
+        csrfToken.set("")
+    }
+
     open fun close() {
         if (httpClient == null) {
             client.close()

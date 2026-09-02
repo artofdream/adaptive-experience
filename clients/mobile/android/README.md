@@ -88,6 +88,11 @@ shared-understanding is **removed**.
   `product_unavailable` map to distinct user-facing messages. Selection/delivery
   get a **one-shot** `stale_context` retry after adopting `context_version`;
   `product_unavailable` is not auto-retried forever.
+- **Start Over session reset (#366):** `startOver()` calls `BffClient.clearSessionState()`
+  (cookie jar + CSRF) before `createSession`, then refreshes shared-understanding —
+  BFF reuses `__Host-aea_*` cookies on POST `/session`, so without clear the next
+  Need message posts `observed_context_version: 0` against the old live session (409
+  `stale_context`). Conversation posts also get a one-shot `stale_context` retry.
 
 ## UX validation loop
 
