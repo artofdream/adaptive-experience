@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Guard: companion UX validation vault checklist + README section exist.
 
-Phase A of #363 — lightweight path checks only. No Gradle, no network, no secrets.
+Phase A/C of #363/#364 — lightweight path checks only. No Gradle, no network, no secrets.
 """
 
 from __future__ import annotations
@@ -36,6 +36,9 @@ VAULT_REQUIRED_MARKERS = (
     "Phase A",
     "Phase B",
     "Phase C",
+    "android-compose-screenshots",
+    "Paparazzi",
+    "Play internal",
 )
 
 # README section heading + pointers the sponsor/SSE loop needs.
@@ -47,6 +50,9 @@ README_REQUIRED_MARKERS = (
     "Play internal",
     "2026-09-02-companion-ux-online-validation-setup.md",
     "#363",
+    "#364",
+    "android-compose-screenshots",
+    "Paparazzi",
 )
 
 

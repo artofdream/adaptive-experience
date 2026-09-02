@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.google.services)
     alias(libs.plugins.firebase.crashlytics)
     alias(libs.plugins.firebase.appdistribution)
+    alias(libs.plugins.paparazzi)
 }
 
 // Play upload signing (#347). Env only — never a committed keystore.
@@ -150,4 +151,20 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+}
+
+
+// #364: Paparazzi snapshots run only via recordPaparazziDebug /
+// verifyPaparazziDebug (CI job android-compose-screenshots). Exclude from
+// default testDebugUnitTest so android-build-debug stays green without
+// committed goldens on first land.
+tasks.withType<Test>().configureEach {
+    val runningPaparazzi = gradle.startParameter.taskNames.any {
+        it.contains("Paparazzi", ignoreCase = true)
+    }
+    if (!runningPaparazzi) {
+        filter {
+            excludeTestsMatching("*Paparazzi*")
+        }
+    }
 }
