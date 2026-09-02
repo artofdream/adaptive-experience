@@ -22,6 +22,7 @@ PAGES = [
     ('path-b', 'path-b.md', 'Path B case study'),
     ('glossary', 'glossary.md', 'Glossary'),
     ('journal', 'journal.md', 'Journal'),
+    ('companion', 'companion.md', 'Companion'),
 ]
 SITE = 'architecture.artof.link'
 CSS = (
