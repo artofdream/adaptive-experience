@@ -16,11 +16,15 @@ Close native↔web gaps. MRC merges green GitLab MRs on project `85239039` (auth
 | !417 | #380 | `bd473b817ebc` | Florist remove local-only Claim/Resolve (already green; merged during session) |
 | !418 / session-facts | #383 #385 | on main earlier | Card/total/channel operator summary (pre-session) |
 
-## In flight
+## Also merged (same evening)
 
-- !408 (#389) occasion-aware Pay card default — rebased onto main after !414; MWPS
-- !419 (#390) release `isDebuggable=false` Play honesty docs — rebased; MWPS
-- !416 bundle closed as superseded by splits
+| MR | Issue | Merge SHA | Notes |
+|---|---|---|---|
+| !408 | #389 | `6f1e1d8720d0` | Occasion-aware Pay card default |
+| !419 | #390 (Related, left open) | `c1bd0cd16555` | Explicit release `isDebuggable=false` + Play honesty docs |
+| !425 | docs | `e1ab229f89b5` | This knowledge brief |
+
+!416 bundle closed as superseded by splits.
 
 ## #384 channel (aea_client) — still open
 
