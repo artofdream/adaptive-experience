@@ -394,7 +394,7 @@ function renderInbox(items) {
   inboxRows.replaceChildren();
   state.items = items;
   if (!items.length) {
-    inboxRows.append(emptyRow(4, "No Contact Florist requests yet. This inbox stays empty until a customer uses T-09."));
+    inboxRows.append(emptyRow(3, "No Contact Florist requests yet. This inbox stays empty until a customer uses T-09."));
     return;
   }
   for (const item of items) {
@@ -403,41 +403,11 @@ function renderInbox(items) {
     const sample = item.sample ? ' <span class="status">Sample</span>' : "";
     const orderLink = sessionIdSet(state.orders).has(item.session_id)
       ? ' <span class="badge">Has order</span>' : "";
-    const statusText = item.status || "Open";
     row.innerHTML = `<td>${formatRequested(item.requested_at)}</td>
       <td><button type="button" class="text-link" data-session="${item.session_id}">${reasonLabel(item.escalation_reason)}</button>${sample}${orderLink}</td>
-      <td><code>${shortRef(item.context_reference || item.session_id)}</code></td>
-      <td>
-        <span class="badge ${statusText === 'Resolved' ? 'available' : 'unavailable'}">${statusText}</span>
-        <button type="button" class="text-link claim-btn" style="margin-left: 6px;" data-session="${item.session_id}">Claim</button>
-        <button type="button" class="text-link resolve-btn" style="margin-left: 6px;" data-session="${item.session_id}">Resolve</button>
-      </td>`;
+      <td><code>${shortRef(item.context_reference || item.session_id)}</code></td>`;
     inboxRows.append(row);
   }
-
-  inboxRows.querySelectorAll(".claim-btn").forEach(btn => {
-    btn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const sId = btn.dataset.session;
-      const target = state.items.find(i => i.session_id === sId);
-      if (target) {
-        target.status = "In Progress";
-        renderInbox(state.items);
-      }
-    });
-  });
-
-  inboxRows.querySelectorAll(".resolve-btn").forEach(btn => {
-    btn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const sId = btn.dataset.session;
-      const target = state.items.find(i => i.session_id === sId);
-      if (target) {
-        target.status = "Resolved";
-        renderInbox(state.items);
-      }
-    });
-  });
 }
 
 function fact(term, value) {
