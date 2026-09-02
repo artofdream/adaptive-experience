@@ -59,6 +59,7 @@ fun LilyCompanionApp(repository: SessionRepository) {
     val arrangements by repository.arrangements.collectAsState()
     val selectedArrangement by repository.selectedArrangement.collectAsState()
     val sharedUnderstanding by repository.sharedUnderstanding.collectAsState()
+    val budgetPromptResolved by repository.budgetPromptResolved.collectAsState()
     val orderResult by repository.orderResult.collectAsState()
     val isLoading by repository.isLoading.collectAsState()
     val errorMessage by repository.errorMessage.collectAsState()
@@ -124,9 +125,14 @@ fun LilyCompanionApp(repository: SessionRepository) {
                         messages = messages,
                         sharedUnderstanding = sharedUnderstanding,
                         isLoading = isLoading,
+                        budgetPromptResolved = budgetPromptResolved,
                         onSendMessage = { text ->
                             scope.launch { repository.postUserMessage(text) }
                         },
+                        onBudgetChoice = { label, ceiling ->
+                            scope.launch { repository.setBudgetChoice(label, ceiling) }
+                        },
+                        onSkipBudget = { repository.skipBudget() },
                         onContinueToPick = { repository.moveToPickStage() },
                         onStartOver = { scope.launch { repository.startOver() } }
                     )
@@ -136,6 +142,7 @@ fun LilyCompanionApp(repository: SessionRepository) {
                         arrangements = arrangements,
                         selectedArrangement = selectedArrangement,
                         isLoading = isLoading,
+                        budgetLabel = sharedUnderstanding.budget,
                         onSelectArrangement = { arrangement ->
                             scope.launch { repository.selectArrangement(arrangement) }
                         },

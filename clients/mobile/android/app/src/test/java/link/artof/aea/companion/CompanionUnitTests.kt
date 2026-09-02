@@ -7,6 +7,7 @@ import link.artof.aea.companion.data.model.OrderSummaryFacet
 import link.artof.aea.companion.data.model.BffException
 import link.artof.aea.companion.data.model.Arrangement
 import link.artof.aea.companion.data.model.CheckoutRequest
+import link.artof.aea.companion.data.model.CorrectionRequest
 import link.artof.aea.companion.data.model.ConversationMessageRequest
 import link.artof.aea.companion.data.model.ConversationResponse
 import link.artof.aea.companion.data.model.DeliveryRequest
@@ -322,12 +323,78 @@ class CompanionUnitTests {
         assertEquals("LILY-TEST", deserialized.sku)
         assertEquals(59.99, deserialized.price, 0.01)
     }
+
+    @Test
+    fun budgetChipPatchesCorrectionAndFiltersLocalCatalog() = runBlocking {
+        fakeApi.sharedUnderstanding = SharedUnderstandingResponse(
+            contextVersion = 2,
+            structuredIntent = StructuredIntent(occasion = "birthday")
+        )
+        repository.postUserMessage("birthday flowers")
+        assertEquals("birthday", repository.sharedUnderstanding.value.occasion)
+        assertFalse(repository.budgetPromptResolved.value)
+
+        // Under $50 should keep Budget Mixed Bunch (35) and drop Classic Rose (70).
+        repository.setBudgetChoice("Under $50", 50.0)
+        assertTrue(repository.budgetPromptResolved.value)
+        assertEquals("Under $50", repository.sharedUnderstanding.value.budget)
+        assertEquals(1, fakeApi.corrections.size)
+        assertTrue(fakeApi.corrections.last().corrections.containsKey("budget"))
+        val skus = repository.arrangements.value.map { it.sku }
+        assertTrue(skus.contains("budget-mixed-bunch"))
+        assertFalse(skus.contains("classic-rose-dozen"))
+        assertFalse(skus.contains("lilac-bouquet"))
+    }
+
+    @Test
+    fun skipBudgetResolvesPromptWithoutCorrection() = runBlocking {
+        fakeApi.sharedUnderstanding = SharedUnderstandingResponse(
+            contextVersion = 2,
+            structuredIntent = StructuredIntent(occasion = "birthday")
+        )
+        repository.postUserMessage("birthday")
+        repository.skipBudget()
+        assertTrue(repository.budgetPromptResolved.value)
+        assertEquals("skipped", repository.sharedUnderstanding.value.budget)
+        assertTrue(fakeApi.corrections.isEmpty())
+        // Full catalog remains when skipped.
+        assertTrue(repository.arrangements.value.size >= 3)
+    }
+
+    @Test
+    fun liveBudgetInSharedUnderstandingResolvesPrompt() = runBlocking {
+        fakeApi.sharedUnderstanding = SharedUnderstandingResponse(
+            contextVersion = 3,
+            structuredIntent = StructuredIntent(occasion = "anniversary", budget = "80")
+        )
+        repository.postUserMessage("Anniversary bouquet under $80")
+        assertTrue(repository.budgetPromptResolved.value)
+        assertEquals("80", repository.sharedUnderstanding.value.budget)
+    }
+
+    @Test
+    fun parseBudgetCeilingFromLabelsAndNumbers() {
+        assertEquals(50.0, SessionRepository.parseBudgetCeiling("Under $50")!!, 0.01)
+        assertEquals(100.0, SessionRepository.parseBudgetCeiling("$50–100")!!, 0.01)
+        assertNull(SessionRepository.parseBudgetCeiling("$100+"))
+        assertNull(SessionRepository.parseBudgetCeiling("skipped"))
+        assertEquals(75.0, SessionRepository.parseBudgetCeiling("75")!!, 0.01)
+    }
+
+    @Test
+    fun budgetAsStringSerializerAcceptsJsonNumber() {
+        val decoded = json.decodeFromString<StructuredIntent>("""{"occasion":"birthday","budget":75}""")
+        assertEquals("75", decoded.budget)
+        assertEquals("birthday", decoded.occasion)
+    }
+
 }
 
 /** In-memory BFF stand-in for unit tests (no network). */
 class FakeBffClient : BffClient() {
     var sharedUnderstanding: SharedUnderstandingResponse = SharedUnderstandingResponse()
     val postedMessages = mutableListOf<ConversationMessageRequest>()
+    val corrections = mutableListOf<CorrectionRequest>()
     val selections = mutableListOf<SelectionRequest>()
     var orderPosted: Boolean = false
     var lastCheckout: CheckoutRequest? = null
@@ -400,6 +467,21 @@ class FakeBffClient : BffClient() {
 
     override suspend fun getSharedUnderstanding(): SharedUnderstandingResponse {
         return sharedUnderstanding.copy(contextVersion = maxOf(sharedUnderstanding.contextVersion, version))
+    }
+
+    override suspend fun patchSharedUnderstanding(request: CorrectionRequest): AcceptedResponse {
+        corrections += request
+        version = request.observedContextVersion + 1
+        val budgetEl = request.corrections["budget"] as? kotlinx.serialization.json.JsonPrimitive
+        val budgetStr = budgetEl?.content
+        val intent = sharedUnderstanding.structuredIntent
+        sharedUnderstanding = sharedUnderstanding.copy(
+            contextVersion = version,
+            structuredIntent = intent.copy(
+                budget = budgetStr ?: intent.budget
+            )
+        )
+        return AcceptedResponse(accepted = true, code = "accepted", contextVersion = version)
     }
 
     override suspend fun getConversation(): ConversationResponse {

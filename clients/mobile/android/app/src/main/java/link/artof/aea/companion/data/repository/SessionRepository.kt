@@ -6,6 +6,7 @@ import link.artof.aea.companion.data.model.Arrangement
 import link.artof.aea.companion.data.model.BffException
 import link.artof.aea.companion.data.model.ChatMessage
 import link.artof.aea.companion.data.model.CheckoutRequest
+import link.artof.aea.companion.data.model.CorrectionRequest
 import link.artof.aea.companion.data.model.ConversationMessageDto
 import link.artof.aea.companion.data.model.DeliveryDetails
 import link.artof.aea.companion.data.model.DeliveryRequest
@@ -18,6 +19,7 @@ import link.artof.aea.companion.data.model.WorkspaceResponse
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.serialization.json.JsonPrimitive
 import java.time.LocalDate
 import java.util.UUID
 
@@ -31,6 +33,7 @@ enum class JourneyStage {
 /**
  * Live BFF-backed journey repository (internal testing).
  * Occasion unlock comes from GET shared-understanding after live messages — not Mom keywords (#357).
+ * Budget ask on Need (#359): chips/skip → PATCH shared-understanding + local catalog filter.
  */
 class SessionRepository(
     private val api: BffClient = BffClient()
@@ -92,6 +95,18 @@ class SessionRepository(
 
     private val _sharedUnderstanding = MutableStateFlow(SharedUnderstanding())
     val sharedUnderstanding: StateFlow<SharedUnderstanding> = _sharedUnderstanding.asStateFlow()
+
+    /**
+     * True after explicit Skip or a budget chip/correction (#359).
+     * Also true when live structured_intent already carries budget (e.g. Anniversary $80 chip).
+     */
+    private val _budgetPromptResolved = MutableStateFlow(false)
+    val budgetPromptResolved: StateFlow<Boolean> = _budgetPromptResolved.asStateFlow()
+
+    /** Local ceiling for catalog filter; null means no local price filter (Skip or $100+). */
+    private var budgetCeiling: Double? = null
+    /** Unfiltered workspace/fallback catalog; [_arrangements] may be budget-filtered (#359). */
+    private var fullCatalog: List<Arrangement> = localFallbackCatalog
 
     private val _orderResult = MutableStateFlow<OrderResult?>(null)
     val orderResult: StateFlow<OrderResult?> = _orderResult.asStateFlow()
@@ -156,6 +171,94 @@ class SessionRepository(
 
     fun moveToPickStage() {
         _currentStage.value = JourneyStage.PICK
+        applyBudgetFilterToArrangements()
+    }
+
+    /**
+     * Budget chip on Need (#359). Persists via PATCH shared-understanding (web Path B
+     * correction path). Local ceiling filters catalog by arrangement.price when set.
+     */
+    suspend fun setBudgetChoice(label: String, ceiling: Double?) {
+        runGuarded {
+            ensureSessionInternal()
+            budgetCeiling = ceiling
+            _budgetPromptResolved.value = true
+            _sharedUnderstanding.value = _sharedUnderstanding.value.copy(budget = label)
+            _messages.value = _messages.value + ChatMessage(
+                id = UUID.randomUUID().toString(),
+                sender = "user",
+                text = "Budget: $label"
+            )
+            val corrections = if (ceiling != null) {
+                mapOf("budget" to JsonPrimitive(ceiling))
+            } else {
+                // $100+ — soft high ceiling so BFF ranking still has a numeric budget.
+                mapOf("budget" to JsonPrimitive(250.0))
+            }
+            val accepted = patchCorrectionRetryingStale(corrections)
+            if (accepted.contextVersion > 0) {
+                contextVersion = accepted.contextVersion
+            }
+            refreshSharedUnderstanding()
+            // Keep chip ceiling + label (refresh may coerce numeric budget from BFF).
+            budgetCeiling = ceiling
+            _sharedUnderstanding.value = _sharedUnderstanding.value.copy(budget = label)
+            refreshCatalogFromWorkspace()
+            applyBudgetFilterToArrangements()
+        }
+    }
+
+    /** Explicit Skip — honesty that budget was deferred (#359). */
+    fun skipBudget() {
+        _budgetPromptResolved.value = true
+        budgetCeiling = null
+        if (_sharedUnderstanding.value.budget.isNullOrBlank()) {
+            _sharedUnderstanding.value = _sharedUnderstanding.value.copy(budget = "skipped")
+        }
+        _messages.value = _messages.value + ChatMessage(
+            id = UUID.randomUUID().toString(),
+            sender = "user",
+            text = "Skip budget for now"
+        )
+    }
+
+    private fun publishCatalog(catalog: List<Arrangement>) {
+        fullCatalog = catalog
+        applyBudgetFilterToArrangements()
+    }
+
+    private fun applyBudgetFilterToArrangements() {
+        val catalog = fullCatalog.ifEmpty { localFallbackCatalog }
+        val ceiling = budgetCeiling
+        if (ceiling == null) {
+            _arrangements.value = catalog
+            return
+        }
+        val filtered = catalog.filter { it.price <= ceiling }
+        // If every SKU is over budget, keep full catalog so Pick is not empty; honesty UI still shows ceiling.
+        _arrangements.value = filtered.ifEmpty { catalog }
+    }
+
+    private suspend fun patchCorrectionRetryingStale(
+        corrections: Map<String, kotlinx.serialization.json.JsonElement>
+    ): AcceptedResponse {
+        val request = CorrectionRequest(
+            corrections = corrections,
+            observedContextVersion = contextVersion
+        )
+        return try {
+            api.patchSharedUnderstanding(request)
+        } catch (ex: BffException) {
+            if (ex.statusCode == 409 && ex.errorCode == "stale_context") {
+                adoptStaleContext(ex)
+                refreshContextFromWorkspace()
+                api.patchSharedUnderstanding(
+                    CorrectionRequest(corrections, observedContextVersion = contextVersion)
+                )
+            } else {
+                throw ex
+            }
+        }
     }
 
     /**
@@ -308,6 +411,8 @@ class SessionRepository(
         _orderSummaryTotal.value = null
         _errorMessage.value = null
         _sharedUnderstanding.value = SharedUnderstanding()
+        _budgetPromptResolved.value = false
+        budgetCeiling = null
         _messages.value = listOf(
             ChatMessage(
                 id = "welcome",
@@ -315,7 +420,7 @@ class SessionRepository(
                 text = "Welcome to Lily's Florist. Who are we celebrating today, and when do you need the delivery?"
             )
         )
-        _arrangements.value = localFallbackCatalog
+        publishCatalog(localFallbackCatalog)
         usingLocalCatalogFallback = true
         contextVersion = 0
         _sessionReady.value = false
@@ -350,7 +455,7 @@ class SessionRepository(
         _sharedUnderstanding.value = previous.copy(
             occasion = intent.occasion,
             recipient = intent.recipient,
-            budget = intent.budget,
+            budget = intent.budget ?: previous.budget,
             style = intent.style,
             flowerPreference = intent.flowerPreference,
             timing = intent.timing,
@@ -359,6 +464,10 @@ class SessionRepository(
             disclosure = remote.disclosure,
             suggestions = remote.suggestions
         )
+        if (!intent.budget.isNullOrBlank()) {
+            _budgetPromptResolved.value = true
+            parseBudgetCeiling(intent.budget)?.let { budgetCeiling = it }
+        }
         // Surface disclosure once as a florist bubble when present and new.
         val disclosure = remote.disclosure?.trim().orEmpty()
         if (disclosure.isNotEmpty() && _messages.value.none { it.sender == "florist" && it.text == disclosure }) {
@@ -390,7 +499,7 @@ class SessionRepository(
             val items = workspace.facets.recommendations?.items.orEmpty()
             if (items.isEmpty()) {
                 usingLocalCatalogFallback = true
-                _arrangements.value = localFallbackCatalog
+                publishCatalog(localFallbackCatalog)
                 return
             }
             val productNames = mapOf(
@@ -400,7 +509,7 @@ class SessionRepository(
                 "budget-mixed-bunch" to "Budget Mixed Bunch",
                 "premium-orchid" to "Premium Orchid"
             )
-            _arrangements.value = items.map { item ->
+            publishCatalog(items.map { item ->
                 Arrangement(
                     sku = item.productId,
                     name = productNames[item.productId] ?: item.productId,
@@ -412,11 +521,11 @@ class SessionRepository(
                         "score ${item.score}"
                     )
                 )
-            }
+            })
             usingLocalCatalogFallback = false
         } catch (_: Exception) {
             usingLocalCatalogFallback = true
-            _arrangements.value = localFallbackCatalog
+            publishCatalog(localFallbackCatalog)
         }
     }
 
@@ -523,5 +632,31 @@ class SessionRepository(
     companion object {
         /** Matches platform aea_platform.pricing.REFERENCE_DELIVERY_FEE. */
         const val REFERENCE_DELIVERY_FEE = 12.0
+
+        /**
+         * Parse optional local catalog budget ceiling from Need chip label or BFF budget text (#359).
+         * Under $50 → 50; $50–100 → 100; $100+ / skipped → null (no local filter);
+         * bare numeric string (e.g. "75") → that Double.
+         */
+        fun parseBudgetCeiling(labelOrText: String?): Double? {
+            val raw = labelOrText?.trim().orEmpty()
+            if (raw.isEmpty()) return null
+            val normalized = raw
+                .replace('\u2013', '-') // en-dash (chip "$50–100")
+                .replace('\u2014', '-') // em-dash
+                .lowercase()
+            when {
+                normalized == "skipped" -> return null
+                "100+" in normalized -> return null
+                normalized.startsWith("under") -> {
+                    return Regex("""(\d+(?:\.\d+)?)""").find(normalized)
+                        ?.groupValues?.get(1)
+                        ?.toDoubleOrNull()
+                }
+                Regex("""\$?\s*50\s*-\s*100""").containsMatchIn(normalized) -> return 100.0
+            }
+            // Bare number from BFF / live intent (e.g. Anniversary "80" / serializer "75").
+            return raw.replace("$", "").replace(",", "").trim().toDoubleOrNull()
+        }
     }
 }
