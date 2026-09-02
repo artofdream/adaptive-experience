@@ -2,7 +2,7 @@
 
 > **Tags**: #aea #second-brain #native-mobile #m19
 > **Captured**: 2026-09-01
-> **Status**: operator memory — what was done vs what is still needed. Not a ship claim.
+> **Status**: operator memory — what was done vs what is still needed. Not a ship claim. Updated 2026-09-02.
 > **Does not replace**: [[2026-08-29-native-mobile-companion-system-docs-and-toolkit]] (architecture / Slice A–D plan) or `clients/mobile/android/README.md` (CI variable names).
 
 Owner hats: `@aea-devsecops-platform` operates the link. Sponsor (human) pastes CI file vars and clicks Play Console. `@aea-knowledge-guardian` keeps this note honest. `@aea-mr-coordinator` merges the MR that lands it.
@@ -51,11 +51,17 @@ Dates are Europe/Berlin.
 | 2026-08-31 | Four GitLab CI vars pasted by sponsor | See table below. Do not re-create from an agent. |
 | 2026-08-31 ~19:31 | !365 merged | Vault Slice D honesty. GitLab closed #346 anyway. |
 | 2026-08-31 ~19:32 | !366 merged | `android-bundle-release` job on `main`. |
-| 2026-09-01 ~07:54–08:02 | Manual `android-bundle-release` played on pipeline 1406 | Job [16221506091](https://gitlab.com/artof-group/adaptive-experience-architecture/-/jobs/16221506091) **failed** at `:app:signReleaseBundle` (keystore file not a readable JKS/PKCS12). No artifact. First `.aab` still Unknown. Follow-on: [#351](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/351). |
+| 2026-09-01 ~07:54–08:02 | Manual `android-bundle-release` played on pipeline 1406 | Job [16221506091](https://gitlab.com/artof-group/adaptive-experience-architecture/-/jobs/16221506091) **failed** at `:app:signReleaseBundle` (raw JKS in File textarea). Follow-on: [#351](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/351). |
+| 2026-09-01 | !369 / [#348](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/348) | Debug `applicationIdSuffix` dropped. Do not add a second Firebase Android app for `.debug`. |
+| 2026-09-01 | !370 / [#351](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/351) | CI decodes base64 upload keystore. First `.aab` still Unknown until a later `android-bundle-release` on `main` is green. |
+| 2026-09-01 | !376 / [#362](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/362) | Companion Need/Pick/Pay wired to live `aea.artof.link` BFF on `main`. Play internal versionCode 2 was still the **mock**. Dual-probe vs website/operator stays [#360](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/360). |
+| 2026-09-01 | !377 / [#363](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/363) | Debug APK expire 14d + App Distribution job wiring. First Dist upload Unknown until `FIREBASE_APP_DISTRIBUTION_CREDENTIALS` + manual job. |
+| 2026-09-02 | !379 / [#365](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/365) | Back-nav / Start Over + checkout `observed_total` from `order_summary`. Verify on a post-merge build before closing [#358](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/358). |
+| 2026-09-02 ~06:54 | Played `android-bundle-release` | Job [16248008019](https://gitlab.com/artof-group/adaptive-experience-architecture/-/jobs/16248008019) on pipeline 2811854201 (`main` `8209d880`). Outcome **Unknown** until that job is green and artifacts list `app-release.aab`. |
 
 ### GitLab CI variables (names and flags only)
 
-Settings: CI/CD → Variables. This project's Variables UI is English. **Type File has no file picker** — GitLab still shows a Value textarea; paste the file contents there. CI sees a path in `$ANDROID_UPLOAD_KEYSTORE` / `$GOOGLE_SERVICES_JSON` and copies that path. **No base64 decode** in the job.
+Settings: CI/CD → Variables. This project's Variables UI is English. **Type File has no file picker** — GitLab still shows a Value textarea; paste the file contents there. CI sees a path in `$ANDROID_UPLOAD_KEYSTORE` / `$GOOGLE_SERVICES_JSON` and copies that path. `ANDROID_UPLOAD_KEYSTORE` Value is **base64 of the JKS** ([#351](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/351) / !370). The job `base64 -d`s to a job-local path. Do not paste raw JKS into the File textarea.
 
 Leave **Allow merge request pipelines to access protected variables and runners** checked. **Minimum role to use pipeline variables** is No one allowed (pipeline variables ≠ CI/CD Variables; do not loosen).
 
@@ -75,28 +81,27 @@ Artifact when the job succeeds: `clients/mobile/android/app/build/outputs/bundle
 
 ## Needed (not done)
 
-1. **First signed `.aab`.** Still Unknown. Job [16221506091](https://gitlab.com/artof-group/adaptive-experience-architecture/-/jobs/16221506091) failed at `:app:signReleaseBundle` because `$ANDROID_UPLOAD_KEYSTORE` is not a readable JKS/PKCS12. [#347](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/347) stays open. Encoding fix: [#351](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/351).
-2. **Upload that `.aab` to Play closed testing.** Human in Play Console. Do not start this walk until the artifact exists. Not Production. No store listing.
-3. **Play App Signing SHA-1 → Firebase Android app `aea-companion`.** That is the **Play App Signing** cert, not the upload-key SHA-1, unless Console shows both and Firebase asks for both. DSO waits for the first bundle. Date + package only. Never write the hash into git, issues, chat, or this vault. Unknown until a tester can install.
+1. **First signed `.aab`.** Still Unknown. [#347](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/347) was closed without a green artifact — do not treat that close as install proof. Replay is job [16248008019](https://gitlab.com/artof-group/adaptive-experience-architecture/-/jobs/16248008019). [#351](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/351) decode is on `main`.
+2. **Upload that `.aab` to Play closed testing.** Human in Play Console. Do not start this walk until the artifact exists. Not Production. No store listing. CI Play API upload stays [#354](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/354) until a human accept exists.
+3. **Play App Signing SHA-1 → Firebase Android app `aea-companion`.** Play App Signing cert, not the upload-key SHA-1, unless Console shows both and Firebase asks for both. Date + package only. Never write the hash into git, issues, chat, or this vault.
 4. **Testers install from the closed track.** Unknown until a human on the testers list actually installs.
-5. **Unred `android-build-debug` on `main`.** Required job fails `:app:processDebugGoogleServices` because debug uses `applicationIdSuffix = ".debug"` and the live `GOOGLE_SERVICES_JSON` has no client for `link.artof.aea.companion.debug`. The **example** JSON already has dummy clients for both packages. Release processing does not use that suffix (job 16221506091 passed `processReleaseGoogleServices`). Fix is [#348](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/348): drop the suffix, **or** add a Firebase Android app for `.debug` and paste an updated file var. Sponsor skipped that fork on 2026-08-31. Do not reopen #308.
-6. **Optional, not redding main:** [#349](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/349) `git` missing in the stakeholder-cadence image (`allow_failure`).
+5. **[#349](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/349)** `git` in the stakeholder-cadence image (advisory). Not an `.aab` blocker.
 
 ## Operator gotchas
 
 - Do not create CI/CD Variables from an agent. Sponsor pastes in the GitLab UI.
 - File variables: Type = File, then paste into Value. There is no browse button.
-- Same package name in Gradle `applicationId`, Play Console, and Firebase. The `.debug` suffix is a second package and needs a second Firebase client if kept.
+- Same package name in Gradle `applicationId`, Play Console, and Firebase. Debug suffix was dropped ([#348](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/348)). Do not add a second Firebase Android app for `.debug`.
 - Dual-viewport / Play install / SHA-1 are Unknown until probed. Do not copy a claim from this note into a ship status.
 - iOS is later (sponsor: Android first). Apple Developer Program is not this runbook.
 
 ## Honesty (do not echo stale docs)
 
 - SHA-1 to paste into Firebase is the **Play App Signing** certificate, not the upload-key SHA-1, unless Play Console shows both and Firebase asks for both.
-- `app/google-services.json.example` already has dummy clients for `link.artof.aea.companion` **and** `.debug`. The live file var is the one missing `.debug` ([#348](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/348)).
+- `app/google-services.json.example` still has dummy clients for both package ids. Live debug builds use the same `link.artof.aea.companion` client after [#348](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/348).
 - YAML comments on `android-bundle-release` may still say honest SKIP / `exit 0`. Live behavior: job **omitted** unless `$ANDROID_UPLOAD_KEYSTORE` is set; if the job runs and the file is missing, the script **exits 1**. Do not copy the SKIP wording.
 - If Play's closed-testing wizard blocks on a privacy-policy URL, that URL is **Unknown**. Do not invent one.
-- Do not reopen [#307](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/307), [#308](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/308), or [#321](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/321). Do not `Closes #347` until a named tester can install from the closed track.
+- Do not reopen [#307](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/307), [#308](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/308), [#321](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/321), [#347](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/347), or [#348](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/348). First `.aab` / install-from-track stay Unknown until probed.
 - Stale on `main` (do not copy): roadmap M19 "Play distribution blocked on account activation"; native UX spec "Phase 1 blocked on Play account"; 2026-08-31 public HLD "#308 still opened". Account + app + testers list exist. `#308` is closed.
 - architecture.artof.link does **not** publish `research/random-thoughts/`. This note is still public-safe because GitLab issues/MRs can leak.
 - A proposed `docs/` native release and distribution file still does not exist. This vault note is operator memory until that promotion, not a second README.
@@ -114,5 +119,5 @@ Artifact when the job succeeds: `clients/mobile/android/app/build/outputs/bundle
 
 Sponsor installed versionCode 2 / API 36 on Play **internal** track and walked Need→Pick→Pay→Confirm.
 
-**Honesty:** that build’s journey is a **local mock** (`SessionRepository`), not live BFF. Operator T-09 sample did not show companion order ids. Full write-up: [[2026-09-02-android-companion-alpha-probe-mock-vs-bff]]. Issues [#357](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/357)–[#360](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/360). Real-agent wire requested (internal-only iteration).
+**Honesty:** that Play internal build’s journey was a **local mock**. `main` after !376 talks to live BFF. Do not close [#360](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/360) from code comments — dual-probe website / operator first. Full write-up: [[2026-09-02-android-companion-alpha-probe-mock-vs-bff]].
 

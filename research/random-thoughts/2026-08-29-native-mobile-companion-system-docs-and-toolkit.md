@@ -10,6 +10,8 @@ evidence this note's screens were translated from). Journeys
 [[J1]] [[J2]] [[J3]] [[J4]]. Sibling: [[2026-08-27-session-memory-log-cf054-path-b-ux-in-coherence-loop]].
 Operator File-var lesson (Play upload keystore, not Firebase):
 [[2026-09-01-android-upload-keystore-gitlab-file-var]].
+Operator done-vs-needed runbook (names only, not a ship claim):
+[[2026-09-01-native-app-setup-and-link-runbook]].
 
 ## 2026-08-29 sponsor decision log
 
