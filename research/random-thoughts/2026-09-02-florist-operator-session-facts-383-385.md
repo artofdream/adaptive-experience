@@ -3,7 +3,7 @@
 > **Tags**: #aea #florist #operator #gap-loop #honesty #least-data
 > **Captured**: 2026-09-02
 > **Issues**: #383 #384 #385
-> **Related**: !409 staff-list columns; vault florist completeness note
+> **Related**: [[2026-09-02-florist-operator-native-web-completeness-gaps]] · [[2026-09-02-asus-play-v3-smoke-native-gaps]] · [!409](https://gitlab.com/artof-group/adaptive-experience-architecture/-/merge_requests/409) staff-list columns
 
 ## Live evidence (Path B 2026-09-02)
 
