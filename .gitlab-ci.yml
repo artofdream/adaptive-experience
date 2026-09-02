@@ -645,6 +645,18 @@ android-play-internal-upload:
       test -f "$AAB"
       export PLAY_AAB_PATH="$(pwd)/$AAB"
     - cd ../../..
+    - |
+      # cimg/android:2024.04 has python3 without pip (job 16263370404).
+      if ! python3 -m pip --version >/dev/null 2>&1; then
+        if python3 -m ensurepip --upgrade >/dev/null 2>&1; then
+          echo "ok: bootstrapped pip via ensurepip"
+        else
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq python3-pip
+          echo "ok: installed python3-pip via apt"
+        fi
+      fi
+      python3 -m pip --version
     - python3 -m pip install --user --quiet 'google-api-python-client>=2.100.0' 'google-auth>=2.23.0'
     - python3 scripts/test_upload_play_aab.py -v
     - python3 scripts/upload_play_aab.py --json-out play-upload-report.json
