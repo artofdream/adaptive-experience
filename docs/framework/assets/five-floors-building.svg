@@ -1,0 +1,83 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 520" width="100%" height="auto" role="img" aria-label="The 5 Concentric Floors: Why AI Apps Break">
+  <defs>
+    <style>
+      .bg { fill: #121417; }
+      .f5 { fill: #15191e; stroke: #3b424d; stroke-width: 1.5; rx: 6px; }
+      .f4 { fill: #191e25; stroke: #454f5d; stroke-width: 1.5; rx: 5px; }
+      .f3 { fill: #1d232c; stroke: #546071; stroke-width: 1.5; rx: 5px; }
+      .f2 { fill: #222934; stroke: #6b7a90; stroke-width: 1.5; rx: 5px; }
+      .f1 { fill: #27303d; stroke: #c4b08a; stroke-width: 2; rx: 4px; }
+      .found { fill: #181c22; stroke: #c4b08a; stroke-width: 1.5; rx: 6px; }
+      
+      .badge-5 { font-family: ui-monospace, Menlo, monospace; font-weight: 700; font-size: 11px; fill: #93c5fd; }
+      .badge-4 { font-family: ui-monospace, Menlo, monospace; font-weight: 700; font-size: 11px; fill: #67e8f9; }
+      .badge-3 { font-family: ui-monospace, Menlo, monospace; font-weight: 700; font-size: 11px; fill: #fde047; }
+      .badge-2 { font-family: ui-monospace, Menlo, monospace; font-weight: 700; font-size: 11px; fill: #f472b6; }
+      .badge-1 { font-family: ui-monospace, Menlo, monospace; font-weight: 700; font-size: 11px; fill: #c4b08a; }
+      .badge-found { font-family: ui-monospace, Menlo, monospace; font-weight: 700; font-size: 11px; fill: #c4b08a; }
+
+      .floor-title { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; font-weight: 700; font-size: 12px; fill: #e7e4dc; }
+      .floor-sub { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; font-weight: 400; font-size: 11.5px; fill: #9a9588; }
+      .f1-sub { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; font-weight: 500; font-size: 11.5px; fill: #d4cfbf; }
+      
+      .arrow-text { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; font-weight: 600; font-size: 11px; fill: #c4b08a; text-anchor: middle; }
+      .arrow { stroke: #c4b08a; stroke-width: 1.5; fill: none; }
+      .arrow-head { fill: #c4b08a; }
+    </style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" class="arrow-head"/>
+    </marker>
+  </defs>
+
+  <!-- Canvas Background -->
+  <rect width="760" height="520" class="bg" rx="8"/>
+  <rect x="1" y="1" width="758" height="518" fill="none" stroke="#2a2e33" stroke-width="1" rx="7"/>
+
+  <!-- Concentric Building Container -->
+  <!-- Floor 05: Agent Team & Governance -->
+  <g transform="translate(30, 20)">
+    <rect width="700" height="380" class="f5"/>
+    <text x="20" y="26" class="badge-5">🏢 FLOOR 05: THE AGENT TEAM &amp; GOVERNANCE (Graph Engineering)</text>
+    <text x="20" y="44" class="floor-sub">Specialized human/agent stakeholder roles + an Independent Reviewer Gate (MRC).</text>
+
+    <!-- Floor 04: The Goal Run & Retries -->
+    <g transform="translate(20, 58)">
+      <rect width="660" height="302" class="f4"/>
+      <text x="20" y="24" class="badge-4">🔄 FLOOR 04: THE GOAL RUN &amp; RETRIES (Loop Engineering)</text>
+      <text x="20" y="42" class="floor-sub">Clear objectives, execution budgets, and single-task focus (1 Finding → 1 Issue → 1 Branch → 1 MR).</text>
+
+      <!-- Floor 03: The Machine & Tests -->
+      <g transform="translate(20, 54)">
+        <rect width="620" height="228" class="f3"/>
+        <text x="20" y="24" class="badge-3">⚙️ FLOOR 03: THE MACHINE &amp; TESTS (Harness Engineering)</text>
+        <text x="20" y="42" class="floor-sub">Connecting AI to real tools + 14 automated pre-flight quality guards.</text>
+
+        <!-- Floor 02: The Memory Curator -->
+        <g transform="translate(20, 54)">
+          <rect width="580" height="154" class="f2"/>
+          <text x="20" y="24" class="badge-2">🧠 FLOOR 02: THE MEMORY CURATOR (Context Engineering)</text>
+          <text x="20" y="42" class="floor-sub">Filters noise, keeps lessons, manages active window via 4 Second Brain memory vaults.</text>
+
+          <!-- Floor 01: The Message -->
+          <g transform="translate(20, 54)">
+            <rect width="540" height="80" class="f1"/>
+            <text x="20" y="28" class="badge-1">💬 FLOOR 01: THE MESSAGE (Prompt Engineering)</text>
+            <text x="20" y="52" class="f1-sub">Clear role definition, single concrete objective, and strict negative constraints.</text>
+          </g>
+        </g>
+      </g>
+    </g>
+  </g>
+
+  <!-- Downward Transition Indicator -->
+  <line x1="380" y1="408" x2="380" y2="430" class="arrow" marker-end="url(#arrow)"/>
+  <text x="380" y="424" class="arrow-text" dx="75">Built On Real Infrastructure</text>
+
+  <!-- Solid Foundation: Real Databases & Inventory -->
+  <g transform="translate(30, 440)">
+    <rect width="700" height="60" class="found"/>
+    <rect x="0" y="0" width="700" height="3" fill="#c4b08a" rx="1"/>
+    <text x="24" y="26" class="badge-found">🏛️ SOLID FOUNDATION: REAL DATABASES &amp; INVENTORY (PostgreSQL &amp; Kafka)</text>
+    <text x="24" y="46" class="floor-sub">Authoritative source of truth for stock, pricing, delivery slots, and payment ledger.</text>
+  </g>
+</svg>

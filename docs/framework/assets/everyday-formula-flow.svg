@@ -1,0 +1,68 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 490" width="100%" height="auto" role="img" aria-label="The Core Formula in Everyday Terms: 4-step flow">
+  <defs>
+    <style>
+      .bg { fill: #121417; }
+      .card { fill: #181c22; stroke: #2a2e33; stroke-width: 1.5; rx: 6px; }
+      .card-accent { fill: #181c22; stroke: #c4b08a; stroke-width: 1.5; rx: 6px; }
+      .title { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; font-weight: 700; font-size: 13px; fill: #e7e4dc; letter-spacing: 0.3px; }
+      .title-accent { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; font-weight: 700; font-size: 13px; fill: #c4b08a; letter-spacing: 0.3px; }
+      .step-num { font-family: ui-monospace, Menlo, monospace; font-weight: 700; font-size: 11px; fill: #c4b08a; }
+      .desc { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; font-weight: 400; font-size: 12px; fill: #9a9588; }
+      .quote { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; font-weight: 500; font-style: italic; font-size: 12px; fill: #d4cfbf; }
+      .arrow { stroke: #c4b08a; stroke-width: 1.5; fill: none; }
+      .arrow-head { fill: #c4b08a; }
+    </style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" class="arrow-head"/>
+    </marker>
+  </defs>
+
+  <!-- Canvas Background -->
+  <rect width="760" height="490" class="bg" rx="8"/>
+  <rect x="1" y="1" width="758" height="488" fill="none" stroke="#2a2e33" stroke-width="1" rx="7"/>
+
+  <!-- Step 1: The Customer Talks -->
+  <g transform="translate(40, 24)">
+    <rect width="680" height="74" class="card"/>
+    <rect x="0" y="0" width="4" height="74" fill="#c4b08a" rx="1"/>
+    <text x="24" y="28" class="step-num">1. THE CUSTOMER TALKS</text>
+    <text x="24" y="52" class="quote">Shopper: "I need bright birthday flowers for my mom today in Berlin"</text>
+  </g>
+
+  <!-- Arrow 1 -> 2 -->
+  <line x1="380" y1="98" x2="380" y2="126" class="arrow" marker-end="url(#arrow)"/>
+
+  <!-- Step 2: The AI Interpreter & Live Notepad -->
+  <g transform="translate(40, 130)">
+    <rect width="680" height="88" class="card"/>
+    <rect x="0" y="0" width="4" height="88" fill="#c4b08a" rx="1"/>
+    <text x="24" y="26" class="step-num">2. THE AI INTERPRETER &amp; LIVE NOTEPAD</text>
+    <text x="24" y="48" class="desc">• <tspan font-weight="600" fill="#e7e4dc">AI Concierge:</tspan> Listens and extracts intent (Occasion: Birthday, Date: Today, Color: Bright)</text>
+    <text x="24" y="68" class="desc">• <tspan font-weight="600" fill="#e7e4dc">Shared Understanding:</tspan> A digital notepad visible to both shopper and systems</text>
+  </g>
+
+  <!-- Arrow 2 -> 3 -->
+  <line x1="380" y1="218" x2="380" y2="246" class="arrow" marker-end="url(#arrow)"/>
+
+  <!-- Step 3: The Real-World Services -->
+  <g transform="translate(40, 250)">
+    <rect width="680" height="106" class="card-accent"/>
+    <rect x="0" y="0" width="4" height="106" fill="#c4b08a" rx="1"/>
+    <text x="24" y="26" class="step-num">3. THE REAL-WORLD SERVICES (The Source of Truth)</text>
+    <text x="24" y="48" class="desc">• <tspan font-weight="600" fill="#e7e4dc">Warehouse:</tspan> Validates real physical inventory (Fail-Closed)</text>
+    <text x="24" y="68" class="desc">• <tspan font-weight="600" fill="#e7e4dc">Delivery Engine:</tspan> Calculates realistic driver routing and order cutoffs</text>
+    <text x="24" y="88" class="desc">• <tspan font-weight="600" fill="#e7e4dc">Cash Register:</tspan> Itemizes pricing, taxes, and zero-PII payment simulation</text>
+  </g>
+
+  <!-- Arrow 3 -> 4 -->
+  <line x1="380" y1="356" x2="380" y2="384" class="arrow" marker-end="url(#arrow)"/>
+
+  <!-- Step 4: The Outer Harness -->
+  <g transform="translate(40, 388)">
+    <rect width="680" height="78" class="card"/>
+    <rect x="0" y="0" width="4" height="78" fill="#c4b08a" rx="1"/>
+    <text x="24" y="26" class="step-num">4. THE OUTER HARNESS (The Factory &amp; Quality Inspectors)</text>
+    <text x="24" y="48" class="desc">• <tspan font-weight="600" fill="#e7e4dc">14 Automated Quality Guards:</tspan> Verifies facts and contracts before showing them to users</text>
+    <text x="24" y="66" class="desc">• <tspan font-weight="600" fill="#e7e4dc">Independent Gatekeeper (MRC):</tspan> Ensures no untested code reaches production</text>
+  </g>
+</svg>
