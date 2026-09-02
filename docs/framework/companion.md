@@ -11,6 +11,12 @@ Live BFF: [https://aea.artof.link](https://aea.artof.link) (same Edge contracts 
 - Catalog may use a local fallback list when recommendations are unavailable; selection and checkout still go to the BFF. Sold-out stays fail-closed.
 - Checkout sends an opaque payment reference only — no raw card fields.
 
+## Native Need tape (2 September 2026)
+
+30-second phone recording of the live-BFF companion on Need. Tapping **Mom's Birthday (Same-Day)** unlocks **View Arrangements (birthday)**. This is that evening's Need-step evidence, not Confirm write-through, not Play, and not a dual-viewport shop clip.
+
+![Companion Need, 2 September 2026, 30 seconds](assets/companion-need-30s-2026-09-02.mp4)
+
 ## Gap-closing loop
 
 Native and web share contracts. Drift shows up as App Tester 409s (for example product-only totals vs delivery-inclusive `order_summary.total`, or Start Over reusing session cookies). The loop is honesty-first:

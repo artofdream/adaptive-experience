@@ -55,6 +55,13 @@ class TestBuildFrameworkSite(unittest.TestCase):
         self.assertTrue((root / "public" / "index.html").exists())
         self.assertTrue((root / "public" / "path-b.html").exists())
         self.assertTrue((root / "public" / "stack.html").exists())
+        self.assertTrue((root / "public" / "companion.html").exists())
+        companion = (root / "docs" / "framework" / "companion.md").read_text(
+            encoding="utf-8")
+        self.assertIn("assets/companion-need-30s-2026-09-02.mp4", companion)
+        html = (root / "public" / "companion.html").read_text(encoding="utf-8")
+        self.assertIn("/assets/companion-need-30s-2026-09-02.mp4", html)
+        self.assertIn('poster="/assets/companion-need-30s-2026-09-02.jpg"', html)
 
     def test_cf056_honesty_incident_cross_links(self):
         """Daily-brief honesty and Claim vs probe name the same incident and link."""
