@@ -73,6 +73,21 @@ CI fails on native↔web drift classes: product-only `observed_total` (pre-!379)
 Start Over without `clearSessionState` before `createSession` (pre-!380). Unit
 fixtures ≠ live dual-probe (#360) and ≠ weekday API probe (#369).
 
+### `X-AEA-Client` Grafana channel (#368)
+
+Observability only — **not** auth. Same public Bearer (`local-browser-token`) remains.
+
+| Client | Header |
+|--------|--------|
+| Android companion (`BffClient`) | `X-AEA-Client: companion-android` |
+| Web shop / florist UI (`app.js`, `florist.js`) | `X-AEA-Client: web` |
+
+Edge nginx forwards the header on `/api/` and writes `aea_client="$http_x_aea_client"` in access logs. BFF allowlists `companion-android` / `web` (else `unknown`), echoes `X-AEA-Client` on responses, and emits JSON `bff_access` lines with field **`aea_client`** (plus `unspecified` when absent).
+
+**Operator label (CloudWatch Logs Insights / Grafana explore):** `aea_client`  
+Example filter: `{ $.event = "bff_access" } | stats count(*) by aea_client, status`.  
+Repo Grafana dashboards (`platform/docker/grafana/provisioning/dashboards/`) are still CloudWatch **infra** panels — no request-series client split as-code yet (**partial**). Vault: `research/random-thoughts/2026-09-02-x-aea-client-grafana-label.md`.
+
 ## Live BFF wiring (internal testing, #362)
 
 Need / Pick / Pay call the live Edge BFF at `https://aea.artof.link` (cookie

@@ -25,6 +25,9 @@ SECURITY_HEADERS = {
 SESSION_COOKIE = "__Host-aea_session"
 RECALL_COOKIE = "__Host-aea_recall"
 RECALL_MAX_AGE_SECONDS = 2592000
+# Observability-only client channel (#368). Not an auth boundary.
+AEA_CLIENT_HEADER = "x-aea-client"
+AEA_CLIENT_ALLOWED = frozenset({"companion-android", "web"})
 
 
 class BffApp:
@@ -61,7 +64,10 @@ class BffApp:
             return
         headers = {key.decode().lower(): value.decode() for key, value in scope.get("headers", [])}
         correlation_id = self._correlation_id(headers.get("x-correlation-id"))
+        aea_client = self._aea_client_label(headers.get(AEA_CLIENT_HEADER))
         path, method = scope["path"], scope["method"]
+        send = self._access_logged_send(send, method=method, path=path,
+                                        correlation_id=correlation_id, aea_client=aea_client)
         if path == "/healthz" and method == "GET":
             return await self._json(send, 200, {"status": "ok"}, correlation_id)
         if headers.get("origin") not in {None, self.allowed_origin}:
@@ -639,6 +645,43 @@ class BffApp:
         if max_age is not None:
             header += f"; Max-Age={max_age}"
         return header
+
+    @staticmethod
+    def _aea_client_label(candidate: str | None) -> str:
+        """Allowlisted X-AEA-Client values for logs/metrics. Never used for auth."""
+        if not isinstance(candidate, str):
+            return ""
+        value = candidate.strip()
+        if not value:
+            return ""
+        if value in AEA_CLIENT_ALLOWED:
+            return value
+        return "unknown"
+
+    @staticmethod
+    def _access_logged_send(send, *, method: str, path: str, correlation_id: str,
+                            aea_client: str):
+        logged = {"done": False}
+
+        async def wrapped(message):
+            if message["type"] == "http.response.start":
+                headers = list(message.get("headers") or [])
+                if aea_client:
+                    headers.append((b"x-aea-client", aea_client.encode()))
+                message = {**message, "headers": headers}
+                if not logged["done"]:
+                    logged["done"] = True
+                    print(json.dumps({
+                        "event": "bff_access",
+                        "method": method,
+                        "path": path,
+                        "status": message["status"],
+                        "aea_client": aea_client or "unspecified",
+                        "correlation_id": correlation_id,
+                    }), flush=True)
+            await send(message)
+
+        return wrapped
 
     @staticmethod
     def _correlation_id(candidate: str | None) -> str:
