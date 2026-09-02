@@ -177,7 +177,6 @@ class CompanionUnitTests {
     @Test
     fun staleContextOnSelectionRetriesOnceThenSucceeds() = runBlocking {
         fakeApi.sharedUnderstanding = SharedUnderstandingResponse(contextVersion = 4)
-        fakeApi.staleSelectionOnce = true
         val rose = Arrangement(
             sku = "classic-rose-dozen",
             name = "Classic Roses",
@@ -186,10 +185,17 @@ class CompanionUnitTests {
         )
         repository.moveToPickStage()
         repository.selectArrangement(rose)
+        assertEquals(rose, repository.selectedArrangement.value)
         repository.moveToPayStage()
+        // Trigger stale only on checkout re-selection (card_message options), not Pick.
+        fakeApi.staleSelectionOnce = true
+        val selectionsBeforeCheckout = fakeApi.selections.size
         repository.completeCheckout("card")
         assertEquals(JourneyStage.TRACKING, repository.currentStage.value)
-        assertTrue("selection should have been retried", fakeApi.selections.size >= 2)
+        assertTrue(
+            "checkout selection should have been retried once",
+            fakeApi.selections.size >= selectionsBeforeCheckout + 2
+        )
         assertNull(repository.errorMessage.value)
     }
 
