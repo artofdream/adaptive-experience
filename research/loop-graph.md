@@ -190,6 +190,9 @@ flowchart TD
 | `claude-obsidian-loop.mdc` | content lifecycle | on any capture/promotion | human (Obsidian) + AI (triage) | manual |
 | `figma-shop-ui-sync.mdc` | sync SOP | on any `edge/gateway/ui/` change | `aea-ux-designer` | manual, not CI-enforced |
 | `build-ecr` / `deploy-ecs` | deploy loop | CI, on `main` + `platform/`/`edge/`/`.gitlab-ci.yml` changes | `aea-devsecops-platform` | automated |
+| `android-bundle-release` | mobile deliverable | CI manual on android/`.gitlab-ci.yml` changes when `ANDROID_UPLOAD_KEYSTORE` set | `aea-devsecops-platform` | manual trigger; signed `.aab` artifact only |
+| `android-play-internal-upload` | Play internal/closed publish | CI manual; needs optional bundle artifact; `PLAY_API_SERVICE_ACCOUNT_JSON` | `aea-devsecops-platform` + sponsor SA | manual; skips/honest-fail without SA; never Production (#354) |
+| `android-app-distribution` | Firebase UX distribute | CI manual when `FIREBASE_APP_DISTRIBUTION_CREDENTIALS` set | `aea-devsecops-platform` | manual; not Play |
 | GitLab pipeline schedule `4394324` | trigger | cron, daily 04:00 UTC | `aea-coherence-guardian` | automated |
 
 ## Known gaps (edges that are weak or missing)

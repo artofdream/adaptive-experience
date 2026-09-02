@@ -514,6 +514,117 @@ android-bundle-release:
       when: manual
       allow_failure: true
 
+# Play internal/closed testing upload via Android Publisher API (#354).
+# Not Production. Manual + allow_failure. Not an MR gate.
+# PLAY_API_SERVICE_ACCOUNT_JSON — protected File variable (service-account JSON).
+# Never attach as artifact. Never commit. Never paste in issues/MRs/chat.
+# Optional: PLAY_TRACK (default internal; closed testing may be alpha or a
+# custom Console track name — confirm in Play Console; never production),
+# PLAY_RELEASE_STATUS (default completed), PLAY_PACKAGE_NAME.
+# Prefer artifact from android-bundle-release; rebuilds signed bundle when the
+# AAB is missing but ANDROID_UPLOAD_* vars are present (same honesty as
+# android-bundle-release / App Distribution).
+# versionCode must be bumped in app/build.gradle.kts or Play rejects the edit.
+android-play-internal-upload:
+  stage: verify
+  image: cimg/android:2024.04
+  timeout: 45m
+  needs:
+    - job: android-bundle-release
+      optional: true
+      artifacts: true
+  variables:
+    GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+    PLAY_TRACK: "internal"
+    PLAY_PACKAGE_NAME: "link.artof.aea.companion"
+  before_script:
+    - cd clients/mobile/android
+    - java -version
+    - |
+      set -e
+      yes | sdkmanager --licenses >/dev/null || true
+      sdkmanager "platforms;android-36"
+    - |
+      if [ -n "${GOOGLE_SERVICES_JSON:-}" ] && [ -f "${GOOGLE_SERVICES_JSON}" ]; then
+        cp "${GOOGLE_SERVICES_JSON}" app/google-services.json
+      else
+        cp app/google-services.json.example app/google-services.json
+      fi
+    - |
+      if [ -z "${PLAY_API_SERVICE_ACCOUNT_JSON:-}" ] || [ ! -f "${PLAY_API_SERVICE_ACCOUNT_JSON}" ]; then
+        echo "SKIP: PLAY_API_SERVICE_ACCOUNT_JSON file variable is not available."
+        echo "Protected file secrets are typically unset on unprotected branches."
+        echo "Sponsor must add PLAY_API_SERVICE_ACCOUNT_JSON (Play API service-account JSON,"
+        echo "Type File, Protected) and grant the SA on the Play Console app (internal/closed"
+        echo "track only — not Production). Do not paste JSON in issues/MRs/chat."
+        echo "This is not a Play upload."
+        exit 1
+      fi
+      set +x
+      CRED_OUT=/tmp/aea-play-api-sa.json
+      cp "${PLAY_API_SERVICE_ACCOUNT_JSON}" "$CRED_OUT"
+      chmod 600 "$CRED_OUT"
+      export PLAY_API_SERVICE_ACCOUNT_JSON="$CRED_OUT"
+      echo "ok: copied Play API credentials to job-local path (not an artifact)"
+  script:
+    - |
+      set -e
+      AAB="app/build/outputs/bundle/release/app-release.aab"
+      if [ ! -f "$AAB" ]; then
+        echo "info: no android-bundle-release artifact AAB; attempting rebuild"
+        if [ -z "${ANDROID_UPLOAD_KEYSTORE:-}" ] || [ ! -f "${ANDROID_UPLOAD_KEYSTORE}" ] \
+          || [ -z "${ANDROID_UPLOAD_KEYSTORE_PASSWORD:-}" ] \
+          || [ -z "${ANDROID_UPLOAD_KEY_ALIAS:-}" ] \
+          || [ -z "${ANDROID_UPLOAD_KEY_PASSWORD:-}" ]; then
+          echo "SKIP: app-release.aab missing and upload-keystore CI variables unavailable."
+          echo "Run android-bundle-release first, or ensure ANDROID_UPLOAD_* vars are set."
+          echo "This is not a Play upload."
+          exit 1
+        fi
+        set +x
+        KS_OUT=/tmp/aea-upload-keystore.jks
+        rm -f "$KS_OUT"
+        if ! tr -d '\n\r\t ' < "${ANDROID_UPLOAD_KEYSTORE}" | base64 -d > "$KS_OUT" || [ ! -s "$KS_OUT" ]; then
+          echo "FAIL: ANDROID_UPLOAD_KEYSTORE did not decode as base64 to a non-empty keystore."
+          echo "This is not a Play upload."
+          exit 1
+        fi
+        export ANDROID_UPLOAD_KEYSTORE="$KS_OUT"
+        echo "ok: decoded ANDROID_UPLOAD_KEYSTORE for rebuild (not an artifact)"
+        sh ./gradlew bundleRelease
+      fi
+      test -f "$AAB"
+      export PLAY_AAB_PATH="$(pwd)/$AAB"
+    - cd ../../..
+    - python3 -m pip install --user --quiet 'google-api-python-client>=2.100.0' 'google-auth>=2.23.0'
+    - python3 scripts/test_upload_play_aab.py -v
+    - python3 scripts/upload_play_aab.py --json-out play-upload-report.json
+  artifacts:
+    when: always
+    paths:
+      - play-upload-report.json
+    expire_in: 14 days
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $PLAY_API_SERVICE_ACCOUNT_JSON'
+      changes:
+        - "clients/mobile/android/**/*"
+        - "scripts/upload_play_aab.py"
+        - "scripts/test_upload_play_aab.py"
+        - ".gitlab-ci.yml"
+      when: manual
+      allow_failure: true
+    - if: '$CI_COMMIT_BRANCH == "main" && $PLAY_API_SERVICE_ACCOUNT_JSON'
+      changes:
+        - "clients/mobile/android/**/*"
+        - "scripts/upload_play_aab.py"
+        - "scripts/test_upload_play_aab.py"
+        - ".gitlab-ci.yml"
+      when: manual
+      allow_failure: true
+    - if: '$CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "web" && $PLAY_API_SERVICE_ACCOUNT_JSON'
+      when: manual
+      allow_failure: true
+
 platform-foundation-integration:
   stage: integration
   image: python:3.12

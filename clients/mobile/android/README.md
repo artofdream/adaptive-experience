@@ -57,6 +57,64 @@ Sponsor re-paste of `ANDROID_UPLOAD_KEYSTORE` as base64 is recorded 2026-09-01
 (#351). Do not recreate `GOOGLE_SERVICES_JSON`. Do not commit a keystore, PEM,
 or SHA-1. Do not paste values in issues, MRs, or chat.
 
+## Play API upload (internal / closed testing, #354)
+
+CI job `android-play-internal-upload` uploads the signed `app-release.aab` to
+Play **internal** testing (API track `internal`) via the Google Play Android
+Developer API. Closed testing uses the Console track’s API name (often
+`alpha` or a custom track) — set optional CI variable `PLAY_TRACK` after
+confirming in Play Console. **Never** Production.
+
+The job is **manual** with `allow_failure: true`. It is **omitted** when
+`PLAY_API_SERVICE_ACCOUNT_JSON` is unset (same honesty as App Distribution /
+`android-bundle-release`). It prefers the `android-bundle-release` artifact;
+if the `.aab` is missing it rebuilds with the existing `ANDROID_UPLOAD_*`
+signing vars. Offline unit tests: `python scripts/test_upload_play_aab.py -v`.
+Dry-run (no Google calls): `python scripts/upload_play_aab.py --dry-run`.
+
+### Required GitLab CI variable (sponsor)
+
+| Variable | Type | Notes |
+|---|---|---|
+| `PLAY_API_SERVICE_ACCOUNT_JSON` | **File**, Protected | Play Developer API service-account JSON. Never artifacted. Never commit. Never paste in issues/MRs/chat. |
+
+Optional: `PLAY_TRACK` (default `internal`), `PLAY_RELEASE_STATUS` (default
+`completed`), `PLAY_PACKAGE_NAME` (default `link.artof.aea.companion`).
+
+### Sponsor: attach SA in Play Console + GitLab (no secrets in chat)
+
+1. Play Console → **Users and permissions** / **API access** → link a Google
+   Cloud project → create a **service account** (or reuse one) with permission
+   to release to this app’s **internal / closed** track only (not Production).
+2. In Google Cloud → IAM → service account → Keys → Add key → JSON. Download
+   stays on the sponsor machine only.
+3. GitLab → Settings → CI/CD → Variables → **Add variable**:
+   - Key: `PLAY_API_SERVICE_ACCOUNT_JSON` (exact name)
+   - Type: **File**
+   - Protected: **on**
+   - Masked: off (File variables are not masked)
+   - Value: paste the JSON into the textarea (GitLab has no binary picker)
+4. Do **not** paste the JSON into issues, MRs, chat, or research notes.
+5. On `main` (protected branch so the var injects), run **manual**
+   `android-bundle-release`, then **manual** `android-play-internal-upload`
+   (or let the upload job rebuild if the artifact is absent).
+
+### versionCode bump policy
+
+Play rejects an upload when `versionCode` is not greater than the last
+accepted bundle on that app. Bump `versionCode` in
+`clients/mobile/android/app/build.gradle.kts` before each new API upload.
+A failed duplicate-code edit is an honest fail — not a green skip.
+
+### Honesty
+
+- Job wiring ≠ successful Play upload until the sponsor var exists and a
+  pipeline run commits an edit.
+- Internal/closed API upload ≠ Production.
+- App Distribution / debug APK ≠ Play install path.
+
+Vault: [`research/random-thoughts/2026-09-02-play-api-ci-upload-closed-testing.md`](../../../research/random-thoughts/2026-09-02-play-api-ci-upload-closed-testing.md).
+
 ## Native↔web parity (gap-closing loop)
 
 Living matrix + detect→decide→ship→prove loop:
