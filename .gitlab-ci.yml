@@ -64,6 +64,9 @@ stakeholder-cadence-guard:
   stage: verify
   image: python:3.12-alpine
   allow_failure: true
+  before_script:
+    # check_stakeholder_cadence.py runs `git log`; alpine image has no git (#349).
+    - apk add --no-cache git
   script:
     - python scripts/check_stakeholder_cadence.py || true
     - python scripts/test_stakeholder_cadence.py -v
