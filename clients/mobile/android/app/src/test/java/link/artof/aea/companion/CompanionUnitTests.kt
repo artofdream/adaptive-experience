@@ -166,6 +166,61 @@ class CompanionUnitTests {
         assertEquals(JourneyStage.NEED, repository.currentStage.value)
         assertNull(repository.selectedArrangement.value)
         assertNull(repository.orderResult.value)
+        assertTrue(
+            "Start Over must clear BFF cookie/CSRF state before createSession (#366)",
+            fakeApi.clearSessionStateCalls >= 1
+        )
+        assertTrue(
+            "Start Over must createSession after clear (#366)",
+            fakeApi.createSessionCalls >= 1
+        )
+        assertTrue(
+            "clearSessionState must run before createSession",
+            fakeApi.lastClearBeforeCreate
+        )
+    }
+
+    @Test
+    fun startOverClearsSessionStateThenCreatesSessionAndRefreshesUnderstanding() = runBlocking {
+        fakeApi.sharedUnderstanding = SharedUnderstandingResponse(
+            contextVersion = 5,
+            structuredIntent = StructuredIntent(occasion = "anniversary")
+        )
+        // Simulate prior live session activity so createSession was already used.
+        repository.ensureSession()
+        assertTrue(repository.sessionReady.value)
+        assertEquals(1, fakeApi.createSessionCalls)
+
+        // Advance fake understanding version as if journey progressed.
+        fakeApi.versionForTests = 7
+        fakeApi.sharedUnderstanding = SharedUnderstandingResponse(
+            contextVersion = 7,
+            structuredIntent = StructuredIntent(occasion = "anniversary")
+        )
+
+        fakeApi.clearSessionStateCalls = 0
+        fakeApi.createSessionCalls = 0
+        repository.startOver()
+
+        assertEquals(1, fakeApi.clearSessionStateCalls)
+        assertEquals(1, fakeApi.createSessionCalls)
+        assertTrue(fakeApi.lastClearBeforeCreate)
+        assertEquals(JourneyStage.NEED, repository.currentStage.value)
+        assertTrue(repository.sessionReady.value)
+        // After startOver refresh, occasion comes from new-session shared-understanding.
+        assertEquals("anniversary", repository.sharedUnderstanding.value.occasion)
+        assertNull(repository.selectedArrangement.value)
+        assertNull(repository.errorMessage.value)
+    }
+
+    @Test
+    fun staleContextOnConversationRetriesOnceThenSucceeds() = runBlocking {
+        fakeApi.sharedUnderstanding = SharedUnderstandingResponse(contextVersion = 2)
+        fakeApi.staleConversationOnce = true
+        repository.postUserMessage("Anniversary bouquet under \$80")
+        assertEquals(2, fakeApi.postedMessages.size)
+        assertNull(repository.errorMessage.value)
+        assertTrue(repository.messages.value.any { it.text.contains("Anniversary") })
     }
 
     @Test
@@ -278,11 +333,33 @@ class FakeBffClient : BffClient() {
     var lastCheckout: CheckoutRequest? = null
     /** When true, first postSelection throws stale_context 409 then succeeds. */
     var staleSelectionOnce: Boolean = false
+    /** When true, first postConversationMessage throws stale_context 409 then succeeds. */
+    var staleConversationOnce: Boolean = false
+    var clearSessionStateCalls: Int = 0
+    var createSessionCalls: Int = 0
+    /** True when the most recent createSession was preceded by clearSessionState. */
+    var lastClearBeforeCreate: Boolean = false
+    private var clearedSinceLastCreate: Boolean = false
+    /** Test hook to bump fake server context version (mirrors private version). */
+    var versionForTests: Int
+        get() = version
+        set(value) { version = value }
     private var version: Int = 0
     private var selectedPrice: Double = 70.0
     private var deliveryPosted: Boolean = false
 
+    override fun clearSessionState() {
+        clearSessionStateCalls += 1
+        clearedSinceLastCreate = true
+        super.clearSessionState()
+    }
+
     override suspend fun createSession(): SessionCreateResponse {
+        createSessionCalls += 1
+        lastClearBeforeCreate = clearedSinceLastCreate
+        clearedSinceLastCreate = false
+        version = 0
+        deliveryPosted = false
         return SessionCreateResponse(csrfToken = "test-csrf")
     }
 
@@ -291,6 +368,16 @@ class FakeBffClient : BffClient() {
         observedContextVersion: Int
     ): AcceptedResponse {
         postedMessages += ConversationMessageRequest(messageText, observedContextVersion)
+        if (staleConversationOnce) {
+            staleConversationOnce = false
+            version = observedContextVersion + 1
+            throw BffException(
+                statusCode = 409,
+                errorCode = "stale_context",
+                message = "BFF 409 stale_context",
+                contextVersion = version
+            )
+        }
         version = observedContextVersion + 1
         return AcceptedResponse(accepted = true, code = "accepted", contextVersion = version)
     }

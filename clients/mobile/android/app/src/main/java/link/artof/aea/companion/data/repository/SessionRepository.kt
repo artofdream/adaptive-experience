@@ -137,7 +137,7 @@ class SessionRepository(
             )
             _messages.value = _messages.value + optimistic
 
-            val accepted: AcceptedResponse = api.postConversationMessage(
+            val accepted: AcceptedResponse = postConversationRetryingStale(
                 messageText = trimmed,
                 observedContextVersion = contextVersion
             )
@@ -295,6 +295,12 @@ class SessionRepository(
         }
     }
 
+    /**
+     * Reset journey UI and mint a **new** BFF session (#366).
+     * Clears BffClient cookie jar + CSRF before createSession (BFF reuses cookies
+     * on POST /session), then refreshes shared-understanding so contextVersion
+     * matches the server before the next Need message.
+     */
     suspend fun startOver() {
         _currentStage.value = JourneyStage.NEED
         _selectedArrangement.value = null
@@ -314,8 +320,14 @@ class SessionRepository(
         contextVersion = 0
         _sessionReady.value = false
         runGuarded {
+            // Clear cookie jar before createSession so BFF mints a new session
+            // instead of reusing __Host-aea_session / __Host-aea_recall (#366).
+            api.clearSessionState()
             api.createSession()
             _sessionReady.value = true
+            // Adopt authoritative context_version (usually 0) before the user types.
+            refreshSharedUnderstanding()
+            refreshCatalogFromWorkspace()
         }
     }
 
@@ -427,6 +439,26 @@ class SessionRepository(
 
     private fun adoptStaleContext(ex: BffException) {
         ex.contextVersion?.takeIf { it > 0 }?.let { contextVersion = maxOf(contextVersion, it) }
+    }
+
+    /**
+     * One-shot retry on conversation 409 stale_context (#366), mirroring selection.
+     */
+    private suspend fun postConversationRetryingStale(
+        messageText: String,
+        observedContextVersion: Int
+    ): AcceptedResponse {
+        return try {
+            api.postConversationMessage(messageText, observedContextVersion)
+        } catch (ex: BffException) {
+            if (ex.statusCode == 409 && ex.errorCode == "stale_context") {
+                adoptStaleContext(ex)
+                refreshContextFromWorkspace()
+                api.postConversationMessage(messageText, contextVersion)
+            } else {
+                throw ex
+            }
+        }
     }
 
     /**
