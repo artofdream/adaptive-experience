@@ -349,7 +349,9 @@ class BffApp:
                 return await self._error(send, 422, "invalid_order_shape", correlation_id)
             try:
                 result = self.orchestration.create_order(
-                    session_id=session.session_id, subject=subject, correlation_id=correlation_id)
+                    session_id=session.session_id, subject=subject,
+                    correlation_id=correlation_id,
+                    aea_client=aea_client or None)
             except OrchestrationUnavailable:
                 return await self._error(send, 503, "orchestration_unavailable", correlation_id)
             status = 202 if result.accepted else 422
@@ -827,9 +829,19 @@ class BffApp:
                 continue
             shaped = {key: item[key] for key in
                       ("order_id", "session_id", "status", "delayed",
-                       "authoritative_status", "product_id",
-                       "destination_reference", "card_message", "updated_at")
+                       "authoritative_status", "product_id", "catalog_title",
+                       "destination_reference", "card_message", "updated_at",
+                       "channel", "payment_state")
                       if key in item}
+            if shaped.get("channel") not in {"web", "companion-android", "unknown"}:
+                shaped.pop("channel", None)
+            if shaped.get("payment_state") not in {"paid", "declined", "unpaid"}:
+                shaped.pop("payment_state", None)
+            title = shaped.get("catalog_title")
+            if not isinstance(title, str) or not title.strip() or len(title) > 80:
+                shaped.pop("catalog_title", None)
+            elif "catalog_title" in shaped:
+                shaped["catalog_title"] = title.strip()
             if isinstance(item.get("timing"), dict):
                 timing = item["timing"]
                 shaped["timing"] = {key: timing[key] for key in ("date", "window")

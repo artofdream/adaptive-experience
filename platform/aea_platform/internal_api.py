@@ -650,8 +650,10 @@ class InternalOrchestrationApp:
         try:
             # An order requires the assembled product (#142/#122) and delivery (#33)
             # decisions; it is a separate authoritative aggregate (pre-checkout).
-            result = self.order.create(session_id=session_id, decisions=decisions,
-                                       context_version=int(loaded["context_version"]))
+            result = self.order.create(
+                session_id=session_id, decisions=decisions,
+                context_version=int(loaded["context_version"]),
+                aea_client=body.get("aea_client") if isinstance(body, dict) else None)
         except OrderIncompleteError as error:
             return await self._send(send, 422, {"code": "order_incomplete", "missing": error.missing})
         return await self._send(send, 202, {"code": "accepted",

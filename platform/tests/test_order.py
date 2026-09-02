@@ -71,6 +71,8 @@ class FakeOrderStore:
                 "street": "12 Private Lane",
             },
             "updated_at": "2026-09-02T12:00:00+00:00",
+            "aea_client": "web",
+            "decline_code": None,
             "email": "private@example.invalid",
         }]
 
@@ -202,12 +204,17 @@ class OrderServiceTests(unittest.TestCase):
         self.assertEqual("dest-1", item["destination_reference"])
         self.assertEqual({"date": "2026-09-01", "window": "morning"}, item["timing"])
         self.assertEqual("Happy birthday Mum", item["card_message"])
+        self.assertEqual("Classic Rose Dozen", item["catalog_title"])
+        self.assertEqual("web", item["channel"])
+        self.assertEqual("paid", item["payment_state"])
         self.assertEqual("2026-09-02T12:00:00+00:00", item["updated_at"])
         self.assertNotIn("email", item)
         self.assertNotIn("product", item)
         self.assertNotIn("delivery", item)
         self.assertNotIn("street", item)
         self.assertNotIn("options", item)
+        self.assertNotIn("decline_code", item)
+        self.assertNotIn("aea_client", item)
         blob = str(item)
         self.assertNotIn("private@example.invalid", blob)
         self.assertNotIn("12 Private Lane", blob)
@@ -232,6 +239,30 @@ class OrderServiceTests(unittest.TestCase):
         self.assertTrue(item["delayed"])
         self.assertEqual("delayed", item["authoritative_status"])
         self.assertEqual(280, len(item["card_message"]))
+        self.assertEqual("Lilac Bouquet", item["catalog_title"])
+        self.assertIsNone(item["channel"])
+        self.assertEqual("paid", item["payment_state"])
+
+    def test_list_recent_marks_declined_and_unknown_channel(self):
+        store = FakeOrderStore(current="submitted")
+        def declined_rows(*, limit=50):
+            store.listed_limit = limit
+            return [{
+                "order_id": "order-3",
+                "session_id": "sess-3",
+                "status": "submitted",
+                "delayed": False,
+                "product": {"product_id": "not-a-catalog-sku"},
+                "delivery": {"destination_reference": "dest-3"},
+                "updated_at": "2026-09-02T14:00:00+00:00",
+                "aea_client": "rog-phone",
+                "decline_code": "card_declined",
+            }]
+        store.list_recent = declined_rows
+        item = self._service(store).list_recent()[0]
+        self.assertEqual("declined", item["payment_state"])
+        self.assertEqual("unknown", item["channel"])
+        self.assertIsNone(item["catalog_title"])
 
 
 if __name__ == "__main__":

@@ -66,6 +66,19 @@ REFERENCE_CATALOG: tuple[CatalogProduct, ...] = (
     ),
 )
 
+# Shop-facing titles already used by the catalog SKUs (no new PII).
+REFERENCE_CATALOG_TITLES: dict[str, str] = {
+    product.product_id: product.product_id.replace("-", " ").title()
+    for product in REFERENCE_CATALOG
+}
+
+
+def catalog_title_for(product_id) -> str | None:
+    """Return the known catalog title for a product_id, or None."""
+    if not isinstance(product_id, str) or not product_id.strip():
+        return None
+    return REFERENCE_CATALOG_TITLES.get(product_id.strip())
+
 
 # Modest FR-007 score bump when this browser already accepted an order.
 # Occasion (+3) and flower (+2) still outrank a hint-only match.
