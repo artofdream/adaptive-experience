@@ -632,5 +632,31 @@ class SessionRepository(
     companion object {
         /** Matches platform aea_platform.pricing.REFERENCE_DELIVERY_FEE. */
         const val REFERENCE_DELIVERY_FEE = 12.0
+
+        /**
+         * Parse optional local catalog budget ceiling from Need chip label or BFF budget text (#359).
+         * Under $50 → 50; $50–100 → 100; $100+ / skipped → null (no local filter);
+         * bare numeric string (e.g. "75") → that Double.
+         */
+        fun parseBudgetCeiling(labelOrText: String?): Double? {
+            val raw = labelOrText?.trim().orEmpty()
+            if (raw.isEmpty()) return null
+            val normalized = raw
+                .replace('\u2013', '-') // en-dash (chip "$50–100")
+                .replace('\u2014', '-') // em-dash
+                .lowercase()
+            when {
+                normalized == "skipped" -> return null
+                "100+" in normalized -> return null
+                normalized.startsWith("under") -> {
+                    return Regex("""(\d+(?:\.\d+)?)""").find(normalized)
+                        ?.groupValues?.get(1)
+                        ?.toDoubleOrNull()
+                }
+                Regex("""\$?\s*50\s*-\s*100""").containsMatchIn(normalized) -> return 100.0
+            }
+            // Bare number from BFF / live intent (e.g. Anniversary "80" / serializer "75").
+            return raw.replace("$", "").replace(",", "").trim().toDoubleOrNull()
+        }
     }
 }
