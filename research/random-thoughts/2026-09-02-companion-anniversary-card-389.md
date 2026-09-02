@@ -4,7 +4,7 @@
 > **Captured**: 2026-09-02
 > **Issue**: [#389](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/389)
 > **MR**: !408
-> **Related**: [[2026-09-02-companion-budget-band-filter-387]] · [[2026-09-02-asus-play-v3-smoke-debuggable-390]]
+> **Related**: [[2026-09-02-asus-play-v3-smoke-native-gaps]] · [[2026-09-02-companion-native-web-gap-closing-loop]] · [[2026-09-02-florist-operator-native-web-completeness-gaps]]
 
 ## Live evidence
 
