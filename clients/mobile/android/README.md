@@ -112,13 +112,18 @@ python scripts/test_probe_companion_bff_parity.py -v   # offline helpers only
 ```
 
 **CI job** `companion-bff-parity-probe` (manual on MRs / main web; schedule when
-`AEA_COMPANION_PARITY_PROBE=1`). Failures exit non-zero and print correlation
-ids — they do **not** auto-open GitLab issues. Confirmed drift → one finding
-issue (one finding → one MR); comment on #360 only when dual-probe related.
+`CI_PIPELINE_SCHEDULE_DESCRIPTION` contains `Companion BFF parity probe`, or
+optional `AEA_COMPANION_PARITY_PROBE=1`). Failures exit non-zero and print
+correlation ids — they do **not** auto-open GitLab issues. Confirmed drift →
+one finding issue (one finding → one MR); comment on #360 only when dual-probe
+related.
 
-Weekday schedule (sponsor / maintainer): GitLab → CI/CD → Schedules → cron
-`0 6 * * 1-5` on `main` with variable `AEA_COMPANION_PARITY_PROBE=1`. Optional
-`AEA_PARITY_PROBE_SKIP_WEEKENDS=1` if reusing a daily schedule.
+Weekday schedule (sponsor / maintainer): GitLab → CI/CD → Schedules → description
+**Companion BFF parity probe (weekday)**, cron `0 6 * * 1-5` Europe/Berlin on
+`main`. No schedule-scoped Variables required (GitLab UI Edit schedule may only
+show Inputs). Job matches on schedule description so the daily brief schedule
+does not fire the probe. Optional `AEA_COMPANION_PARITY_PROBE=1` remains as a
+fallback OR.
 
 **Honesty:** probe green ≠ Play honesty gate; ≠ operator / website write-through
 (#360 still open); T-09 sample operator ≠ live orders. Do not claim dual-probe

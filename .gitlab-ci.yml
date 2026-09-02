@@ -811,8 +811,10 @@ deploy-ecs-agent-runner:
 
 # Companion weekday/CI API parity probe vs live BFF (#369).
 # Mirrors BffClient Need→Pick→Pay; fails non-zero on drift. Does NOT auto-open
-# issues. Manual on MR/main; schedule when AEA_COMPANION_PARITY_PROBE=1
-# (recommended cron: 0 6 * * 1-5 on main). Probe ≠ Play / ≠ #360 dual-probe.
+# issues. Manual on MR/main; schedule when CI_PIPELINE_SCHEDULE_DESCRIPTION
+# matches "Companion BFF parity probe" (schedule id 4421840; cron 0 6 * * 1-5
+# Europe/Berlin on main). Optional AEA_COMPANION_PARITY_PROBE=1 still works.
+# Daily brief schedule must NOT match. Probe ≠ Play / ≠ #360 dual-probe.
 companion-bff-parity-probe:
   stage: verify
   image: python:3.12-alpine
@@ -828,7 +830,7 @@ companion-bff-parity-probe:
       - parity-probe-report.json
     expire_in: 14 days
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "schedule" && $AEA_COMPANION_PARITY_PROBE == "1"'
+    - if: '$CI_PIPELINE_SOURCE == "schedule" && ($CI_PIPELINE_SCHEDULE_DESCRIPTION =~ /Companion BFF parity probe/ || $AEA_COMPANION_PARITY_PROBE == "1")'
       allow_failure: false
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       changes:
