@@ -157,7 +157,7 @@ shared-understanding is **removed**.
 ## UX validation loop
 
 Fast Need/Pick/Pay review **without** waiting on every Play Console AAB upload.
-Tracked in [#363](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/363).
+Tracked in [#363](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/363) (A/B) and [#364](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/364) (Phase C screenshots).
 Design note + checklist:
 [`research/random-thoughts/2026-09-02-companion-ux-online-validation-setup.md`](../../../research/random-thoughts/2026-09-02-companion-ux-online-validation-setup.md).
 
@@ -201,10 +201,38 @@ Sponsor / DSO (do **not** commit secrets; do **not** paste JSON in issues):
    injected. First successful tester invite/upload stays **Unknown** until that
    run succeeds — do not claim green distribution from wiring alone.
 
+### Paparazzi Compose screenshots (Phase C, #364)
+
+Optional JVM screenshot path — **no emulator / Maestro** in this increment
+(Maestro remains deferred; disproportionate for the first Phase C MR).
+
+1. Open an MR / `main` pipeline that lists job **`android-compose-screenshots`**
+   (changes under `clients/mobile/android/**` or `.gitlab-ci.yml`).
+2. Run the job **manually** (`allow_failure: true` — does not gate main).
+3. Download artifacts: Paparazzi PNGs under
+   `clients/mobile/android/app/src/test/snapshots/` (plus reports).
+4. Studio: `@Preview` surfaces in
+   `app/src/main/.../ui/preview/CompanionScreenPreviews.kt` (Need / Pick / Pay).
+
+Gradle locally (needs Android SDK):
+
+```bash
+cd clients/mobile/android
+sh ./gradlew :app:recordPaparazziDebug   # write PNGs for review
+# later: sh ./gradlew :app:verifyPaparazziDebug  # when goldens are committed
+```
+
+Screenshots are for fast UX review only. They are **not** the Play store
+install path and **not** dual-probe evidence.
+
 ### Honesty
 
-- No live BFF / website / operator write-through from debug or App Distribution
-  builds until #362 is done and dual-probed (#360).
-- Score the vault **UX checklist** (contrast, back stack, single CTA, FR-009,
-  demo banner until BFF, budget ask, chip vs free-text unlock) against every
-  review build.
+- **Play internal** remains the honesty gate for “installs from Play”. Debug
+  APK, App Distribution, and Paparazzi screenshots do **not** replace that gate
+  (#354 automates AAB→Play separately).
+- Dual-probe website / operator write-through stays **out of automated CI**
+  (manual sponsor probe; #360). Do not wire dual-probe into
+  `android-compose-screenshots`.
+- Live BFF is wired for internal testing (#362); still score the vault **UX
+  checklist** (contrast, back stack, single CTA, FR-009, demo banner honesty,
+  budget ask, chip vs free-text unlock) against every review build.

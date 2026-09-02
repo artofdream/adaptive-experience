@@ -336,11 +336,6 @@ android-build-debug:
         - "clients/mobile/android/**/*"
         - ".gitlab-ci.yml"
 
-# Phase A follow-up (#363): Paparazzi / Roborazzi / Gradle managed-device
-# Compose screenshots on MRs touching clients/mobile/android/** — upload PNGs
-# as artifacts (+ optional Pages gallery). Do NOT add those Gradle deps here;
-# plugins are not present yet. Keep screenshot CI as a later lightweight MR.
-
 # Companion UX validation docs guard (#363 Phase A). Blocking on android MRs.
 android-ux-checklist:
   stage: verify
@@ -362,6 +357,60 @@ android-ux-checklist:
         - "scripts/check_companion_ux_validation.py"
         - ".gitlab-ci.yml"
       allow_failure: false
+
+
+# Phase C (#364): Paparazzi Compose screenshots (Need/Pick/Pay). JVM — no
+# emulator / Maestro (Maestro deferred as disproportionate for first MR).
+# Manual + allow_failure so main stays green. Records PNGs as artifacts for
+# UX review; does not gate MRs. Dual-probe website/operator stays out of CI
+# (honesty #360). Play internal remains the store-install honesty gate.
+android-compose-screenshots:
+  stage: verify
+  image: cimg/android:2024.04
+  timeout: 45m
+  variables:
+    GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+  before_script:
+    - cd clients/mobile/android
+    - java -version
+    - |
+      set -e
+      yes | sdkmanager --licenses >/dev/null || true
+      sdkmanager "platforms;android-36"
+    - |
+      if [ -n "${GOOGLE_SERVICES_JSON:-}" ] && [ -f "${GOOGLE_SERVICES_JSON}" ]; then
+        cp "${GOOGLE_SERVICES_JSON}" app/google-services.json
+      else
+        cp app/google-services.json.example app/google-services.json
+      fi
+  script:
+    # Record (not verify) so first runs produce reviewable PNGs without
+    # requiring committed goldens. Invoke via sh — cimg cannot chmod +x.
+    - sh ./gradlew :app:recordPaparazziDebug
+    - |
+      echo "Paparazzi snapshots (review artifacts; not Play honesty):"
+      find app/src/test/snapshots -type f -name '*.png' 2>/dev/null | head -50 || true
+      find app/build/reports/paparazzi -type f 2>/dev/null | head -50 || true
+  artifacts:
+    when: always
+    expire_in: 14 days
+    paths:
+      - clients/mobile/android/app/src/test/snapshots/
+      - clients/mobile/android/app/build/reports/paparazzi/
+      - clients/mobile/android/app/build/reports/tests/testDebugUnitTest/
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      changes:
+        - "clients/mobile/android/**/*"
+        - ".gitlab-ci.yml"
+      when: manual
+      allow_failure: true
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      changes:
+        - "clients/mobile/android/**/*"
+        - ".gitlab-ci.yml"
+      when: manual
+      allow_failure: true
 
 # Firebase App Distribution for UX testers (#363 Phase B). Not Play.
 # FIREBASE_APP_DISTRIBUTION_CREDENTIALS — protected file variable (service

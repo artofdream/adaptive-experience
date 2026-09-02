@@ -2,7 +2,7 @@
 
 > **Tags**: #aea #second-brain #mobile #companion #ux #ci #honesty #path-b #knowledge-first
 > **Captured**: 2026-09-02
-> **Issue**: [#363](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/363)
+> **Issue**: [#363](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/363) (A/B); Phase C: [#364](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/364)
 > **Related probe**: [[2026-09-02-android-companion-alpha-probe-mock-vs-bff]] / #361 / !375
 > **Sponsor findings**: #357 #358 #359 #360
 
@@ -13,9 +13,10 @@ Sponsor keeps personal Play internal testing as the **store-path honesty gate**.
 We need a **dedicated fast UX validation loop** (CI debug APK + checklist now;
 Firebase App Distribution next; Play automation stays #354).
 
-Honesty: companion happy path is still a **local UI mock** until live BFF wire
-(#360 / #362). Do not claim live agent UX, website write-through, or operator
-inbox correlation from this setup alone.
+Honesty: live BFF is wired for internal testing (#362). Do **not** claim
+website / operator dual-write or store readiness from debug / App Distribution /
+Paparazzi alone — dual-probe (#360) and **Play internal** remain separate honesty
+gates. Dual-probe stays out of automated CI.
 
 ## Phased shape
 
@@ -29,10 +30,9 @@ inbox correlation from this setup alone.
 3. Lightweight CI guard `android-ux-checklist` verifies this vault note + the
    companion README **UX validation loop** section exist when android paths
    change.
-4. **Paparazzi / Roborazzi / Gradle managed-device screenshots** are a
-   **Phase A follow-up** — not added in this MR (no new heavy screenshot
-   Gradle deps). Comment noted in `.gitlab-ci.yml`. Optional later: PNGs as
-   job artifacts + Pages gallery under `/stack` or `ux-companion/`.
+4. **Paparazzi screenshots** moved to **Phase C (#364)** — landed as
+   optional manual CI (`android-compose-screenshots`) + Need/Pick/Pay previews.
+   Pages gallery under `/stack` or `ux-companion/` still optional later.
 
 ### Phase B — Online device without Play (this delivery, ops may lag)
 
@@ -42,14 +42,25 @@ inbox correlation from this setup alone.
    CI variable is present. Manual / omitted when missing — same honesty pattern
    as `android-bundle-release`. Faster than Play internal for iteration; still
    real Android.
-5. Optional later: Maestro or Compose UI smoke (Need chip / Back / Confirm
-   demo-banner) on emulator in CI — not required to close #363 Phase B wiring.
+5. Maestro / emulator Compose UI smoke (Need chip / Back / Confirm) —
+   still optional; deferred in #364 as disproportionate vs Paparazzi JVM path.
 
-### Phase C — Closer to production (follow-on)
+### Phase C — Play honesty + optional screenshot CI (this delivery, #364)
 
-6. Keep **Play internal** as the honesty gate for store install (#354 helps
-   AAB→Play automation).
-7. Dual-probe website / operator **only after** live BFF wire (#360 / #362).
+6. Keep **Play internal** as the store-install honesty gate (docs + README).
+   App Distribution / debug APK / Paparazzi do **not** replace it. AAB→Play
+   automation remains #354.
+7. **Paparazzi** JVM Compose screenshots for Need / Pick / Pay:
+   - Plugin `app.cash.paparazzi` 1.3.5 + `CompanionScreenPaparazziTest`
+   - Studio `@Preview` in `CompanionScreenPreviews.kt`
+   - CI job `android-compose-screenshots`: **manual** + `allow_failure: true`,
+     runs `recordPaparazziDebug`, uploads PNG artifacts (14 days). Does not
+     gate main.
+8. **Maestro / emulator smoke**: deferred — disproportionate for first Phase C
+   MR (cimg emulator image cost). Optional follow-on if Paparazzi gallery is
+   insufficient for chip / Back / Confirm interactions.
+9. Dual-probe website / operator **remains out of automated CI** (honesty
+   #360). Manual sponsor probe only.
 
 ## Non-goals
 
@@ -91,16 +102,35 @@ Play track).
 | Debug APK job | `.gitlab-ci.yml` → `android-build-debug` |
 | UX checklist guard | `scripts/check_companion_ux_validation.py` + job `android-ux-checklist` |
 | App Distribution job | `.gitlab-ci.yml` → `android-app-distribution` (manual; omit if credentials missing) |
+| Paparazzi screenshots | `.gitlab-ci.yml` → `android-compose-screenshots` (manual + allow_failure) |
 | Companion README loop | `clients/mobile/android/README.md` → **UX validation loop** |
 | This note | `research/random-thoughts/2026-09-02-companion-ux-online-validation-setup.md` |
 
 ## Status words (honesty)
 
-- **Phase A docs + debug APK expire_in + checklist guard**: delivered in the
-  #363 MR when merged.
-- **Paparazzi/Roborazzi screenshot gallery**: Unknown / follow-up (not in MR).
-- **App Distribution Gradle + CI job wiring**: delivered; **first successful
-  tester upload**: Unknown until sponsor pastes
-  `FIREBASE_APP_DISTRIBUTION_CREDENTIALS` (and testers group) — do not invent
-  a green upload.
-- **Live BFF / dual-probe**: Unknown (#362) — out of scope here.
+- **Phase A docs + debug APK expire_in + checklist guard**: delivered (#363 / !377).
+- **Phase B App Distribution Gradle + CI job wiring**: delivered; **first
+  successful tester upload**: Unknown until sponsor pastes
+  `FIREBASE_APP_DISTRIBUTION_CREDENTIALS` (and `ux-testers` group) — do not
+  invent a green upload.
+- **Phase C Paparazzi + manual screenshot job + Play honesty docs**: delivered
+  in the #364 MR when merged. **First green `recordPaparazziDebug` in CI**:
+  Unknown until the manual job is run — do not invent green screenshots.
+- **Maestro / emulator smoke**: deferred (optional follow-on).
+- **Play internal honesty gate**: unchanged — still required for store install
+  claims (#354 for AAB→Console automation).
+- **Live BFF**: wired for internal testing (#362). **Dual-probe website /
+  operator**: still open (#360) — out of automated CI by design.
+
+## Phase C progress (2026-09-02)
+
+Sponsor unparked Phase C. Stack choice after reading existing android CI:
+
+| Option | Decision |
+|--------|----------|
+| Maestro + emulator on cimg | Deferred — heavy image / flaky cost for first MR |
+| Gradle managed devices | Deferred — same emulator cost class |
+| **Paparazzi 1.3.5 JVM screenshots** | **Chosen** — smallest green increment; Need/Pick/Pay |
+| Committed golden verify | Later — first job uses `recordPaparazziDebug` + artifacts |
+
+Docs keep Play internal as honesty gate; dual-probe stays manual (#360).
