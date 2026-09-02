@@ -61,7 +61,7 @@ or SHA-1. Do not paste values in issues, MRs, or chat.
 
 Living matrix + detect→decide→ship→prove loop:
 [`research/random-thoughts/2026-09-02-companion-native-web-gap-closing-loop.md`](../../../research/random-thoughts/2026-09-02-companion-native-web-gap-closing-loop.md).
-MVP sequence: contract tests (#367) → `X-AEA-Client` (#368) → weekday probe (#369).
+MVP sequence: contract tests (#367) → `X-AEA-Client` (#368) → weekday probe (#369) (script + CI job).
 Public page: [architecture.artof.link/companion](https://architecture.artof.link/companion).
 Dual-probe honesty remains #360. App Distribution ≠ Play. T-09 operator ≠ orders.
 
@@ -87,6 +87,35 @@ Edge nginx forwards the header on `/api/` and writes `aea_client="$http_x_aea_cl
 **Operator label (CloudWatch Logs Insights / Grafana explore):** `aea_client`  
 Example filter: `{ $.event = "bff_access" } | stats count(*) by aea_client, status`.  
 Repo Grafana dashboards (`platform/docker/grafana/provisioning/dashboards/`) are still CloudWatch **infra** panels — no request-series client split as-code yet (**partial**). Vault: `research/random-thoughts/2026-09-02-x-aea-client-grafana-label.md`.
+
+### Weekday / CI API parity probe (#369)
+
+Script: [`scripts/probe_companion_bff_parity.py`](../../../scripts/probe_companion_bff_parity.py).
+Mirrors companion `BffClient` against live Path B (`https://aea.artof.link`, or
+`AEA_BFF_BASE_URL` / staging origin when documented): cookie jar + CSRF,
+`X-AEA-Client: companion-android`, Need→Pick→Pay through checkout with
+`observed_total` from workspace `order_summary.total` after delivery.
+
+**Run locally:**
+
+```bash
+python scripts/probe_companion_bff_parity.py
+# optional: --base-url https://aea.artof.link --json-out /tmp/parity.json
+python scripts/test_probe_companion_bff_parity.py -v   # offline helpers only
+```
+
+**CI job** `companion-bff-parity-probe` (manual on MRs / main web; schedule when
+`AEA_COMPANION_PARITY_PROBE=1`). Failures exit non-zero and print correlation
+ids — they do **not** auto-open GitLab issues. Confirmed drift → one finding
+issue (one finding → one MR); comment on #360 only when dual-probe related.
+
+Weekday schedule (sponsor / maintainer): GitLab → CI/CD → Schedules → cron
+`0 6 * * 1-5` on `main` with variable `AEA_COMPANION_PARITY_PROBE=1`. Optional
+`AEA_PARITY_PROBE_SKIP_WEEKENDS=1` if reusing a daily schedule.
+
+**Honesty:** probe green ≠ Play honesty gate; ≠ operator / website write-through
+(#360 still open); T-09 sample operator ≠ live orders. Do not claim dual-probe
+write-through from this job.
 
 ## Live BFF wiring (internal testing, #362)
 

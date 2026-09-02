@@ -808,6 +808,47 @@ deploy-ecs-agent-runner:
         - .gitlab-ci.yml
     - if: '$CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "web"'
 
+
+# Companion weekday/CI API parity probe vs live BFF (#369).
+# Mirrors BffClient Need→Pick→Pay; fails non-zero on drift. Does NOT auto-open
+# issues. Manual on MR/main; schedule when AEA_COMPANION_PARITY_PROBE=1
+# (recommended cron: 0 6 * * 1-5 on main). Probe ≠ Play / ≠ #360 dual-probe.
+companion-bff-parity-probe:
+  stage: verify
+  image: python:3.12-alpine
+  variables:
+    AEA_BFF_BASE_URL: "https://aea.artof.link"
+    AEA_PARITY_PROBE_JSON_OUT: "parity-probe-report.json"
+  script:
+    - python scripts/test_probe_companion_bff_parity.py -v
+    - python scripts/probe_companion_bff_parity.py --json-out "$AEA_PARITY_PROBE_JSON_OUT"
+  artifacts:
+    when: always
+    paths:
+      - parity-probe-report.json
+    expire_in: 14 days
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule" && $AEA_COMPANION_PARITY_PROBE == "1"'
+      allow_failure: false
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      changes:
+        - "scripts/probe_companion_bff_parity.py"
+        - "scripts/test_probe_companion_bff_parity.py"
+        - "clients/mobile/android/**/*"
+        - ".gitlab-ci.yml"
+      when: manual
+      allow_failure: true
+    - if: '$CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "web"'
+      when: manual
+      allow_failure: true
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      changes:
+        - "scripts/probe_companion_bff_parity.py"
+        - "scripts/test_probe_companion_bff_parity.py"
+        - ".gitlab-ci.yml"
+      when: manual
+      allow_failure: true
+
 # architecture.artof.link: GitLab Pages from docs/framework allowlist.
 # Independent of Path B ECS (no needs, no resource_group path-b-ecs).
 # Merge to main publishes. Custom domain DNS is a sponsor one-time leftover.
