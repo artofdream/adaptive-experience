@@ -600,6 +600,9 @@ android-play-internal-upload:
         cp app/google-services.json.example app/google-services.json
       fi
     - |
+      # Presence check only — defer copy/export until after unit tests so
+      # missing-credentials cases are not polluted by the job-local SA path
+      # (and GitLab File var path is unset around the unittest invocation).
       if [ -z "${PLAY_API_SERVICE_ACCOUNT_JSON:-}" ] || [ ! -f "${PLAY_API_SERVICE_ACCOUNT_JSON}" ]; then
         echo "SKIP: PLAY_API_SERVICE_ACCOUNT_JSON file variable is not available."
         echo "Protected file secrets are typically unset on unprotected branches."
@@ -609,13 +612,16 @@ android-play-internal-upload:
         echo "This is not a Play upload."
         exit 1
       fi
-      set +x
-      CRED_OUT=/tmp/aea-play-api-sa.json
-      cp "${PLAY_API_SERVICE_ACCOUNT_JSON}" "$CRED_OUT"
-      chmod 600 "$CRED_OUT"
-      export PLAY_API_SERVICE_ACCOUNT_JSON="$CRED_OUT"
-      echo "ok: copied Play API credentials to job-local path (not an artifact)"
+      export _AEA_PLAY_SA_SRC="${PLAY_API_SERVICE_ACCOUNT_JSON}"
+      echo "ok: Play API credentials file variable present (copy deferred until after unit tests)"
   script:
+    - cd ../../..
+    - |
+      # Offline unit tests before SA copy/export and before PLAY_AAB_PATH export.
+      # Belt-and-suspenders with test setUp env isolation (#354 / job 16265846106).
+      env -u PLAY_API_SERVICE_ACCOUNT_JSON -u PLAY_AAB_PATH \
+        python3 scripts/test_upload_play_aab.py -v
+    - cd clients/mobile/android
     - |
       set -e
       AAB="app/build/outputs/bundle/release/app-release.aab"
@@ -658,7 +664,13 @@ android-play-internal-upload:
       fi
       python3 -m pip --version
     - python3 -m pip install --user --quiet 'google-api-python-client>=2.100.0' 'google-auth>=2.23.0'
-    - python3 scripts/test_upload_play_aab.py -v
+    - |
+      set +x
+      CRED_OUT=/tmp/aea-play-api-sa.json
+      cp "${_AEA_PLAY_SA_SRC}" "$CRED_OUT"
+      chmod 600 "$CRED_OUT"
+      export PLAY_API_SERVICE_ACCOUNT_JSON="$CRED_OUT"
+      echo "ok: copied Play API credentials to job-local path (not an artifact)"
     - python3 scripts/upload_play_aab.py --json-out play-upload-report.json
   artifacts:
     when: always
