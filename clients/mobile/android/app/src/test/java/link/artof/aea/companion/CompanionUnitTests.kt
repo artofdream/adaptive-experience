@@ -347,6 +347,38 @@ class CompanionUnitTests {
     }
 
     @Test
+    fun midBudgetBandExcludesUnderFloorArrangements() = runBlocking {
+        // #387: $50–100 must not list Budget Mixed Bunch ($35).
+        fakeApi.sharedUnderstanding = SharedUnderstandingResponse(
+            contextVersion = 2,
+            structuredIntent = StructuredIntent(occasion = "birthday")
+        )
+        repository.postUserMessage("birthday flowers")
+        repository.setBudgetChoice("$50–100", 100.0)
+        assertEquals("$50–100", repository.sharedUnderstanding.value.budget)
+        val skus = repository.arrangements.value.map { it.sku }
+        assertTrue(skus.contains("classic-rose-dozen")) // 70
+        assertTrue(skus.contains("lilac-bouquet")) // 95
+        assertFalse(skus.contains("budget-mixed-bunch")) // 35 under floor
+        repository.moveToPickStage()
+        assertFalse(repository.arrangements.value.map { it.sku }.contains("budget-mixed-bunch"))
+    }
+
+    @Test
+    fun parseBudgetBandInclusiveRanges() {
+        val mid = SessionRepository.parseBudgetBand("$50–100")!!
+        assertEquals(50.0, mid.floor!!, 0.01)
+        assertEquals(100.0, mid.ceiling!!, 0.01)
+        val under = SessionRepository.parseBudgetBand("Under $50")!!
+        assertNull(under.floor)
+        assertEquals(50.0, under.ceiling!!, 0.01)
+        val plus = SessionRepository.parseBudgetBand("$100+")!!
+        assertEquals(100.0, plus.floor!!, 0.01)
+        assertNull(plus.ceiling)
+        assertNull(SessionRepository.parseBudgetBand("skipped"))
+    }
+
+    @Test
     fun skipBudgetResolvesPromptWithoutCorrection() = runBlocking {
         fakeApi.sharedUnderstanding = SharedUnderstandingResponse(
             contextVersion = 2,

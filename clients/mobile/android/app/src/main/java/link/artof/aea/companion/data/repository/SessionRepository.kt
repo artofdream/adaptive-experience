@@ -103,7 +103,8 @@ class SessionRepository(
     private val _budgetPromptResolved = MutableStateFlow(false)
     val budgetPromptResolved: StateFlow<Boolean> = _budgetPromptResolved.asStateFlow()
 
-    /** Local ceiling for catalog filter; null means no local price filter (Skip or $100+). */
+    /** Local band for catalog filter (#387). Null floor/ceiling = open side; both null = no filter. */
+    private var budgetFloor: Double? = null
     private var budgetCeiling: Double? = null
     /** Unfiltered workspace/fallback catalog; [_arrangements] may be budget-filtered (#359). */
     private var fullCatalog: List<Arrangement> = localFallbackCatalog
@@ -181,7 +182,10 @@ class SessionRepository(
     suspend fun setBudgetChoice(label: String, ceiling: Double?) {
         runGuarded {
             ensureSessionInternal()
-            budgetCeiling = ceiling
+            val band = parseBudgetBand(label) ?: BudgetBand(label, floor = null, ceiling = ceiling)
+            // Prefer explicit chip ceiling arg when band had no ceiling ($100+ uses floor only).
+            budgetFloor = band.floor
+            budgetCeiling = band.ceiling ?: ceiling
             _budgetPromptResolved.value = true
             _sharedUnderstanding.value = _sharedUnderstanding.value.copy(budget = label)
             _messages.value = _messages.value + ChatMessage(
@@ -189,19 +193,20 @@ class SessionRepository(
                 sender = "user",
                 text = "Budget: $label"
             )
-            val corrections = if (ceiling != null) {
-                mapOf("budget" to JsonPrimitive(ceiling))
-            } else {
-                // $100+ — soft high ceiling so BFF ranking still has a numeric budget.
-                mapOf("budget" to JsonPrimitive(250.0))
+            val correctionValue = when {
+                budgetCeiling != null -> budgetCeiling!!
+                budgetFloor != null -> budgetFloor!!
+                else -> 250.0
             }
+            val corrections = mapOf("budget" to JsonPrimitive(correctionValue))
             val accepted = patchCorrectionRetryingStale(corrections)
             if (accepted.contextVersion > 0) {
                 contextVersion = accepted.contextVersion
             }
             refreshSharedUnderstanding()
-            // Keep chip ceiling + label (refresh may coerce numeric budget from BFF).
-            budgetCeiling = ceiling
+            // Keep chip band + label (refresh may coerce numeric budget from BFF) (#388).
+            budgetFloor = band.floor
+            budgetCeiling = band.ceiling ?: ceiling
             _sharedUnderstanding.value = _sharedUnderstanding.value.copy(budget = label)
             refreshCatalogFromWorkspace()
             applyBudgetFilterToArrangements()
@@ -211,6 +216,7 @@ class SessionRepository(
     /** Explicit Skip — honesty that budget was deferred (#359). */
     fun skipBudget() {
         _budgetPromptResolved.value = true
+        budgetFloor = null
         budgetCeiling = null
         if (_sharedUnderstanding.value.budget.isNullOrBlank()) {
             _sharedUnderstanding.value = _sharedUnderstanding.value.copy(budget = "skipped")
@@ -229,13 +235,17 @@ class SessionRepository(
 
     private fun applyBudgetFilterToArrangements() {
         val catalog = fullCatalog.ifEmpty { localFallbackCatalog }
+        val floor = budgetFloor
         val ceiling = budgetCeiling
-        if (ceiling == null) {
+        if (floor == null && ceiling == null) {
             _arrangements.value = catalog
             return
         }
-        val filtered = catalog.filter { it.price <= ceiling }
-        // If every SKU is over budget, keep full catalog so Pick is not empty; honesty UI still shows ceiling.
+        val filtered = catalog.filter { arrangement ->
+            val price = arrangement.price
+            (floor == null || price >= floor) && (ceiling == null || price <= ceiling)
+        }
+        // If every SKU is outside the band, keep full catalog so Pick is not empty; honesty UI still shows band.
         _arrangements.value = filtered.ifEmpty { catalog }
     }
 
@@ -412,6 +422,7 @@ class SessionRepository(
         _errorMessage.value = null
         _sharedUnderstanding.value = SharedUnderstanding()
         _budgetPromptResolved.value = false
+        budgetFloor = null
         budgetCeiling = null
         _messages.value = listOf(
             ChatMessage(
@@ -466,7 +477,16 @@ class SessionRepository(
         )
         if (!intent.budget.isNullOrBlank()) {
             _budgetPromptResolved.value = true
-            parseBudgetCeiling(intent.budget)?.let { budgetCeiling = it }
+            // Apply soft ceiling from live numeric intent only when no chip band is active.
+            if (budgetFloor == null && budgetCeiling == null) {
+                val band = parseBudgetBand(intent.budget)
+                if (band != null) {
+                    budgetFloor = band.floor
+                    budgetCeiling = band.ceiling
+                } else {
+                    parseBudgetCeiling(intent.budget)?.let { budgetCeiling = it }
+                }
+            }
         }
         // Surface disclosure once as a florist bubble when present and new.
         val disclosure = remote.disclosure?.trim().orEmpty()
@@ -633,9 +653,40 @@ class SessionRepository(
         /** Matches platform aea_platform.pricing.REFERENCE_DELIVERY_FEE. */
         const val REFERENCE_DELIVERY_FEE = 12.0
 
+        data class BudgetBand(val label: String, val floor: Double?, val ceiling: Double?)
+
         /**
-         * Parse optional local catalog budget ceiling from Need chip label or BFF budget text (#359).
-         * Under $50 → 50; $50–100 → 100; $100+ / skipped → null (no local filter);
+         * Parse Need chip / BFF budget into an inclusive local catalog band (#387).
+         * Under $50 → [null, 50]; $50–100 → [50, 100]; $100+ → [100, null];
+         * skipped / blank → null band (no filter); bare number → [null, n] soft ceiling.
+         */
+        fun parseBudgetBand(labelOrText: String?): BudgetBand? {
+            val raw = labelOrText?.trim().orEmpty()
+            if (raw.isEmpty()) return null
+            val normalized = raw
+                .replace('–', '-')
+                .replace('—', '-')
+                .lowercase()
+            when {
+                normalized == "skipped" -> return null
+                "100+" in normalized -> return BudgetBand(raw, floor = 100.0, ceiling = null)
+                normalized.startsWith("under") -> {
+                    val ceiling = Regex("""(\d+(?:\.\d+)?)""").find(normalized)
+                        ?.groupValues?.get(1)
+                        ?.toDoubleOrNull()
+                    return BudgetBand(raw, floor = null, ceiling = ceiling)
+                }
+                Regex("""\$?\s*50\s*-\s*100""").containsMatchIn(normalized) ->
+                    return BudgetBand(raw, floor = 50.0, ceiling = 100.0)
+            }
+            val number = raw.replace("$", "").replace(",", "").trim().toDoubleOrNull()
+                ?: return null
+            return BudgetBand(raw, floor = null, ceiling = number)
+        }
+
+        /**
+         * Parse optional local catalog budget ceiling from Need chip label or BFF budget text (#359/#387).
+         * Under $50 → 50; $50–100 → 100; $100+ / skipped → null;
          * bare numeric string (e.g. "75") → that Double.
          */
         fun parseBudgetCeiling(labelOrText: String?): Double? {
