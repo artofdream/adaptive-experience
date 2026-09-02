@@ -339,6 +339,14 @@ class FakeBffClient : BffClient() {
     var createSessionCalls: Int = 0
     /** True when the most recent createSession was preceded by clearSessionState. */
     var lastClearBeforeCreate: Boolean = false
+    /** Ordered API touchpoints for contract ordering asserts (#367). */
+    val callLog = mutableListOf<String>()
+    /**
+     * When true, postCheckout rejects observed_total that does not match
+     * workspace order_summary.total after delivery (mirrors live total_mismatch).
+     */
+    var enforceOrderSummaryTotalOnCheckout: Boolean = false
+    private var expectedCheckoutTotalOverride: Double? = null
     private var clearedSinceLastCreate: Boolean = false
     /** Test hook to bump fake server context version (mirrors private version). */
     var versionForTests: Int
@@ -348,9 +356,15 @@ class FakeBffClient : BffClient() {
     private var selectedPrice: Double = 70.0
     private var deliveryPosted: Boolean = false
 
+    /** Force expected checkout total for isolated total_mismatch contract asserts. */
+    fun setExpectedCheckoutTotalForTests(total: Double?) {
+        expectedCheckoutTotalOverride = total
+    }
+
     override fun clearSessionState() {
         clearSessionStateCalls += 1
         clearedSinceLastCreate = true
+        callLog += "clearSessionState"
         super.clearSessionState()
     }
 
@@ -358,8 +372,10 @@ class FakeBffClient : BffClient() {
         createSessionCalls += 1
         lastClearBeforeCreate = clearedSinceLastCreate
         clearedSinceLastCreate = false
+        callLog += "createSession"
         version = 0
         deliveryPosted = false
+        expectedCheckoutTotalOverride = null
         return SessionCreateResponse(csrfToken = "test-csrf")
     }
 
@@ -439,6 +455,19 @@ class FakeBffClient : BffClient() {
     }
 
     override suspend fun postCheckout(request: CheckoutRequest): AcceptedResponse {
+        callLog += "postCheckout"
+        val expected = expectedCheckoutTotalOverride
+            ?: if (deliveryPosted) selectedPrice + SessionRepository.REFERENCE_DELIVERY_FEE else null
+        if (enforceOrderSummaryTotalOnCheckout && expected != null) {
+            if (kotlin.math.abs(request.observedTotal - expected) > 0.01) {
+                throw BffException(
+                    statusCode = 409,
+                    errorCode = "total_mismatch",
+                    message = "BFF 409 total_mismatch",
+                    contextVersion = version
+                )
+            }
+        }
         lastCheckout = request
         return AcceptedResponse(
             accepted = true,
