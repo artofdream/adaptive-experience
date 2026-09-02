@@ -22,6 +22,7 @@ fun NeedScreen(
     sharedUnderstanding: SharedUnderstanding,
     onSendMessage: (String) -> Unit,
     onContinueToPick: () -> Unit,
+    onStartOver: (() -> Unit)? = null,
     isLoading: Boolean = false,
     modifier: Modifier = Modifier
 ) {
@@ -103,6 +104,18 @@ fun NeedScreen(
         ) {
             Text(if (hasOccasion) "View Arrangements (${sharedUnderstanding.occasion}) →" else "Specify Occasion to Continue")
         }
+
+        if (onStartOver != null) {
+            TextButton(
+                onClick = onStartOver,
+                enabled = !isLoading,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+            ) {
+                Text("Start Over")
+            }
+        }
     }
 }
 
@@ -112,6 +125,8 @@ fun PickScreen(
     selectedArrangement: FloristArrangement?,
     onSelectArrangement: (FloristArrangement) -> Unit,
     onContinueToPay: () -> Unit,
+    onBack: (() -> Unit)? = null,
+    onStartOver: (() -> Unit)? = null,
     isLoading: Boolean = false,
     modifier: Modifier = Modifier
 ) {
@@ -158,6 +173,29 @@ fun PickScreen(
                     "Select an Arrangement to Continue"
             )
         }
+
+        if (onBack != null) {
+            OutlinedButton(
+                onClick = onBack,
+                enabled = !isLoading,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 2.dp)
+            ) {
+                Text("← Back to Need")
+            }
+        }
+        if (onStartOver != null) {
+            TextButton(
+                onClick = onStartOver,
+                enabled = !isLoading,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+            ) {
+                Text("Start Over")
+            }
+        }
     }
 }
 
@@ -166,6 +204,9 @@ fun PayScreen(
     selectedArrangement: FloristArrangement?,
     sharedUnderstanding: SharedUnderstanding,
     onCheckout: (String) -> Unit,
+    checkoutTotal: Double? = null,
+    onBack: (() -> Unit)? = null,
+    onStartOver: (() -> Unit)? = null,
     isLoading: Boolean = false,
     modifier: Modifier = Modifier
 ) {
@@ -202,13 +243,35 @@ fun PayScreen(
                 Spacer(modifier = Modifier.height(8.dp))
                 Divider()
                 Spacer(modifier = Modifier.height(8.dp))
+                val productPrice = selectedArrangement?.price ?: 0.0
+                val total = checkoutTotal ?: productPrice
+                if (checkoutTotal != null && checkoutTotal > productPrice) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(text = "Arrangement:", style = MaterialTheme.typography.bodyMedium)
+                        Text(text = "$${"%.2f".format(productPrice)}", style = MaterialTheme.typography.bodyMedium)
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(text = "Delivery:", style = MaterialTheme.typography.bodyMedium)
+                        Text(
+                            text = "$${"%.2f".format(checkoutTotal - productPrice)}",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(4.dp))
+                }
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(text = "Total:", style = MaterialTheme.typography.titleMedium)
                     Text(
-                        text = "$${"%.2f".format(selectedArrangement?.price ?: 0.0)}",
+                        text = "$${"%.2f".format(total)}",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
@@ -239,6 +302,27 @@ fun PayScreen(
                 .height(54.dp)
         ) {
             Text(if (isLoading) "Placing order…" else "Confirm & Place Order ✓")
+        }
+
+        if (onBack != null) {
+            OutlinedButton(
+                onClick = onBack,
+                enabled = !isLoading,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp)
+            ) {
+                Text("← Back to Pick")
+            }
+        }
+        if (onStartOver != null) {
+            TextButton(
+                onClick = onStartOver,
+                enabled = !isLoading,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Start Over")
+            }
         }
     }
 }

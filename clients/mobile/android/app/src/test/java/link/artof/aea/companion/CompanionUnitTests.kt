@@ -2,6 +2,9 @@ package link.artof.aea.companion
 
 import link.artof.aea.companion.data.api.BffClient
 import link.artof.aea.companion.data.model.AcceptedResponse
+import link.artof.aea.companion.data.model.WorkspaceFacets
+import link.artof.aea.companion.data.model.OrderSummaryFacet
+import link.artof.aea.companion.data.model.BffException
 import link.artof.aea.companion.data.model.Arrangement
 import link.artof.aea.companion.data.model.CheckoutRequest
 import link.artof.aea.companion.data.model.ConversationMessageRequest
@@ -128,8 +131,88 @@ class CompanionUnitTests {
         assertTrue(fakeApi.orderPosted)
         assertNotNull(fakeApi.lastCheckout)
         assertEquals(BffClient.SESSION_PAYMENT_REFERENCE, fakeApi.lastCheckout!!.paymentReference)
-        assertEquals(70.0, fakeApi.lastCheckout!!.observedTotal, 0.01)
+        // Mirror web: observed_total from order_summary (product + REFERENCE_DELIVERY_FEE).
+        assertEquals(82.0, fakeApi.lastCheckout!!.observedTotal, 0.01)
+        assertEquals(82.0, repository.orderResult.value?.totalAmount ?: 0.0, 0.01)
         assertEquals("CONFIRMED", repository.orderResult.value?.status)
+    }
+
+    @Test
+    fun backNavClearsSelectionAndStartOverFromPay() = runBlocking {
+        fakeApi.sharedUnderstanding = SharedUnderstandingResponse(contextVersion = 4)
+        val rose = Arrangement(
+            sku = "classic-rose-dozen",
+            name = "Classic Roses",
+            price = 70.0,
+            available = true
+        )
+        repository.moveToPickStage()
+        repository.selectArrangement(rose)
+        repository.moveToPayStage()
+        assertEquals(JourneyStage.PAY, repository.currentStage.value)
+
+        repository.backToPick()
+        assertEquals(JourneyStage.PICK, repository.currentStage.value)
+        assertEquals(rose, repository.selectedArrangement.value)
+
+        repository.backToNeed()
+        assertEquals(JourneyStage.NEED, repository.currentStage.value)
+        assertNull(repository.selectedArrangement.value)
+
+        repository.moveToPickStage()
+        repository.selectArrangement(rose)
+        repository.moveToPayStage()
+        repository.startOver()
+        assertEquals(JourneyStage.NEED, repository.currentStage.value)
+        assertNull(repository.selectedArrangement.value)
+        assertNull(repository.orderResult.value)
+    }
+
+    @Test
+    fun displayCheckoutTotalIncludesReferenceDeliveryFee() {
+        assertEquals(82.0, repository.displayCheckoutTotal(70.0), 0.01)
+        assertEquals(SessionRepository.REFERENCE_DELIVERY_FEE, 12.0, 0.01)
+    }
+
+    @Test
+    fun staleContextOnSelectionRetriesOnceThenSucceeds() = runBlocking {
+        fakeApi.sharedUnderstanding = SharedUnderstandingResponse(contextVersion = 4)
+        val rose = Arrangement(
+            sku = "classic-rose-dozen",
+            name = "Classic Roses",
+            price = 70.0,
+            available = true
+        )
+        repository.moveToPickStage()
+        repository.selectArrangement(rose)
+        assertEquals(rose, repository.selectedArrangement.value)
+        repository.moveToPayStage()
+        // Trigger stale only on checkout re-selection (card_message options), not Pick.
+        fakeApi.staleSelectionOnce = true
+        val selectionsBeforeCheckout = fakeApi.selections.size
+        repository.completeCheckout("card")
+        assertEquals(JourneyStage.TRACKING, repository.currentStage.value)
+        assertTrue(
+            "checkout selection should have been retried once",
+            fakeApi.selections.size >= selectionsBeforeCheckout + 2
+        )
+        assertNull(repository.errorMessage.value)
+    }
+
+    @Test
+    fun bffExceptionMapsCodesToDistinctUserMessages() {
+        assertTrue(
+            BffException(409, "stale_context", "x").userMessage.contains("Workspace changed")
+        )
+        assertTrue(
+            BffException(409, "total_mismatch", "x").userMessage.contains("total")
+        )
+        assertTrue(
+            BffException(409, "checkout_conflict", "x").userMessage.contains("Checkout conflict")
+        )
+        assertTrue(
+            BffException(409, "product_unavailable", "x").userMessage.contains("no longer available")
+        )
     }
 
     @Test
@@ -193,7 +276,11 @@ class FakeBffClient : BffClient() {
     val selections = mutableListOf<SelectionRequest>()
     var orderPosted: Boolean = false
     var lastCheckout: CheckoutRequest? = null
+    /** When true, first postSelection throws stale_context 409 then succeeds. */
+    var staleSelectionOnce: Boolean = false
     private var version: Int = 0
+    private var selectedPrice: Double = 70.0
+    private var deliveryPosted: Boolean = false
 
     override suspend fun createSession(): SessionCreateResponse {
         return SessionCreateResponse(csrfToken = "test-csrf")
@@ -216,15 +303,45 @@ class FakeBffClient : BffClient() {
         return ConversationResponse(contextVersion = version, messages = emptyList())
     }
 
-    override suspend fun getWorkspace(): WorkspaceResponse = WorkspaceResponse(contextVersion = version)
+    override suspend fun getWorkspace(): WorkspaceResponse {
+        val total = if (deliveryPosted) {
+            selectedPrice + SessionRepository.REFERENCE_DELIVERY_FEE
+        } else {
+            null
+        }
+        return WorkspaceResponse(
+            contextVersion = version,
+            facets = WorkspaceFacets(
+                orderSummary = total?.let { OrderSummaryFacet(total = it, currency = "USD") }
+            )
+        )
+    }
 
     override suspend fun postSelection(request: SelectionRequest): AcceptedResponse {
         selections += request
+        if (staleSelectionOnce) {
+            staleSelectionOnce = false
+            version = request.observedContextVersion + 1
+            throw BffException(
+                statusCode = 409,
+                errorCode = "stale_context",
+                message = "BFF 409 stale_context",
+                contextVersion = version
+            )
+        }
+        // Map known test SKUs to catalog-like prices for order_summary.
+        selectedPrice = when (request.productId) {
+            "classic-rose-dozen" -> 70.0
+            "budget-mixed-bunch" -> 35.0
+            "lilac-bouquet" -> 95.0
+            else -> 70.0
+        }
         version = request.observedContextVersion + 1
         return AcceptedResponse(accepted = true, code = "accepted", contextVersion = version)
     }
 
     override suspend fun postDelivery(request: DeliveryRequest): AcceptedResponse {
+        deliveryPosted = true
         version = request.observedContextVersion + 1
         return AcceptedResponse(accepted = true, code = "accepted", contextVersion = version)
     }

@@ -62,6 +62,7 @@ fun LilyCompanionApp(repository: SessionRepository) {
     val orderResult by repository.orderResult.collectAsState()
     val isLoading by repository.isLoading.collectAsState()
     val errorMessage by repository.errorMessage.collectAsState()
+    val orderSummaryTotal by repository.orderSummaryTotal.collectAsState()
     val scope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
@@ -126,7 +127,8 @@ fun LilyCompanionApp(repository: SessionRepository) {
                         onSendMessage = { text ->
                             scope.launch { repository.postUserMessage(text) }
                         },
-                        onContinueToPick = { repository.moveToPickStage() }
+                        onContinueToPick = { repository.moveToPickStage() },
+                        onStartOver = { scope.launch { repository.startOver() } }
                     )
                 }
                 JourneyStage.PICK -> {
@@ -137,7 +139,9 @@ fun LilyCompanionApp(repository: SessionRepository) {
                         onSelectArrangement = { arrangement ->
                             scope.launch { repository.selectArrangement(arrangement) }
                         },
-                        onContinueToPay = { repository.moveToPayStage() }
+                        onContinueToPay = { repository.moveToPayStage() },
+                        onBack = { repository.backToNeed() },
+                        onStartOver = { scope.launch { repository.startOver() } }
                     )
                 }
                 JourneyStage.PAY -> {
@@ -145,9 +149,13 @@ fun LilyCompanionApp(repository: SessionRepository) {
                         selectedArrangement = selectedArrangement,
                         sharedUnderstanding = sharedUnderstanding,
                         isLoading = isLoading,
+                        checkoutTotal = orderSummaryTotal
+                            ?: repository.displayCheckoutTotal(selectedArrangement?.price),
                         onCheckout = { cardMsg ->
                             scope.launch { repository.completeCheckout(cardMsg) }
-                        }
+                        },
+                        onBack = { repository.backToPick() },
+                        onStartOver = { scope.launch { repository.startOver() } }
                     )
                 }
                 JourneyStage.TRACKING -> {

@@ -182,11 +182,14 @@ open class BffClient(
         val status = response.status.value
         val text = response.bodyAsText()
         if (status !in expected) {
+            // 409 accepted-failure bodies (selection/delivery/checkout) carry `code`
+            // and often `context_version`; _error bodies use `error`. Inspect both (#365).
             val code = parseErrorCode(text) ?: "http_$status"
             throw BffException(
                 statusCode = status,
                 errorCode = code,
-                message = "BFF $status $code"
+                message = "BFF $status $code",
+                contextVersion = parseContextVersion(text)
             )
         }
         if (text.isBlank()) {
@@ -198,8 +201,17 @@ open class BffClient(
     private fun parseErrorCode(body: String): String? {
         return try {
             val root = json.parseToJsonElement(body).jsonObject
-            root["error"]?.jsonPrimitive?.content
-                ?: root["code"]?.jsonPrimitive?.content
+            root["code"]?.jsonPrimitive?.content
+                ?: root["error"]?.jsonPrimitive?.content
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    private fun parseContextVersion(body: String): Int? {
+        return try {
+            val root = json.parseToJsonElement(body).jsonObject
+            root["context_version"]?.jsonPrimitive?.content?.toIntOrNull()
         } catch (_: Exception) {
             null
         }

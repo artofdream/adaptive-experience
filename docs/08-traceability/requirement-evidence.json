@@ -8,7 +8,8 @@
       "adr": {
         "disposition": "evidenced",
         "paths": [
-          "docs/06-adr/ADR-016-agentic-ai-boundary.md"
+          "docs/06-adr/ADR-016-agentic-ai-boundary.md",
+          "docs/06-adr/ADR-017-native-client-architecture.md"
         ]
       },
       "implementation": {
@@ -50,7 +51,8 @@
       "adr": {
         "disposition": "evidenced",
         "paths": [
-          "docs/06-adr/ADR-006-mvp-customization-boundary.md"
+          "docs/06-adr/ADR-006-mvp-customization-boundary.md",
+          "docs/06-adr/ADR-017-native-client-architecture.md"
         ]
       },
       "implementation": {
@@ -141,7 +143,8 @@
         "paths": [
           "docs/06-adr/ADR-014-postgresql-pgvector.md",
           "docs/06-adr/ADR-015-rag-hybrid-retrieval.md",
-          "docs/06-adr/ADR-016-agentic-ai-boundary.md"
+          "docs/06-adr/ADR-016-agentic-ai-boundary.md",
+          "docs/06-adr/ADR-017-native-client-architecture.md"
         ]
       },
       "implementation": {
@@ -161,8 +164,10 @@
       "requirement_id": "FR-008",
       "scope": "Future",
       "adr": {
-        "disposition": "unclaimed",
-        "paths": []
+        "disposition": "evidenced",
+        "paths": [
+          "docs/06-adr/ADR-017-native-client-architecture.md"
+        ]
       },
       "implementation": {
         "disposition": "evidenced",
@@ -186,8 +191,10 @@
       "requirement_id": "FR-009",
       "scope": "MVP",
       "adr": {
-        "disposition": "unclaimed",
-        "paths": []
+        "disposition": "evidenced",
+        "paths": [
+          "docs/06-adr/ADR-017-native-client-architecture.md"
+        ]
       },
       "implementation": {
         "disposition": "evidenced",
@@ -337,8 +344,10 @@
       "requirement_id": "FR-016",
       "scope": "Future",
       "adr": {
-        "disposition": "unclaimed",
-        "paths": []
+        "disposition": "evidenced",
+        "paths": [
+          "docs/06-adr/ADR-019-native-push-engagement.md"
+        ]
       },
       "implementation": {
         "disposition": "evidenced",
@@ -363,8 +372,10 @@
       "requirement_id": "FR-017",
       "scope": "Future",
       "adr": {
-        "disposition": "unclaimed",
-        "paths": []
+        "disposition": "evidenced",
+        "paths": [
+          "docs/06-adr/ADR-019-native-push-engagement.md"
+        ]
       },
       "implementation": {
         "disposition": "evidenced",
@@ -596,7 +607,8 @@
       "adr": {
         "disposition": "evidenced",
         "paths": [
-          "docs/06-adr/ADR-016-agentic-ai-boundary.md"
+          "docs/06-adr/ADR-016-agentic-ai-boundary.md",
+          "docs/06-adr/ADR-017-native-client-architecture.md"
         ]
       },
       "implementation": {
@@ -678,8 +690,10 @@
       "requirement_id": "NFR-009",
       "scope": "MVP",
       "adr": {
-        "disposition": "unclaimed",
-        "paths": []
+        "disposition": "evidenced",
+        "paths": [
+          "docs/06-adr/ADR-017-native-client-architecture.md"
+        ]
       },
       "implementation": {
         "disposition": "unclaimed",
@@ -842,7 +856,9 @@
           "docs/06-adr/ADR-008-contract-first-messaging.md",
           "docs/06-adr/ADR-011-experience-state-datastore.md",
           "docs/06-adr/ADR-012-external-message-broker.md",
-          "docs/06-adr/ADR-013-confirmation-driven-experience.md"
+          "docs/06-adr/ADR-013-confirmation-driven-experience.md",
+          "docs/06-adr/ADR-017-native-client-architecture.md",
+          "docs/06-adr/ADR-018-mobile-session-auth.md"
         ]
       },
       "implementation": {
