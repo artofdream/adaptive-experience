@@ -282,7 +282,16 @@ fun PayScreen(
     isLoading: Boolean = false,
     modifier: Modifier = Modifier
 ) {
-    var cardMessage by remember { mutableStateOf("Happy Birthday Mom! Love always.") }
+    val defaultCardMessage = remember(sharedUnderstanding.occasion) {
+        val occasion = sharedUnderstanding.occasion?.lowercase().orEmpty()
+        when {
+            "anniversary" in occasion -> "Happy Anniversary! With all my love."
+            "birthday" in occasion || "mom" in occasion -> "Happy Birthday Mom! Love always."
+            occasion.isNotEmpty() -> "Best wishes on your special day!"
+            else -> ""
+        }
+    }
+    var cardMessage by remember(defaultCardMessage) { mutableStateOf(defaultCardMessage) }
 
     Column(
         modifier = modifier

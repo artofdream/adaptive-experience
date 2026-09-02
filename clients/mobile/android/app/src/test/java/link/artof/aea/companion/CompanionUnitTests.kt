@@ -347,6 +347,36 @@ class CompanionUnitTests {
     }
 
     @Test
+    fun budgetFiftyToOneHundredExcludesUnderFiftyAndOverOneHundred() = runBlocking {
+        fakeApi.sharedUnderstanding = SharedUnderstandingResponse(
+            contextVersion = 2,
+            structuredIntent = StructuredIntent(occasion = "birthday")
+        )
+        repository.postUserMessage("birthday for mom")
+        repository.setBudgetChoice("$50–100", 100.0)
+        assertTrue(repository.budgetPromptResolved.value)
+        assertEquals("$50–100", repository.sharedUnderstanding.value.budget)
+        val skus = repository.arrangements.value.map { it.sku }
+        assertFalse("Budget $50-100 must exclude $35 mixed bunch (#387)", skus.contains("budget-mixed-bunch"))
+        assertTrue("Budget $50-100 must include $70 classic rose (#387)", skus.contains("classic-rose-dozen"))
+        assertTrue("Budget $50-100 must include $95 lilac bouquet (#387)", skus.contains("lilac-bouquet"))
+    }
+
+    @Test
+    fun productSelectionPreservesHumanBudgetLabel() = runBlocking {
+        fakeApi.sharedUnderstanding = SharedUnderstandingResponse(
+            contextVersion = 2,
+            structuredIntent = StructuredIntent(occasion = "birthday")
+        )
+        repository.postUserMessage("birthday for mom")
+        repository.setBudgetChoice("$50–100", 100.0)
+        // Select an arrangement which triggers refreshSharedUnderstanding
+        val arrangement = Arrangement(sku = "classic-rose-dozen", name = "Classic Rose Dozen", price = 70.0, available = true)
+        repository.selectArrangement(arrangement)
+        assertEquals("$50–100", repository.sharedUnderstanding.value.budget)
+    }
+
+    @Test
     fun skipBudgetResolvesPromptWithoutCorrection() = runBlocking {
         fakeApi.sharedUnderstanding = SharedUnderstandingResponse(
             contextVersion = 2,
@@ -379,6 +409,28 @@ class CompanionUnitTests {
         assertNull(SessionRepository.parseBudgetCeiling("$100+"))
         assertNull(SessionRepository.parseBudgetCeiling("skipped"))
         assertEquals(75.0, SessionRepository.parseBudgetCeiling("75")!!, 0.01)
+    }
+
+    @Test
+    fun parseBudgetRangeFromLabelsAndNumbers() {
+        val r50_100 = SessionRepository.parseBudgetRange("$50–100")
+        assertEquals(50.0, r50_100.min!!, 0.01)
+        assertEquals(100.0, r50_100.max!!, 0.01)
+        assertTrue(r50_100.matches(70.0))
+        assertFalse(r50_100.matches(35.0))
+        assertFalse(r50_100.matches(125.0))
+
+        val rUnder50 = SessionRepository.parseBudgetRange("<$50")
+        assertNull(rUnder50.min)
+        assertEquals(50.0, rUnder50.max!!, 0.01)
+        assertTrue(rUnder50.matches(35.0))
+        assertFalse(rUnder50.matches(70.0))
+
+        val r100Plus = SessionRepository.parseBudgetRange("$100+")
+        assertEquals(100.0, r100Plus.min!!, 0.01)
+        assertNull(r100Plus.max)
+        assertTrue(r100Plus.matches(125.0))
+        assertFalse(r100Plus.matches(70.0))
     }
 
     @Test
