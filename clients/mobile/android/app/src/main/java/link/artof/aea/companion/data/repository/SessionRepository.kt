@@ -106,6 +106,8 @@ class SessionRepository(
     /** Local band for catalog filter (#387). Null floor/ceiling = open side; both null = no filter. */
     private var budgetFloor: Double? = null
     private var budgetCeiling: Double? = null
+    /** Shopper-facing chip/band label (#388); survives BFF numeric budget coercion. */
+    private var budgetChipLabel: String? = null
     /** Unfiltered workspace/fallback catalog; [_arrangements] may be budget-filtered (#359). */
     private var fullCatalog: List<Arrangement> = localFallbackCatalog
 
@@ -182,10 +184,11 @@ class SessionRepository(
     suspend fun setBudgetChoice(label: String, ceiling: Double?) {
         runGuarded {
             ensureSessionInternal()
-            val band = parseBudgetBand(label) ?: BudgetBand(label, floor = null, ceiling = ceiling)
+val band = parseBudgetBand(label) ?: BudgetBand(label, floor = null, ceiling = ceiling)
             // Prefer explicit chip ceiling arg when band had no ceiling ($100+ uses floor only).
             budgetFloor = band.floor
             budgetCeiling = band.ceiling ?: ceiling
+            budgetChipLabel = label
             _budgetPromptResolved.value = true
             _sharedUnderstanding.value = _sharedUnderstanding.value.copy(budget = label)
             _messages.value = _messages.value + ChatMessage(
@@ -204,9 +207,10 @@ class SessionRepository(
                 contextVersion = accepted.contextVersion
             }
             refreshSharedUnderstanding()
-            // Keep chip band + label (refresh may coerce numeric budget from BFF) (#388).
+// Keep chip band + label (refresh may coerce numeric budget from BFF) (#388).
             budgetFloor = band.floor
             budgetCeiling = band.ceiling ?: ceiling
+            budgetChipLabel = label
             _sharedUnderstanding.value = _sharedUnderstanding.value.copy(budget = label)
             refreshCatalogFromWorkspace()
             applyBudgetFilterToArrangements()
@@ -218,6 +222,7 @@ class SessionRepository(
         _budgetPromptResolved.value = true
         budgetFloor = null
         budgetCeiling = null
+        budgetChipLabel = "skipped"
         if (_sharedUnderstanding.value.budget.isNullOrBlank()) {
             _sharedUnderstanding.value = _sharedUnderstanding.value.copy(budget = "skipped")
         }
@@ -424,6 +429,7 @@ class SessionRepository(
         _budgetPromptResolved.value = false
         budgetFloor = null
         budgetCeiling = null
+        budgetChipLabel = null
         _messages.value = listOf(
             ChatMessage(
                 id = "welcome",
@@ -463,10 +469,15 @@ class SessionRepository(
         }
         val intent = remote.structuredIntent
         val previous = _sharedUnderstanding.value
+        val displayBudget = when {
+            !budgetChipLabel.isNullOrBlank() -> budgetChipLabel
+            !intent.budget.isNullOrBlank() -> intent.budget
+            else -> previous.budget
+        }
         _sharedUnderstanding.value = previous.copy(
             occasion = intent.occasion,
             recipient = intent.recipient,
-            budget = intent.budget ?: previous.budget,
+            budget = displayBudget,
             style = intent.style,
             flowerPreference = intent.flowerPreference,
             timing = intent.timing,

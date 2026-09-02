@@ -414,6 +414,27 @@ class CompanionUnitTests {
     }
 
     @Test
+    fun budgetChipLabelSurvivesSelectWhenBffReturnsNumericBudget() = runBlocking {
+        // #388: after select, UI must keep "$50–100" not "100.0".
+        fakeApi.sharedUnderstanding = SharedUnderstandingResponse(
+            contextVersion = 2,
+            structuredIntent = StructuredIntent(occasion = "birthday")
+        )
+        repository.postUserMessage("birthday flowers")
+        repository.setBudgetChoice("$50–100", 100.0)
+        assertEquals("$50–100", repository.sharedUnderstanding.value.budget)
+
+        // Simulate BFF coercing budget to a number on later shared-understanding reads.
+        fakeApi.sharedUnderstanding = SharedUnderstandingResponse(
+            contextVersion = 4,
+            structuredIntent = StructuredIntent(occasion = "birthday", budget = "100.0")
+        )
+        val arrangement = repository.arrangements.value.first { it.available }
+        repository.selectArrangement(arrangement)
+        assertEquals("$50–100", repository.sharedUnderstanding.value.budget)
+    }
+
+    @Test
     fun budgetAsStringSerializerAcceptsJsonNumber() {
         val decoded = json.decodeFromString<StructuredIntent>("""{"occasion":"birthday","budget":75}""")
         assertEquals("75", decoded.budget)
