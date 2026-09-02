@@ -40,6 +40,13 @@
             <p class="eyebrow">FR-013</p>
             <h1 id="orders-title">Staff orders</h1>
             <p class="subtitle">Companion and website checkouts. Least-data. Opaque destination refs. Not CRM.</p>
+            <p class="hint" id="order-filter-bar" role="group" aria-label="Staff order filter">
+              <button type="button" class="text-link" id="order-filter-today" aria-pressed="true">Today</button>
+              ·
+              <button type="button" class="text-link" id="order-filter-delayed" aria-pressed="false">Delayed</button>
+              ·
+              <button type="button" class="text-link" id="order-filter-all" aria-pressed="false">All</button>
+            </p>
           </div>
         </header>
         <table class="operator-table">
@@ -85,7 +92,7 @@
           <div>
             <p class="eyebrow">Session summary</p>
             <h2 id="session-title">Conversation, order, availability</h2>
-            <p class="subtitle" id="session-ref">Select an inbox row</p>
+            <p class="subtitle" id="session-ref">Select an order or inbox row</p>
           </div>
         </header>
         <div class="operator-split">
