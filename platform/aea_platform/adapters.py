@@ -340,6 +340,24 @@ class PsycopgOrderStore:
             return None
         return {"order_id": row[0], "status": row[1], "delayed": row[2]}
 
+    def list_recent(self, *, limit: int = 50) -> list[dict]:
+        cap = max(1, min(int(limit), 50))
+        rows = self.connection.execute(
+            "SELECT order_id::text, session_id::text, status, delayed, product, delivery, "
+            "updated_at FROM orchestration.customer_order "
+            "ORDER BY updated_at DESC, order_id DESC LIMIT %s",
+            (cap,),
+        ).fetchall()
+        return [{
+            "order_id": row[0],
+            "session_id": row[1],
+            "status": row[2],
+            "delayed": row[3],
+            "product": row[4],
+            "delivery": row[5],
+            "updated_at": row[6],
+        } for row in rows]
+
     def checkout_view(self, session_id: str) -> dict | None:
         row = self.connection.execute(
             "SELECT order_id::text,status,product,delivery,context_version "

@@ -101,6 +101,33 @@ const SAMPLE_SESSIONS = {
   },
 };
 
+const SAMPLE_ORDERS = [
+  {
+    order_id: "ord-sample-1",
+    session_id: "11111111-1111-4111-8111-111111111111",
+    status: "preparing",
+    authoritative_status: "preparing",
+    product_id: "classic-rose-dozen",
+    destination_reference: "dest-ref-1",
+    timing: { date: "2026-08-16", window: "morning" },
+    card_message: "Happy birthday Mum",
+    updated_at: "2026-08-15T08:20:00+00:00",
+    sample: true,
+  },
+  {
+    order_id: "ord-sample-2",
+    session_id: "22222222-2222-4222-8222-222222222222",
+    status: "dispatched",
+    delayed: true,
+    authoritative_status: "delayed",
+    product_id: "lilac-bouquet",
+    destination_reference: "dest-ref-2",
+    timing: { date: "2026-08-15", window: "afternoon" },
+    updated_at: "2026-08-15T07:50:00+00:00",
+    sample: true,
+  },
+];
+
 const SAMPLE_FORECASTS = [
   {
     product_id: "classic-rose-dozen",
@@ -142,6 +169,7 @@ const TREND_LABELS = {
 };
 
 const mode = document.querySelector("#operator-mode");
+const orderRows = document.querySelector("#order-rows");
 const inboxRows = document.querySelector("#inbox-rows");
 const forecastRows = document.querySelector("#forecast-rows");
 const transcript = document.querySelector("#transcript");
@@ -150,7 +178,7 @@ const orderFacts = document.querySelector("#order-facts");
 const availability = document.querySelector("#availability");
 const sessionRef = document.querySelector("#session-ref");
 
-const state = { csrf: "", live: false, items: SAMPLE_INBOX, selectedId: "" };
+const state = { csrf: "", live: false, items: SAMPLE_INBOX, orders: SAMPLE_ORDERS, selectedId: "" };
 
 function headers(extra) {
   return {

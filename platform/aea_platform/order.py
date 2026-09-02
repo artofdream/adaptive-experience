@@ -78,6 +78,49 @@ class OrderService:
     def projection(self, *, session_id: str) -> dict | None:
         return self.store.by_session(session_id)
 
+    def list_recent(self, *, limit: int = 50) -> list[dict]:
+        """Least-data staff order list (web + companion). Not CRM."""
+        listing = getattr(self.store, "list_recent", None)
+        if not callable(listing):
+            return []
+        try:
+            cap = max(1, min(int(limit), 50))
+        except (TypeError, ValueError):
+            cap = 50
+        rows = listing(limit=cap)
+        if not isinstance(rows, list):
+            return []
+        items = []
+        for row in rows[:cap]:
+            if not isinstance(row, dict) or not row.get("order_id"):
+                continue
+            delayed = bool(row.get("delayed"))
+            product = row.get("product") if isinstance(row.get("product"), dict) else {}
+            delivery = row.get("delivery") if isinstance(row.get("delivery"), dict) else {}
+            timing_raw = delivery.get("timing") if isinstance(delivery.get("timing"), dict) else {}
+            timing = {key: timing_raw[key] for key in ("date", "window") if key in timing_raw}
+            options = product.get("options") if isinstance(product.get("options"), dict) else {}
+            card = options.get("card_message")
+            card_message = card.strip()[:280] if isinstance(card, str) and card.strip() else None
+            updated = row.get("updated_at")
+            if hasattr(updated, "isoformat"):
+                updated = updated.isoformat()
+            product_id = product.get("product_id")
+            dest = delivery.get("destination_reference")
+            items.append({
+                "order_id": str(row["order_id"]),
+                "session_id": str(row["session_id"]) if row.get("session_id") else None,
+                "status": row.get("status"),
+                "delayed": delayed,
+                "authoritative_status": "delayed" if delayed else row.get("status"),
+                "product_id": product_id if isinstance(product_id, str) else None,
+                "destination_reference": dest if isinstance(dest, str) else None,
+                "timing": timing or None,
+                "card_message": card_message,
+                "updated_at": updated,
+            })
+        return items
+
     def session_prior_product_id(self, session_id: str) -> str | None:
         """Same-session accepted-order product for the thin FR-008 T-03 hint.
 

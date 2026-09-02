@@ -19,7 +19,7 @@
   <main class="operator-shell">
     <p class="operator-banner" role="note">
       <strong>Local florist operator sample.</strong>
-      Read-only T-09 inbox. Not live chat, not billing CRM, and not FR-016 / FR-017 engagement.
+      Read-only staff orders and T-09 inbox. Not live chat, not billing CRM, and not FR-016 / FR-017 engagement.
       Inventory here does not enable T-03 Select.
       <details>
         <summary>Flags and least-data rules</summary>
@@ -33,6 +33,29 @@
     <p id="operator-mode" class="status operator-mode" aria-live="polite"></p>
 
     <div class="operator-layout">
+      <section id="orders" class="panel operator-inbox" aria-labelledby="orders-title">
+        <header>
+          <div>
+            <p class="eyebrow">FR-013 · Staff orders</p>
+            <h1 id="orders-title">Orders</h1>
+            <p class="subtitle">Website and companion checkouts. Opaque session and destination references only.</p>
+          </div>
+        </header>
+        <table class="operator-table">
+          <thead>
+            <tr>
+              <th scope="col">Updated</th>
+              <th scope="col">Order</th>
+              <th scope="col">Status</th>
+              <th scope="col">Arrangement</th>
+              <th scope="col">When</th>
+              <th scope="col">Destination</th>
+            </tr>
+          </thead>
+          <tbody id="order-rows"></tbody>
+        </table>
+      </section>
+
       <section id="inbox" class="panel operator-inbox" aria-labelledby="inbox-title">
         <header>
           <div>
@@ -58,7 +81,7 @@
           <div>
             <p class="eyebrow">Session summary</p>
             <h2 id="session-title">Conversation, order, availability</h2>
-            <p class="subtitle" id="session-ref">Select an inbox row</p>
+            <p class="subtitle" id="session-ref">Select an order or inbox row</p>
           </div>
         </header>
         <div class="operator-split">

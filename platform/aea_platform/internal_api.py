@@ -87,6 +87,8 @@ class InternalOrchestrationApp:
             return await self._send(send, 200, self.quality.summary())
         if scope["path"] == "/internal/v1/operator/escalations" and scope["method"] == "GET":
             return await self._send(send, 200, {"items": self._operator_escalations()})
+        if scope["path"] == "/internal/v1/operator/orders" and scope["method"] == "GET":
+            return await self._send(send, 200, {"items": self.order.list_recent(limit=50)})
         if scope["path"] == "/internal/v1/operator/forecasts" and scope["method"] == "GET":
             query = parse_qs(scope.get("query_string", b"").decode())
             session_id = (query.get("session_id") or [""])[0]
