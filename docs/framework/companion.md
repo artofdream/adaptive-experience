@@ -29,7 +29,7 @@ Unprobed claims stay **Unknown**.
 | Installs from Play | Play internal testing — not Firebase App Distribution or debug APK alone |
 | Website / atelier write-through after Confirm | Sponsor dual-probe (companion Confirm → website tracking) — still open |
 | Operator inbox = live orders | **No.** Sample operator surfaces are not the billing CRM |
-| Native vs web traffic in Grafana | **Partial (#368):** clients send `X-AEA-Client` (`companion-android` / `web`); BFF/edge log `aea_client`. Grafana as-code panels still CloudWatch infra-only — operator Logs Insights note in companion README / vault |
+| Native vs web traffic in Grafana | **Query documented / panel as-code (#368):** clients send `X-AEA-Client` (`companion-android` / `web`); BFF/edge log `aea_client`. As-code panels on uid `aea-unified-dashboard` (`BFF requests by aea_client`, status table). Logs Insights + verify steps: vault `research/random-thoughts/2026-09-02-x-aea-client-grafana-label.md`. Live series need edge/BFF+Grafana redeploy + traffic probe |
 
 ## Related on this site
 

@@ -84,9 +84,16 @@ Observability only — **not** auth. Same public Bearer (`local-browser-token`) 
 
 Edge nginx forwards the header on `/api/` and writes `aea_client="$http_x_aea_client"` in access logs. BFF allowlists `companion-android` / `web` (else `unknown`), echoes `X-AEA-Client` on responses, and emits JSON `bff_access` lines with field **`aea_client`** (plus `unspecified` when absent).
 
-**Operator label (CloudWatch Logs Insights / Grafana explore):** `aea_client`  
-Example filter: `{ $.event = "bff_access" } | stats count(*) by aea_client, status`.  
-Repo Grafana dashboards (`platform/docker/grafana/provisioning/dashboards/`) are still CloudWatch **infra** panels — no request-series client split as-code yet (**partial**). Vault: `research/random-thoughts/2026-09-02-x-aea-client-grafana-label.md`.
+**Operator label (CloudWatch Logs Insights / Grafana):** `aea_client`  
+Log group: `/aea/aea-pilot/bff`. Example:
+
+```
+fields @timestamp, aea_client, status, path, method
+| filter event = "bff_access"
+| stats count(*) as requests by aea_client, status
+```
+
+**As-code panels** (uid `aea-unified-dashboard`): **BFF requests by aea_client (X-AEA-Client)** (timeseries) and **BFF aea_client × status (table)** in `platform/docker/grafana/provisioning/dashboards/aea_unified_dashboard.json`. Honesty: **query documented / panel as-code** — live series need edge/BFF+Grafana redeploy + traffic. Vault: `research/random-thoughts/2026-09-02-x-aea-client-grafana-label.md`.
 
 ### Weekday / CI API parity probe (#369)
 
