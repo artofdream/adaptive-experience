@@ -244,7 +244,8 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         with self.connection.transaction():
             store.apply_patch(str(session_id), 0, 1, StatePatch.create(
                 {"decisions": {"product": {"product_id": "classic-rose-dozen",
-                                           "options": {"size": "large"}}}},
+                                           "options": {"size": "large",
+                                                       "card_message": "Happy birthday Mum"}}}},
                 ["decisions.product"]), [])
         with self.connection.transaction():
             store.apply_patch(str(session_id), 1, 1, StatePatch.create(
@@ -270,6 +271,26 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         self.assertEqual(1, self.connection.execute(
             "SELECT count(*) FROM orchestration.customer_order WHERE session_id=%s",
             (session_id,)).fetchone()[0])
+
+        list_status, listed = drive("GET", "/internal/v1/operator/orders")
+        self.assertEqual(200, list_status)
+        matching = [item for item in listed["items"] if item["order_id"] == order_id]
+        self.assertEqual(1, len(matching))
+        item = matching[0]
+        self.assertEqual(str(session_id), item["session_id"])
+        self.assertEqual("created", item["status"])
+        self.assertEqual("classic-rose-dozen", item["product_id"])
+        self.assertEqual("addr-9", item["destination_reference"])
+        self.assertEqual({"date": "2026-09-01", "window": "morning"}, item["timing"])
+        self.assertEqual("Happy birthday Mum", item["card_message"])
+        self.assertNotIn("email", item)
+        self.assertNotIn("product", item)
+        self.assertNotIn("delivery", item)
+        self.assertNotIn("payment_reference", item)
+        self.assertNotIn("street", item)
+        blob = json.dumps(listed)
+        self.assertNotIn("email", blob)
+        self.assertNotIn("@", blob)
 
     def test_workspace_projection_latency_under_repeated_load(self):
         import asyncio

@@ -350,6 +350,28 @@ class PsycopgOrderStore:
         return {"order_id": row[0], "status": row[1], "product": row[2],
                 "delivery": row[3], "context_version": row[4]}
 
+    def list_recent(self, *, limit: int = 50) -> list[dict]:
+        """Recent customer orders for the florist staff list (FR-013)."""
+        capped = min(max(int(limit), 1), 50)
+        rows = self.connection.execute(
+            "SELECT order_id, session_id, status, delayed, product, delivery, updated_at "
+            "FROM orchestration.customer_order "
+            "ORDER BY updated_at DESC, order_id DESC LIMIT %s",
+            (capped,),
+        ).fetchall()
+        items = []
+        for order_id, session_id, status, delayed, product, delivery, updated_at in rows:
+            items.append({
+                "order_id": order_id,
+                "session_id": session_id,
+                "status": status,
+                "delayed": delayed,
+                "product": product,
+                "delivery": delivery,
+                "updated_at": updated_at,
+            })
+        return items
+
     def _checkout_envelope(self, *, message_id, topic, source, session_id, order_id,
                            context_version, correlation_id, subject_reference,
                            published_at, payload) -> dict:

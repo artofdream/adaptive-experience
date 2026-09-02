@@ -414,6 +414,8 @@ class BrowserUiTests(unittest.TestCase):
         self.assertNotIn('href="/">', html)
         self.assertIn("T-03 Select", html)
         self.assertIn('id="inbox"', html)
+        self.assertIn('id="orders"', html)
+        self.assertIn("/api/v1/operator/orders", script)
         self.assertIn("/api/v1/operator/escalations", script)
         self.assertIn("/api/v1/operator/sessions/", script)
         self.assertIn("/api/v1/operator/forecasts", script)

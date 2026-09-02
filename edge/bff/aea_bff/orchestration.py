@@ -168,6 +168,10 @@ class HttpOrchestration:
         return self._call("GET", "/internal/v1/operator/escalations",
                           subject=kwargs["subject"])
 
+    def list_operator_orders(self, **kwargs):
+        return self._call("GET", "/internal/v1/operator/orders",
+                          subject=kwargs["subject"])
+
     def list_operator_forecasts(self, **kwargs):
         return self._call(
             "GET",
