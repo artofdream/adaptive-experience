@@ -34,6 +34,8 @@ import java.util.concurrent.atomic.AtomicReference
  *
  * Auth contract (matches edge/bff/aea_bff/app.py + web app.js):
  * - Subject gate: public browser Bearer (`local-browser-token`), same as web — not a secret.
+ * - Client channel (observability only, #368): `X-AEA-Client: companion-android`.
+ *   Not auth — Grafana/CloudWatch Logs Insights label `aea_client`.
  * - Session identity: cookie jar (`__Host-aea_session` + `__Host-aea_recall`) from POST /session.
  * - Mutating POSTs: `X-CSRF-Token` from session create body.
  * - Do NOT send the session id as Authorization Bearer.
@@ -155,6 +157,7 @@ open class BffClient(
         val response = client.request("$baseUrl$path") {
             this.method = method
             header(HttpHeaders.Authorization, "Bearer $clientBearerToken")
+            header(CLIENT_HEADER_NAME, CLIENT_HEADER_VALUE)
             if (cookieJar.isNotEmpty()) {
                 header(
                     HttpHeaders.Cookie,
@@ -233,6 +236,9 @@ open class BffClient(
         const val DEFAULT_BASE_URL = "https://aea.artof.link"
         /** Public client token embedded in web `app.js` (not a secret / not session auth). */
         const val PUBLIC_BROWSER_BEARER = "local-browser-token"
+        /** Observability channel label (#368). Not an auth boundary. */
+        const val CLIENT_HEADER_NAME = "X-AEA-Client"
+        const val CLIENT_HEADER_VALUE = "companion-android"
         /** ADR-013 opaque vault reference mirrored from web SESSION_PAYMENT_REFERENCE. */
         const val SESSION_PAYMENT_REFERENCE = "session_pay_ref"
         /** ADR-013 opaque destination mirrored from web SESSION_DESTINATION_REFERENCE. */

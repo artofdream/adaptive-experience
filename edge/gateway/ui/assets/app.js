@@ -333,6 +333,7 @@ function suggestedStep(f) {
 function headers(extra) {
   return {
     Authorization: `Bearer ${TOKEN}`,
+    "X-AEA-Client": "web",
     Origin: window.location.origin,
     ...extra,
   };

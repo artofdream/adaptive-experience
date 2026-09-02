@@ -155,6 +155,7 @@ const state = { csrf: "", live: false, items: SAMPLE_INBOX, selectedId: "" };
 function headers(extra) {
   return {
     Authorization: `Bearer ${TOKEN}`,
+    "X-AEA-Client": "web",
     Origin: window.location.origin,
     ...extra,
   };

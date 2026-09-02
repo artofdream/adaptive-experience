@@ -687,6 +687,52 @@ class PerimeterTests(unittest.TestCase):
             "GET", "/api/v1/operator/sessions/00000000-0000-0000-0000-000000000000",
             auth)[0])
 
+    def test_x_aea_client_is_observability_only_not_auth(self):
+        """#368: allowlisted X-AEA-Client is echoed + logged; never gates auth."""
+        import io
+        from contextlib import redirect_stdout
+
+        # Missing Bearer still 401 even with a valid client label.
+        status, headers, _ = self.call(
+            "POST", "/api/v1/session",
+            {"origin": "https://localhost:8443", "x-aea-client": "companion-android"})
+        self.assertEqual(401, status)
+
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            status, headers, body = self.call(
+                "POST", "/api/v1/session",
+                {**self.auth, "x-aea-client": "companion-android"})
+        self.assertEqual(201, status)
+        self.assertEqual("companion-android", headers.get("x-aea-client"))
+        log_line = buf.getvalue()
+        self.assertIn('"event": "bff_access"', log_line)
+        self.assertIn('"aea_client": "companion-android"', log_line)
+
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            status, headers, _ = self.call(
+                "POST", "/api/v1/session",
+                {**self.auth, "x-aea-client": "web"})
+        self.assertEqual(201, status)
+        self.assertEqual("web", headers.get("x-aea-client"))
+        self.assertIn('"aea_client": "web"', buf.getvalue())
+
+        # Unknown values are not auth-rejected; labeled unknown for metrics.
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            status, headers, _ = self.call(
+                "POST", "/api/v1/session",
+                {**self.auth, "x-aea-client": "evil-token-attempt"})
+        self.assertEqual(201, status)
+        self.assertEqual("unknown", headers.get("x-aea-client"))
+        self.assertIn('"aea_client": "unknown"', buf.getvalue())
+
+        gateway = (pathlib.Path(__file__).resolve().parents[1] / "gateway" / "nginx.conf").read_text(
+            encoding="utf-8")
+        self.assertIn("aea_client=\"$http_x_aea_client\"", gateway)
+        self.assertIn("proxy_set_header X-AEA-Client $http_x_aea_client;", gateway)
+
     def test_boundary_contains_no_domain_or_infrastructure_authority(self):
         root = pathlib.Path(__file__).resolve().parents[1]
         sources = "\n".join(p.read_text(encoding="utf-8") for p in (root / "bff").rglob("*.py"))

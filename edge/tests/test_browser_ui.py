@@ -382,6 +382,7 @@ class BrowserUiTests(unittest.TestCase):
 
     def test_mutating_fetches_send_csrf_and_use_allowed_windows(self):
         self.assertIn("async function ensureSession()", self.script)
+        self.assertIn('"X-AEA-Client": "web"', self.script)
         self.assertIn('init.headers["X-CSRF-Token"] = state.csrf', self.script)
         self.assertIn('["POST", "PUT", "PATCH", "DELETE"]', self.script)
         self.assertIn('code === "csrf_rejected" || code === "session_required"', self.script)
@@ -395,6 +396,7 @@ class BrowserUiTests(unittest.TestCase):
         self.assertNotIn('value="10:00-12:00"', self.html)
         florist = (ROOT / "ui" / "assets" / "florist.js").read_text(encoding="utf-8")
         self.assertIn("async function ensureSession()", florist)
+        self.assertIn('"X-AEA-Client": "web"', florist)
         self.assertIn('code === "csrf_rejected" || code === "session_required"', florist)
 
     def test_florist_operator_console_is_separate_labeled_sample(self):
