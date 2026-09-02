@@ -185,7 +185,14 @@ const orderFacts = document.querySelector("#order-facts");
 const availability = document.querySelector("#availability");
 const sessionRef = document.querySelector("#session-ref");
 
-const state = { csrf: "", live: false, items: SAMPLE_INBOX, orders: SAMPLE_ORDERS, selectedId: "" };
+const state = {
+  csrf: "",
+  live: false,
+  items: SAMPLE_INBOX,
+  orders: SAMPLE_ORDERS,
+  orderFilter: "today",
+  selectedId: "",
+};
 
 function headers(extra) {
   return {
@@ -290,15 +297,62 @@ function formatWhen(timing) {
   return parts.length ? parts.join(" · ") : "—";
 }
 
+function todayIso(now = new Date()) {
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function isTodayOrder(item, today = todayIso()) {
+  const date = item?.timing?.date;
+  if (date === today) return true;
+  if (!item?.updated_at) return false;
+  const updated = new Date(item.updated_at);
+  if (Number.isNaN(updated.getTime())) return false;
+  return todayIso(updated) === today;
+}
+
+function isDelayedOrder(item) {
+  return Boolean(item?.delayed) || item?.authoritative_status === "delayed";
+}
+
+function filterOrders(items, filter = state.orderFilter) {
+  const list = Array.isArray(items) ? items : [];
+  if (filter === "delayed") return list.filter(isDelayedOrder);
+  if (filter === "today") return list.filter((item) => isTodayOrder(item));
+  return list;
+}
+
+function syncOrderFilterButtons() {
+  for (const [id, value] of [
+    ["#order-filter-today", "today"],
+    ["#order-filter-delayed", "delayed"],
+    ["#order-filter-all", "all"],
+  ]) {
+    const button = document.querySelector(id);
+    if (button) button.setAttribute("aria-pressed", String(state.orderFilter === value));
+  }
+}
+
 function renderOrders(items) {
   if (!orderRows) return;
   orderRows.replaceChildren();
-  state.orders = items;
-  if (!items.length) {
+  if (Array.isArray(items)) state.orders = items;
+  const visible = filterOrders(state.orders, state.orderFilter);
+  syncOrderFilterButtons();
+  if (!state.orders.length) {
     orderRows.append(emptyRow(9, "No companion or website orders yet. This list stays empty until a checkout writes through."));
     return;
   }
-  for (const item of items) {
+  if (!visible.length) {
+    const copy = state.orderFilter === "delayed"
+      ? "No delayed orders."
+      : "No orders for today.";
+    orderRows.append(emptyRow(9, copy));
+    return;
+  }
+  for (const item of visible) {
     const row = document.createElement("tr");
     if (item.session_id === state.selectedId) row.className = "is-selected";
     row.setAttribute("data-session", item.session_id);
@@ -320,6 +374,15 @@ function renderOrders(items) {
     orderRows.append(row);
   }
 }
+
+document.querySelectorAll("#order-filter-today, #order-filter-delayed, #order-filter-all").forEach((button) => {
+  button.addEventListener("click", () => {
+    if (button.id === "order-filter-delayed") state.orderFilter = "delayed";
+    else if (button.id === "order-filter-all") state.orderFilter = "all";
+    else state.orderFilter = "today";
+    renderOrders(state.orders);
+  });
+});
 
 function renderInbox(items) {
   inboxRows.replaceChildren();
@@ -490,6 +553,7 @@ if (orderRows) {
 
 function showSampleLayout(modeCopy) {
   state.live = false;
+  state.orderFilter = "all";
   state.selectedId = SAMPLE_INBOX[0].session_id;
   renderOrders(SAMPLE_ORDERS);
   renderInbox(SAMPLE_INBOX);
@@ -499,7 +563,7 @@ function showSampleLayout(modeCopy) {
 }
 
 function showEmptySession() {
-  sessionRef.textContent = "Select an inbox row when a request arrives.";
+  sessionRef.textContent = "Select an order or inbox row.";
   transcript.replaceChildren();
   const empty = document.createElement("p");
   empty.className = "operator-empty";
