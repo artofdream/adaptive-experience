@@ -108,8 +108,8 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
             int(path.name[:3])
             for path in sorted((ROOT / "migrations").glob("[0-9][0-9][0-9]_*.sql"))
         ]
-        self.assertEqual(len(expected), 22)
-        self.assertTrue({19, 20, 21, 22}.issubset(set(expected)))
+        self.assertEqual(len(expected), 23)
+        self.assertTrue({19, 20, 21, 22, 23}.issubset(set(expected)))
         self.assertEqual(expected, versions)
 
     def test_superseded_mutation_function_is_dropped(self):
@@ -283,11 +283,15 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         self.assertEqual("addr-9", item["destination_reference"])
         self.assertEqual({"date": "2026-09-01", "window": "morning"}, item["timing"])
         self.assertEqual("Happy birthday Mum", item["card_message"])
+        self.assertEqual("Classic Rose Dozen", item["catalog_title"])
+        self.assertEqual("unpaid", item["payment_state"])
+        self.assertIsNone(item["channel"])
         self.assertNotIn("email", item)
         self.assertNotIn("product", item)
         self.assertNotIn("delivery", item)
         self.assertNotIn("payment_reference", item)
         self.assertNotIn("street", item)
+        self.assertNotIn("decline_code", item)
         blob = json.dumps(listed)
         self.assertNotIn("email", blob)
         self.assertNotIn("@", blob)

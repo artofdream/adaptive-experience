@@ -17,6 +17,29 @@ ORDER_STATUS_SEQUENCE = ("created", "submitted", "confirmed", "preparing",
 PRIOR_ORDER_HINT_STATUSES = frozenset(
     ORDER_STATUS_SEQUENCE[ORDER_STATUS_SEQUENCE.index("confirmed"):])
 
+# Observability-only client channel persisted on order create (#376 / #368).
+# Never an auth boundary. Unknown is the fail-closed label for a non-empty
+# value that is not on the allowlist.
+ALLOWED_ORDER_CHANNELS = frozenset({"web", "companion-android"})
+PAYMENT_STATES = frozenset({"paid", "declined", "unpaid"})
+
+
+def normalize_order_channel(value) -> str | None:
+    if not isinstance(value, str) or not value.strip():
+        return None
+    text = value.strip()
+    if text in ALLOWED_ORDER_CHANNELS:
+        return text
+    return "unknown"
+
+
+def payment_state_for(*, status, decline_code) -> str:
+    if decline_code:
+        return "declined"
+    if status in PRIOR_ORDER_HINT_STATUSES:
+        return "paid"
+    return "unpaid"
+
 
 class OrderIncompleteError(RuntimeError):
     """A required T-04/T-05 decision is missing, so no order can be created."""
@@ -66,7 +89,8 @@ class OrderService:
         self.new_id = new_id or uuid.uuid4
         self.now = now or (lambda: datetime.now(timezone.utc))
 
-    def create(self, *, session_id: str, decisions: dict, context_version: int) -> dict:
+    def create(self, *, session_id: str, decisions: dict, context_version: int,
+               aea_client: str | None = None) -> dict:
         product = decisions.get("product") if isinstance(decisions, dict) else None
         delivery = decisions.get("delivery") if isinstance(decisions, dict) else None
         if not isinstance(product, dict) or not product.get("product_id"):
@@ -75,7 +99,8 @@ class OrderService:
             raise OrderIncompleteError("delivery")
         return self.store.create_or_get(
             session_id=session_id, order_id=str(self.new_id()),
-            context_version=context_version, product=product, delivery=delivery)
+            context_version=context_version, product=product, delivery=delivery,
+            aea_client=normalize_order_channel(aea_client))
 
     def projection(self, *, session_id: str) -> dict | None:
         return self.store.by_session(session_id)
@@ -89,6 +114,7 @@ class OrderService:
 
     @staticmethod
     def _least_data_operator_item(row: dict) -> dict:
+        from .recommendation import catalog_title_for
         delayed = bool(row.get("delayed"))
         status = row.get("status")
         product = row.get("product") if isinstance(row.get("product"), dict) else {}
@@ -108,18 +134,25 @@ class OrderService:
             updated = str(updated)
         product_id = product.get("product_id")
         destination = delivery.get("destination_reference")
-        return {
+        channel = normalize_order_channel(row.get("aea_client") or row.get("channel"))
+        payment_state = payment_state_for(
+            status=status, decline_code=row.get("decline_code"))
+        item = {
             "order_id": str(row.get("order_id") or ""),
             "session_id": str(row.get("session_id") or ""),
             "status": status,
             "delayed": delayed,
             "authoritative_status": "delayed" if delayed else status,
             "product_id": product_id if isinstance(product_id, str) else None,
+            "catalog_title": catalog_title_for(product_id),
             "destination_reference": destination if isinstance(destination, str) else None,
             "timing": timing,
             "card_message": card,
+            "channel": channel,
+            "payment_state": payment_state,
             "updated_at": updated,
         }
+        return item
 
     def session_prior_product_id(self, session_id: str) -> str | None:
         """Same-session accepted-order product for the thin FR-008 T-03 hint.
