@@ -700,6 +700,27 @@ val band = parseBudgetBand(label) ?: BudgetBand(label, floor = null, ceiling = c
          * Under $50 → 50; $50–100 → 100; $100+ / skipped → null;
          * bare numeric string (e.g. "75") → that Double.
          */
+        /**
+         * Enclosure card default for Pay (#389). Matches occasion/recipient when known;
+         * empty when unknown so staff/florist can fill. Never Birthday Mom on Anniversary.
+         */
+        fun defaultCardMessage(occasion: String?, recipient: String?): String {
+            val occ = occasion?.trim()?.lowercase().orEmpty()
+            val who = recipient?.trim().orEmpty()
+            val whoPart = when {
+                who.isBlank() -> ""
+                else -> " $who"
+            }
+            return when {
+                occ.contains("annivers") -> "Happy Anniversary$whoPart! With love."
+                occ.contains("birthday") || occ.contains("birth day") ->
+                    "Happy Birthday$whoPart! Love always."
+                occ.contains("thank") -> "Thank you$whoPart!"
+                occ.isNotBlank() -> "Thinking of you$whoPart."
+                else -> ""
+            }.replace("  ", " ").trim()
+        }
+
         fun parseBudgetCeiling(labelOrText: String?): Double? {
             val raw = labelOrText?.trim().orEmpty()
             if (raw.isEmpty()) return null

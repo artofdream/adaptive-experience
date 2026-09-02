@@ -441,6 +441,21 @@ class CompanionUnitTests {
         assertEquals("birthday", decoded.occasion)
     }
 
+    @Test
+    fun defaultCardMessageMatchesOccasionNotBirthdayMomOnAnniversary() {
+        val anniversary = SessionRepository.defaultCardMessage("anniversary", null)
+        assertTrue(anniversary.contains("Anniversary", ignoreCase = true))
+        assertFalse(anniversary.contains("Birthday", ignoreCase = true))
+        assertFalse(anniversary.contains("Mom", ignoreCase = true))
+
+        val birthdayMom = SessionRepository.defaultCardMessage("birthday", "Mom")
+        assertTrue(birthdayMom.contains("Birthday", ignoreCase = true))
+        assertTrue(birthdayMom.contains("Mom"))
+
+        assertEquals("", SessionRepository.defaultCardMessage(null, null))
+        assertEquals("", SessionRepository.defaultCardMessage("  ", ""))
+    }
+
 }
 
 /** In-memory BFF stand-in for unit tests (no network). */
