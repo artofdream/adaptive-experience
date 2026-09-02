@@ -166,7 +166,8 @@
       "adr": {
         "disposition": "evidenced",
         "paths": [
-          "docs/06-adr/ADR-017-native-client-architecture.md"
+          "docs/06-adr/ADR-017-native-client-architecture.md",
+          "docs/06-adr/ADR-020-privacy-preserving-crm-and-edge-wallet.md"
         ]
       },
       "implementation": {
@@ -281,12 +282,14 @@
       "adr": {
         "disposition": "evidenced",
         "paths": [
-          "docs/06-adr/ADR-006-mvp-customization-boundary.md"
+          "docs/06-adr/ADR-006-mvp-customization-boundary.md",
+          "docs/06-adr/ADR-020-privacy-preserving-crm-and-edge-wallet.md"
         ]
       },
       "implementation": {
         "disposition": "evidenced",
         "paths": [
+          "edge/gateway/ui/florist.html",
           "platform/aea_platform/adapters.py",
           "platform/aea_platform/internal_api.py",
           "platform/aea_platform/order.py",
@@ -858,7 +861,8 @@
           "docs/06-adr/ADR-012-external-message-broker.md",
           "docs/06-adr/ADR-013-confirmation-driven-experience.md",
           "docs/06-adr/ADR-017-native-client-architecture.md",
-          "docs/06-adr/ADR-018-mobile-session-auth.md"
+          "docs/06-adr/ADR-018-mobile-session-auth.md",
+          "docs/06-adr/ADR-020-privacy-preserving-crm-and-edge-wallet.md"
         ]
       },
       "implementation": {
