@@ -317,6 +317,10 @@ function isDelayedOrder(item) {
   return Boolean(item?.delayed) || item?.authoritative_status === "delayed";
 }
 
+function sessionIdSet(items) {
+  return new Set((items || []).map((item) => item.session_id).filter(Boolean));
+}
+
 function filterOrders(items, filter = state.orderFilter) {
   const list = Array.isArray(items) ? items : [];
   if (filter === "delayed") return list.filter(isDelayedOrder);
@@ -357,13 +361,15 @@ function renderOrders(items) {
     if (item.session_id === state.selectedId) row.className = "is-selected";
     row.setAttribute("data-session", item.session_id);
     const sample = item.sample ? ' <span class="status">Sample</span>' : "";
+    const inboxLink = sessionIdSet(state.items).has(item.session_id)
+      ? ' <span class="badge">Inbox</span>' : "";
     const statusText = item.authoritative_status || item.status || "—";
     const arrangement = item.catalog_title || item.product_id || "—";
     const card = item.card_message ? String(item.card_message).slice(0, 40) : "—";
     const channel = item.channel || "—";
     const paid = item.payment_state || "—";
     row.innerHTML = `<td>${formatRequested(item.updated_at)}</td>
-      <td><button type="button" class="text-link" data-session="${item.session_id}">${shortRef(item.order_id)}</button>${sample}</td>
+      <td><button type="button" class="text-link" data-session="${item.session_id}">${shortRef(item.order_id)}</button>${sample}${inboxLink}</td>
       <td><span class="badge">${statusText}</span></td>
       <td>${arrangement}</td>
       <td>${card}</td>
@@ -395,9 +401,11 @@ function renderInbox(items) {
     const row = document.createElement("tr");
     if (item.session_id === state.selectedId) row.className = "is-selected";
     const sample = item.sample ? ' <span class="status">Sample</span>' : "";
+    const orderLink = sessionIdSet(state.orders).has(item.session_id)
+      ? ' <span class="badge">Has order</span>' : "";
     const statusText = item.status || "Open";
     row.innerHTML = `<td>${formatRequested(item.requested_at)}</td>
-      <td><button type="button" class="text-link" data-session="${item.session_id}">${reasonLabel(item.escalation_reason)}</button>${sample}</td>
+      <td><button type="button" class="text-link" data-session="${item.session_id}">${reasonLabel(item.escalation_reason)}</button>${sample}${orderLink}</td>
       <td><code>${shortRef(item.context_reference || item.session_id)}</code></td>
       <td>
         <span class="badge ${statusText === 'Resolved' ? 'available' : 'unavailable'}">${statusText}</span>
