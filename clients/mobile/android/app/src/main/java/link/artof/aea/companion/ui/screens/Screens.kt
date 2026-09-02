@@ -282,7 +282,18 @@ fun PayScreen(
     isLoading: Boolean = false,
     modifier: Modifier = Modifier
 ) {
-    var cardMessage by remember { mutableStateOf("Happy Birthday Mom! Love always.") }
+    // #389: occasion-aware enclosure default — never Birthday Mom on Anniversary.
+    var cardMessage by remember(
+        sharedUnderstanding.occasion,
+        sharedUnderstanding.recipient
+    ) {
+        mutableStateOf(
+            link.artof.aea.companion.data.repository.SessionRepository.defaultCardMessage(
+                occasion = sharedUnderstanding.occasion,
+                recipient = sharedUnderstanding.recipient
+            )
+        )
+    }
 
     Column(
         modifier = modifier
