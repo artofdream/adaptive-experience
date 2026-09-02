@@ -3,7 +3,7 @@
 > **Tags**: #aea #companion #ux #budget #gap-loop #honesty
 > **Captured**: 2026-09-02
 > **Issue**: [#387](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/387)
-> **Related**: [[2026-09-02-companion-budget-label-preserve-388]] · [[2026-09-02-companion-anniversary-card-389]] · [[2026-09-02-asus-play-v3-smoke-debuggable-390]] · [[2026-09-02-companion-native-web-gap-closing-loop]]
+> **Related**: [[2026-09-02-asus-play-v3-smoke-native-gaps]] · [[2026-09-02-companion-native-web-gap-closing-loop]] · [[2026-09-02-florist-operator-native-web-completeness-gaps]]
 
 ## Live evidence (ASUS Play/claimed v3, 2026-09-02)
 
