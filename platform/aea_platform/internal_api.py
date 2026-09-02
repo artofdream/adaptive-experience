@@ -385,18 +385,93 @@ class InternalOrchestrationApp:
         list_fn = getattr(self.support.store, "list_session_answers", None)
         if callable(list_fn):
             answers = list_fn(session_id=session_id)
+        order_summary = facets.get("order_summary") if isinstance(facets.get("order_summary"), dict) else {}
+        selection = self._operator_selection_facts(
+            session_id, facets.get("selection"), order_summary)
+        order = self._operator_order_facts(
+            session_id, facets.get("order"), order_summary)
         return {
             "session_id": session_id,
             "context_version": workspace["context_version"],
             "conversation": {"messages": list(conversation.get("messages") or [])},
             "shared_understanding": {
                 "structured_intent": dict(shared.get("structured_intent") or {})},
-            "order": facets.get("order"),
-            "selection": facets.get("selection"),
+            "order": order,
+            "selection": selection,
             "delivery": facets.get("delivery"),
             "availability": availability,
             "support_answers": answers,
         }
+
+    def _operator_selection_facts(self, session_id: str, selection, order_summary: dict) -> dict | None:
+        """Least-data selection for florist facts (#383/#385). Flatten card; add title."""
+        from .order import CARD_MESSAGE_MAX_LENGTH
+        from .recommendation import catalog_title_for
+        shaped: dict = {}
+        raw = selection if isinstance(selection, dict) else {}
+        product_id = raw.get("product_id")
+        if isinstance(product_id, str) and product_id.strip():
+            shaped["product_id"] = product_id.strip()
+        options = raw.get("options") if isinstance(raw.get("options"), dict) else {}
+        card = raw.get("card_message")
+        if not isinstance(card, str) or not card.strip():
+            card = options.get("card_message")
+        # Live sessions often store card only on order product options (#383).
+        if not isinstance(card, str) or not card.strip():
+            view = None
+            try:
+                view = self.order.store.checkout_view(session_id)
+            except Exception:
+                view = None
+            product = view.get("product") if isinstance(view, dict) else None
+            if isinstance(product, dict):
+                if "product_id" not in shaped and isinstance(product.get("product_id"), str):
+                    shaped["product_id"] = product["product_id"].strip()
+                prod_opts = product.get("options") if isinstance(product.get("options"), dict) else {}
+                card = prod_opts.get("card_message")
+        if isinstance(card, str):
+            card = card.strip()[:CARD_MESSAGE_MAX_LENGTH] or None
+            if card:
+                shaped["card_message"] = card
+        title = catalog_title_for(shaped.get("product_id"))
+        if title:
+            shaped["catalog_title"] = title
+        return shaped or None
+
+    def _operator_order_facts(self, session_id: str, order, order_summary: dict) -> dict | None:
+        """Enrich order facet with channel, paid total, payment_state (#384/#385)."""
+        from .order import normalize_order_channel, payment_state_for
+        if not isinstance(order, dict):
+            return None
+        shaped = {
+            "order_id": order.get("order_id"),
+            "status": order.get("status"),
+            "delayed": bool(order.get("delayed")),
+            "authoritative_status": order.get("authoritative_status"),
+        }
+        total = order_summary.get("total")
+        if isinstance(total, (int, float)) and not isinstance(total, bool):
+            shaped["total"] = round(float(total), 2)
+            currency = order_summary.get("currency")
+            if isinstance(currency, str) and currency.strip():
+                shaped["currency"] = currency.strip()
+        # Channel + decline from durable order row when available.
+        view = None
+        try:
+            view = self.order.store.checkout_view(session_id)
+        except Exception:
+            view = None
+        if isinstance(view, dict):
+            channel = normalize_order_channel(view.get("aea_client") or view.get("channel"))
+            if channel:
+                shaped["channel"] = channel
+            shaped["payment_state"] = payment_state_for(
+                status=view.get("status") or order.get("status"),
+                decline_code=view.get("decline_code"))
+        elif order.get("status"):
+            shaped["payment_state"] = payment_state_for(
+                status=order.get("status"), decline_code=None)
+        return shaped
 
     async def _select_product(self, send, session_id: str, subject: str,
                               loaded: dict, body: dict):

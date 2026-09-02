@@ -343,13 +343,14 @@ class PsycopgOrderStore:
 
     def checkout_view(self, session_id: str) -> dict | None:
         row = self.connection.execute(
-            "SELECT order_id::text,status,product,delivery,context_version "
+            "SELECT order_id::text,status,product,delivery,context_version,aea_client "
             "FROM orchestration.customer_order WHERE session_id=%s", (session_id,),
         ).fetchone()
         if row is None:
             return None
         return {"order_id": row[0], "status": row[1], "product": row[2],
-                "delivery": row[3], "context_version": row[4]}
+                "delivery": row[3], "context_version": row[4],
+                "aea_client": row[5]}
 
     def list_recent(self, *, limit: int = 50) -> list[dict]:
         """Recent customer orders for the florist staff list (FR-013)."""
