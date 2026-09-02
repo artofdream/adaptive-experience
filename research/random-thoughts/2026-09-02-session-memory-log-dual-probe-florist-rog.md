@@ -41,7 +41,7 @@ Staff list exists. It is not yet a work queue.
 | Destination handle without street | #382 — parked (PO) | T-05 collection is #381 |
 | Companion has no T-09; checkout hard-codes today/afternoon/home | #381 grok-bot | Yes — ROG |
 
-Cloud SSE owns #376 → #378 → #379 → #380-remove. Do not batch florist.js into one MR. Do not persist Claim unless PO names it.
+Cloud SSE opened stacked MRs (do not re-open the same slices): !409 #376, !412 #378, !415 #379, !417 #380-remove. Merge **!409 first** (targets `main`); then retarget. Do not persist Claim unless PO names it. Channel persist is in !409; live `companion-android` still needs a ROG checkout (#381).
 
 ## Native ↔ web (operator-relevant only)
 
