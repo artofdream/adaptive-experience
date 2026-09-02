@@ -84,7 +84,7 @@ ASCII twin (for contexts without Mermaid):
    Companion `companion-android`, web `web`. Edge/BFF log + echo `aea_client`. **Partial:** header+logs landed; Grafana as-code request panel still open (infra dashboards only). Not auth.
 
 3. **[#369](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/369) — Weekday API parity probe**  
-   Script `scripts/probe_companion_bff_parity.py` + CI job `companion-bff-parity-probe` (manual / weekday schedule via `AEA_COMPANION_PARITY_PROBE=1`). Fail job + correlation ids (no auto-issue spam). Probe ≠ Play honesty; ≠ #360 write-through.  
+   Script `scripts/probe_companion_bff_parity.py` + CI job `companion-bff-parity-probe` (manual / weekday schedule via `CI_PIPELINE_SCHEDULE_DESCRIPTION` match on `Companion BFF parity probe`; no schedule-scoped var required — GitLab Edit schedule may only show Inputs). Optional `AEA_COMPANION_PARITY_PROBE=1` OR still works. Daily brief schedule must not match. Fail job + correlation ids (no auto-issue spam). Probe ≠ Play honesty; ≠ #360 write-through.  
    **Green run recorded (2026-09-02 UTC):** live `aea.artof.link` Need→Pick→Pay → `order_summary.total=82.0` (`classic-rose-dozen` 70 + $12 fee), checkout `accepted`/`submitted`, sample corrs `a66718a8…` / `22e5d22f…`.
 
 4. **[#370](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/370) — Parity matrix + stale issue hygiene**  
