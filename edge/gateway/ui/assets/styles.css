@@ -320,20 +320,28 @@ textarea, input, select {
   font-weight: 700;
 }
 .badge.unavailable { background: var(--lavender); color: var(--muted); }
-fieldset { border: 0; padding: 0; margin: .5rem 0; }
-fieldset label { font-weight: 500; display: flex; gap: .5rem; align-items: center; }
+fieldset { border: 0; padding: 0; margin: .5rem 0; min-width: 0; max-width: 100%; }
+fieldset label { font-weight: 500; display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; min-width: 0; max-width: 100%; }
+input[type="date"] {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
 .destination-card, .payment-card, .latest-status, .confirm-panel {
   margin: .75rem 0;
   padding: .8rem;
   border-radius: .65rem;
   background: var(--lavender-soft);
+  min-width: 0;
+  max-width: 100%;
 }
 .destination-label { margin: 0 0 .35rem; font-weight: 800; color: var(--purple-deep); }
 .confirm-facts { margin: 0; display: grid; gap: .55rem; }
 .confirm-facts > div { display: grid; gap: .15rem; }
 .confirm-facts dt { font-size: .75rem; color: var(--muted); font-weight: 650; }
 .confirm-facts dd { margin: 0; font-weight: 700; color: var(--ink); overflow-wrap: anywhere; }
-.choice { display: flex; gap: .5rem; align-items: flex-start; font-weight: 500; margin: .45rem 0; }
+.choice { display: flex; flex-wrap: wrap; gap: .5rem; align-items: flex-start; font-weight: 500; margin: .45rem 0; min-width: 0; max-width: 100%; }
 .choice code { font-size: .85em; }
 .confirm-ack { margin: .75rem 0 1rem; font-weight: 650; }
 .timeline { padding-left: 1.1rem; }
@@ -480,7 +488,8 @@ dialog::backdrop { background: rgba(42, 36, 56, .45); }
      cannot cover full-width Send or other primary actions on T-01. */
   /* Path B Dual-Viewport: Mobile Linear Concierge (<768px / 40rem) */
   .aso { display: none; }
-  .panel { padding: 1rem; border-radius: .75rem; max-width: 100%; }
+  .panel { padding: 1rem; border-radius: .75rem; max-width: 100%; min-width: 0; }
+  #delivery-form, #checkout-form { min-width: 0; max-width: 100%; }
   .welcome-card { grid-template-columns: 1fr; }
   .messages p { max-width: 92%; overflow-wrap: anywhere; }
   textarea { min-height: 7rem; }
