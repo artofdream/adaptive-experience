@@ -22,9 +22,20 @@ Sponsor rule: **be proactive**. cts-ai is back; grok-bot holds ADB on the dedica
 - Companion Need tape on [architecture.artof.link/companion.html](https://architecture.artof.link/companion.html) (!399 / #373).
 - Need→Pick→Pay BFF contracts shipped (!376/!379/!380). Write-through to **customer** Track is still session-scoped; do not reopen #360 for that.
 
-## Florist still missing (efficiency)
+## Florist slices opened (not yet on `main`)
 
-Card/title/channel/paid on the row (#376). Today/delayed filter + copy (#378). T-09 badge when the session also has an order (#379). Persist Claim or remove fake buttons (#380). Destination handle without street (#382).
+[Florist no-sponsor slices](bc-f1e61c7c-9e90-4841-9692-11baa7dc2065) shipped four stacked MRs. MRC merge order: **!409 → !412 → !415 → !417**. Do not merge the later three into the parent feature branch (that would mix !409). After !409 is on `main`, retarget !412 to `main`.
+
+| Issue | MR | HEAD | In |
+|---|---|---|---|
+| #376 | [!409](https://gitlab.com/artof-group/adaptive-experience-architecture/-/merge_requests/409) → `main` | `6e88a364` | card, catalog title, allowlisted channel (`web` / `companion-android` / `unknown`, migration 023), paid/declined/unpaid |
+| #378 | [!412](https://gitlab.com/artof-group/adaptive-experience-architecture/-/merge_requests/412) → !409 branch | `08ec183d` | Today (live default) / Delayed / All; “order or inbox” copy |
+| #379 | [!415](https://gitlab.com/artof-group/adaptive-experience-architecture/-/merge_requests/415) → !412 branch | `dc0758e1` | read-only Has order / Inbox session badge |
+| #380 | [!417](https://gitlab.com/artof-group/adaptive-experience-architecture/-/merge_requests/417) → !415 branch | `61a18af3` | **remove** fake Claim/Resolve only |
+
+**Parked:** #382 destination handle (PO). Persist Claim (not in !417).
+
+CI Docker integration already passed on !409 (`platform-foundation-integration` + `edge-docker-integration`). Local Docker was not available in the cloud worktree.
 
 ## Native proof grok-bot must run
 
