@@ -41,6 +41,7 @@ class FakeOrchestration:
         return DeliveryResult(True, "accepted", kwargs["observed_context_version"] + 1, "delivery-1")
 
     def create_order(self, **kwargs):
+        self.created_order = kwargs
         return OrderResult(True, "accepted", "order-9", "created")
 
     def checkout(self, **kwargs):
@@ -90,9 +91,13 @@ class FakeOrchestration:
             "destination_reference": "dest-1",
             "timing": {"date": "2026-08-16", "window": "morning"},
             "card_message": "Happy birthday Mum",
+            "catalog_title": "Classic Rose Dozen",
+            "channel": "web",
+            "payment_state": "paid",
             "updated_at": "2026-09-02T12:00:00+00:00",
             "secret": "omit",
             "email": "private@example.invalid",
+            "decline_code": "omit",
         }]}
 
     def operator_session_summary(self, **kwargs):
@@ -396,12 +401,13 @@ class PerimeterTests(unittest.TestCase):
         cookie, csrf = self.session()
         json_headers = {**self.auth, "cookie": cookie, "content-type": "application/json"}
         self.assertEqual(403, self.call("POST", "/api/v1/order", json_headers, b"{}")[0])
-        headers = {**json_headers, "x-csrf-token": csrf}
+        headers = {**json_headers, "x-csrf-token": csrf, "x-aea-client": "web"}
         status, _, body = self.call("POST", "/api/v1/order", headers, b"{}")
         self.assertEqual(202, status)
         payload = json.loads(body)
         self.assertEqual("order-9", payload["order_id"])
         self.assertEqual("created", payload["status"])
+        self.assertEqual("web", self.app.orchestration.created_order["aea_client"])
 
     def test_workspace_order_facet_is_least_data(self):
         shaped = BffApp._least_data_workspace({"context_version": 4, "facets": {"order": {
@@ -689,8 +695,12 @@ class PerimeterTests(unittest.TestCase):
         self.assertEqual({"date": "2026-08-16", "window": "morning"},
                          orders["items"][0]["timing"])
         self.assertEqual("Happy birthday Mum", orders["items"][0]["card_message"])
+        self.assertEqual("Classic Rose Dozen", orders["items"][0]["catalog_title"])
+        self.assertEqual("web", orders["items"][0]["channel"])
+        self.assertEqual("paid", orders["items"][0]["payment_state"])
         self.assertNotIn("secret", orders["items"][0])
         self.assertNotIn("email", orders["items"][0])
+        self.assertNotIn("decline_code", orders["items"][0])
         self.assertNotIn(b"secret", body)
         self.assertNotIn(b"email", body)
         status, _, body = call("GET", "/api/v1/operator/forecasts", auth)
@@ -719,6 +729,21 @@ class PerimeterTests(unittest.TestCase):
         self.assertEqual(404, call(
             "GET", "/api/v1/operator/sessions/00000000-0000-0000-0000-000000000000",
             auth)[0])
+        stripped = BffApp._least_data_operator_orders({
+            "items": [{
+                "order_id": "order-x",
+                "session_id": "s1",
+                "channel": "rog-phone",
+                "payment_state": "refunded",
+                "catalog_title": "x" * 200,
+                "email": "private@example.invalid",
+            }]
+        })
+        self.assertEqual("order-x", stripped["items"][0]["order_id"])
+        self.assertNotIn("channel", stripped["items"][0])
+        self.assertNotIn("payment_state", stripped["items"][0])
+        self.assertNotIn("catalog_title", stripped["items"][0])
+        self.assertNotIn("email", stripped["items"][0])
 
     def test_x_aea_client_is_observability_only_not_auth(self):
         """#368: allowlisted X-AEA-Client is echoed + logged; never gates auth."""

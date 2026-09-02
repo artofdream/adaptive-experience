@@ -317,13 +317,14 @@ class PsycopgOrderStore:
         self.connection = connection
 
     def create_or_get(self, *, session_id: str, order_id: str, context_version: int,
-                      product: dict, delivery: dict) -> dict:
+                      product: dict, delivery: dict, aea_client: str | None = None) -> dict:
         with self.connection.transaction():
             self.connection.execute(
                 "INSERT INTO orchestration.customer_order "
-                "(order_id,session_id,context_version,product,delivery) "
-                "VALUES (%s,%s,%s,%s::jsonb,%s::jsonb) ON CONFLICT (session_id) DO NOTHING",
-                (order_id, session_id, context_version, json.dumps(product), json.dumps(delivery)),
+                "(order_id,session_id,context_version,product,delivery,aea_client) "
+                "VALUES (%s,%s,%s,%s::jsonb,%s::jsonb,%s) ON CONFLICT (session_id) DO NOTHING",
+                (order_id, session_id, context_version, json.dumps(product),
+                 json.dumps(delivery), aea_client),
             )
             row = self.connection.execute(
                 "SELECT order_id::text,status,context_version FROM orchestration.customer_order "
@@ -354,13 +355,16 @@ class PsycopgOrderStore:
         """Recent customer orders for the florist staff list (FR-013)."""
         capped = min(max(int(limit), 1), 50)
         rows = self.connection.execute(
-            "SELECT order_id, session_id, status, delayed, product, delivery, updated_at "
-            "FROM orchestration.customer_order "
-            "ORDER BY updated_at DESC, order_id DESC LIMIT %s",
+            "SELECT o.order_id, o.session_id, o.status, o.delayed, o.product, "
+            "o.delivery, o.updated_at, o.aea_client, i.decline_code "
+            "FROM orchestration.customer_order o "
+            "LEFT JOIN orchestration.checkout_intent i ON i.order_id = o.order_id "
+            "ORDER BY o.updated_at DESC, o.order_id DESC LIMIT %s",
             (capped,),
         ).fetchall()
         items = []
-        for order_id, session_id, status, delayed, product, delivery, updated_at in rows:
+        for (order_id, session_id, status, delayed, product, delivery,
+             updated_at, aea_client, decline_code) in rows:
             items.append({
                 "order_id": order_id,
                 "session_id": session_id,
@@ -369,6 +373,8 @@ class PsycopgOrderStore:
                 "product": product,
                 "delivery": delivery,
                 "updated_at": updated_at,
+                "aea_client": aea_client,
+                "decline_code": decline_code,
             })
         return items
 

@@ -7,9 +7,12 @@ const SAMPLE_ORDERS = [
     delayed: false,
     authoritative_status: "preparing",
     product_id: "classic-rose-dozen",
+    catalog_title: "Classic Rose Dozen",
     destination_reference: "dest-ref-1",
     timing: { date: "2026-08-16", window: "morning" },
     card_message: "Happy birthday Mum",
+    channel: "web",
+    payment_state: "paid",
     updated_at: "2026-08-15T08:20:00+00:00",
     sample: true,
   },
@@ -20,9 +23,12 @@ const SAMPLE_ORDERS = [
     delayed: true,
     authoritative_status: "delayed",
     product_id: "lilac-bouquet",
+    catalog_title: "Lilac Bouquet",
     destination_reference: "dest-ref-2",
     timing: { date: "2026-08-15", window: "afternoon" },
     card_message: "Thinking of you",
+    channel: "companion-android",
+    payment_state: "declined",
     updated_at: "2026-08-15T07:50:00+00:00",
     sample: true,
   },
@@ -289,7 +295,7 @@ function renderOrders(items) {
   orderRows.replaceChildren();
   state.orders = items;
   if (!items.length) {
-    orderRows.append(emptyRow(6, "No companion or website orders yet. This list stays empty until a checkout writes through."));
+    orderRows.append(emptyRow(9, "No companion or website orders yet. This list stays empty until a checkout writes through."));
     return;
   }
   for (const item of items) {
@@ -298,10 +304,17 @@ function renderOrders(items) {
     row.setAttribute("data-session", item.session_id);
     const sample = item.sample ? ' <span class="status">Sample</span>' : "";
     const statusText = item.authoritative_status || item.status || "—";
+    const arrangement = item.catalog_title || item.product_id || "—";
+    const card = item.card_message ? String(item.card_message).slice(0, 40) : "—";
+    const channel = item.channel || "—";
+    const paid = item.payment_state || "—";
     row.innerHTML = `<td>${formatRequested(item.updated_at)}</td>
       <td><button type="button" class="text-link" data-session="${item.session_id}">${shortRef(item.order_id)}</button>${sample}</td>
       <td><span class="badge">${statusText}</span></td>
-      <td><code>${item.product_id || "—"}</code></td>
+      <td>${arrangement}</td>
+      <td>${card}</td>
+      <td><code>${channel}</code></td>
+      <td><span class="badge">${paid}</span></td>
       <td>${formatWhen(item.timing)}</td>
       <td><code>${shortRef(item.destination_reference)}</code></td>`;
     orderRows.append(row);

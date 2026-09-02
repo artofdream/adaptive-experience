@@ -123,9 +123,11 @@ class HttpOrchestration:
                               int(data.get("context_version", 0)), data.get("message_id"))
 
     def create_order(self, **kwargs):
+        payload = {"correlation_id": kwargs["correlation_id"]}
+        if kwargs.get("aea_client"):
+            payload["aea_client"] = kwargs["aea_client"]
         data = self._call("POST", f"/internal/v1/sessions/{kwargs['session_id']}/order",
-                          subject=kwargs["subject"],
-                          payload={"correlation_id": kwargs["correlation_id"]})
+                          subject=kwargs["subject"], payload=payload)
         return OrderResult(data["status"] == 202, data.get("code", "rejected"),
                            data.get("order_id"), data.get("order_status"))
 

@@ -98,6 +98,23 @@ class HttpOrchestrationTests(unittest.TestCase):
         self.assertEqual("s1", loaded["session_id"])
         self.assertEqual("r1", loaded["recall_id"])
 
+    def test_create_order_forwards_allowlisted_aea_client(self):
+        calls = []
+        def transport(method, url, headers, payload, timeout):
+            calls.append((method, url, payload, headers))
+            return 202, '{"code":"accepted","order_id":"order-9","order_status":"created"}'
+        adapter = HttpOrchestration("http://orchestration:8081", "internal", transport=transport)
+        result = adapter.create_order(
+            session_id="s1", subject="user1", correlation_id="c1",
+            aea_client="companion-android")
+        self.assertTrue(result.accepted)
+        self.assertEqual("order-9", result.order_id)
+        self.assertEqual("POST", calls[0][0])
+        self.assertTrue(calls[0][1].endswith("/sessions/s1/order"))
+        self.assertEqual("c1", calls[0][2]["correlation_id"])
+        self.assertEqual("companion-android", calls[0][2]["aea_client"])
+        self.assertEqual("user1", calls[0][3]["x-subject-reference"])
+
     def test_request_escalation_posts_to_internal_support_escalation(self):
         from edge.bff.aea_bff.ports import EscalationResult
         calls = []
