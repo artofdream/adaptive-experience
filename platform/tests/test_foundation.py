@@ -699,12 +699,12 @@ class FoundationTests(unittest.TestCase):
         )
         self.assertEqual(("shared_understanding.budget",), patch.changed_facets)
 
-    def test_all_25_database_migrations_are_discoverable_and_ordered(self):
+    def test_all_26_database_migrations_are_discoverable_and_ordered(self):
         migrations_dir = ROOT / "migrations"
         migrations = sorted(migrations_dir.glob("[0-9][0-9][0-9]_*.sql"))
         versions = [int(path.name[:3]) for path in migrations]
-        self.assertEqual(25, len(migrations))
-        self.assertEqual(list(range(1, 26)), versions)
+        self.assertEqual(26, len(migrations))
+        self.assertEqual(list(range(1, 27)), versions)
 
 
 if __name__ == "__main__":

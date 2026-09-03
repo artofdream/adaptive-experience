@@ -46,7 +46,7 @@ class InMemoryCrmStore:
 
     def purge_expired_memories(self, *, cutoff):
         before = len(self.memories)
-        self.memories = [m for m in self.memories if m["updated_at"] >= cutoff]
+        self.memories = [m for m in self.memories if m.get("updated_at", m["created_at"]) >= cutoff]
         return before - len(self.memories)
 
 

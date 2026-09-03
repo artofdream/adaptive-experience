@@ -149,7 +149,11 @@ class FakeOrchestration:
                         "rank": 1, "available": True, "availability_status": "available",
                         "secret": "omit"}]},
                     "selection": {"product_id": "classic-rose-dozen",
-                                  "options": {"card_message": "hi"}, "secret": "omit"}},
+                                  "options": {"card_message": "hi"}, "secret": "omit"},
+                    "reminders": {"items": [{
+                        "occasion_type": "birthday", "days_until_event": 14,
+                        "reminder_text": "Upcoming: Mother's Birthday in 14 days.",
+                        "recipient_relation": "mother", "secret": "omit"}]}},
                 "ai_generated": True, "assistant_mode": "primary",
                 "disclosure": "AI-generated; review it."}
 
@@ -184,6 +188,23 @@ class FakeOrchestration:
         self.intent.update(kwargs["corrections"])
         return CorrectionResult(True, "accepted", kwargs["observed_context_version"] + 1,
                                 "correction-1")
+
+    def delete_crm_occasions(self, **kwargs):
+        self.forgotten = kwargs["browser_hash"]
+        return {"status": 200, "code": "forgotten", "deleted": 2}
+
+    def operator_subject_insights(self, **kwargs):
+        return {
+            "status": 200,
+            "subject_reference": kwargs["subject_reference"],
+            "customer_segment": "frequent_buyer",
+            "total_orders": 4,
+            "lifetime_spend_band": "band_100_250",
+            "primary_occasion": "birthday",
+            "preferred_channel": "web",
+            "secret": "omit",
+            "email": "private@example.invalid",
+        }
 
 
 async def invoke(app, method, path, headers=None, body=b"", query=b""):
@@ -331,7 +352,11 @@ class PerimeterTests(unittest.TestCase):
                     "product_id": "classic-rose-dozen", "price": 70.0, "score": 4.0,
                     "rank": 1, "available": True, "availability_status": "available"}]},
                 "selection": {"product_id": "classic-rose-dozen",
-                              "options": {"card_message": "hi"}}},
+                              "options": {"card_message": "hi"}},
+                "reminders": {"items": [{
+                    "occasion_type": "birthday", "days_until_event": 14,
+                    "reminder_text": "Upcoming: Mother's Birthday in 14 days.",
+                    "recipient_relation": "mother"}]}},
             "ai_generated": True, "assistant_mode": "primary",
             "disclosure": "AI-generated; review it.",
         }, json.loads(body))
@@ -748,6 +773,62 @@ class PerimeterTests(unittest.TestCase):
         self.assertNotIn("payment_state", stripped["items"][0])
         self.assertNotIn("catalog_title", stripped["items"][0])
         self.assertNotIn("email", stripped["items"][0])
+
+    def test_workspace_reminders_facet_is_least_data(self):
+        cookie, _csrf = self.session()
+        status, _, body = self.call("GET", "/api/v1/workspace", {**self.auth, "cookie": cookie})
+        self.assertEqual(200, status)
+        reminders = json.loads(body)["facets"]["reminders"]["items"]
+        self.assertEqual([{
+            "occasion_type": "birthday", "days_until_event": 14,
+            "reminder_text": "Upcoming: Mother's Birthday in 14 days.",
+            "recipient_relation": "mother"}], reminders)
+        self.assertNotIn(b"secret", body)
+
+    def test_crm_occasions_delete_forwards_customer_opt_out(self):
+        cookie, csrf = self.session()
+        auth = {**self.auth, "cookie": cookie, "x-csrf-token": csrf}
+        browser_hash = "a" * 64
+        # CSRF is enforced on the customer opt-out erasure.
+        self.assertEqual(403, self.call(
+            "DELETE", "/api/v1/crm/occasions",
+            {**self.auth, "cookie": cookie}, b"",
+            f"browser_hash={browser_hash}".encode())[0])
+        status, _, body = self.call(
+            "DELETE", "/api/v1/crm/occasions", auth, b"",
+            f"browser_hash={browser_hash}".encode())
+        self.assertEqual(200, status)
+        result = json.loads(body)
+        self.assertEqual("forgotten", result["code"])
+        self.assertEqual(2, result["deleted"])
+        self.assertEqual(browser_hash, self.app.orchestration.forgotten)
+        # A malformed hash is rejected at the edge before reaching orchestration.
+        self.assertEqual(422, self.call(
+            "DELETE", "/api/v1/crm/occasions", auth, b"", b"browser_hash=short")[0])
+
+    def test_operator_subject_insights_least_data_and_gated(self):
+        # Fail-closed unless the florist operator surface is enabled.
+        cookie, _csrf = self.session()
+        self.assertEqual(404, self.call(
+            "GET", "/api/v1/operator/subjects/sub_abc", {**self.auth, "cookie": cookie})[0])
+
+        app = BffApp(FakeOrchestration(), StaticTokenAuthenticator("good"),
+                     allowed_origin="https://localhost:8443", florist_operator_enabled=True)
+        def call(*args, **kwargs):
+            return asyncio.run(invoke(app, *args, **kwargs))
+        _, headers, _ = call("POST", "/api/v1/session", self.auth)
+        auth = {**self.auth, "cookie": headers["set-cookie"].split(";", 1)[0]}
+        status, _, body = call("GET", "/api/v1/operator/subjects/sub_abc", auth)
+        self.assertEqual(200, status)
+        insights = json.loads(body)
+        self.assertEqual("frequent_buyer", insights["customer_segment"])
+        self.assertEqual(4, insights["total_orders"])
+        self.assertEqual("band_100_250", insights["lifetime_spend_band"])
+        self.assertEqual("birthday", insights["primary_occasion"])
+        self.assertNotIn("secret", insights)
+        self.assertNotIn("email", insights)
+        self.assertNotIn(b"secret", body)
+        self.assertNotIn(b"email", body)
 
     def test_x_aea_client_is_observability_only_not_auth(self):
         """#368: allowlisted X-AEA-Client is echoed + logged; never gates auth."""

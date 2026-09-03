@@ -44,14 +44,31 @@ Adopt **Alternative 3 (3-Layer Privacy-Preserving CRM & Edge Wallet Architecture
   (`platform/aea_platform/crm.py`, `crm.customer_occasion_memory`, migration
   018) with occasion memory + reminder endpoints. Reminders are **deterministic
   pull signals** computed on read (`GET .../crm/reminders`); proactive push
-  delivery (FCM/APNs) is not shipped (see ADR-019). Privacy lifecycle
-  (NFR-017): customer erasure via `EngagementCrmService.forget` /
-  `DELETE /internal/v1/crm/occasions`, and time-based retention via
-  `purge_expired` (default ~13 months since last update); operational job
-  `platform/scripts/purge_crm_retention.py`. The pseudonymous subject-profile
-  aggregate table (`orchestration.subject_profile`, migration 024) and the
-  `CrmService` spend-band/insight helpers exist, but their persistence adapter
-  and wiring are still in progress (tracked separately).
+  delivery (FCM/APNs) is not shipped (see ADR-019). **Capture→read wiring:** the
+  platform order path (`_create_order` / checkout in
+  `platform/aea_platform/internal_api.py`) now records a zero-PII occasion
+  memory (`browser_hash` derived from the durable `recall_id`, `occasion_type`,
+  `event_month/day`, `recipient_relation`) whenever a confirmed order carries
+  `shared_understanding.occasion` and a delivery date. Capture is best-effort
+  and fail-closed — a CRM failure or incomplete intent never blocks order
+  creation and only categorical, non-PII fields are stored (NFR-017). The
+  workspace projection surfaces a least-data `reminders` facet (occasion,
+  `days_until_event`, reminder text, recipient relation) computed from the
+  session's own browser hash. Privacy lifecycle (NFR-017): customer erasure via
+  `EngagementCrmService.forget` / `DELETE /internal/v1/crm/occasions` (BFF
+  `DELETE /api/v1/crm/occasions` opt-out forwards to it), and time-based
+  retention via `purge_expired` (default ~13 months since last update);
+  operational job `platform/scripts/purge_crm_retention.py`. The previously dark
+  pseudonymous **subject profile** (`orchestration.subject_profile`, migrations
+  024/026) is now implemented in `PsycopgCrmStore` (`record_crm_order` /
+  `get_crm_profile`): a completed order increments `total_orders`, accumulates
+  `lifetime_spend_cents`, and recomputes the `lifetime_spend_band` from the
+  cumulative running total. Operator insights are exposed least-data at
+  `GET /internal/v1/operator/subjects/{ref}` (BFF
+  `GET /api/v1/operator/subjects/{ref}`), and subject-profile erasure + retention
+  purge (by `last_seen_at`) provide right-to-be-forgotten parity. `FR-016`/
+  `FR-017` remain **Future** in the source-of-truth workbook (reference-extension
+  delivery).
 - **Layer 2 (Edge Wallet):** **sponsor-accepted (2026-09-03) and implemented**
   in the Android companion (`clients/mobile/android`). Device-owned receipts
   are stored in `EncryptedSharedPreferences` under an Android Keystore AES-256

@@ -1152,3 +1152,96 @@ class PsycopgCrmStore:
             )
         return cur.rowcount
 
+    # --- Pseudonymous subject profile (ADR-020 Layer 1, migrations 024/026) ---
+    #
+    # Zero-PII: only a salted subject_reference, order counts, a cumulative spend
+    # band, primary occasion, and coarse channel are recorded. No names,
+    # addresses, phone numbers, or payment identifiers ever land here.
+
+    @staticmethod
+    def _spend_band_sql_case(column: str) -> str:
+        """SQL CASE mapping cumulative cents to the same bands as compute_spend_band."""
+        return (
+            f"CASE WHEN {column} < 5000 THEN 'band_0_50' "
+            f"WHEN {column} <= 10000 THEN 'band_50_100' "
+            f"WHEN {column} <= 25000 THEN 'band_100_250' "
+            f"ELSE 'band_250_plus' END"
+        )
+
+    def record_crm_order(self, *, subject_reference: str, order_total: float,
+                         occasion: str | None, channel: str, now: datetime) -> dict:
+        """Upsert the pseudonymous profile on a completed order (ADR-020 Layer 1)."""
+        cents = max(int(round(float(order_total) * 100)), 0)
+        clean_occasion = occasion.strip().lower() if isinstance(occasion, str) and occasion.strip() else None
+        clean_channel = channel.strip().lower() if isinstance(channel, str) and channel.strip() else "web"
+        with self.connection.transaction():
+            self.connection.execute(
+                "INSERT INTO orchestration.subject_profile "
+                "(subject_reference, first_seen_at, last_seen_at, total_orders, "
+                " lifetime_spend_cents, lifetime_spend_band, primary_occasion, preferred_channel, updated_at) "
+                "VALUES (%s, %s, %s, 1, %s, 'band_0_50', %s, %s, %s) "
+                "ON CONFLICT (subject_reference) DO UPDATE SET "
+                "total_orders = orchestration.subject_profile.total_orders + 1, "
+                "lifetime_spend_cents = orchestration.subject_profile.lifetime_spend_cents + EXCLUDED.lifetime_spend_cents, "
+                "last_seen_at = EXCLUDED.last_seen_at, "
+                "primary_occasion = COALESCE(orchestration.subject_profile.primary_occasion, EXCLUDED.primary_occasion), "
+                "preferred_channel = EXCLUDED.preferred_channel, "
+                "updated_at = EXCLUDED.updated_at",
+                (subject_reference, now, now, cents, clean_occasion, clean_channel, now)
+            )
+            # Recompute the band from the cumulative running total, not the last order.
+            row = self.connection.execute(
+                "UPDATE orchestration.subject_profile SET lifetime_spend_band = "
+                + self._spend_band_sql_case("lifetime_spend_cents") + " "
+                "WHERE subject_reference = %s "
+                "RETURNING subject_reference, total_orders, lifetime_spend_band, "
+                "primary_occasion, preferred_channel, first_seen_at, last_seen_at, lifetime_spend_cents",
+                (subject_reference,)
+            ).fetchone()
+        return self._subject_profile_row(row)
+
+    def get_crm_profile(self, subject_reference: str) -> dict | None:
+        """Least-data pseudonymous profile for the operator console (ADR-020)."""
+        row = self.connection.execute(
+            "SELECT subject_reference, total_orders, lifetime_spend_band, primary_occasion, "
+            "preferred_channel, first_seen_at, last_seen_at, lifetime_spend_cents "
+            "FROM orchestration.subject_profile WHERE subject_reference = %s",
+            (subject_reference,)
+        ).fetchone()
+        if row is None:
+            return None
+        return self._subject_profile_row(row)
+
+    def delete_subject_profile(self, *, subject_reference: str) -> int:
+        """Erase a pseudonymous subject profile (subject erasure parity, NFR-017)."""
+        with self.connection.transaction():
+            cursor = self.connection.execute(
+                "DELETE FROM orchestration.subject_profile WHERE subject_reference = %s",
+                (subject_reference,)
+            )
+        return int(cursor.rowcount)
+
+    def purge_expired_subject_profiles(self, *, before: datetime) -> int:
+        """Retention sweep: drop subject profiles not seen since the cutoff."""
+        with self.connection.transaction():
+            cursor = self.connection.execute(
+                "DELETE FROM orchestration.subject_profile WHERE last_seen_at < %s",
+                (before,)
+            )
+        return int(cursor.rowcount)
+
+    @staticmethod
+    def _subject_profile_row(row) -> dict:
+        def _iso(value):
+            return value.isoformat() if hasattr(value, "isoformat") else value
+        return {
+            "subject_reference": str(row[0]),
+            "total_orders": int(row[1]),
+            "lifetime_spend_band": str(row[2]),
+            "primary_occasion": row[3],
+            "preferred_channel": row[4],
+            "first_seen_at": _iso(row[5]),
+            "last_seen_at": _iso(row[6]),
+            "lifetime_spend_cents": int(row[7]),
+        }
+

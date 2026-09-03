@@ -65,6 +65,39 @@ class TestCrmSubjectService(unittest.TestCase):
         self.assertEqual(insights["primary_occasion"], "birthday")
         self.assertEqual(insights["preferred_channel"], "companion")
 
+    def test_record_completed_order_forwards_least_data_to_store(self):
+        store = MagicMock()
+        store.record_crm_order.return_value = {"subject_reference": "sub_x", "total_orders": 1}
+        fixed_now = datetime(2026, 9, 3, 12, 0, tzinfo=timezone.utc)
+        service = CrmService(store, now=lambda: fixed_now)
+
+        result = service.record_completed_order(
+            subject_reference=" sub_x ", order_total=137.0,
+            occasion="birthday", channel="companion")
+
+        self.assertEqual(result["total_orders"], 1)
+        store.record_crm_order.assert_called_once_with(
+            subject_reference="sub_x", order_total=137.0,
+            occasion="birthday", channel="companion", now=fixed_now)
+
+    def test_record_completed_order_requires_subject_reference(self):
+        service = CrmService(MagicMock())
+        with self.assertRaises(ValueError):
+            service.record_completed_order(subject_reference="  ", order_total=50.0)
+
+    def test_forget_subject_and_purge_expired_forward_to_store(self):
+        store = MagicMock()
+        store.delete_subject_profile.return_value = 1
+        store.purge_expired_subject_profiles.return_value = 3
+        service = CrmService(store)
+
+        self.assertEqual(service.forget_subject("sub_x"), 1)
+        store.delete_subject_profile.assert_called_once_with(subject_reference="sub_x")
+
+        cutoff = datetime(2026, 8, 1, tzinfo=timezone.utc)
+        self.assertEqual(service.purge_expired(cutoff), 3)
+        store.purge_expired_subject_profiles.assert_called_once_with(before=cutoff)
+
 
 if __name__ == "__main__":
     unittest.main()

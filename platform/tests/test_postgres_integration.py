@@ -27,6 +27,7 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
     def setUp(self):
         with self.connection.transaction():
             self.connection.execute("TRUNCATE retrieval.knowledge_chunk, inventory.availability_observation, inventory.product_availability, orchestration.ai_quality_event, orchestration.message_audit, orchestration.outbox_message, "
+                                    "crm.customer_occasion_memory, orchestration.subject_profile, "
                                     "orchestration.experience_invalidation, orchestration.consumed_message, "
                                     "orchestration.browser_order_recall, orchestration.experience_session CASCADE")
 
@@ -108,8 +109,8 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
             int(path.name[:3])
             for path in sorted((ROOT / "migrations").glob("[0-9][0-9][0-9]_*.sql"))
         ]
-        self.assertEqual(len(expected), 25)
-        self.assertTrue({19, 20, 21, 22, 23, 24, 25}.issubset(set(expected)))
+        self.assertEqual(len(expected), 26)
+        self.assertTrue({19, 20, 21, 22, 23, 24, 25, 26}.issubset(set(expected)))
         self.assertEqual(expected, versions)
 
     def test_superseded_mutation_function_is_dropped(self):
@@ -295,6 +296,187 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         blob = json.dumps(listed)
         self.assertNotIn("email", blob)
         self.assertNotIn("@", blob)
+
+    def _assemble_order_decisions(self, session_id, *, occasion="birthday",
+                                  recipient="mum", date="2026-09-15"):
+        from aea_platform.adapters import PsycopgExperienceStateStore
+        from aea_platform.state import StatePatch
+        store = PsycopgExperienceStateStore(self.connection)
+        with self.connection.transaction():
+            store.apply_patch(str(session_id), 0, 1, StatePatch.create(
+                {"shared_understanding": {"occasion": occasion, "recipient": recipient}},
+                ["shared_understanding.occasion", "shared_understanding.recipient"]), [])
+        with self.connection.transaction():
+            store.apply_patch(str(session_id), 1, 1, StatePatch.create(
+                {"decisions": {"product": {"product_id": "classic-rose-dozen",
+                                           "options": {"card_message": "Happy birthday Mum"}}}},
+                ["decisions.product"]), [])
+        with self.connection.transaction():
+            store.apply_patch(str(session_id), 2, 1, StatePatch.create(
+                {"decisions": {"delivery": {"destination_reference": "addr-9",
+                                            "timing": {"date": date, "window": "morning"}}}},
+                ["decisions.delivery"]), [])
+
+    def test_order_capture_writes_occasion_and_workspace_surfaces_reminder(self):
+        import asyncio
+        from datetime import date as date_cls
+        from aea_platform.internal_api import InternalOrchestrationApp
+
+        session_id = self.create_session()
+        self._assemble_order_decisions(session_id)
+        app = InternalOrchestrationApp(self.connection, "internal-token")
+
+        def drive(method, path, body=b""):
+            return asyncio.run(self._invoke_internal(app, method, path, body))
+
+        # No occasion memory before the order is created.
+        self.assertEqual(0, self.connection.execute(
+            "SELECT count(*) FROM crm.customer_occasion_memory").fetchone()[0])
+
+        status, created = drive(
+            "POST", f"/internal/v1/sessions/{session_id}/order",
+            json.dumps({"correlation_id": "ord"}).encode())
+        self.assertEqual(202, status)
+
+        # Capture: a single zero-PII occasion row was written (NFR-017).
+        rows = self.connection.execute(
+            "SELECT occasion_type, event_month, event_day, recipient_relation, session_id "
+            "FROM crm.customer_occasion_memory").fetchall()
+        self.assertEqual(1, len(rows))
+        self.assertEqual(("birthday", 9, 15, "mum"), tuple(rows[0][:4]))
+        self.assertEqual(str(session_id), str(rows[0][4]))
+
+        # Subject profile captured once with a running spend band.
+        prof = self.connection.execute(
+            "SELECT total_orders, lifetime_spend_band, primary_occasion, lifetime_spend_cents "
+            "FROM orchestration.subject_profile").fetchall()
+        self.assertEqual(1, len(prof))
+        self.assertEqual(1, prof[0][0])
+        self.assertEqual("birthday", prof[0][2])
+        self.assertEqual("band_50_100", prof[0][1])  # classic-rose-dozen = 70.00
+
+        # Read: the workspace projection surfaces an upcoming reminder (least-data).
+        _, workspace = drive("GET", f"/internal/v1/sessions/{session_id}/workspace")
+        reminders = workspace["facets"]["reminders"]["items"]
+        self.assertEqual(1, len(reminders))
+        reminder = reminders[0]
+        self.assertEqual({"occasion_type", "days_until_event", "reminder_text",
+                          "recipient_relation"}, set(reminder))
+        self.assertEqual("birthday", reminder["occasion_type"])
+        self.assertEqual("mum", reminder["recipient_relation"])
+        # The reminder is a categorical pull signal only: no raw PII, no email.
+        blob = json.dumps(reminders)
+        self.assertNotIn("addr-9", blob)
+        self.assertNotIn("@", json.dumps(workspace))
+
+        # Idempotent per session: a repeat create does not double count the profile.
+        drive("POST", f"/internal/v1/sessions/{session_id}/order",
+              json.dumps({"correlation_id": "ord"}).encode())
+        self.assertEqual(1, self.connection.execute(
+            "SELECT total_orders FROM orchestration.subject_profile").fetchone()[0])
+        self.assertEqual(1, self.connection.execute(
+            "SELECT count(*) FROM crm.customer_occasion_memory").fetchone()[0])
+
+    def test_crm_capture_is_fail_closed_when_intent_incomplete(self):
+        import asyncio
+        from aea_platform.adapters import PsycopgExperienceStateStore
+        from aea_platform.internal_api import InternalOrchestrationApp
+        from aea_platform.state import StatePatch
+
+        session_id = self.create_session()
+        store = PsycopgExperienceStateStore(self.connection)
+        # Product + delivery assembled, but NO occasion in shared understanding.
+        with self.connection.transaction():
+            store.apply_patch(str(session_id), 0, 1, StatePatch.create(
+                {"decisions": {"product": {"product_id": "classic-rose-dozen"}}},
+                ["decisions.product"]), [])
+        with self.connection.transaction():
+            store.apply_patch(str(session_id), 1, 1, StatePatch.create(
+                {"decisions": {"delivery": {"destination_reference": "addr-9",
+                                            "timing": {"date": "2026-09-15", "window": "morning"}}}},
+                ["decisions.delivery"]), [])
+        app = InternalOrchestrationApp(self.connection, "internal-token")
+
+        status, _ = asyncio.run(self._invoke_internal(
+            app, "POST", f"/internal/v1/sessions/{session_id}/order",
+            json.dumps({"correlation_id": "ord"}).encode()))
+        # Order still succeeds; capture is silently skipped (no occasion present).
+        self.assertEqual(202, status)
+        self.assertEqual(0, self.connection.execute(
+            "SELECT count(*) FROM crm.customer_occasion_memory").fetchone()[0])
+
+    def test_occasion_forget_via_internal_delete_erases_memories(self):
+        import asyncio
+        from aea_platform.internal_api import InternalOrchestrationApp
+
+        session_id = self.create_session()
+        self._assemble_order_decisions(session_id)
+        app = InternalOrchestrationApp(self.connection, "internal-token")
+
+        def drive(method, path, body=b"", query=b""):
+            return asyncio.run(self._invoke_internal(app, method, path, body, query))
+
+        drive("POST", f"/internal/v1/sessions/{session_id}/order",
+              json.dumps({"correlation_id": "ord"}).encode())
+        browser_hash = app._session_browser_hash(str(session_id))
+        self.assertEqual(1, self.connection.execute(
+            "SELECT count(*) FROM crm.customer_occasion_memory").fetchone()[0])
+
+        status, result = drive("DELETE", "/internal/v1/crm/occasions", b"",
+                               f"browser_hash={browser_hash}".encode())
+        self.assertEqual(200, status)
+        self.assertEqual("forgotten", result["code"])
+        self.assertEqual(1, result["deleted"])
+        self.assertEqual(0, self.connection.execute(
+            "SELECT count(*) FROM crm.customer_occasion_memory").fetchone()[0])
+
+    def test_subject_profile_store_running_band_get_and_retention(self):
+        from datetime import datetime as dt
+        from aea_platform.adapters import PsycopgCrmStore
+        from aea_platform.crm import CrmService, compute_subject_reference
+
+        store = PsycopgCrmStore(self.connection)
+        service = CrmService(store)
+        subject = compute_subject_reference("browser-abc")
+
+        # First order: $70 -> band_50_100 cumulative.
+        first = service.record_completed_order(
+            subject_reference=subject, order_total=70.0, occasion="birthday", channel="web")
+        self.assertEqual(1, first["total_orders"])
+        self.assertEqual("band_50_100", first["lifetime_spend_band"])
+
+        # Second order: cumulative $70 + $200 = $270 -> band_250_plus.
+        second = service.record_completed_order(
+            subject_reference=subject, order_total=200.0, occasion="anniversary",
+            channel="companion-android")
+        self.assertEqual(2, second["total_orders"])
+        self.assertEqual("band_250_plus", second["lifetime_spend_band"])
+        # primary_occasion is preserved from the first order (COALESCE).
+        self.assertEqual("birthday", second["primary_occasion"])
+        self.assertEqual("companion-android", second["preferred_channel"])
+
+        insights = service.get_subject_insights(subject)
+        self.assertEqual("returning_buyer", insights["customer_segment"])
+        self.assertEqual("band_250_plus", insights["lifetime_spend_band"])
+        # Zero-PII: only categorical fields, never a raw identifier.
+        self.assertNotIn("browser-abc", json.dumps(insights))
+
+        # Retention parity: purge by last_seen_at cutoff in the future removes it.
+        purged = service.purge_expired(dt.now(timezone.utc) + timedelta(days=1))
+        self.assertEqual(1, purged)
+        self.assertIsNone(store.get_crm_profile(subject))
+
+    def test_subject_profile_erasure_deletes_profile(self):
+        from aea_platform.adapters import PsycopgCrmStore
+        from aea_platform.crm import CrmService, compute_subject_reference
+
+        service = CrmService(PsycopgCrmStore(self.connection))
+        subject = compute_subject_reference("browser-xyz")
+        service.record_completed_order(
+            subject_reference=subject, order_total=40.0, occasion="birthday", channel="web")
+        self.assertIsNotNone(service.get_subject_insights(subject)["last_seen_at"])
+        self.assertEqual(1, service.forget_subject(subject))
+        self.assertIsNone(service.store.get_crm_profile(subject))
 
     def test_workspace_projection_latency_under_repeated_load(self):
         import asyncio

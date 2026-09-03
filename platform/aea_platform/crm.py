@@ -252,3 +252,14 @@ class CrmService:
             "first_seen_at": profile.get("first_seen_at"),
             "last_seen_at": profile.get("last_seen_at"),
         }
+
+    def forget_subject(self, subject_reference: str) -> int:
+        """Erase a pseudonymous subject profile (subject erasure parity, NFR-017)."""
+        clean_ref = (subject_reference or "").strip()
+        if not clean_ref:
+            raise ValueError("subject_reference is required")
+        return int(self.store.delete_subject_profile(subject_reference=clean_ref))
+
+    def purge_expired(self, cutoff: datetime) -> int:
+        """Retention sweep of subject profiles not seen since the cutoff (NFR-017)."""
+        return int(self.store.purge_expired_subject_profiles(before=cutoff))
