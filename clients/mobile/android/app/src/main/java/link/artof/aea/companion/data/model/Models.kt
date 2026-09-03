@@ -188,6 +188,22 @@ data class CheckoutRequest(
     @SerialName("observed_total") val observedTotal: Double
 )
 
+/** POST /api/v1/support/escalation — body is reason only (#381 / T-09). */
+@Serializable
+data class EscalationRequest(
+    val reason: String
+)
+
+@Serializable
+data class EscalationResponse(
+    val accepted: Boolean = false,
+    val code: String = "",
+    @SerialName("message_id") val messageId: String? = null,
+    val acknowledgement: String? = null,
+    @SerialName("escalation_reason") val escalationReason: String? = null,
+    @SerialName("correlation_id") val correlationId: String? = null
+)
+
 @Serializable
 data class RecommendationItem(
     @SerialName("product_id") val productId: String,

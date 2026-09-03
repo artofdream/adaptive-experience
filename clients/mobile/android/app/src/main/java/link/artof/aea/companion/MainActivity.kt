@@ -20,7 +20,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
@@ -29,6 +32,7 @@ import link.artof.aea.companion.data.repository.SessionRepository
 import link.artof.aea.companion.data.wallet.EdgeWallet
 import link.artof.aea.companion.data.wallet.EncryptedPrefsWalletStore
 import link.artof.aea.companion.ui.components.StageProgressBar
+import link.artof.aea.companion.ui.screens.ContactFloristDialog
 import link.artof.aea.companion.ui.screens.NeedScreen
 import link.artof.aea.companion.ui.screens.PayScreen
 import link.artof.aea.companion.ui.screens.PickScreen
@@ -77,6 +81,11 @@ fun LilyCompanionApp(repository: SessionRepository) {
     val isLoading by repository.isLoading.collectAsState()
     val errorMessage by repository.errorMessage.collectAsState()
     val orderSummaryTotal by repository.orderSummaryTotal.collectAsState()
+    val deliveryWindow by repository.deliveryWindow.collectAsState()
+    val destinationReference by repository.destinationReference.collectAsState()
+    val deliveryDate by repository.deliveryDate.collectAsState()
+    val escalationAck by repository.escalationAck.collectAsState()
+    var showContactFlorist by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
@@ -91,6 +100,11 @@ fun LilyCompanionApp(repository: SessionRepository) {
                         text = "Lily's Florist Companion",
                         style = MaterialTheme.typography.headlineMedium
                     )
+                },
+                actions = {
+                    TextButton(onClick = { showContactFlorist = true }) {
+                        Text("Contact Florist")
+                    }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.background,
@@ -171,6 +185,13 @@ fun LilyCompanionApp(repository: SessionRepository) {
                         isLoading = isLoading,
                         checkoutTotal = orderSummaryTotal
                             ?: repository.displayCheckoutTotal(selectedArrangement?.price),
+                        deliveryDate = deliveryDate,
+                        deliveryWindow = deliveryWindow,
+                        destinationReference = destinationReference,
+                        onDeliveryDateOffset = { repository.setDeliveryDateOffset(it) },
+                        onDeliveryWindow = { repository.setDeliveryWindow(it) },
+                        onDestinationReference = { repository.setDestinationReference(it) },
+                        onContactFlorist = { showContactFlorist = true },
                         onCheckout = { cardMsg ->
                             scope.launch { repository.completeCheckout(cardMsg) }
                         },
@@ -181,6 +202,8 @@ fun LilyCompanionApp(repository: SessionRepository) {
                 JourneyStage.TRACKING -> {
                     TrackingScreen(
                         orderResult = orderResult,
+                        escalationAck = escalationAck,
+                        onContactFlorist = { showContactFlorist = true },
                         onStartOver = {
                             scope.launch { repository.startOver() }
                         }
@@ -188,5 +211,16 @@ fun LilyCompanionApp(repository: SessionRepository) {
                 }
             }
         }
+    }
+
+    if (showContactFlorist) {
+        ContactFloristDialog(
+            onDismiss = { showContactFlorist = false },
+            onSubmit = { reason ->
+                scope.launch { repository.requestEscalation(reason) }
+            },
+            acknowledgement = escalationAck,
+            isLoading = isLoading
+        )
     }
 }
