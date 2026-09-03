@@ -491,14 +491,18 @@ class PerimeterTests(unittest.TestCase):
             json.dumps({"payment_reference": "tok"}).encode())[0])
 
     def test_workspace_order_summary_facet_is_least_data(self):
+        # quantity and unit_price are forwarded so the T-06 summary can show the
+        # quantity multiplier (e.g. "product (2x)"); unknown fields stay stripped.
         shaped = BffApp._least_data_workspace({"context_version": 5, "facets": {"order_summary": {
             "currency": "USD", "total": 82.0, "secret": "omit",
             "itemized_charges": [
-                {"label": "product", "product_id": "classic-rose-dozen", "amount": 70.0, "secret": "omit"},
+                {"label": "product", "product_id": "budget-mixed-bunch", "quantity": 2,
+                 "unit_price": 35.0, "amount": 70.0, "secret": "omit"},
                 {"label": "delivery", "amount": 12.0}]}}})
         self.assertEqual({
             "itemized_charges": [
-                {"label": "product", "product_id": "classic-rose-dozen", "amount": 70.0},
+                {"label": "product", "product_id": "budget-mixed-bunch", "quantity": 2,
+                 "unit_price": 35.0, "amount": 70.0},
                 {"label": "delivery", "amount": 12.0}],
             "total": 82.0, "currency": "USD"}, shaped["facets"]["order_summary"])
 
