@@ -263,3 +263,59 @@ All changes merged into `main` must pass automated CI jobs configured in [`.gitl
    ```
 4. **GitLab Merge Request Workflow**:
    * Issue creation (`glab issue create`) → Feature branch → Code implementation → Unit tests → Local coherence check → Push branch → Create MR (`glab mr create`) → MR Coordinator review → Auto-merge on CI success (`MWPS`).
+
+---
+
+## 10. Privacy-Preserving CRM & Ephemeral Fulfillment (`ADR-020`, `NFR-017`)
+
+Under **ADR-013** and **ADR-020**, AEA strictly forbids storing permanent unencrypted customer PII (names, phone numbers, addresses, card messages) in platform databases. Returning-customer loyalty, operator cohort insights, and one-tap reorders are delivered via a **3-Layer Architecture**:
+
+```mermaid
+flowchart TB
+    subgraph L2 ["Layer 2: Client Edge Wallet (Device-Held)"]
+        EW["Android Keystore AES-256\nEncryptedSharedPreferences"]
+        EW_D["Device-Only Fields:\n- recipientLabel ('Mom')\n- cardMessageDraft\n- occasionType ('birthday')"]
+        EW_O["Opaque Reorder Reference:\n- product_id ('classic-rose-dozen')\n- order_reference ('ord_...')"]
+    end
+
+    subgraph L1 ["Layer 1: Platform Pseudonymous Intelligence (Server)"]
+        HMAC["Salted HMAC-SHA256\nsubject_reference = 'sub_' + hex[:32]"]
+        PROF["orchestration.subject_profile\n- spend_band ('band_50_100')\n- occasion_vector ('birthday:1')\n- preferred_channel ('companion-android')"]
+    end
+
+    subgraph L3 ["Layer 3: Ephemeral Fulfillment Vault (14-Day TTL)"]
+        VAULT["orchestration.ephemeral_fulfillment\n- destination_reference (UUID)\n- encrypted_address (AES-256)\n- expires_at (clock_timestamp() + 14 days)"]
+    end
+
+    EW_O -->|FR-008 Reorder (Zero PII)| L1
+    L1 -->|Fulfillment Token| L3
+```
+
+1. **Layer 1: Platform Pseudonymous Intelligence** (`platform/aea_platform/crm.py`, Migration `024_operator_crm_subject_profile.sql`):
+   * Computes deterministic, salted HMAC-SHA256 hashes (`subject_reference`).
+   * Groups spend into non-identifying buckets (`band_0_50`, `band_50_100`, `band_100_250`, `band_250_plus`).
+   * Tracks occasion frequency vectors without personal associations.
+   * Persists channel distribution (`web`, `companion-android`) for operator cohort intelligence.
+2. **Layer 2: Device-Owned Edge Wallet** (`clients/mobile/android/.../data/wallet/`):
+   * Stores receipt history on-device under Android Keystore AES-256 master keys (`EncryptedSharedPreferences`).
+   * Encrypts convenience attributes (`recipientLabel`, `cardMessageDraft`, `occasionType`) locally. These fields **never** traverse the network.
+   * Exposes an opaque `ReorderReference` (`productId`, `orderReference`) enabling **FR-008 one-tap reorders** with authoritative server-side inventory re-validation (**NFR-009**).
+3. **Layer 3: Ephemeral Fulfillment Vault** (`platform/migrations/024_operator_crm_subject_profile.sql`):
+   * Physical delivery addresses and recipient phone numbers are held in an isolated table with an indexed 14-day cryptographic TTL (`expires_at`), automatically shredded post-delivery.
+
+---
+
+## 11. Native Mobile Companion Client Architecture (`ADR-017`, `ADR-018`, `ADR-019`)
+
+The AEA Native Android Companion (`clients/mobile/android`) provides an ultra-responsive, accessible, native Jetpack Compose mobile shopping experience complementing the web Adaptive Workspace:
+
+* **Dual-Probe Parity against Live BFF** (`ADR-017`, `#360`, `#365`):
+  * The companion communicates directly with the live Edge BFF endpoints (`/api/v1/session`, `/api/v1/selection`, `/api/v1/delivery`, `/api/v1/order`, `/api/v1/checkout`).
+  * Rejects deceptive mock testing: all integration tests must validate against real BFF session semantics, cookie jars (`__Host-aea_session`), CSRF tokens, and authoritative workspace order summaries.
+* **Perimeter Client Attribution & Telemetry** (`#376`):
+  * Emits allowlisted `X-AEA-Client: companion-android` headers.
+  * Verified across BFF rate-limiting and platform order persistence (`orchestration.customer_order.aea_client`).
+* **Google Play Internal Track CD & Honesty Gate** (`#390`):
+  * Automated delivery pipeline generates release bundles (`bundleRelease`) signed via protected CI keystore variables (`android-bundle-release`).
+  * Uploads to Google Play Console **Closed Testing Track (`internal`)** via Google Play Developer API (`scripts/upload_play_aab.py`).
+  * **Honesty Policy Gate**: Verification requires an authentic production-signed APK (`installerPackageName=com.android.vending`, `DEBUGGABLE=false`, `versionCode 4`) verified on physical hardware (e.g. Samsung Galaxy A36) before issue closure.
