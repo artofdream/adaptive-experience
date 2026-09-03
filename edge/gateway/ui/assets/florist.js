@@ -177,6 +177,7 @@ const TREND_LABELS = {
 
 const mode = document.querySelector("#operator-mode");
 const orderRows = document.querySelector("#order-rows");
+const prepareRows = document.querySelector("#prepare-rows");
 const inboxRows = document.querySelector("#inbox-rows");
 const forecastRows = document.querySelector("#forecast-rows");
 const transcript = document.querySelector("#transcript");
@@ -191,6 +192,7 @@ const state = {
   items: SAMPLE_INBOX,
   orders: SAMPLE_ORDERS,
   orderFilter: "today",
+  ordersError: false,
   selectedId: "",
 };
 
@@ -328,6 +330,63 @@ function filterOrders(items, filter = state.orderFilter) {
   return list;
 }
 
+function uniqueSorted(values) {
+  return Array.from(new Set(values.filter(Boolean))).sort();
+}
+
+function groupPrepareItems(items) {
+  // Live: today by timing.date or updated_at. Labeled sample keeps all rows so grouping is visible.
+  const source = state.live ? filterOrders(items, "today") : (Array.isArray(items) ? items : []);
+  const groups = new Map();
+  for (const item of source) {
+    if (!item || typeof item !== "object") continue;
+    const key = item.catalog_title || item.product_id || "unknown";
+    if (!groups.has(key)) {
+      groups.set(key, {
+        title: item.catalog_title || item.product_id || "—",
+        count: 0,
+        windows: [],
+        cards: [],
+        channels: [],
+      });
+    }
+    const group = groups.get(key);
+    group.count += 1;
+    const when = formatWhen(item.timing);
+    if (when !== "—") group.windows.push(when);
+    if (item.card_message) group.cards.push(String(item.card_message).slice(0, 40));
+    if (item.channel) group.channels.push(item.channel);
+  }
+  return Array.from(groups.values()).sort((a, b) => String(a.title).localeCompare(String(b.title)));
+}
+
+function renderPrepare(items) {
+  if (!prepareRows) return;
+  prepareRows.replaceChildren();
+  if (state.live && state.ordersError) {
+    prepareRows.append(emptyRow(5, "Could not load today's arrangements. This list stays empty."));
+    return;
+  }
+  const groups = groupPrepareItems(items);
+  if (!groups.length) {
+    const copy = state.live
+      ? "No arrangements to prepare today."
+      : "Labeled sample has no rows in this layout.";
+    prepareRows.append(emptyRow(5, copy));
+    return;
+  }
+  for (const group of groups) {
+    const row = document.createElement("tr");
+    const cards = uniqueSorted(group.cards).slice(0, 2).join("; ") || "—";
+    row.innerHTML = `<td>${group.title}</td>
+      <td>${group.count}</td>
+      <td>${uniqueSorted(group.windows).join(" · ") || "—"}</td>
+      <td>${cards}</td>
+      <td><code>${uniqueSorted(group.channels).join(" · ") || "—"}</code></td>`;
+    prepareRows.append(row);
+  }
+}
+
 function syncOrderFilterButtons() {
   for (const [id, value] of [
     ["#order-filter-today", "today"],
@@ -343,6 +402,7 @@ function renderOrders(items) {
   if (!orderRows) return;
   orderRows.replaceChildren();
   if (Array.isArray(items)) state.orders = items;
+  renderPrepare(state.orders);
   const visible = filterOrders(state.orders, state.orderFilter);
   syncOrderFilterButtons();
   if (!state.orders.length) {
@@ -546,6 +606,7 @@ if (orderRows) {
 
 function showSampleLayout(modeCopy) {
   state.live = false;
+  state.ordersError = false;
   state.orderFilter = "all";
   state.selectedId = SAMPLE_INBOX[0].session_id;
   renderOrders(SAMPLE_ORDERS);
@@ -630,11 +691,13 @@ async function boot() {
     }
     renderForecasts(forecasts);
     let orders = [];
+    state.ordersError = false;
     try {
       const payload = await api("/api/v1/operator/orders");
-      orders = payload.items || [];
+      orders = Array.isArray(payload.items) ? payload.items : [];
     } catch (_error) {
       orders = [];
+      state.ordersError = true;
     }
     renderOrders(orders);
     const items = inbox.items || [];
