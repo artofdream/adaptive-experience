@@ -105,10 +105,10 @@ class OrderService:
     def projection(self, *, session_id: str) -> dict | None:
         return self.store.by_session(session_id)
 
-    def list_recent(self, limit: int = 50) -> list[dict]:
+    def list_recent(self, limit: int = 50, after_cursor: str | None = None) -> list[dict]:
         """Least-data staff order list (FR-013). Not CRM; no email or product dump."""
-        capped = min(max(int(limit), 1), 50)
-        rows = self.store.list_recent(limit=capped)
+        capped = min(max(int(limit), 1), 200)
+        rows = self.store.list_recent(limit=capped, after_cursor=after_cursor)
         return [self._least_data_operator_item(row) for row in rows
                 if isinstance(row, dict)]
 

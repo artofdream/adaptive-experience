@@ -89,9 +89,23 @@ class InternalOrchestrationApp:
         if scope["path"] == "/internal/v1/ai/quality" and scope["method"] == "GET":
             return await self._send(send, 200, self.quality.summary())
         if scope["path"] == "/internal/v1/operator/escalations" and scope["method"] == "GET":
-            return await self._send(send, 200, {"items": self._operator_escalations()})
+            query = parse_qs(scope.get("query_string", b"").decode())
+            limit = min(int((query.get("limit") or ["50"])[0]), 200) if (query.get("limit") or ["50"])[0].isdigit() else 50
+            after_cursor = (query.get("cursor") or [None])[0]
+            items = self._operator_escalations(limit=limit, after_cursor=after_cursor)
+            result = {"items": items}
+            if items:
+                result["next_cursor"] = items[-1].get("requested_at")
+            return await self._send(send, 200, result)
         if scope["path"] == "/internal/v1/operator/orders" and scope["method"] == "GET":
-            return await self._send(send, 200, {"items": self.order.list_recent(limit=50)})
+            query = parse_qs(scope.get("query_string", b"").decode())
+            limit = min(int((query.get("limit") or ["50"])[0]), 200) if (query.get("limit") or ["50"])[0].isdigit() else 50
+            after_cursor = (query.get("cursor") or [None])[0]
+            items = self.order.list_recent(limit=limit, after_cursor=after_cursor)
+            result = {"items": items}
+            if items:
+                result["next_cursor"] = items[-1].get("updated_at")
+            return await self._send(send, 200, result)
         if scope["path"] == "/internal/v1/operator/forecasts" and scope["method"] == "GET":
             query = parse_qs(scope.get("query_string", b"").decode())
             session_id = (query.get("session_id") or [""])[0]
@@ -451,9 +465,9 @@ class InternalOrchestrationApp:
         """NFR-005 honesty: disclosure matches last interpreter mode."""
         return disclosure_for_mode(getattr(self.interpreter, "last_mode", "reference"))
 
-    def _operator_escalations(self, *, limit: int = 50) -> list[dict]:
+    def _operator_escalations(self, *, limit: int = 50, after_cursor: str | None = None) -> list[dict]:
         """Least-data Contact Florist inbox (FR-006 / T-09). Not a CRM ticket."""
-        return self.support.store.list_escalations(limit=limit)
+        return self.support.store.list_escalations(limit=limit, after_cursor=after_cursor)
 
     def _operator_forecasts(self, session_id: str, loaded: dict, subject: str) -> dict:
         """Manager inventory trends from validated snapshot history (FR-012)."""

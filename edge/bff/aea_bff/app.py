@@ -478,26 +478,42 @@ class BffApp:
         if path == "/api/v1/operator/escalations" and method == "GET":
             if not self.florist_operator_enabled:
                 return await self._error(send, 404, "not_found", correlation_id)
+            query = parse_qs(scope.get("query_string", b"").decode())
+            pagination = {}
+            if query.get("limit"):
+                pagination["limit"] = query["limit"][0]
+            if query.get("cursor"):
+                pagination["cursor"] = query["cursor"][0]
             try:
-                raw = self.orchestration.list_operator_escalations(subject=subject)
+                raw = self.orchestration.list_operator_escalations(subject=subject, **pagination)
             except OrchestrationUnavailable:
                 return await self._error(send, 503, "orchestration_unavailable", correlation_id)
             if int(raw.get("status") or 200) >= 500:
                 return await self._error(send, 503, "orchestration_unavailable", correlation_id)
-            return await self._json(send, 200, self._least_data_operator_escalations(raw),
-                                    correlation_id)
+            shaped = self._least_data_operator_escalations(raw)
+            if raw.get("next_cursor"):
+                shaped["next_cursor"] = raw["next_cursor"]
+            return await self._json(send, 200, shaped, correlation_id)
 
         if path == "/api/v1/operator/orders" and method == "GET":
             if not self.florist_operator_enabled:
                 return await self._error(send, 404, "not_found", correlation_id)
+            query = parse_qs(scope.get("query_string", b"").decode())
+            pagination = {}
+            if query.get("limit"):
+                pagination["limit"] = query["limit"][0]
+            if query.get("cursor"):
+                pagination["cursor"] = query["cursor"][0]
             try:
-                raw = self.orchestration.list_operator_orders(subject=subject)
+                raw = self.orchestration.list_operator_orders(subject=subject, **pagination)
             except OrchestrationUnavailable:
                 return await self._error(send, 503, "orchestration_unavailable", correlation_id)
             if int(raw.get("status") or 200) >= 500:
                 return await self._error(send, 503, "orchestration_unavailable", correlation_id)
-            return await self._json(send, 200, self._least_data_operator_orders(raw),
-                                    correlation_id)
+            shaped = self._least_data_operator_orders(raw)
+            if raw.get("next_cursor"):
+                shaped["next_cursor"] = raw["next_cursor"]
+            return await self._json(send, 200, shaped, correlation_id)
 
         if path == "/api/v1/operator/forecasts" and method == "GET":
             if not self.florist_operator_enabled:
@@ -846,7 +862,7 @@ class BffApp:
     @staticmethod
     def _least_data_operator_escalations(raw: dict) -> dict:
         items = []
-        for item in (raw.get("items") or [])[:50]:
+        for item in (raw.get("items") or [])[:200]:
             if not isinstance(item, dict):
                 continue
             shaped = {key: item[key] for key in
@@ -859,7 +875,7 @@ class BffApp:
     @staticmethod
     def _least_data_operator_orders(raw: dict) -> dict:
         items = []
-        for item in (raw.get("items") or [])[:50]:
+        for item in (raw.get("items") or [])[:200]:
             if not isinstance(item, dict):
                 continue
             shaped = {key: item[key] for key in
