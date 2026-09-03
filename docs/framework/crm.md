@@ -1,4 +1,4 @@
-﻿# Privacy-Preserving CRM & Least-Data Customer Intelligence
+# Privacy-Preserving CRM & Least-Data Customer Intelligence
 
 The Adaptive Experience Architecture (AEA) avoids centralized Personally Identifiable Information (PII) honeypots. Traditional CRMs store customer names, emails, phones, and addresses indefinitely. AEA satisfies operator order overview and customer relationship needs through a **3-Layer Privacy-Preserving CRM Pattern** (ADR-020).
 
@@ -6,32 +6,15 @@ The Adaptive Experience Architecture (AEA) avoids centralized Personally Identif
 
 ## 1. The 3-Layer CRM Pattern
 
-```
-┌────────────────────────────────────────────────────────────────────────┐
-│                      1. OPERATOR INSIGHTS TIER                         │
-│   (Aggregated Intelligence · Behavior Buckets · Order Fulfillment)     │
-└───────────────────────────────────┬────────────────────────────────────┘
-                                    │ Reads Pseudonymous Projections
-                                    ▼
-┌────────────────────────────────────────────────────────────────────────┐
-│             2. PLATFORM PSEUDONYMOUS SUBJECT INTELLIGENCE              │
-│       • Opaque Subject Tokens: `subject_reference = HMAC(client_id)`   │
-│       • Transaction Aggregates: Order Count, Lifetime Spend Bands      │
-│       • Occasion Vector: 70% Birthday (Mother), 30% Anniversary        │
-│       • Preferred Channel: `Companion App` vs `Web Browser`            │
-└─────────────────▲──────────────────────────────────▲───────────────────┘
-                  │                                  │
-    Presents Zero-PII Claim          Tokenized Destination Pointer
-                  │                                  │
-┌─────────────────┴─────────────┐    ┌───────────────┴───────────────────┐
-│  3A. CLIENT-SIDE EDGE WALLET  │    │  3B. EPHEMERAL FULFILLMENT VAULT  │
-│   (Companion On-Device DB)    │    │      (14-Day Auto-Shredding)      │
-├───────────────────────────────┤    ├───────────────────────────────────┤
-│ • Full local order receipts   │    │ • Raw delivery street address     │
-│ • Favorite recipient records  │    │ • Unlocked ONLY during packing    │
-│ • Custom occasion reminders   │    │ • KMS-encrypted, purged post-TTL  │
-└───────────────────────────────┘    └───────────────────────────────────┘
-```
+Layers stack from operator view (top) down to where raw PII may briefly live (bottom). Each layer is a readable card on any screen width.
+
+> **1. Operator Insights** — Aggregated intelligence · behavior buckets · order fulfillment. Reads pseudonymous projections from Layer 2 (never raw PII).
+
+> **2. Platform Pseudonymous Subject Intelligence** — Opaque subject tokens (`subject_reference = HMAC(client_id)`); transaction aggregates (order count, lifetime spend bands); occasion vector (e.g. 70% Birthday / Mother, 30% Anniversary); preferred channel (`Companion App` vs `Web Browser`).
+
+> **3A. Client-side Edge Wallet** (Companion on-device DB) — Full local order receipts; favorite recipient records; custom occasion reminders. Presents a zero-PII claim up into Layer 2.
+
+> **3B. Ephemeral Fulfillment Vault** (14-day auto-shred) — Raw delivery street address; unlocked only during packing; KMS-encrypted and purged after TTL. Tokenized destination pointer up into Layer 2.
 
 ---
 
