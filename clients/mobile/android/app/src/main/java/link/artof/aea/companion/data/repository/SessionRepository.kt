@@ -16,6 +16,9 @@ import link.artof.aea.companion.data.model.SelectionRequest
 import link.artof.aea.companion.data.model.SharedUnderstanding
 import link.artof.aea.companion.data.model.SharedUnderstandingResponse
 import link.artof.aea.companion.data.model.WorkspaceResponse
+import link.artof.aea.companion.data.wallet.EdgeWallet
+import link.artof.aea.companion.data.wallet.InMemoryWalletStore
+import link.artof.aea.companion.data.wallet.ReorderReference
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -36,7 +39,13 @@ enum class JourneyStage {
  * Budget ask on Need (#359): chips/skip → PATCH shared-understanding + local catalog filter.
  */
 class SessionRepository(
-    private val api: BffClient = BffClient()
+    private val api: BffClient = BffClient(),
+    /**
+     * ADR-020 Layer 2 device-owned Edge Wallet. Defaults to an in-memory store
+     * so tests and non-Android construction stay dependency-free; the app
+     * injects an EncryptedPrefsWalletStore-backed wallet (Android Keystore).
+     */
+    private val wallet: EdgeWallet = EdgeWallet(InMemoryWalletStore())
 ) {
     private val _currentStage = MutableStateFlow(JourneyStage.NEED)
     val currentStage: StateFlow<JourneyStage> = _currentStage.asStateFlow()
@@ -409,8 +418,67 @@ val band = parseBudgetBand(label) ?: BudgetBand(label, floor = null, ceiling = c
                 totalAmount = observedTotal,
                 declineCode = checkout.declineCode
             )
+
+            // ADR-020 Layer 2: record the order in the device-owned Edge Wallet so
+            // a later FR-008 reorder can present the opaque reference without the
+            // platform holding any PII. Recipient label and card message are
+            // DEVICE-ONLY convenience fields; only the opaque product/order ids are
+            // ever surfaced back to the platform (see EdgeWallet.reorderReference).
+            if (status != "DECLINED" && orderId.isNotBlank() && orderId != "pending") {
+                val intent = _sharedUnderstanding.value
+                wallet.saveReceipt(
+                    orderReference = orderId,
+                    productId = selected.sku,
+                    recipientLabel = intent.recipient,
+                    cardMessageDraft = cardMessage,
+                    occasionType = intent.occasion,
+                )
+            }
+
             _currentStage.value = JourneyStage.TRACKING
         }
+    }
+
+    /**
+     * ADR-020 Layer 2: opaque-only reorder reference held on-device, or null when
+     * the wallet has no prior order. Surfaces a returning-customer one-tap path
+     * (FR-008) without a server-side CRM. Carries no recipient/card/PII.
+     */
+    fun walletReorderReference(): ReorderReference? = wallet.reorderReference()
+
+    /** Device-held order count for a returning-customer affordance (no PII). */
+    fun walletReceiptCount(): Int = wallet.receipts().size
+
+    /**
+     * FR-008 one-tap reorder from the Edge Wallet: mint/ensure a session and
+     * re-select the device-held opaque product reference. Inventory is
+     * authoritatively revalidated at selection (NFR-009 fail-closed), so a
+     * no-longer-available product surfaces as an error rather than reordering.
+     * Returns false when the wallet is empty.
+     */
+    suspend fun reorderFromWallet(): Boolean {
+        val reference = wallet.reorderReference() ?: return false
+        runGuarded {
+            _currentStage.value = JourneyStage.PICK
+            ensureSessionInternal()
+            refreshContextFromWorkspace()
+            val accepted = postSelectionRetryingStale(
+                SelectionRequest(
+                    productId = reference.productId,
+                    observedContextVersion = contextVersion
+                )
+            )
+            if (accepted.contextVersion > 0) {
+                contextVersion = accepted.contextVersion
+            }
+            _sharedUnderstanding.value =
+                _sharedUnderstanding.value.copy(selectedSku = reference.productId)
+            refreshCatalogFromWorkspace()
+            _selectedArrangement.value =
+                _arrangements.value.firstOrNull { it.sku == reference.productId }
+            refreshSharedUnderstanding()
+        }
+        return true
     }
 
     /**

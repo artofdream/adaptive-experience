@@ -10,7 +10,7 @@
 
 ## 1. Executive Summary & Vision
 
-The **Adaptive Experience Architecture (AEA)** represents a fundamental paradigm shift from static, page-based e-commerce storefronts to an **intent-driven, persistent Adaptive Workspace**. Grounded in the Lily's Florist reference design ([`docs/01-product-vision/product-vision.md`](file:///c:/projects/code/adaptive-experience/docs/01-product-vision/product-vision.md)), AEA dynamically composes, rearranges, and updates workspace tiles (`T-01` through `T-08`) in real time based on progressive customer intent.
+The **Adaptive Experience Architecture (AEA)** represents a fundamental paradigm shift from static, page-based e-commerce storefronts to an **intent-driven, persistent Adaptive Workspace**. Grounded in the Lily's Florist reference design ([`docs/01-product-vision/product-vision.md`](file:///c:/projects/code/adaptive-experience/docs/01-product-vision/product-vision.md)), AEA dynamically composes, rearranges, and updates workspace tiles (`T-01` through `T-08`, plus the conditional `T-09` Contact Florist overlay) in real time based on progressive customer intent.
 
 ### Core Architecture Shift
 * **Legacy E-Commerce**: Static HTML pages → Multi-step checkout funnel → Disjointed support.
@@ -27,8 +27,8 @@ flowchart LR
     BG["Business Goals (BG-001..007)"] --> EP["Epics (EP-001..007)"]
     EP --> US["User Stories (US-001..023) / NFR-US (001..017)"]
     US --> REQ["Functional Reqs (FR-001..023) / NFRs (001..017)"]
-    REQ --> ADR["ADRs (ADR-001..016)"]
-    ADR --> CODE["Platform & Edge Implementation"]
+    REQ --> ADR["ADRs (ADR-001..020)"]
+    ADR --> CODE["Platform, Edge & Native Companion Implementation"]
     CODE --> TEST["Automated CI Verification"]
 ```
 
@@ -47,7 +47,8 @@ AEA is built as an **asynchronous, event-driven, experience-oriented modular mon
 ```mermaid
 flowchart TD
     subgraph Client ["Client Surface"]
-        UI["Adaptive UI Workspace (Tiles T-01..T-08)"]
+        UI["Web Adaptive Workspace (Tiles T-01..T-09)"]
+        APP["Native Android Companion (M19; ADR-017/018)\n+ device-owned Edge Wallet (ADR-020 L2)"]
     end
 
     subgraph Edge ["Edge Transport Layer"]
@@ -74,6 +75,7 @@ flowchart TD
     end
 
     UI <-->|HTTPS / SSE| ALB
+    APP <-->|HTTPS + cookie/CSRF| ALB
     ALB <--> BFF
     BFF <-->|REST / JSON| EOE
     EOE <--> BUS
@@ -97,7 +99,7 @@ https://aea.artof.link/grafana/   --> Containerized Grafana Telemetry Dashboard 
 
 ## 4. Low-Level Technical Design (LLD) & ADRs
 
-The system architecture is governed by 16 canonical Architectural Decision Records ([`docs/06-adr/`](file:///c:/projects/code/adaptive-experience/docs/06-adr/)):
+The system architecture is governed by 20 canonical Architectural Decision Records ([`docs/06-adr/`](file:///c:/projects/code/adaptive-experience/docs/06-adr/)):
 
 | ADR | Title | Key Architectural Rule |
 | :--- | :--- | :--- |
@@ -108,7 +110,12 @@ The system architecture is governed by 16 canonical Architectural Decision Recor
 | [`ADR-009`](file:///c:/projects/code/adaptive-experience/docs/06-adr/ADR-009-experience-state-ownership.md) | Experience State Ownership | Orchestration engine owns context versioning, tile projections, and dependency invalidation. |
 | [`ADR-010`](file:///c:/projects/code/adaptive-experience/docs/06-adr/ADR-010-command-event-boundaries.md) | Command/Event Boundaries | Synchronous edge acknowledgement; asynchronous bus progression. |
 | [`ADR-014`](file:///c:/projects/code/adaptive-experience/docs/06-adr/ADR-014-postgresql-pgvector.md) | PostgreSQL + `pgvector` | Unified relational outbox and vector embedding store for intent & product RAG. |
+| [`ADR-013`](file:///c:/projects/code/adaptive-experience/docs/06-adr/ADR-013-confirmation-driven-experience.md) | Confirmation-Driven Experience | Tokenized/opaque references (no raw PII/PAN) confirmed rather than re-entered at checkout. |
+| [`ADR-015`](file:///c:/projects/code/adaptive-experience/docs/06-adr/ADR-015-rag-hybrid-retrieval.md) | RAG Hybrid Retrieval | Approved-knowledge hybrid (pgvector + FTS) retrieval; similarity hits are never business truth. |
 | [`ADR-016`](file:///c:/projects/code/adaptive-experience/docs/06-adr/ADR-016-agentic-ai-boundary.md) | Agentic AI Boundary | Strict separation between AI assistance (non-authoritative) and domain verification (authoritative). |
+| [`ADR-017`](file:///c:/projects/code/adaptive-experience/docs/06-adr/ADR-017-native-client-architecture.md) | Native Client Architecture | Android companion (M19) reuses the same BFF contracts as the web workspace; no privileged client path. |
+| [`ADR-018`](file:///c:/projects/code/adaptive-experience/docs/06-adr/ADR-018-mobile-session-auth.md) | Mobile Session & Auth | Companion uses the same opaque cookie/CSRF session model as the browser; no long-lived client secrets. |
+| [`ADR-020`](file:///c:/projects/code/adaptive-experience/docs/06-adr/ADR-020-privacy-preserving-crm-and-edge-wallet.md) | Privacy-Preserving CRM & Edge Wallet | Pseudonymous zero-PII engagement CRM (L1) + device-owned encrypted Edge Wallet (L2) for FR-008 reorder; no server-side PII honeypot. |
 
 ### Session Property Graph State Engine (`Pillar 3`)
 Workspace tile invalidation and context progression are driven by directed dependency edges in [`platform/aea_platform/graph.py`](file:///c:/projects/code/adaptive-experience/platform/aea_platform/graph.py):
@@ -120,6 +127,16 @@ flowchart LR
     S -->|invalidates| P["Pricing Node (T-06)"]
     P -->|invalidates| O["Order Summary Node (T-07)"]
 ```
+
+### Privacy-Preserving CRM & Edge Wallet (`ADR-020`)
+
+Returning-customer engagement is delivered **without** a server-side PII CRM, in three layers:
+
+* **Layer 1 — Platform (zero-PII Engagement CRM, live):** `platform/aea_platform/crm.py` (`EngagementCrmService`) with schema `crm.customer_occasion_memory` (migration 018) persists only pseudonymous, non-PII attributes (`browser_hash`, `occasion_type`, `event_month/day`, `recipient_relation`) and computes occasion reminders. Reachable via `GET /api/v1/crm/reminders` and `POST /api/v1/crm/occasions`. Delivered under M12; `FR-016`/`FR-017` remain **Future** in the source-of-truth workbook (reference-extension delivery).
+* **Layer 2 — Edge Client (device-owned Edge Wallet, implemented):** the Android companion stores order receipts and device-only convenience data (recipient label, card-message draft, occasion) in `EncryptedSharedPreferences` under an Android Keystore AES-256 key. Only an opaque `ReorderReference` (`product_id`, `order_reference`) is surfaced to the platform for `FR-008` one-tap reorder — no names, addresses, or card data leave the device (`NFR-017`/`ADR-013`). See [`research/design-notes/adr-020-layer2-edge-wallet.md`](file:///c:/projects/code/adaptive-experience/research/design-notes/adr-020-layer2-edge-wallet.md).
+* **Layer 3 — Fulfillment (proposed):** a 14-day ephemeral KMS auto-shredding vault for physical courier addresses remains proposed and unbuilt.
+
+A traditional centralized PII CRM and staff live chat/ticketing are explicitly out of scope.
 
 ---
 

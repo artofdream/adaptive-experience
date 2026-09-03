@@ -115,6 +115,38 @@ A failed duplicate-code edit is an honest fail — not a green skip.
 
 Vault: [`research/random-thoughts/2026-09-02-play-api-ci-upload-closed-testing.md`](../../../research/random-thoughts/2026-09-02-play-api-ci-upload-closed-testing.md).
 
+## Edge Wallet (ADR-020 Layer 2)
+
+Device-owned, zero-PII local storage that powers returning-customer / FR-008
+one-tap reorder **without** a server-side PII CRM (ADR-013 / NFR-017). Sponsor
+-accepted 2026-09-03. Design note + diagrams:
+[`research/design-notes/adr-020-layer2-edge-wallet.md`](../../../research/design-notes/adr-020-layer2-edge-wallet.md).
+
+- **Domain (`data/wallet/EdgeWallet.kt`, pure Kotlin):** `WalletReceipt`
+  (opaque `orderReference` + `productId`, plus device-only `recipientLabel`,
+  `cardMessageDraft`, occasion month/day), the `WalletStore` port, and
+  `InMemoryWalletStore` (default / tests). `reorderReference()` returns only an
+  opaque `ReorderReference` (`product_id`, `order_reference`) — structurally
+  incapable of carrying a label, card, address, or payment.
+- **At rest (`data/wallet/EncryptedPrefsWalletStore.kt`, Android):**
+  `EncryptedSharedPreferences` under an Android Keystore AES-256 master key
+  (`androidx.security:security-crypto`). Device-only fields are encrypted at
+  rest and never leave the device.
+- **Wiring (`SessionRepository`):** a confirmed checkout writes one receipt;
+  `reorderFromWallet()` re-selects the stored opaque `product_id` with
+  authoritative NFR-009 inventory revalidation at selection. `MainActivity`
+  injects the encrypted store via `applicationContext`.
+
+**Tests / toolchain honesty:** the pure-domain and reorder-wiring JUnit tests
+live in `app/src/test/.../EdgeWalletTests.kt` and
+`EdgeWalletReorderIntegrationTests.kt` and run via `testDebugUnitTest` in CI
+(needs the Android SDK). This environment has no Android SDK, so the module
+Gradle test task cannot run here; the Android-free `EdgeWallet` domain
+(receipt round-trip/dedup, latest ordering, and the opaque-only zero-PII
+invariant) was instead compiled and run on the plain JVM (18 assertions, all
+passing). The `EncryptedPrefsWalletStore` Keystore path is Android-runtime
+bound (androidTest scope).
+
 ## Native↔web parity (gap-closing loop)
 
 Living matrix + detect→decide→ship→prove loop:
