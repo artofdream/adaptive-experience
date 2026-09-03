@@ -22,6 +22,7 @@ class InMemoryCrmStore:
                 item["event_month"] = event_month
                 item["event_day"] = event_day
                 item["session_id"] = session_id
+                item["updated_at"] = created_at
                 return
         self.memories.append({
             "memory_id": memory_id,
@@ -32,10 +33,21 @@ class InMemoryCrmStore:
             "event_day": event_day,
             "recipient_relation": recipient_relation,
             "created_at": created_at,
+            "updated_at": created_at,
         })
 
     def list_occasion_memories(self, *, browser_hash):
         return [m for m in self.memories if m["browser_hash"] == browser_hash]
+
+    def delete_occasion_memories(self, *, browser_hash):
+        before = len(self.memories)
+        self.memories = [m for m in self.memories if m["browser_hash"] != browser_hash]
+        return before - len(self.memories)
+
+    def purge_expired_memories(self, *, cutoff):
+        before = len(self.memories)
+        self.memories = [m for m in self.memories if m["updated_at"] >= cutoff]
+        return before - len(self.memories)
 
 
 class TestEngagementCrmService(unittest.TestCase):
@@ -116,6 +128,57 @@ class TestEngagementCrmService(unittest.TestCase):
 
         reminders = self.service.get_reminders(browser_hash=self.browser_hash, lookahead_days=30)
         self.assertEqual(0, len(reminders))
+
+    def test_forget_erases_all_memories_for_browser(self):
+        self.service.record_occasion(
+            browser_hash=self.browser_hash, session_id="sess-001",
+            occasion_type="Birthday", event_month=9, event_day=5,
+            recipient_relation="Mother")
+        self.service.record_occasion(
+            browser_hash=self.browser_hash, session_id="sess-001",
+            occasion_type="Anniversary", event_month=6, event_day=1,
+            recipient_relation="Partner")
+        other = self.service.hash_browser("someone-else")
+        self.service.record_occasion(
+            browser_hash=other, session_id="sess-002",
+            occasion_type="Birthday", event_month=3, event_day=3)
+
+        deleted = self.service.forget(browser_hash=self.browser_hash)
+        self.assertEqual(2, deleted)
+        self.assertEqual(0, len(self.service.get_reminders(browser_hash=self.browser_hash, lookahead_days=366)))
+        # Other browsers are untouched.
+        self.assertEqual(1, len(self.store.list_occasion_memories(browser_hash=other)))
+        # Idempotent: forgetting again removes nothing.
+        self.assertEqual(0, self.service.forget(browser_hash=self.browser_hash))
+
+    def test_forget_rejects_invalid_hash(self):
+        with self.assertRaises(CrmValidationError):
+            self.service.forget(browser_hash="too-short")
+
+    def test_purge_expired_removes_stale_memory_only(self):
+        self.service.record_occasion(
+            browser_hash=self.browser_hash, session_id="sess-001",
+            occasion_type="Birthday", event_month=9, event_day=5,
+            recipient_relation="Mother")
+        # Advance well past the retention window; the memory is now stale.
+        self.now_time = datetime(2028, 8, 22, 12, 0, 0, tzinfo=timezone.utc)
+        purged = self.service.purge_expired(retention_days=400)
+        self.assertEqual(1, purged)
+        self.assertEqual(0, len(self.store.list_occasion_memories(browser_hash=self.browser_hash)))
+
+    def test_purge_expired_keeps_recent_memory(self):
+        self.service.record_occasion(
+            browser_hash=self.browser_hash, session_id="sess-001",
+            occasion_type="Birthday", event_month=9, event_day=5,
+            recipient_relation="Mother")
+        # Same day: nothing is beyond the retention window.
+        purged = self.service.purge_expired(retention_days=400)
+        self.assertEqual(0, purged)
+        self.assertEqual(1, len(self.store.list_occasion_memories(browser_hash=self.browser_hash)))
+
+    def test_purge_expired_rejects_bad_retention(self):
+        with self.assertRaises(CrmValidationError):
+            self.service.purge_expired(retention_days=0)
 
 
 if __name__ == "__main__":

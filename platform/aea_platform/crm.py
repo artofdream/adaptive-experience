@@ -12,8 +12,14 @@ import hmac
 import os
 import uuid
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any, Callable, Sequence
+
+# Retention window for zero-PII occasion memory. Reminders are annually
+# recurring, so ~13 months since the last update covers a full yearly cycle
+# plus margin; memory untouched beyond this is purged (privacy lifecycle,
+# NFR-017). Overridable by the operational purge job.
+DEFAULT_RETENTION_DAYS = 400
 
 
 class CrmValidationError(ValueError):
@@ -141,6 +147,28 @@ class EngagementCrmService:
 
         reminders.sort(key=lambda r: r.days_until_event)
         return reminders
+
+    def forget(self, *, browser_hash: str) -> int:
+        """Erase all occasion memory for a browser (customer opt-out; NFR-017).
+
+        Returns the number of memories removed. Idempotent: forgetting an
+        unknown browser hash returns 0.
+        """
+        if not isinstance(browser_hash, str) or len(browser_hash.strip()) != 64:
+            raise CrmValidationError("valid 64-char browser hash is required")
+        return int(self.store.delete_occasion_memories(browser_hash=browser_hash.strip()))
+
+    def purge_expired(self, *, retention_days: int = DEFAULT_RETENTION_DAYS) -> int:
+        """Purge occasion memory untouched beyond the retention window.
+
+        Time-based privacy lifecycle (NFR-017): rows whose ``updated_at`` is
+        older than ``retention_days`` are deleted. Returns the count purged.
+        """
+        if (not isinstance(retention_days, int) or isinstance(retention_days, bool)
+                or retention_days < 1):
+            raise CrmValidationError("retention_days must be a positive integer")
+        cutoff = self.now().astimezone(timezone.utc) - timedelta(days=retention_days)
+        return int(self.store.purge_expired_memories(cutoff=cutoff))
 
 
 DEFAULT_SUBJECT_SALT = os.environ.get("AEA_CRM_SUBJECT_SALT", "aea-privacy-crm-salt-2026")
