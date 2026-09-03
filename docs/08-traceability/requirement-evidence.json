@@ -875,13 +875,15 @@
           "platform/aea_platform/payment.py",
           "platform/aea_platform/privacy.py",
           "platform/aea_platform/support.py",
-          "platform/migrations/018_engagement_crm.sql"
+          "platform/migrations/018_engagement_crm.sql",
+          "platform/migrations/024_operator_crm_subject_profile.sql"
         ]
       },
       "test": {
         "disposition": "evidenced",
         "paths": [
           "platform/tests/test_crm.py",
+          "platform/tests/test_crm_subject_service.py",
           "platform/tests/test_privacy.py"
         ]
       }

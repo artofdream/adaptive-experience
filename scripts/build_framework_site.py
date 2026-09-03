@@ -23,6 +23,7 @@ PAGES = [
     ('glossary', 'glossary.md', 'Glossary'),
     ('journal', 'journal.md', 'Journal'),
     ('companion', 'companion.md', 'Companion'),
+    ('crm', 'crm.md', 'Privacy CRM'),
 ]
 SITE = 'architecture.artof.link'
 CSS = (
