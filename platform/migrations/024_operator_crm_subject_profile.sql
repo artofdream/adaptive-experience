@@ -1,4 +1,4 @@
-﻿-- 024_operator_crm_subject_profile.sql
+-- 024_operator_crm_subject_profile.sql
 -- Privacy-Preserving Pseudonymous CRM & Ephemeral Fulfillment (ADR-020, ADR-013, NFR-017)
 
 CREATE TABLE IF NOT EXISTS orchestration.subject_profile (
