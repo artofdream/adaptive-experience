@@ -410,13 +410,16 @@
       "implementation": {
         "disposition": "evidenced",
         "paths": [
+          "platform/aea_platform/internal_api.py",
           "platform/aea_platform/order.py",
           "platform/aea_platform/pricing.py"
         ]
       },
       "test": {
-        "disposition": "unclaimed",
-        "paths": []
+        "disposition": "evidenced",
+        "paths": [
+          "platform/tests/test_postgres_integration.py"
+        ]
       }
     },
     {
@@ -883,7 +886,6 @@
         "disposition": "evidenced",
         "paths": [
           "platform/tests/test_crm.py",
-          "platform/tests/test_crm_subject_service.py",
           "platform/tests/test_privacy.py"
         ]
       }
