@@ -32,7 +32,8 @@ Unprobed claims stay **Unknown**.
 
 | Claim | Gate |
 |-------|------|
-| Installs from Play | Play internal testing — not Firebase App Distribution or debug APK alone |
+| Installs from Play | **Probed 3 Sep 2026 (#390):** Play Internal versionCode **4**, flags without `DEBUGGABLE`, installer=`com.android.vending` (clean install after removing adb sideload). Debug/FAD alone is still not Play |
+| Florist staff list shows web vs companion channel | **Probed 3 Sep 2026 (#384):** Path B migration 023 (`aea_client`); fresh web checkout with `X-AEA-Client: web` showed `channel=web` on `/florist` operator orders |
 | Website / atelier write-through after Confirm | Sponsor dual-probe (companion Confirm → website tracking) — still open |
 | Operator inbox = live orders | **No.** Sample operator surfaces are not the billing CRM |
 | Native vs web traffic in Grafana | **Query documented / panel as-code (#368):** clients send `X-AEA-Client` (`companion-android` / `web`); BFF/edge log `aea_client`. As-code panels on uid `aea-unified-dashboard` (`BFF requests by aea_client`, status table). Logs Insights + verify steps: vault `research/random-thoughts/2026-09-02-x-aea-client-grafana-label.md`. Live series need edge/BFF+Grafana redeploy + traffic probe |
@@ -48,5 +49,9 @@ Status words need a probe. AI may interpret; domain services decide.
 
 ## Play honesty gate (#390)
 
-ASUS smoke (2026-09-02) re-check showed `DEBUGGABLE` + `installer=null` for versionCode 3 after Need→Pay. Release `buildTypes` now set `isDebuggable = false` explicitly. **Do not claim Play honesty for UX findings until the dedicated ASUS shows Play-signed non-debuggable with installer=`com.android.vending`.** Debug/FAD builds share `applicationId` with release for Firebase client match — sideload can overwrite Play installs.
+ASUS smoke (2026-09-02) first showed `DEBUGGABLE` + `installer=null` for versionCode 3 after Need→Pay (adb/FAD sideload). Release `buildTypes` keep `isDebuggable = false`. **Probed 3 September 2026:** after uninstalling the sideload and installing Play Internal versionCode **4**, dumpsys showed flags without `DEBUGGABLE` and `installerPackageName=com.android.vending`. Sideload can still overwrite a Play install when `applicationId` matches — use Play for honesty claims.
+
+## Florist channel on staff orders (#384)
+
+Web and companion checkouts both write through to the live florist staff list. Operators need a **channel** label (`web` / `companion-android`). That field is persisted as allowlisted `aea_client` (migration 023) and returned on operator orders. **Probed 3 September 2026** on Path B: after applying the migration, a fresh web checkout with `X-AEA-Client: web` showed `channel=web` on `/florist`. Pre-migration rows may still show a null channel.
 
