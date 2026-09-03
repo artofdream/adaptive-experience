@@ -19,7 +19,7 @@
   <main class="operator-shell">
     <p class="operator-banner" role="note">
       <strong>Local florist operator sample.</strong>
-      Staff order list (FR-013) and read-only T-09 inbox. Least-data opaque refs only.
+      Staff order list (FR-013), today's prepare grouping, and read-only T-09 inbox. Least-data opaque refs only.
       Not live chat, not billing CRM, and not FR-016 / FR-017 engagement.
       Inventory here does not enable T-03 Select.
       <details>
@@ -64,6 +64,28 @@
             </tr>
           </thead>
           <tbody id="order-rows"></tbody>
+        </table>
+      </section>
+
+      <section id="prepare" class="panel operator-inbox" aria-labelledby="prepare-title">
+        <header>
+          <div>
+            <p class="eyebrow">FR-013</p>
+            <h2 id="prepare-title">Today's arrangements to prepare</h2>
+            <p class="subtitle">Grouped from Staff orders due today. Not inventory forecast. Not CRM.</p>
+          </div>
+        </header>
+        <table class="operator-table">
+          <thead>
+            <tr>
+              <th scope="col">Arrangement</th>
+              <th scope="col">Count</th>
+              <th scope="col">Windows</th>
+              <th scope="col">Cards</th>
+              <th scope="col">Channels</th>
+            </tr>
+          </thead>
+          <tbody id="prepare-rows"></tbody>
         </table>
       </section>
 
