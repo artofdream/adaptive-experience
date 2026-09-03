@@ -26,6 +26,8 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import link.artof.aea.companion.data.repository.JourneyStage
 import link.artof.aea.companion.data.repository.SessionRepository
+import link.artof.aea.companion.data.wallet.EdgeWallet
+import link.artof.aea.companion.data.wallet.EncryptedPrefsWalletStore
 import link.artof.aea.companion.ui.components.StageProgressBar
 import link.artof.aea.companion.ui.screens.NeedScreen
 import link.artof.aea.companion.ui.screens.PayScreen
@@ -34,7 +36,18 @@ import link.artof.aea.companion.ui.screens.TrackingScreen
 import link.artof.aea.companion.ui.theme.LilyCompanionTheme
 
 class MainActivity : ComponentActivity() {
-    private val repository = SessionRepository()
+    // ADR-020 Layer 2: back the device-owned Edge Wallet with Keystore-encrypted
+    // storage. Built lazily so applicationContext is available (first use is in
+    // onCreate). Falls back to the in-memory default only if secure storage is
+    // unavailable on the device.
+    private val repository: SessionRepository by lazy {
+        val wallet = try {
+            EdgeWallet(EncryptedPrefsWalletStore(applicationContext))
+        } catch (_: Exception) {
+            null
+        }
+        if (wallet != null) SessionRepository(wallet = wallet) else SessionRepository()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

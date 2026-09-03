@@ -132,6 +132,9 @@ dependencies {
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.androidx.navigation.compose)
 
+    // ADR-020 Layer 2 Edge Wallet: at-rest encryption via Android Keystore.
+    implementation(libs.androidx.security.crypto)
+
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.serialization.json)

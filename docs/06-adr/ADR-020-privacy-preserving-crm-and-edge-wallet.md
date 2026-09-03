@@ -1,8 +1,8 @@
 ﻿# ADR-020 — Privacy-Preserving Pseudonymous CRM & Edge Wallet
 
-Status: Proposed
+Status: Accepted — Layer 1 shipped (M12 `crm.py`); **Layer 2 (Edge Wallet) sponsor-accepted and implemented** in the Android companion; Layer 3 (ephemeral address-shredding vault) remains proposed.
 
-Date: 2026-09-02
+Date: 2026-09-02 (Layer 2 accepted 2026-09-03)
 
 Related requirements: NFR-017 (zero-PII / least-data perimeter), FR-008 (thin reorder hint), FR-013 (least-data staff orders), ADR-013 (confirmation-driven experience / tokenized references), ADR-018 (mobile session auth)
 
@@ -37,6 +37,25 @@ Adopt **Alternative 3 (3-Layer Privacy-Preserving CRM & Edge Wallet Architecture
 1. **Pseudonymous Subject Identification:** The platform represents returning clients via salted, one-way cryptographic tokens (`subject_reference`). Operational dashboards aggregate lifetime value bands and occasion distributions without recording personal identifiers.
 2. **Client-Side Edge Wallet:** The native mobile companion app stores historical transaction receipts, recipient labels (e.g. "Mom"), and card message drafts locally on-device in platform-backed encrypted storage. During FR-008 reorders, the client presents the opaque reference directly.
 3. **14-Day Ephemeral Address Shredding:** Plaintext delivery coordinates and phone numbers used for physical fulfillment are locked with KMS encryption and automatically purged after a 14-day post-delivery retention window.
+
+## Implementation status
+
+- **Layer 1 (Platform):** shipped as the M12 zero-PII Engagement CRM
+  (`platform/aea_platform/crm.py`, `crm.customer_occasion_memory`, migration
+  018) with occasion memory + reminder endpoints.
+- **Layer 2 (Edge Wallet):** **sponsor-accepted (2026-09-03) and implemented**
+  in the Android companion (`clients/mobile/android`). Device-owned receipts
+  are stored in `EncryptedSharedPreferences` under an Android Keystore AES-256
+  master key (`EncryptedPrefsWalletStore`). The pure-Kotlin `EdgeWallet` domain
+  keeps device-only convenience fields (recipient label, card-message draft,
+  occasion month/day) on-device and exposes only an opaque `ReorderReference`
+  (`product_id`, `order_reference`) to the platform for FR-008 reorder. Wired
+  through `SessionRepository` (write on confirmed checkout; `reorderFromWallet`
+  re-selects the opaque product with authoritative NFR-009 inventory
+  revalidation). See
+  [`research/design-notes/adr-020-layer2-edge-wallet.md`](../../research/design-notes/adr-020-layer2-edge-wallet.md).
+- **Layer 3 (Fulfillment):** the 14-day ephemeral KMS address-shredding vault
+  remains proposed and unbuilt.
 
 ## Consequences
 
