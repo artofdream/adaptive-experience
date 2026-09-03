@@ -22,6 +22,6 @@ CREATE TABLE IF NOT EXISTS orchestration.ephemeral_fulfillment (
 
 CREATE INDEX IF NOT EXISTS idx_ephemeral_fulfillment_expiry ON orchestration.ephemeral_fulfillment (expires_at);
 
-INSERT INTO orchestration.schema_migration (version, description)
-VALUES (24, '024_operator_crm_subject_profile.sql')
+INSERT INTO orchestration.schema_migration (version)
+VALUES (24)
 ON CONFLICT (version) DO NOTHING;
