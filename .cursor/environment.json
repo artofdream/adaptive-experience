@@ -1,0 +1,12 @@
+{
+  "name": "AEA edge + platform (Docker Compose)",
+  "install": ".cursor/install-cloud-agent.sh",
+  "start": ".cursor/start-cloud-agent.sh",
+  "terminals": [
+    {
+      "name": "edge-stack-logs",
+      "command": "sudo docker compose -f edge/docker-compose.yml logs -f"
+    }
+  ],
+  "ports": [8443, 3000]
+}
