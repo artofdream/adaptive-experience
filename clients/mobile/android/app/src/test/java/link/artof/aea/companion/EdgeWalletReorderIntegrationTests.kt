@@ -43,32 +43,41 @@ class EdgeWalletReorderIntegrationTests {
 
     @Test
     fun confirmedCheckoutWritesDeviceReceiptWithoutPlatformPii() = runBlocking {
+        // Recipient label "Mum" is a DEVICE-ONLY wallet field. It is a distinct
+        // token from the physical card message (which the T-04 / ADR-006 contract
+        // intentionally does send to the platform), so this test can prove the
+        // label itself never leaves the device.
         fakeApi.sharedUnderstanding = SharedUnderstandingResponse(
             contextVersion = 2,
-            structuredIntent = StructuredIntent(occasion = "birthday", recipient = "Mom"),
+            structuredIntent = StructuredIntent(occasion = "birthday", recipient = "Mum"),
         )
-        repository.postUserMessage("birthday flowers for Mom")
+        repository.postUserMessage("birthday flowers")
         repository.moveToPickStage()
         repository.selectArrangement(rose)
         repository.moveToPayStage()
-        repository.completeCheckout("Happy Birthday Mom!")
+        repository.completeCheckout("Happy Birthday!")
 
         assertEquals(JourneyStage.TRACKING, repository.currentStage.value)
         // One device-held receipt written for the confirmed order.
         assertEquals(1, repository.walletReceiptCount())
         val receipt = wallet.latestReceipt()!!
         assertEquals("classic-rose-dozen", receipt.productId)
-        assertEquals("Mom", receipt.recipientLabel)      // device-only
-        assertEquals("Happy Birthday Mom!", receipt.cardMessageDraft) // device-only
+        assertEquals("Mum", receipt.recipientLabel)      // device-only
+        assertEquals("Happy Birthday!", receipt.cardMessageDraft) // device-only
         assertEquals("birthday", receipt.occasionType)
 
         // The opaque reorder reference carries no recipient/card/PII.
         val ref = repository.walletReorderReference()!!
         assertEquals("classic-rose-dozen", ref.productId)
-        assertFalse(ref.toString().contains("Mom"))
+        assertFalse(ref.toString().contains("Mum"))
 
-        // Sanity: nothing sent to the platform ever contained the label/card.
-        assertTrue(fakeApi.selections.none { it.options.values.any { v -> v.contains("Mom") } })
+        // Zero-PII invariant: the device-only recipient label never crosses to
+        // the platform — not as a selection option value, nor as a recipient key.
+        // (The physical card message is a separate, intended T-04 field.)
+        assertTrue(fakeApi.selections.none { sel -> sel.options.values.any { it.contains("Mum") } })
+        assertTrue(fakeApi.selections.none { sel ->
+            sel.options.keys.any { it == "recipient" || it == "recipient_label" }
+        })
     }
 
     @Test
