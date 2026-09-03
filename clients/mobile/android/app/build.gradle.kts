@@ -30,8 +30,10 @@ android {
         applicationId = "link.artof.aea.companion"
         minSdk = 26
         targetSdk = 36
-        versionCode = 4
-        versionName = "0.1.0-alpha"
+        // versionName must change with versionCode so Play Internal / dumpsys are easy to track.
+        // Scheme: 0.1.0-alpha.<versionCode>
+        versionCode = 5
+        versionName = "0.1.0-alpha.5"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
