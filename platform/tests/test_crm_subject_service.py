@@ -1,10 +1,15 @@
-﻿"""
+"""
 Unit tests for Privacy-Preserving CRM & Subject Intelligence Engine (ADR-020).
 """
 
 from datetime import datetime, timezone
+from pathlib import Path
+import sys
 import unittest
 from unittest.mock import MagicMock
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
 
 from aea_platform.crm import CrmService, compute_spend_band, compute_subject_reference
 
