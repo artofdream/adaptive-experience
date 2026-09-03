@@ -382,6 +382,57 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         for required in ("product", "customization", "delivery", "tax", "discount"):
             self.assertIn(required, labels2)
 
+    def test_quantity_update_after_cart_select_reflects_in_order_summary(self):
+        """Regression: updating quantity through the single-product customize path
+        (T-04) must not be shadowed by the stale `items` cart entry written by the
+        initial card select. apply_experience_patch deep-merges objects, so the
+        earlier `items:[qty 1]` survived and the FR-018 summary (which prefers
+        `items` over top-level options) kept pricing a quantity of 2 as 1."""
+        import asyncio
+        from aea_platform.adapters import (PsycopgExperienceStateStore,  # noqa: F401
+                                           PsycopgInventoryAvailabilityStore)
+        from aea_platform.internal_api import InternalOrchestrationApp
+        from aea_platform.inventory import AvailabilitySnapshot, InventoryAvailabilityService
+
+        app = InternalOrchestrationApp(self.connection, "internal-token")
+        session_id = self.create_session()
+        now = datetime.now(timezone.utc)
+        inventory = InventoryAvailabilityService(
+            PsycopgInventoryAvailabilityStore(self.connection), now=lambda: now)
+        inventory.record(AvailabilitySnapshot("budget-mixed-bunch", 9, 1, now))
+
+        def workspace():
+            return asyncio.run(self._invoke_internal(
+                app, "GET", f"/internal/v1/sessions/{session_id}/workspace"))[1]
+
+        # 1) Browser "Select" on a recommendation card: a cart `items` entry with
+        #    quantity 1 (the selectProduct path). Summary prices a single unit.
+        status, first = asyncio.run(self._invoke_internal(
+            app, "POST", f"/internal/v1/sessions/{session_id}/selection",
+            json.dumps({"product_id": "budget-mixed-bunch",
+                        "items": [{"product_id": "budget-mixed-bunch", "quantity": 1,
+                                   "options": {"quantity": 1}}],
+                        "options": {"quantity": 1},
+                        "observed_context_version": 0,
+                        "correlation_id": "card-select"}).encode()))
+        self.assertEqual(202, status)
+        self.assertEqual(35.0, workspace()["facets"]["order_summary"]["total"])
+
+        # 2) T-04 customize confirm: single-product options with quantity 2, no items.
+        status, _second = asyncio.run(self._invoke_internal(
+            app, "POST", f"/internal/v1/sessions/{session_id}/selection",
+            json.dumps({"product_id": "budget-mixed-bunch",
+                        "options": {"quantity": 2},
+                        "observed_context_version": first["context_version"],
+                        "correlation_id": "customize-qty"}).encode()))
+        self.assertEqual(202, status)
+
+        summary = workspace()["facets"]["order_summary"]
+        self.assertEqual(70.0, summary["total"])
+        product_charge = [c for c in summary["itemized_charges"] if c["label"] == "product"][0]
+        self.assertEqual(2, product_charge["quantity"])
+        self.assertEqual(70.0, product_charge["amount"])
+
     def _order_ready_for_checkout(self, app):
         import asyncio
         from aea_platform.adapters import PsycopgExperienceStateStore

@@ -753,7 +753,8 @@ class BffApp:
             charges = []
             for charge in summary_in.get("itemized_charges") or []:
                 if isinstance(charge, dict):
-                    charges.append({key: charge[key] for key in ("label", "product_id", "amount")
+                    charges.append({key: charge[key] for key in
+                                    ("label", "product_id", "quantity", "unit_price", "amount")
                                     if key in charge})
             order_summary = {"itemized_charges": charges}
             if isinstance(summary_in.get("total"), (int, float)):

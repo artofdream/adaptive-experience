@@ -515,9 +515,42 @@ class InternalOrchestrationApp:
             "payload": {"product_id": product_id.strip(), "options": options}, "outcome": {},
         }
         items_body = body.get("items")
-        product_decision = {"product_id": product_id.strip() if product_id else "", "options": options}
+        pid = product_id.strip()
+        product_decision = {"product_id": pid, "options": options}
         if isinstance(items_body, list) and len(items_body) > 0:
             product_decision["items"] = normalize_selection_items(items_body)
+        else:
+            # No explicit cart in this request (e.g. the T-04 customize form sends
+            # only the selected product's options/quantity). apply_experience_patch
+            # deep-merges objects, so a previously stored `items` cart survives
+            # untouched; because the FR-018 order summary prefers `items` over the
+            # top-level options, a stale entry would shadow the updated quantity
+            # (a quantity of 2 would still be priced as 1). Reconcile the stored
+            # cart so the selected product's item mirrors the new options. Arrays
+            # are replaced (not merged) by jsonb_deep_merge, which clears staleness.
+            stored_product = ((loaded.get("state") or {}).get("decisions") or {}).get("product")
+            stored_items = stored_product.get("items") if isinstance(stored_product, dict) else None
+            if isinstance(stored_items, list) and stored_items:
+                reconciled, matched = [], False
+                for item in stored_items:
+                    if not isinstance(item, dict) or not isinstance(item.get("product_id"), str):
+                        continue
+                    if item["product_id"] == pid:
+                        reconciled.append({
+                            "product_id": pid,
+                            "quantity": options.get("quantity", item.get("quantity", 1)),
+                            "options": {**(item.get("options") or {}), **options},
+                        })
+                        matched = True
+                    else:
+                        reconciled.append(item)
+                if not matched:
+                    reconciled.append({
+                        "product_id": pid,
+                        "quantity": options.get("quantity", 1),
+                        "options": options,
+                    })
+                product_decision["items"] = normalize_selection_items(reconciled)
 
         patch = StatePatch.create(
             {"decisions": {"product": product_decision}},
