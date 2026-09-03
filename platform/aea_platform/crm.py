@@ -1,18 +1,19 @@
-"""Engagement CRM & Occasion Memory Service (FR-016 / FR-017 / NFR-017, M12).
+"""
+Privacy-Preserving Pseudonymous CRM & Customer Intelligence Engine (ADR-020).
 
-Calculates annual recurring occasion dates (Mother's Birthday, Anniversary) and
-surfaces proactive reminder signals. Zero-PII compliance (NFR-017): strictly
-persists non-PII attributes (browser_hash, occasion_type, event_month/day,
-recipient_relation). Raw names, cards, or addresses are never stored.
+Provides least-data customer relationship intelligence without storing plaintext PII.
+Enforces Zero-PII (ADR-013 / NFR-017) and 14-day ephemeral fulfillment shredding.
 """
 
 from __future__ import annotations
 
 import hashlib
+import hmac
+import os
 import uuid
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import Callable, Sequence
+from typing import Any, Callable, Sequence
 
 
 class CrmValidationError(ValueError):
@@ -140,3 +141,86 @@ class EngagementCrmService:
 
         reminders.sort(key=lambda r: r.days_until_event)
         return reminders
+
+
+DEFAULT_SUBJECT_SALT = os.environ.get("AEA_CRM_SUBJECT_SALT", "aea-privacy-crm-salt-2026")
+
+
+def compute_subject_reference(client_identifier: str, salt: str = DEFAULT_SUBJECT_SALT) -> str:
+    """Computes deterministic salted HMAC-SHA256 subject reference token."""
+    clean_id = (client_identifier or "").strip().encode("utf-8")
+    clean_salt = salt.encode("utf-8")
+    digest = hmac.new(clean_salt, clean_id, hashlib.sha256).hexdigest()
+    return f"sub_{digest[:32]}"
+
+
+def compute_spend_band(total_amount: float) -> str:
+    """Categorizes spend into privacy-preserving spend bands."""
+    if total_amount < 50.0:
+        return "band_0_50"
+    elif total_amount <= 100.0:
+        return "band_50_100"
+    elif total_amount <= 250.0:
+        return "band_100_250"
+    else:
+        return "band_250_plus"
+
+
+class CrmService:
+    """Manages pseudonymous customer profiles and relationship intelligence."""
+
+    def __init__(self, store: Any, now: Callable[[], datetime] | None = None):
+        self.store = store
+        self.now = now or (lambda: datetime.now(timezone.utc))
+
+    def record_completed_order(
+        self,
+        *,
+        subject_reference: str,
+        order_total: float,
+        occasion: str | None = None,
+        channel: str = "web",
+    ) -> dict[str, Any]:
+        """Updates pseudonymous subject profile upon order payment confirmation."""
+        clean_ref = (subject_reference or "").strip()
+        if not clean_ref:
+            raise ValueError("subject_reference is required")
+
+        return self.store.record_crm_order(
+            subject_reference=clean_ref,
+            order_total=float(order_total),
+            occasion=occasion,
+            channel=channel,
+            now=self.now(),
+        )
+
+    def get_subject_insights(self, subject_reference: str) -> dict[str, Any] | None:
+        """Retrieves least-data relationship summary for operator console."""
+        clean_ref = (subject_reference or "").strip()
+        if not clean_ref:
+            return None
+
+        profile = self.store.get_crm_profile(clean_ref)
+        if not profile:
+            return {
+                "subject_reference": clean_ref,
+                "customer_segment": "new_shopper",
+                "total_orders": 0,
+                "lifetime_spend_band": "band_0_50",
+                "primary_occasion": None,
+                "preferred_channel": "web",
+            }
+
+        total_orders = int(profile.get("total_orders", 0))
+        segment = "frequent_buyer" if total_orders >= 3 else ("returning_buyer" if total_orders > 1 else "new_shopper")
+
+        return {
+            "subject_reference": clean_ref,
+            "customer_segment": segment,
+            "total_orders": total_orders,
+            "lifetime_spend_band": profile.get("lifetime_spend_band", "band_0_50"),
+            "primary_occasion": profile.get("primary_occasion"),
+            "preferred_channel": profile.get("preferred_channel", "web"),
+            "first_seen_at": profile.get("first_seen_at"),
+            "last_seen_at": profile.get("last_seen_at"),
+        }
