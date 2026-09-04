@@ -75,6 +75,7 @@ fun LilyCompanionApp(repository: SessionRepository) {
     val messages by repository.messages.collectAsState()
     val arrangements by repository.arrangements.collectAsState()
     val selectedArrangement by repository.selectedArrangement.collectAsState()
+    val quantity by repository.quantity.collectAsState()
     val sharedUnderstanding by repository.sharedUnderstanding.collectAsState()
     val budgetPromptResolved by repository.budgetPromptResolved.collectAsState()
     val orderResult by repository.orderResult.collectAsState()
@@ -173,6 +174,10 @@ fun LilyCompanionApp(repository: SessionRepository) {
                     PickScreen(
                         arrangements = arrangements,
                         selectedArrangement = selectedArrangement,
+                        quantity = quantity,
+                        onQuantityChange = { qty ->
+                            scope.launch { repository.updateQuantity(qty) }
+                        },
                         isLoading = isLoading,
                         budgetLabel = sharedUnderstanding.budget,
                         onSelectArrangement = { arrangement ->
@@ -187,6 +192,10 @@ fun LilyCompanionApp(repository: SessionRepository) {
                     PayScreen(
                         selectedArrangement = selectedArrangement,
                         sharedUnderstanding = sharedUnderstanding,
+                        quantity = quantity,
+                        onQuantityChange = { qty ->
+                            scope.launch { repository.updateQuantity(qty) }
+                        },
                         isLoading = isLoading,
                         checkoutTotal = orderSummaryTotal
                             ?: repository.displayCheckoutTotal(selectedArrangement?.price),

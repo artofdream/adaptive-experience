@@ -241,6 +241,8 @@ fun PickScreen(
     selectedArrangement: FloristArrangement?,
     onSelectArrangement: (FloristArrangement) -> Unit,
     onContinueToPay: () -> Unit,
+    quantity: Int = 1,
+    onQuantityChange: (Int) -> Unit = {},
     budgetLabel: String? = null,
     onBack: (() -> Unit)? = null,
     onStartOver: (() -> Unit)? = null,
@@ -286,6 +288,15 @@ fun PickScreen(
             }
         }
 
+        if (selectedArrangement != null) {
+            QuantityStepper(
+                quantity = quantity,
+                onQuantityChange = onQuantityChange,
+                enabled = !isLoading,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            )
+        }
+
         // Primary Single CTA
         Button(
             onClick = onContinueToPay,
@@ -296,10 +307,13 @@ fun PickScreen(
                 .height(52.dp)
         ) {
             Text(
-                if (selectedArrangement != null)
-                    "Continue to Checkout ($${"%.2f".format(selectedArrangement.price)}) →"
-                else
+                if (selectedArrangement != null) {
+                    val line = selectedArrangement.price * quantity
+                    val qtyLabel = if (quantity > 1) " × $quantity" else ""
+                    "Continue to Checkout ($${"%.2f".format(line)}$qtyLabel) →"
+                } else {
                     "Select an Arrangement to Continue"
+                }
             )
         }
 
@@ -333,6 +347,8 @@ fun PayScreen(
     selectedArrangement: FloristArrangement?,
     sharedUnderstanding: SharedUnderstanding,
     onCheckout: (String) -> Unit,
+    quantity: Int = 1,
+    onQuantityChange: (Int) -> Unit = {},
     checkoutTotal: Double? = null,
     deliveryDate: String = "",
     deliveryWindow: String = "afternoon",
@@ -421,16 +437,27 @@ fun PayScreen(
                     Text(text = honesty, style = MaterialTheme.typography.bodyMedium)
                 }
                 Spacer(modifier = Modifier.height(8.dp))
+                QuantityStepper(
+                    quantity = quantity,
+                    onQuantityChange = onQuantityChange,
+                    enabled = !isLoading && selectedArrangement != null
+                )
+                Spacer(modifier = Modifier.height(8.dp))
                 Divider()
                 Spacer(modifier = Modifier.height(8.dp))
-                val productPrice = selectedArrangement?.price ?: 0.0
+                val unitPrice = selectedArrangement?.price ?: 0.0
+                val productPrice = unitPrice * quantity
                 val total = checkoutTotal ?: productPrice
                 if (checkoutTotal != null && checkoutTotal > productPrice) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(text = "Arrangement:", style = MaterialTheme.typography.bodyMedium)
+                        val arrangementLabel = if (quantity > 1)
+                            "Arrangement (${quantity}x):"
+                        else
+                            "Arrangement:"
+                        Text(text = arrangementLabel, style = MaterialTheme.typography.bodyMedium)
                         Text(text = "$${"%.2f".format(productPrice)}", style = MaterialTheme.typography.bodyMedium)
                     }
                     Row(

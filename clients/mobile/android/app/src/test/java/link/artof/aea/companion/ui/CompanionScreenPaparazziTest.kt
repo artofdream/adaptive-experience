@@ -51,6 +51,7 @@ class CompanionScreenPaparazziTest {
                 PickScreen(
                     arrangements = sampleArrangements,
                     selectedArrangement = sampleArrangements.first(),
+                    quantity = 2,
                     onSelectArrangement = {},
                     onContinueToPay = {},
                     onBack = {},
@@ -68,8 +69,9 @@ class CompanionScreenPaparazziTest {
                 PayScreen(
                     selectedArrangement = sampleArrangements.first(),
                     sharedUnderstanding = sampleUnderstanding,
+                    quantity = 2,
                     onCheckout = {},
-                    checkoutTotal = 89.0,
+                    checkoutTotal = 156.0,
                     onBack = {},
                     onStartOver = {},
                     isLoading = false,
