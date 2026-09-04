@@ -1,18 +1,21 @@
 import json
 import os
 import ssl
+import sys
+import time
 import urllib.error
 import urllib.request
 import urllib.parse
 
 
-DEFAULT_BASE_URL = "https://localhost:8443"
+DEFAULT_BASE_URL = "https://127.0.0.1:8443" if sys.platform == "win32" else "https://localhost:8443"
+DEFAULT_ORIGIN = "https://localhost:8443"
 
 
 def configured_endpoints(environ=None):
     environ = os.environ if environ is None else environ
     base_url = environ.get("AEA_EDGE_BASE_URL", DEFAULT_BASE_URL).rstrip("/")
-    origin = environ.get("AEA_EDGE_ORIGIN", DEFAULT_BASE_URL).rstrip("/")
+    origin = environ.get("AEA_EDGE_ORIGIN", DEFAULT_ORIGIN).rstrip("/")
     for name, value in (("AEA_EDGE_BASE_URL", base_url), ("AEA_EDGE_ORIGIN", origin)):
         parsed = urllib.parse.urlsplit(value)
         if (parsed.scheme != "https" or not parsed.hostname or parsed.username
@@ -38,18 +41,26 @@ def disclosure_is_honest(payload):
 
 base_url, origin = configured_endpoints()
 context = ssl._create_unverified_context()
-with urllib.request.urlopen(f"{base_url}/", context=context, timeout=5) as response:
-    page = response.read().decode()
-    if (response.status != 200 or 'id="message-form"' not in page
-            or 'id="understanding-title"' not in page
-            or 'id="recommendations"' not in page
-            or 'id="order-tracking"' not in page
-            or "T-01" not in page
-            or 'id="suggestions"' not in page
-            or 'data-suggest="Birthday' in page
-            or ">Wedding</button>" in page
-            or ">Sympathy</button>" in page):
-        raise SystemExit("guided browser interface is unavailable")
+page = ""
+for attempt in range(15):
+    try:
+        with urllib.request.urlopen(f"{base_url}/", context=context, timeout=5) as response:
+            if response.status == 200:
+                page = response.read().decode()
+                break
+    except (urllib.error.URLError, TimeoutError):
+        time.sleep(1)
+
+if (not page or 'id="message-form"' not in page
+        or 'id="understanding-title"' not in page
+        or 'id="recommendations"' not in page
+        or 'id="order-tracking"' not in page
+        or "T-01" not in page
+        or 'id="suggestions"' not in page
+        or 'data-suggest="Birthday' in page
+        or ">Wedding</button>" in page
+        or ">Sympathy</button>" in page):
+    raise SystemExit("guided browser interface is unavailable")
 print("guided browser interface is available")
 
 with urllib.request.urlopen(f"{base_url}/healthz", context=context, timeout=5) as response:

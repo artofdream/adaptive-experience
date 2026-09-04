@@ -536,6 +536,34 @@ class BrowserUiTests(unittest.TestCase):
         self.assertNotIn('querySelectorAll("[data-suggest]")', self.script)
         self.assertIn('placeholder="For example: Birthday roses for Mum, under $75"', self.html)
 
+    def test_florist_operator_mobile_table_and_order_overlay(self):
+        html = (ROOT / "ui" / "florist.html").read_text(encoding="utf-8")
+        script = (ROOT / "ui" / "assets" / "florist.js").read_text(encoding="utf-8")
+        css = (ROOT / "ui" / "assets" / "styles.css").read_text(encoding="utf-8")
+
+        # HTML table wrap and dialog
+        self.assertIn('class="operator-table-wrap"', html)
+        self.assertIn('class="operator-table operator-table-orders"', html)
+        self.assertIn('id="order-detail-dialog"', html)
+        self.assertIn('id="order-dialog-facts"', html)
+        self.assertIn('id="order-dialog-title"', html)
+        self.assertIn('data-close-order-dialog', html)
+
+        # JS date formatting and overlay
+        self.assertIn("function formatRequestedDateHtml", script)
+        self.assertIn("function openOrderDetail", script)
+        self.assertIn("TABLE_HEADER_ICONS", script)
+        self.assertIn("function decorateHeaderIcons", script)
+        self.assertIn("order-detail-trigger", script)
+        self.assertIn("order-cell-main", script)
+        self.assertIn("order-mobile-meta", script)
+
+        # CSS mobile responsive 3-column table and dialog
+        self.assertIn(".operator-table-wrap", css)
+        self.assertIn(".operator-cell-date", css)
+        self.assertIn(".operator-table-orders th:nth-child(n+4)", css)
+        self.assertIn("dialog.operator-dialog", css)
+
 
 if __name__ == "__main__":
     unittest.main()

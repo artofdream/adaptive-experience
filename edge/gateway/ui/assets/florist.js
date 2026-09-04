@@ -281,6 +281,53 @@ function formatRequested(value) {
   }).format(date);
 }
 
+function formatRequestedDateHtml(value) {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
+  const dayStr = new Intl.DateTimeFormat(undefined, {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).format(date);
+  const timeStr = new Intl.DateTimeFormat(undefined, {
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+  return `<div class="operator-cell-date"><span class="date-day">${dayStr}</span><span class="date-time">${timeStr}</span></div>`;
+}
+
+const TABLE_HEADER_ICONS = {
+  Updated: `<svg class="th-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
+  Requested: `<svg class="th-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
+  Order: `<svg class="th-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`,
+  Status: `<svg class="th-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>`,
+  Arrangement: `<svg class="th-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2a5 5 0 0 1 5 5c0 2.3-1.5 4.3-3.6 4.9.4.7.6 1.4.6 2.1 0 2.8-2.2 5-5 5s-5-2.2-5-5c0-.7.2-1.4.6-2.1C2.5 11.3 1 9.3 1 7a5 5 0 0 1 5-5c1.4 0 2.6.6 3.5 1.5A4.98 4.98 0 0 1 12 2z"/><line x1="12" y1="14" x2="12" y2="22"/></svg>`,
+  Card: `<svg class="th-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>`,
+  Cards: `<svg class="th-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>`,
+  Channel: `<svg class="th-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>`,
+  Channels: `<svg class="th-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>`,
+  Paid: `<svg class="th-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>`,
+  When: `<svg class="th-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
+  Windows: `<svg class="th-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
+  Destination: `<svg class="th-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`,
+  Reason: `<svg class="th-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`,
+  Session: `<svg class="th-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`,
+  Count: `<svg class="th-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>`,
+  Product: `<svg class="th-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>`,
+  Trend: `<svg class="th-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>`,
+  Recommendation: `<svg class="th-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="9" y1="18" x2="15" y2="18"/><line x1="10" y1="22" x2="14" y2="22"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg>`,
+};
+
+function decorateHeaderIcons() {
+  document.querySelectorAll(".operator-table th").forEach((th) => {
+    const text = th.textContent.trim();
+    if (TABLE_HEADER_ICONS[text] && !th.querySelector(".th-icon")) {
+      th.innerHTML = `${TABLE_HEADER_ICONS[text]} <span class="th-label">${text}</span>`;
+    }
+  });
+}
+
 function emptyRow(columns, copy) {
   const row = document.createElement("tr");
   const cell = document.createElement("td");
@@ -421,6 +468,7 @@ function renderOrders(items) {
   syncOrderFilterButtons();
   if (!state.orders.length) {
     orderRows.append(emptyRow(9, "No companion or website orders yet. This list stays empty until a checkout writes through."));
+    decorateHeaderIcons();
     return;
   }
   if (!visible.length) {
@@ -428,6 +476,7 @@ function renderOrders(items) {
       ? "No delayed orders."
       : "No orders for today.";
     orderRows.append(emptyRow(9, copy));
+    decorateHeaderIcons();
     return;
   }
   for (const item of visible) {
@@ -442,9 +491,22 @@ function renderOrders(items) {
     const card = item.card_message ? String(item.card_message).slice(0, 40) : "—";
     const channel = item.channel || "—";
     const paid = item.payment_state || "—";
-    row.innerHTML = `<td>${formatRequested(item.updated_at)}</td>
-      <td><button type="button" class="text-link" data-session="${item.session_id}">${shortRef(item.order_id)}</button>${sample}${inboxLink}</td>
-      <td><span class="badge">${statusText}</span></td>
+    row.innerHTML = `<td>${formatRequestedDateHtml(item.updated_at)}</td>
+      <td>
+        <div class="order-cell-main">
+          <div><button type="button" class="text-link" data-session="${item.session_id}" data-order-id="${item.order_id}">${shortRef(item.order_id)}</button>${sample}${inboxLink}</div>
+          <div class="order-mobile-meta">
+            <span class="order-arrangement-mobile">${arrangement}</span>
+            <span class="order-channel-mobile"><code>${channel}</code></span>
+          </div>
+        </div>
+      </td>
+      <td>
+        <div class="status-cell-main">
+          <span class="badge">${statusText}</span>
+          <button type="button" class="text-link order-detail-trigger" data-order-id="${item.order_id}" aria-label="View details for order ${item.order_id}">Details ↗</button>
+        </div>
+      </td>
       <td>${arrangement}</td>
       <td>${card}</td>
       <td><code>${channel}</code></td>
@@ -453,6 +515,7 @@ function renderOrders(items) {
       <td>${destinationHandleLabel(item.destination_reference)}</td>`;
     orderRows.append(row);
   }
+  decorateHeaderIcons();
 }
 
 document.querySelectorAll("#order-filter-today, #order-filter-delayed, #order-filter-all").forEach((button) => {
@@ -469,6 +532,7 @@ function renderInbox(items) {
   state.items = items;
   if (!items.length) {
     inboxRows.append(emptyRow(3, "No Contact Florist requests yet. This inbox stays empty until a customer uses T-09."));
+    decorateHeaderIcons();
     return;
   }
   for (const item of items) {
@@ -477,11 +541,12 @@ function renderInbox(items) {
     const sample = item.sample ? ' <span class="status">Sample</span>' : "";
     const orderLink = sessionIdSet(state.orders).has(item.session_id)
       ? ' <span class="badge">Has order</span>' : "";
-    row.innerHTML = `<td>${formatRequested(item.requested_at)}</td>
+    row.innerHTML = `<td>${formatRequestedDateHtml(item.requested_at)}</td>
       <td><button type="button" class="text-link" data-session="${item.session_id}">${reasonLabel(item.escalation_reason)}</button>${sample}${orderLink}</td>
       <td><code>${shortRef(item.context_reference || item.session_id)}</code></td>`;
     inboxRows.append(row);
   }
+  decorateHeaderIcons();
 }
 
 function fact(term, value) {
@@ -609,11 +674,110 @@ inboxRows.addEventListener("click", (event) => {
   }
 });
 
+function openOrderDetail(orderId) {
+  const item = (state.orders || []).find((o) => o.order_id === orderId);
+  if (!item) return;
+  const dialog = document.querySelector("#order-detail-dialog");
+  const facts = document.querySelector("#order-dialog-facts");
+  const title = document.querySelector("#order-dialog-title");
+  if (!dialog || !facts) return;
+
+  title.textContent = `Order ${item.order_id}`;
+  facts.replaceChildren();
+
+  function addFact(term, value, isBadge = false) {
+    const dt = document.createElement("dt");
+    dt.textContent = term;
+    const dd = document.createElement("dd");
+    if (isBadge) {
+      const span = document.createElement("span");
+      span.className = "badge";
+      span.textContent = value;
+      dd.appendChild(span);
+    } else {
+      dd.textContent = value;
+    }
+    facts.append(dt, dd);
+  }
+
+  const statusText = item.authoritative_status || item.status || "—";
+  addFact("Order ID", item.order_id);
+  addFact("Status", statusText, true);
+  if (item.delayed) {
+    addFact("Delayed", "yes", true);
+  }
+  addFact("Arrangement", item.catalog_title || item.product_id || "—");
+  addFact("When", formatWhen(item.timing));
+  addFact("Card message", item.card_message || "—");
+  addFact("Channel", item.channel || "—");
+  addFact("Payment", item.payment_state || "—", true);
+  addFact("Destination handle", destinationHandleLabel(item.destination_reference));
+  addFact("Updated", formatRequested(item.updated_at));
+
+  const jumpBtn = document.querySelector("#order-dialog-jump-session");
+  if (jumpBtn) {
+    jumpBtn.onclick = () => {
+      if (typeof dialog.close === "function") {
+        dialog.close();
+      } else {
+        dialog.removeAttribute("open");
+      }
+      if (item.session_id) {
+        openSession(item.session_id);
+        const sessionSection = document.querySelector("#session");
+        if (sessionSection) {
+          sessionSection.scrollIntoView({ behavior: "smooth" });
+        }
+      }
+    };
+  }
+
+  if (item.session_id) {
+    openSession(item.session_id);
+  }
+
+  if (typeof dialog.showModal === "function") {
+    dialog.showModal();
+  } else {
+    dialog.setAttribute("open", "");
+  }
+}
+
 if (orderRows) {
   orderRows.addEventListener("click", (event) => {
+    const detailTrigger = event.target.closest(".order-detail-trigger");
+    if (detailTrigger) {
+      openOrderDetail(detailTrigger.getAttribute("data-order-id"));
+      return;
+    }
     const target = event.target.closest("[data-session]");
     if (target) {
-      openSession(target.getAttribute("data-session"));
+      const orderId = target.getAttribute("data-order-id") || target.closest("tr")?.querySelector("[data-order-id]")?.getAttribute("data-order-id");
+      if (window.innerWidth <= 768 && orderId) {
+        openOrderDetail(orderId);
+      } else {
+        openSession(target.getAttribute("data-session"));
+      }
+    }
+  });
+}
+
+document.querySelectorAll("[data-close-order-dialog]").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const dialog = document.querySelector("#order-detail-dialog");
+    if (dialog && typeof dialog.close === "function") {
+      dialog.close();
+    } else if (dialog) {
+      dialog.removeAttribute("open");
+    }
+  });
+});
+
+const orderDetailDialog = document.querySelector("#order-detail-dialog");
+if (orderDetailDialog) {
+  orderDetailDialog.addEventListener("click", (e) => {
+    if (e.target === orderDetailDialog && typeof orderDetailDialog.close === "function") {
+      orderDetailDialog.close();
     }
   });
 }

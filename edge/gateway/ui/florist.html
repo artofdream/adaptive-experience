@@ -49,22 +49,24 @@
             </p>
           </div>
         </header>
-        <table class="operator-table">
-          <thead>
-            <tr>
-              <th scope="col">Updated</th>
-              <th scope="col">Order</th>
-              <th scope="col">Status</th>
-              <th scope="col">Arrangement</th>
-              <th scope="col">Card</th>
-              <th scope="col">Channel</th>
-              <th scope="col">Paid</th>
-              <th scope="col">When</th>
-              <th scope="col">Destination</th>
-            </tr>
-          </thead>
-          <tbody id="order-rows"></tbody>
-        </table>
+        <div class="operator-table-wrap">
+          <table class="operator-table operator-table-orders">
+            <thead>
+              <tr>
+                <th scope="col">Updated</th>
+                <th scope="col">Order</th>
+                <th scope="col">Status</th>
+                <th scope="col">Arrangement</th>
+                <th scope="col">Card</th>
+                <th scope="col">Channel</th>
+                <th scope="col">Paid</th>
+                <th scope="col">When</th>
+                <th scope="col">Destination</th>
+              </tr>
+            </thead>
+            <tbody id="order-rows"></tbody>
+          </table>
+        </div>
       </section>
 
       <section id="prepare" class="panel operator-inbox" aria-labelledby="prepare-title">
@@ -75,18 +77,20 @@
             <p class="subtitle">Grouped from Staff orders due today. Not inventory forecast. Not CRM.</p>
           </div>
         </header>
-        <table class="operator-table">
-          <thead>
-            <tr>
-              <th scope="col">Arrangement</th>
-              <th scope="col">Count</th>
-              <th scope="col">Windows</th>
-              <th scope="col">Cards</th>
-              <th scope="col">Channels</th>
-            </tr>
-          </thead>
-          <tbody id="prepare-rows"></tbody>
-        </table>
+        <div class="operator-table-wrap">
+          <table class="operator-table">
+            <thead>
+              <tr>
+                <th scope="col">Arrangement</th>
+                <th scope="col">Count</th>
+                <th scope="col">Windows</th>
+                <th scope="col">Cards</th>
+                <th scope="col">Channels</th>
+              </tr>
+            </thead>
+            <tbody id="prepare-rows"></tbody>
+          </table>
+        </div>
       </section>
 
       <section id="inbox" class="panel operator-inbox" aria-labelledby="inbox-title">
@@ -97,16 +101,18 @@
             <p class="subtitle">Human follow-up requests. Opaque session references only. A read-only badge marks a row when the same session is also on Staff orders.</p>
           </div>
         </header>
-        <table class="operator-table">
-          <thead>
-            <tr>
-              <th scope="col">Requested</th>
-              <th scope="col">Reason</th>
-              <th scope="col">Session</th>
-            </tr>
-          </thead>
-          <tbody id="inbox-rows"></tbody>
-        </table>
+        <div class="operator-table-wrap">
+          <table class="operator-table">
+            <thead>
+              <tr>
+                <th scope="col">Requested</th>
+                <th scope="col">Reason</th>
+                <th scope="col">Session</th>
+              </tr>
+            </thead>
+            <tbody id="inbox-rows"></tbody>
+          </table>
+        </div>
       </section>
 
       <section id="session" class="panel" aria-labelledby="session-title">
@@ -145,16 +151,18 @@
             <p class="subtitle">Trends from validated snapshot history. Does not invent demand.</p>
           </div>
         </header>
-        <table class="operator-table">
-          <thead>
-            <tr>
-              <th scope="col">Product</th>
-              <th scope="col">Trend</th>
-              <th scope="col">Recommendation</th>
-            </tr>
-          </thead>
-          <tbody id="forecast-rows"></tbody>
-        </table>
+        <div class="operator-table-wrap">
+          <table class="operator-table">
+            <thead>
+              <tr>
+                <th scope="col">Product</th>
+                <th scope="col">Trend</th>
+                <th scope="col">Recommendation</th>
+              </tr>
+            </thead>
+            <tbody id="forecast-rows"></tbody>
+          </table>
+        </div>
       </section>
     </div>
 
@@ -183,5 +191,22 @@
       </ul>
     </section>
   </main>
+
+  <dialog id="order-detail-dialog" class="operator-dialog" aria-labelledby="order-dialog-title">
+    <div class="dialog-header">
+      <div>
+        <p class="eyebrow">FR-013 · Order details</p>
+        <h2 id="order-dialog-title" class="dialog-title">Order details</h2>
+      </div>
+      <button type="button" class="dialog-close" data-close-order-dialog aria-label="Close order details">✕</button>
+    </div>
+    <div class="dialog-body">
+      <dl id="order-dialog-facts" class="operator-facts"></dl>
+    </div>
+    <div class="dialog-footer">
+      <button type="button" class="secondary" id="order-dialog-jump-session">Jump to session transcript</button>
+      <button type="button" class="primary" data-close-order-dialog>Close</button>
+    </div>
+  </dialog>
 </body>
 </html>
