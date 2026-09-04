@@ -30,14 +30,17 @@ Unprobed claims stay **Unknown**.
 
 ## Honesty gates
 
-| Claim | Gate |
-|-------|------|
-| Installs from Play | **Probed 4 Sep 2026 (#390):** Play Internal versionCode **5**, flags without `DEBUGGABLE`, installer=`com.android.vending` verified on ASUS ROG (`ASUS_I001DC`, `K9AIKN07B088C89`). Debug/FAD alone is still not Play |
-| Florist staff list shows web vs companion channel | **Probed 3–4 Sep 2026 (#375, #384):** Live checkout from ASUS ROG (order `34091114-cb91-44de-a5a3-6be78c503912`) wrote through to ECS Fargate operator feed at `https://aea.artof.link/api/v1/operator/orders` with `client: companion-android` verified in production |
-| Companion Contact Florist & choosable delivery | **Probed 4 Sep 2026 (#381):** Pay screen confirms choosable delivery window (morning/afternoon/evening) and destination ref; T-09 Contact Florist escalation lands in live operator inbox |
-| Website / atelier write-through after Confirm | Sponsor dual-probe: order `34091114-cb91-44de-a5a3-6be78c503912` confirmed written to backend order aggregate |
-| Operator inbox = live orders | **No.** Sample operator surfaces are not the billing CRM |
-| Native vs web traffic in Grafana | **Query documented / panel as-code (#368):** clients send `X-AEA-Client` (`companion-android` / `web`); BFF/edge log `aea_client`. As-code panels on uid `aea-unified-dashboard` (`BFF requests by aea_client`, status table). Logs Insights + verify steps: vault `research/random-thoughts/2026-09-02-x-aea-client-grafana-label.md`. Live series need edge/BFF+Grafana redeploy + traffic probe |
+> **Installs from Play** — **Probed 4 Sep 2026 (#390):** Play Internal versionCode `5`, flags without `DEBUGGABLE`, `installerPackageName=com.android.vending` verified on ASUS ROG (`ASUS_I001DC`, `K9AIKN07B088C89`). Debug/FAD alone is still not Play.
+
+> **Florist staff list shows web vs companion channel** — **Probed 3–4 Sep 2026 (#375, #384):** Live checkout from ASUS ROG (order `34091114-cb91-44de-a5a3-6be78c503912`) wrote through to ECS Fargate operator feed at `https://aea.artof.link/api/v1/operator/orders` with `client: companion-android` verified in production.
+
+> **Companion Contact Florist & choosable delivery** — **Probed 4 Sep 2026 (#381):** Pay screen confirms choosable delivery window (`morning` / `afternoon` / `evening`) and destination ref; T-09 Contact Florist escalation lands in live operator inbox.
+
+> **Website / atelier write-through after Confirm** — **Probed 4 Sep 2026:** Order `34091114-cb91-44de-a5a3-6be78c503912` confirmed written to backend order aggregate.
+
+> **Operator inbox = live orders** — **No.** Sample operator surfaces are not the billing CRM.
+
+> **Native vs web traffic in Grafana** — **Query documented / panel as-code (#368):** Clients send `X-AEA-Client` (`companion-android` / `web`); BFF/edge log `aea_client`. As-code panels on uid `aea-unified-dashboard` (`BFF requests by aea_client`, status table). Logs Insights + verify steps: vault `research/random-thoughts/2026-09-02-x-aea-client-grafana-label.md`. Live series need edge/BFF+Grafana redeploy + traffic probe.
 
 ## Related on this site
 

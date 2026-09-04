@@ -1,4 +1,4 @@
-﻿# Session Memory Log: MRC Processing, CRM Completion, Companion v5 Play Honesty & Operator Console Review (2026-09-04)
+# Session Memory Log: MRC Processing, CRM Completion, Companion v5 Play Honesty & Operator Console Review (2026-09-04)
 
 > **Tags**: #aea #session-memory #mrc #crm #edge-wallet #companion #play-honesty #rog #381 #390 #375 #434 #knowledge-first
 > **Captured**: 2026-09-04 ~11:30 Europe/Berlin (09:30 UTC)
@@ -101,3 +101,23 @@ To maintain empirical honesty on the public documentation site:
 1. **ADR-020 Layer 3 KMS Write Path**: Sponsor gate required before provisioning AWS KMS Customer Managed Key and enabling live ephemeral address encryption.
 2. **GitLab Duo AI Review Credits**: GitLab Duo automated review reported `No GitLab Credits remain for this billing period (DCR4002)`. Standard CI/CD runner execution remains unaffected.
 3. **External Commercial CRM (M12 Scope)**: The repository has delivered the zero-PII, zero-external-vendor in-house solution (Layers 1 and 2), keeping external SaaS subscription costs at **$0**.
+
+---
+
+## 7. Mobile Viewport Refinement (`architecture.artof.link/companion.html`)
+
+- **Root Cause Analysis**:
+  - The site generator stylesheet in `scripts/build_framework_site.py` used `th, td { word-break: break-word; overflow-wrap: anywhere; }`. In CSS, `overflow-wrap: anywhere` allows breaking between arbitrary graphemes/syllables inside common words when table column widths shrink.
+  - On narrow mobile viewports (<360px), the 2-column Honesty Gates table (`Claim | Gate`) had no column min-width. Because the "Gate" column had full paragraphs, table auto-layout compressed the "Claim" column to ~60px, causing severe word-breaking artifacts (e.g. `Install / s from / Play`, `comp / anion / chann / el`).
+- **Remediation**:
+  1. **Site CSS Fix (`scripts/build_framework_site.py`)**:
+     - Reset `th, td` to `overflow-wrap: break-word; word-break: normal;` preventing English prose from being hyphen-less sliced mid-word.
+     - Added `td code, th code { word-break: break-all; }` so long code symbols, URLs, and hashes still wrap safely.
+     - Added `@media(max-width:640px) { .table-wrap table { min-width: 28rem; } th,td { padding: .35rem .5rem; font-size: .78rem; } blockquote.callout { padding: .75rem .9rem; margin: 1rem 0; } }` ensuring any table that remains a table scrolls horizontally via its `.table-wrap` wrapper instead of crushing columns.
+  2. **Responsive Card Architecture (`docs/framework/companion.md`)**:
+     - Converted the cramped 2-column table under `## Honesty gates` into stacked executive callout cards (`blockquote.callout` with gold accent left border), matching the pattern established in `crm.md`.
+     - Output renders at full 100% viewport width with zero word splitting and full readability on small phone screens.
+  3. **Verification**:
+     - `scripts/build_framework_site.py` rebuilt all 7 framework pages cleanly.
+     - `python scripts/test_build_framework_site.py` passed (6/6 tests).
+     - `python scripts/run_all_guards.py` passed (14/14 quality guards).
