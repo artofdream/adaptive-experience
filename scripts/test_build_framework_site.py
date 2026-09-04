@@ -22,10 +22,11 @@ class TestBuildFrameworkSite(unittest.TestCase):
         self.assertIn('<a href="https://example.com">link</a>', formatted)
 
     def test_md_to_html(self):
-        md = "# Heading 1\n\nParagraph text.\n\n## Heading 2\n\n- Item 1\n- Item 2"
+        md = "# Heading 1\n\nParagraph text.\n\n---\n\n## Heading 2\n\n- Item 1\n- Item 2"
         body = md_to_html(md)
         self.assertIn("<h1>Heading 1</h1>", body)
         self.assertIn("<p>Paragraph text.</p>", body)
+        self.assertIn('<hr class="rule">', body)
         self.assertIn('<h2 id="heading-2">Heading 2</h2>', body)
         self.assertIn("<ul>", body)
         self.assertIn("<li>Item 1</li>", body)

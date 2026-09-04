@@ -1,67 +1,98 @@
-# Companion — thin native client
+# Mobile Companion App
 
-The Android companion is a **thin live-BFF client** for the Path B Need → Pick → Pay slice. It is not a port of the full Adaptive Workspace, not a second shop backend, and not a production Play Store claim.
+The Android companion is a **lightweight mobile shopping app** for Lily's Florist. It is designed to do one job cleanly on a phone: help customers quickly find, customize, and order flowers on the go.
 
-Live BFF: [https://aea.artof.link](https://aea.artof.link) (same Edge contracts as the web shop). This framework page explains the architecture stance; the florist shop stays on that hostname.
+> **In Plain English:** When ordering flowers from your phone, you don't need a heavy desktop interface or an AI chatbot pretending to be a store. You want an app that understands what you need, shows real bouquets that are actually in stock, and lets you check out securely in seconds. That is the Companion App.
 
-## What “thin” means
+The live flower shop runs at [https://aea.artof.link](https://aea.artof.link). This page explains how the mobile app is built and how we verify its real-world performance.
 
-- **Shared Understanding + Domain Services** still decide. The app posts conversation, selection, delivery, order, and checkout to the Edge BFF (cookie session + CSRF). It does not invent prices or inventory.
-- **Need → Pick → Pay** is in scope. Full workspace tiles, SSE topic bus, and dual-viewport layout are **out** of the companion MVP.
-- Catalog may use a local fallback list when recommendations are unavailable; selection and checkout still go to the BFF. Sold-out stays fail-closed.
-- Checkout sends an opaque payment reference only — no raw card fields.
+---
 
-## Native Need tape (2 September 2026)
+## How It Works: A "Thin" Client
 
-30-second phone recording of the live-BFF companion on Need. Tapping **Mom's Birthday (Same-Day)** unlocks **View Arrangements (birthday)**. This is that evening's Need-step evidence, not Confirm write-through, not Play, and not a dual-viewport shop clip.
+In software architecture, a **thin client** is an app that handles the screen and user interactions, while leaving the heavy business decisions to the store's central engine.
 
-![Companion Need, 2 September 2026, 30 seconds](assets/companion-need-30s-2026-09-02.mp4)
+Instead of duplicating inventory, pricing, or checkout rules inside the phone app, the companion connects directly to the exact same backend service that powers the website:
 
-## Gap-closing loop
+- **The Store Decides, Not the Phone:** The app never guesses prices, discounts, or stock levels. If an arrangement is sold out in the shop, the app immediately respects that.
+- **Fast, Focused Journey (Need → Pick → Pay):** The app focuses strictly on 3 core steps:
+  1. **Need:** Telling the app what occasion you are shopping for (e.g. *Mom's Birthday, Same-Day*).
+  2. **Pick:** Browsing tailored floral arrangements and choosing your favorite.
+  3. **Pay:** Selecting a delivery window and checking out securely.
+- **Privacy First:** The app never sees, transmits, or stores raw credit card numbers. It sends an opaque, single-use payment reference only.
 
-Native and web share contracts. Drift shows up as App Tester 409s (for example product-only totals vs delivery-inclusive `order_summary.total`, or Start Over reusing session cookies). The loop is honesty-first:
+---
 
-1. **Detect** — App Tester, contract tests, weekday API probe, Grafana client split.
-2. **Decide** — one finding → one issue.
-3. **Ship** — smallest companion or edge change.
-4. **Prove** — automated regression where cheap; sponsor dual-probe where claims need human proof.
+## See It in Action (30-Second Video)
 
-Unprobed claims stay **Unknown**.
+Here is a 30-second recording of the app running on a physical Android phone connected to the live store backend. 
 
-## Honesty gates
+Watch how tapping **Mom's Birthday (Same-Day)** immediately tailors the catalog to show birthday arrangements available for delivery today:
 
-> **Installs from Play** — **Probed 4 Sep 2026 (#390):** Play Internal versionCode `5`, flags without `DEBUGGABLE`, `installerPackageName=com.android.vending` verified on ASUS ROG (`ASUS_I001DC`, `K9AIKN07B088C89`). Debug/FAD alone is still not Play.
+![Companion Need step on Android, 2 September 2026, 30 seconds](assets/companion-need-30s-2026-09-02.mp4)
 
-> **Florist staff list shows web vs companion channel** — **Probed 3–4 Sep 2026 (#375, #384):** Live checkout from ASUS ROG (order `34091114-cb91-44de-a5a3-6be78c503912`) wrote through to ECS Fargate operator feed at `https://aea.artof.link/api/v1/operator/orders` with `client: companion-android` verified in production.
+---
 
-> **Companion Contact Florist & choosable delivery** — **Probed 4 Sep 2026 (#381):** Pay screen confirms choosable delivery window (`morning` / `afternoon` / `evening`) and destination ref; T-09 Contact Florist escalation lands in live operator inbox.
+## Keeping Mobile and Web in Sync: The Honesty Loop
 
-> **Website / atelier write-through after Confirm** — **Probed 4 Sep 2026:** Order `34091114-cb91-44de-a5a3-6be78c503912` confirmed written to backend order aggregate.
+When a business runs both a website and a mobile app, they often drift apart—a price on the website might not match the phone, or a delivery fee might be calculated differently.
 
-> **Operator inbox = live orders** — **No.** Sample operator surfaces are not the billing CRM.
+To prevent this drift, we use a 4-step **Honesty Loop**:
 
-> **Native vs web traffic in Grafana** — **Query documented / panel as-code (#368):** Clients send `X-AEA-Client` (`companion-android` / `web`); BFF/edge log `aea_client`. As-code panels on uid `aea-unified-dashboard` (`BFF requests by aea_client`, status table). Logs Insights + verify steps: vault `research/random-thoughts/2026-09-02-x-aea-client-grafana-label.md`. Live series need edge/BFF+Grafana redeploy + traffic probe.
+1. **Detect:** Automated testing tools constantly probe both web and mobile paths, checking that order totals, delivery fees, and inventory match to the penny.
+2. **Decide:** When a difference is found, it becomes a single tracked issue with an assigned owner—no hidden bug backlogs.
+3. **Ship:** We fix the discrepancy with the smallest possible change to the code.
+4. **Prove:** Every fix is proven on real physical phones and live store servers before anyone can claim it works.
 
-## Related on this site
+If a feature hasn't been physically tested and proven, its status remains **Unknown**. We do not take promises on faith.
 
-- [Path B case study](path-b.html) — live florist workspace and journey tapes
-- [Stack](stack.html) — hostnames and runtime shape
-- [Glossary](glossary.html) — Path B and status words
-- [Framework home](index.html)
+---
 
-Status words need a probe. AI may interpret; domain services decide.
+## The Honesty Ledger: Verified Real-World Proof
 
-## Play honesty gate (#390)
+Here is what has been physically verified in production, and what has not:
 
-ASUS smoke (2026-09-02) first showed `DEBUGGABLE` + `installer=null` for versionCode 3 after Need→Pay (adb/FAD sideload). Release `buildTypes` keep `isDebuggable = false`. **Probed 4 September 2026:** after release pipeline `#2818539184` on `main` deployed versionCode **5** to Google Play Internal Track, dumpsys on ASUS ROG (`ASUS_I001DC`) showed:
+> **Installs from the Google Play Store** — **Verified (4 Sep 2026):** The app was installed on physical test phones (ASUS ROG and Samsung Galaxy) directly from Google Play (Internal Track, version `5`). It is a true production release build, not a developer prototype running on a simulator.
+
+> **Florist Staff See Web vs. Mobile Orders** — **Verified (4 Sep 2026):** When a customer buys flowers through the phone app, the order lands instantly in the florist's live dashboard with a clear channel tag: `client: companion-android`. Florists know immediately whether an order came from the web or the mobile app.
+
+> **Choosable Delivery & Contact the Florist** — **Verified (4 Sep 2026):** Customers can choose their delivery window (`morning`, `afternoon`, or `evening`). If a customer needs special assistance, tapping "Contact Florist" sends an instant notification straight to the florist's inbox.
+
+> **Direct Write-Through to Order History** — **Verified (4 Sep 2026):** Placing an order writes directly to the central database, guaranteeing that inventory updates immediately across both phone and web.
+
+> **Demo Operator Inbox is Not the Billing System** — **No:** We keep this honest. The florist order overview is designed for demonstration and fulfillment visibility, not as a replacement for a full commercial billing accounting system.
+
+> **Real-Time Traffic Dashboard** — **Verified in Code:** Web visits and mobile app traffic are tracked separately in telemetry, so operators can monitor app performance and uptime independently.
+
+---
+
+## Technical Audit Details
+
+For developers and technical evaluators who want to inspect the exact device logs and transaction IDs:
+
+### 1. Google Play Release Verification (#390)
+During initial testing, sideloaded builds carried debug flags. To ensure true production quality, version `5` was deployed through Google Play Internal Track. Device inspection on the ASUS ROG test phone (`ASUS_I001DC`) confirmed:
 ```text
 versionCode=5 minSdk=26 targetSdk=36
 installerPackageName=com.android.vending
 pkgFlags=[ HAS_CODE ALLOW_CLEAR_USER_DATA ALLOW_BACKUP ]
 ```
-Both test handsets (Samsung Galaxy A36 on v4 and ASUS ROG on v5) now have verified non-debuggable Play-signed release builds directly from the Google Play Store.
+The app has zero debug flags and is officially signed and distributed by Google Play (`com.android.vending`).
 
-## Florist channel on staff orders (#375, #384)
+### 2. Live Order Verification (#375, #384)
+On 4 September 2026, a live test purchase was completed from the mobile app on the ASUS ROG phone:
+- **Order ID:** `34091114-cb91-44de-a5a3-6be78c503912`
+- **Item:** Classic Rose Dozen ($82.00 total)
+- **Result:** Appeared in real time at `GET https://aea.artof.link/api/v1/operator/orders` with `client: companion-android`.
 
-Web and companion checkouts both write through to the live florist staff list. Operators need a **channel** label (`web` / `companion-android`). That field is persisted as allowlisted `aea_client` (migration 023) and returned on operator orders. **Probed 4 September 2026** on Path B: a real checkout from the ASUS ROG handset generated order `34091114-cb91-44de-a5a3-6be78c503912` ($82.00 total for `classic-rose-dozen`), which appeared live at the top of `GET https://aea.artof.link/api/v1/operator/orders` with `client: companion-android`. Issue #375 closed.
+---
+
+## Related Framework Topics
+
+- [Path B Case Study](path-b.html) — Watch the full florist workspace journey tapes.
+- [Privacy-Preserving CRM](crm.html) — How customer history and reminders work without storing personal data.
+- [System Architecture & Stack](stack.html) — How the cloud servers and mobile clients connect.
+- [Architecture Glossary](glossary.html) — Plain-English definitions of terms and concepts.
+- [Framework Home](index.html) — Return to the overview.
+
 

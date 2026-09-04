@@ -117,7 +117,11 @@ To maintain empirical honesty on the public documentation site:
   2. **Responsive Card Architecture (`docs/framework/companion.md`)**:
      - Converted the cramped 2-column table under `## Honesty gates` into stacked executive callout cards (`blockquote.callout` with gold accent left border), matching the pattern established in `crm.md`.
      - Output renders at full 100% viewport width with zero word splitting and full readability on small phone screens.
-  3. **Verification**:
-     - `scripts/build_framework_site.py` rebuilt all 7 framework pages cleanly.
-     - `python scripts/test_build_framework_site.py` passed (6/6 tests).
+  3. **Plain English Editorial Reformulation (`docs/framework/companion.md`)**:
+     - Reformulated dense engineer-facing jargon ("thin live-BFF client for the Path B Need → Pick → Pay slice") into clear, approachable, human explanations with an explicit "In Plain English" blockquote callout.
+     - Explained the core value: an app that shows real bouquets actually in stock, protects customer privacy, and checks out in seconds without duplicating shop databases.
+     - Upgraded `scripts/build_framework_site.py` with standard `<hr class="rule">` parsing for `---` / `***` thematic break dividers, adding CSS border styling (`var(--rule)`).
+  4. **Verification**:
+     - `scripts/build_framework_site.py` rebuilt all framework pages cleanly.
+     - `python scripts/test_build_framework_site.py` passed (6/6 tests, including new `<hr class="rule">` assertion).
      - `python scripts/run_all_guards.py` passed (14/14 quality guards).

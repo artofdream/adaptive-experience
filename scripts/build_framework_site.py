@@ -86,6 +86,7 @@ CSS = (
     'blockquote.callout{background:var(--code-bg);border-left:3px solid var(--accent);'
     'margin:1.25rem 0;padding:.85rem 1.1rem;border-radius:0 4px 4px 0}'
     'blockquote.callout p{margin:0}'
+    'hr.rule{border:none;border-top:1px solid var(--rule);margin:2.25rem 0}'
     'footer{margin-top:3rem;padding:1.5rem 1.25rem 3rem;border-top:1px solid var(--rule);'
     'color:var(--muted);font-family:ui-sans-serif,system-ui,sans-serif;font-size:.82rem}'
     '@media(max-width:768px){'
@@ -186,6 +187,11 @@ def md_to_html(source: str) -> str:
         line = raw.strip()
         if not line:
             close()
+            continue
+
+        if re.match(r'^(-{3,}|\*{3,})$', line):
+            close()
+            out.append('<hr class="rule">')
             continue
 
         if line.startswith('> '):
