@@ -26,7 +26,31 @@ Layers stack from operator view (top) down to where raw PII may briefly live (bo
 
 ---
 
-## 3. Related Decisions & Requirements
+## 3. Honest Implementation Status
+
+Every capability is classified by its verified code and hardware probe status:
+
+| Layer / Feature | Status | Implementation Evidence |
+| :--- | :--- | :--- |
+| **Layer 1: Occasion Memory & Pull Reminders** | **Live on `main` / Tested** | Migration `018_engagement_crm.sql`. Order-triggered occasion capture records categorical event month/day and relation. Workspace projection exposes deterministic `reminders` facet. |
+| **Layer 1: Pseudonymous Subject Profiles** | **Live on `main` / Tested** | Migrations `024_operator_crm_subject_profile.sql` and `026_crm_lifetime_spend.sql`. Cumulative running spend bands (`band_50_100`, `band_250_plus`), order counter, preferred channel. 274 integration tests pass. |
+| **Layer 1: Privacy Lifecycle & Retention Purge** | **Live on `main` / Tested** | Migration `025_crm_retention_indexes.sql`. Customer erasure (`DELETE /api/v1/crm/occasions` / `forget`), 400-day annual retention purge job (`purge_crm_retention.py`), and idempotent deletions. |
+| **Layer 2: Client-Side Edge Wallet** | **Live on `main` / Probed on Hardware** | Pure Kotlin on Android companion. Verified on physical ASUS ROG handset (`ASUS_I001DC`): Android Keystore Tink authenticated envelope encryption (`AesSivKey` + `AesGcmKey`). Zero raw PII or card message plain text at rest. |
+| **Layer 3: Ephemeral Fulfillment Shredding** | **Live on `main` / Tested** | `orchestration.ephemeral_fulfillment` with 14-day `expires_at`. Automated database-level TTL purge via `PsycopgCrmStore.purge_expired_fulfillment`. |
+| **Layer 3: KMS Address Encryption Write Path** | **Sponsor-Gated (Unbuilt)** | Database schema and retention shredder are in place. The live write path and AWS KMS Customer Managed Key (CMK) provisioning remain sponsor-gated for key lifecycle governance. |
+
+---
+
+## 4. Deterministic Pull Reminders (Not Creepy AI Push)
+
+Reminders on the Adaptive Workspace are strictly **deterministic pull signals**:
+- They trigger solely when a shopper initiates a session and the session's browser hash matches a previously recorded delivery anniversary.
+- No unsolicited push notifications, marketing emails, SMS blasts, or third-party ad retargeting pixels.
+- The reminder payload carries least-data fields only (`occasion_type`, `days_until_event`, `reminder_text`, `recipient_relation`) without customer names or delivery addresses.
+
+---
+
+## 5. Related Decisions & Requirements
 
 - [ADR-020 Privacy-Preserving CRM & Edge Wallet](../06-adr/ADR-020-privacy-preserving-crm-and-edge-wallet.md)
 - [ADR-013 Confirmation-Driven Experience](../06-adr/ADR-013-confirmation-driven-experience.md)

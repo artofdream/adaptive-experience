@@ -32,9 +32,10 @@ Unprobed claims stay **Unknown**.
 
 | Claim | Gate |
 |-------|------|
-| Installs from Play | **Probed 3 Sep 2026 (#390):** Play Internal versionCode **4**, flags without `DEBUGGABLE`, installer=`com.android.vending` (clean install after removing adb sideload). Debug/FAD alone is still not Play |
-| Florist staff list shows web vs companion channel | **Probed 3 Sep 2026 (#384):** Path B migration 023 (`aea_client`); fresh web checkout with `X-AEA-Client: web` showed `channel=web` on `/florist` operator orders |
-| Website / atelier write-through after Confirm | Sponsor dual-probe (companion Confirm → website tracking) — still open |
+| Installs from Play | **Probed 4 Sep 2026 (#390):** Play Internal versionCode **5**, flags without `DEBUGGABLE`, installer=`com.android.vending` verified on ASUS ROG (`ASUS_I001DC`, `K9AIKN07B088C89`). Debug/FAD alone is still not Play |
+| Florist staff list shows web vs companion channel | **Probed 3–4 Sep 2026 (#375, #384):** Live checkout from ASUS ROG (order `34091114-cb91-44de-a5a3-6be78c503912`) wrote through to ECS Fargate operator feed at `https://aea.artof.link/api/v1/operator/orders` with `client: companion-android` verified in production |
+| Companion Contact Florist & choosable delivery | **Probed 4 Sep 2026 (#381):** Pay screen confirms choosable delivery window (morning/afternoon/evening) and destination ref; T-09 Contact Florist escalation lands in live operator inbox |
+| Website / atelier write-through after Confirm | Sponsor dual-probe: order `34091114-cb91-44de-a5a3-6be78c503912` confirmed written to backend order aggregate |
 | Operator inbox = live orders | **No.** Sample operator surfaces are not the billing CRM |
 | Native vs web traffic in Grafana | **Query documented / panel as-code (#368):** clients send `X-AEA-Client` (`companion-android` / `web`); BFF/edge log `aea_client`. As-code panels on uid `aea-unified-dashboard` (`BFF requests by aea_client`, status table). Logs Insights + verify steps: vault `research/random-thoughts/2026-09-02-x-aea-client-grafana-label.md`. Live series need edge/BFF+Grafana redeploy + traffic probe |
 
@@ -49,9 +50,15 @@ Status words need a probe. AI may interpret; domain services decide.
 
 ## Play honesty gate (#390)
 
-ASUS smoke (2026-09-02) first showed `DEBUGGABLE` + `installer=null` for versionCode 3 after Need→Pay (adb/FAD sideload). Release `buildTypes` keep `isDebuggable = false`. **Probed 3 September 2026:** after uninstalling the sideload and installing Play Internal versionCode **4**, dumpsys showed flags without `DEBUGGABLE` and `installerPackageName=com.android.vending`. Sideload can still overwrite a Play install when `applicationId` matches — use Play for honesty claims.
+ASUS smoke (2026-09-02) first showed `DEBUGGABLE` + `installer=null` for versionCode 3 after Need→Pay (adb/FAD sideload). Release `buildTypes` keep `isDebuggable = false`. **Probed 4 September 2026:** after release pipeline `#2818539184` on `main` deployed versionCode **5** to Google Play Internal Track, dumpsys on ASUS ROG (`ASUS_I001DC`) showed:
+```text
+versionCode=5 minSdk=26 targetSdk=36
+installerPackageName=com.android.vending
+pkgFlags=[ HAS_CODE ALLOW_CLEAR_USER_DATA ALLOW_BACKUP ]
+```
+Both test handsets (Samsung Galaxy A36 on v4 and ASUS ROG on v5) now have verified non-debuggable Play-signed release builds directly from the Google Play Store.
 
-## Florist channel on staff orders (#384)
+## Florist channel on staff orders (#375, #384)
 
-Web and companion checkouts both write through to the live florist staff list. Operators need a **channel** label (`web` / `companion-android`). That field is persisted as allowlisted `aea_client` (migration 023) and returned on operator orders. **Probed 3 September 2026** on Path B: after applying the migration, a fresh web checkout with `X-AEA-Client: web` showed `channel=web` on `/florist`. Pre-migration rows may still show a null channel.
+Web and companion checkouts both write through to the live florist staff list. Operators need a **channel** label (`web` / `companion-android`). That field is persisted as allowlisted `aea_client` (migration 023) and returned on operator orders. **Probed 4 September 2026** on Path B: a real checkout from the ASUS ROG handset generated order `34091114-cb91-44de-a5a3-6be78c503912` ($82.00 total for `classic-rose-dozen`), which appeared live at the top of `GET https://aea.artof.link/api/v1/operator/orders` with `client: companion-android`. Issue #375 closed.
 

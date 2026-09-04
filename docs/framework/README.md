@@ -14,6 +14,7 @@ Graph-guard (`scripts/check_knowledge_graph.py`) scans `research/random-thoughts
 | `docs/framework/comparison.md` | `public/comparison.html` |
 | `docs/framework/path-b.md` | `public/path-b.html` |
 | `docs/framework/companion.md` | `public/companion.html` |
+| `docs/framework/crm.md` | `public/crm.html` |
 | `docs/framework/journal.md` | `public/journal.html` |
 | `docs/framework/assets/` (safe filenames only) | `public/assets/` |
 
