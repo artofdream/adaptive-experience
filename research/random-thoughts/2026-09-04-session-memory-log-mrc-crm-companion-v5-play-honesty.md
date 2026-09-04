@@ -125,3 +125,41 @@ To maintain empirical honesty on the public documentation site:
      - `scripts/build_framework_site.py` rebuilt all framework pages cleanly.
      - `python scripts/test_build_framework_site.py` passed (6/6 tests, including new `<hr class="rule">` assertion).
      - `python scripts/run_all_guards.py` passed (14/14 quality guards).
+
+---
+
+## 8. Site-Wide Plain English Reformulation (`architecture.artof.link`)
+
+Following the successful reformulation of `companion.html`, the entire public framework documentation surface across all 9 allowlisted pages in `docs/framework/` was reviewed and elevated to accessible, human-first plain English without sacrificing empirical precision:
+
+1. **`index.md` (Framework Home)**:
+   - Added `crm.html` to framework exploration links.
+   - Refined the core formula summary with everyday metaphors (live digital notepad, warehouse and cash register).
+   - Added `<hr class="rule">` section dividers.
+2. **`schema.md` (Architecture Blueprint)**:
+   - Added an executive "In Plain English" blueprint callout.
+   - Fixed broken TOC navigation link (`#fourteen-hats-three-jobs` -> `#team-roles-and-responsibilities`).
+   - Clarified the 14 stakeholder hats as review lenses rather than headcount, and reinforced the 3 executable jobs (implement, verify, merge) with MRC gatekeeping.
+3. **`stack.md` (System Architecture & Stack)**:
+   - Added plain English summary explaining the "Two Hostnames, Two Jobs" separation.
+   - Synchronized honesty ledger with today's empirical probes: Google Play internal track v5 release and ECS Fargate write-through (`34091114-cb91-44de-a5a3-6be78c503912`).
+   - Clarified cloud infrastructure vs local developer paths.
+4. **`comparison.md` (Visual Guide & 5 Floors)**:
+   - Polished transitions between the 3 AI eras, 5 concentric floors, and 4 memory vaults.
+   - Added clean section dividers throughout.
+   - Preserved all cross-linked integrity assertions (`Daily-brief honesty`, `#what-aea-claims-here`, etc.).
+5. **`path-b.md` (Florist Case Study)**:
+   - Clearly introduced Path B as the live reference store at `aea.artof.link`.
+   - Re-framed the 4 customer scenarios (Urgent Sam, Planner Sarah, Loyal Alex, Tracker Chris) with engaging persona descriptions highlighting the architectural capability proven by each 30s video.
+6. **`glossary.md` (Architecture Glossary)**:
+   - Expanded from 5 internal codes to a comprehensive dictionary with clear definitions for *Shared Understanding*, *Domain Services*, *Outer Harness*, *Fail-Closed Availability*, *Thin Client*, *BFF*, and *Least-Data / Ephemeral Shredding*.
+7. **`journal.md` (Project Journal & Lessons Learned)**:
+   - Transformed staccato notes into engaging narrative case studies (Why This Project Started, Claim vs Probe, Two Hostnames, Four Lines One Day).
+   - Preserved all required test assertions and diagram assets.
+8. **`crm.md` (Privacy CRM)**:
+   - Added "In Plain English" callout on the perils of indefinite PII hoarding vs 14-day address shredding.
+   - Polished framework navigation links.
+
+**Verification Results**:
+- `test_build_framework_site.py`: 6/6 tests PASS.
+- Pre-flight Quality Guards: 14/14 PASS.

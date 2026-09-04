@@ -2,17 +2,19 @@
 
 The Adaptive Experience Architecture (AEA) avoids centralized Personally Identifiable Information (PII) honeypots. Traditional CRMs store customer names, emails, phones, and addresses indefinitely. AEA satisfies operator order overview and customer relationship needs through a **3-Layer Privacy-Preserving CRM Pattern** (ADR-020).
 
+> **In Plain English:** Traditional customer management systems (CRMs) collect and hoard customer names, phone numbers, home addresses, and credit card histories in a central database forever. When that database gets hacked, everyone's private life is exposed. AEA uses a **zero-PII, least-data** approach: the store tracks shopping patterns with anonymous tokens, customer favorites stay encrypted on their own phones, and physical delivery addresses are automatically shredded from the database 14 days after flowers arrive.
+
 ---
 
 ## 1. The 3-Layer CRM Pattern
 
-Layers stack from operator view (top) down to where raw PII may briefly live (bottom). Each layer is a readable card on any screen width.
+Layers stack from operator view (top) down to where raw PII may briefly live (bottom). Each layer is a readable card on any screen width:
 
 > **1. Operator Insights** — Aggregated intelligence · behavior buckets · order fulfillment. Reads pseudonymous projections from Layer 2 (never raw PII).
 
 > **2. Platform Pseudonymous Subject Intelligence** — Opaque subject tokens (`subject_reference = HMAC(client_id)`); transaction aggregates (order count, lifetime spend bands); occasion vector (e.g. 70% Birthday / Mother, 30% Anniversary); preferred channel (`Companion App` vs `Web Browser`).
 
-> **3A. Client-side Edge Wallet** (Companion on-device DB) — Full local order receipts; favorite recipient records; custom occasion reminders. Presents a zero-PII claim up into Layer 2.
+> **3A. Client-Side Edge Wallet** (Companion on-device DB) — Full local order receipts; favorite recipient records; custom occasion reminders. Presents a zero-PII claim up into Layer 2.
 
 > **3B. Ephemeral Fulfillment Vault** (14-day auto-shred) — Raw delivery street address; unlocked only during packing; KMS-encrypted and purged after TTL. Tokenized destination pointer up into Layer 2.
 
@@ -50,9 +52,12 @@ Reminders on the Adaptive Workspace are strictly **deterministic pull signals**:
 
 ---
 
-## 5. Related Decisions & Requirements
+## 5. Related Documentation & Architecture Decisions
 
-- [ADR-020 Privacy-Preserving CRM & Edge Wallet](../06-adr/ADR-020-privacy-preserving-crm-and-edge-wallet.md)
-- [ADR-013 Confirmation-Driven Experience](../06-adr/ADR-013-confirmation-driven-experience.md)
-- [NFR-017 Zero-PII / Least-Data Perimeter](../02-business-analysis/requirements.md)
-- [FR-008 Thin Reorder Hint](../02-business-analysis/requirements.md)
+- [Mobile Companion App](companion.html) — Client-side edge wallet and local encryption.
+- [System Stack](stack.html) — How domain services and databases connect securely.
+- [Architecture Blueprint](schema.html) — Core formula and the 6 outer harness layers.
+- [Architecture Glossary](glossary.html) — Plain-English definitions of least-data terms.
+- [Framework Home](index.html) — Return to the overview.
+- Repository ADR references: `ADR-020` (Privacy CRM), `ADR-013` (Confirmation-Driven), `NFR-017` (Zero-PII Perimeter), and `FR-008` (Reorder Hint).
+

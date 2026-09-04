@@ -1,40 +1,77 @@
-# Glossary
+# Architecture Glossary
 
-Terms used across this site that are not self-explanatory on first read. Each entry gives a plain-language definition, a concrete example already documented elsewhere on this site, and — where the idea is borrowed rather than original to AEA — the outside source it draws on.
+Plain-English definitions for terms and concepts used across this documentation site. Each entry explains what the concept means, why it matters, and where it is applied in practice.
 
-## Path B
+---
 
-The name for one specific instantiation of the Adaptive Experience formula: a live florist shop. Why "B" specifically is not documented anywhere on this site or in the linked sources — treat the naming rationale as **Unknown** rather than assumed. It may relate to the functional-view ancestor design described in the [journal](journal.html#why-this-started)'s origin story, but nothing here states that explicitly.
+## Core Architecture Concepts
 
-- Used on: the [Path B case study](path-b.html), the [comparison](comparison.html#what-this-is).
-- Source: AEA original term. Canonical reference: [path-b.html](path-b.html).
+### Shared Understanding
+The session's live digital notepad. It captures the customer's intent (occasion, recipient relationship, budget, card message) in a structured format that both the shopper and store services can read and update in real time.
+- **Why it matters:** It gives the AI persistent context without having to stuff raw chat transcripts into every prompt.
+- **Where to see it:** Explored on the [Framework Home](index.html) and [Schema](schema.html).
 
-## CF-NNN (coherence finding codes)
+### Domain Services
+The authoritative backend software systems that manage real-world business operations: inventory, pricing, delivery scheduling, payment, and order management.
+- **Why it matters:** AI language models are probabilistic word predictors; they cannot reliably track warehouse stock. Domain services always decide transactions.
+- **Where to see it:** Diagrammed on the [System Stack](stack.html).
 
-An internal tracking ID for one falsifiable claim in this repository's coherence-findings queue — one ID per claim, carried through issue, branch, and merge request until verified or marked regressed.
+### Outer Harness
+The software factory and automated safety scaffolding built around conversational AI to ensure honesty, reliability, and security in production. It consists of six layers: Guides, Sensors, Loop, Memory, Permissions, and Observability.
+- **Why it matters:** Without an outer harness, AI prototypes hallucinate prices, leak data, or break when edge cases arise.
+- **Where to see it:** Detailed on the [Comparison & Visual Guide](comparison.html).
 
-- Example: `CF-054`, referenced on the [comparison](comparison.html#what-this-is-not) page, tracks the claim that Path B's dual-viewport presentation is not yet confirmed by a phone-and-desktop journey recording taken after the CSS shipped.
-- Source: AEA original convention (repository-internal; not published outside this project).
+### Fail-Closed Availability
+A safety design rule: if a backend service (such as cooler inventory or delivery driver scheduling) is unreachable or times out, the purchase action turns off immediately.
+- **Why it matters:** It is far better to display "Checking inventory..." than to accept a customer's money for flowers that cannot be delivered.
+- **Where to see it:** Referenced in the [Comparison](comparison.html#1-the-core-formula-in-everyday-terms).
 
-## ID freeze
+### Thin Client
+A lightweight client application (such as our Android app) that handles screen display and user gestures, while delegating all business logic, inventory validation, and pricing calculations to the central backend.
+- **Why it matters:** Prevents "split-brain" bugs where prices on a mobile app differ from prices on the website.
+- **Where to see it:** Demonstrated on the [Mobile Companion](companion.html).
 
-A permissions rule: once a requirement or story ID is assigned, it is not renumbered or reused. Changes to the canonical ID set require explicit human confirmation rather than an automated or routine edit.
+### BFF (Backend-for-Frontend)
+A secure gateway server that translates client requests from web browsers or mobile apps into internal domain commands.
+- **Why it matters:** It prevents public browsers from ever connecting directly to databases or internal message queues.
+- **Where to see it:** Illustrated on the [System Stack](stack.html).
 
-- Used on: the [comparison](comparison.html#same-layers-different-product) page, under Permissions.
-- Source: AEA original convention.
+### Least-Data & Ephemeral Shredding
+A privacy-first design principle (ADR-020) where sensitive customer information (such as physical delivery addresses) is isolated in an encrypted table and automatically purged after a 14-day fulfillment window.
+- **Why it matters:** Eliminates the risk of massive customer data breaches by refusing to build permanent PII honeypots.
+- **Where to see it:** Detailed on [Privacy CRM](crm.html).
 
-## Fourteen hats (roles)
+---
 
-The fourteen named responsibility lenses AEA organizes work through — not fifteen, not headcount. Three map to executable jobs: implement, verify, merge. Only the MR coordinator merges.
+## Project & Governance Terms
 
-- Full list: see the [schema](schema.html#roles) page.
-- Source: AEA original. Canonical list: [schema.html](schema.html#roles).
+### Path B
+The code name for our live reference flower shop implementation, running at [https://aea.artof.link](https://aea.artof.link). It demonstrates the Adaptive Workspace and customer journeys in action.
+- **Where to see it:** [Path B Case Study](path-b.html).
 
-## Probe
+### Probe
+A verification action performed on real hardware or live servers to prove that a feature works as claimed, rather than assuming it works because a ticket was closed.
+- **Why it matters:** "Verified" is a claim until backed by a probe. If an unverified feature has not been tested, its status remains **Unknown**.
+- **Where to see it:** Illustrated in the [Journal](journal.html#claim-vs-probe).
 
-A verification action: reproducing a claim on the same journey and the same viewport as the claim it checks, or a mechanical/computational check — rather than inferring status from an artifact like a closed ticket or a merged CSS change.
+### CF-NNN (Coherence Finding Codes)
+An internal tracking identifier for an architectural discrepancy or falsifiable claim. Each finding follows a strict 1-finding → 1-issue → 1-branch discipline until verified or resolved.
+- **Where to see it:** Referenced in the [Comparison](comparison.html).
 
-- Example: see the [journal](journal.html#claim-vs-probe)'s "Claim vs probe" episode (the comparison page names the same incident [Daily-brief honesty](comparison.html#what-aea-claims-here)), or the Honesty section of the [comparison](comparison.html#core-principles) page.
-- Source: AEA original term. Related idea in cited external work: Birgitta Böckeler, "Harness Engineering for Coding Agent Users," martinfowler.com, Apr 2026 (computational sensors over asking a model if it "feels" done); Mitchell Hashimoto, "My AI Adoption Journey," mitchellh.com, 5 Feb 2026 (environment/sensor changes, not prompt patches, survive the next session) — both already listed in the [comparison](comparison.html#sources) page's Sources.
+### ID Freeze
+A governance rule: once a requirement (FR/NFR) or business goal ID is assigned in canonical project records, it is never renumbered or reused, preserving traceability across years of commits.
 
-Back to the [framework](index.html), the [schema](schema.html), the [comparison](comparison.html), the [Path B case study](path-b.html), or the [journal](journal.html).
+### Fourteen Hats (Roles)
+The 14 specialized quality perspectives AEA uses to inspect code and architecture (e.g. UX Designer, AppSec Auditor, Cost Guardian, Performance Guardian). They represent areas of review, not a 14-person bureaucracy.
+- **Where to see it:** Listed on the [Schema](schema.html#team-roles-and-responsibilities).
+
+---
+
+## Related Documentation
+
+- [Framework Home](index.html) — Core formula and overview.
+- [Architecture Blueprint](schema.html) — The 6 layers and execution loop.
+- [Comparison & Visual Guide](comparison.html) — 5-floor building model.
+- [System Stack](stack.html) — Cloud infrastructure and request flow.
+- [Project Journal](journal.html) — The story behind the architecture.
+

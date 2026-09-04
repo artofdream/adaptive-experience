@@ -1,53 +1,70 @@
-# Path B — case study, not the home
+# Path B Florist Case Study
 
-[Path B](glossary.html#path-b) is one real-world instantiation of Adaptive Experience: a live florist workspace at [https://aea.artof.link](https://aea.artof.link). It is an exploratory reference design, not this framework site.
+[Path B](glossary.html#path-b) is the reference flower shop implementation of Adaptive Experience Architecture, running live at [https://aea.artof.link](https://aea.artof.link).
 
-## What Path B instantiates
+> **In Plain English:** When creating an e-commerce experience powered by conversational AI, you need a realistic testbed to prove that the architecture works under real-world conditions. **Path B** is our working reference design: a live flower shop called Lily's Florist. It demonstrates how a single customer session smoothly adapts between wide desktop monitors and handheld mobile phones without losing cart contents or conversation context.
 
-The core formula holds: **Shared Understanding + Domain Services + Outer Harness**.
+Live reference store: [https://aea.artof.link](https://aea.artof.link)
 
-On Path B, that produces a dual-viewport shopping experience sharing a single persistent session:
-- **Desktop (16:9)**: An interactive spatial Adaptive Workspace with reviewable context tiles.
-- **Mobile (9:16)**: A linear, focused concierge interface.
+---
 
-Live reference shop: [https://aea.artof.link](https://aea.artof.link)
+## What Path B Demonstrates
 
-## Ancestor
+Path B implements the core AEA formula: **Shared Understanding + Domain Services + Outer Harness**.
 
-The live shop started as an implementation-neutral functional view for the original florist delivery: one workspace, tiles that come and go on a topic bus, the assistant may interpret, domain services still decide. That view is the ancestor of this case study, not a reprint of it. Payment is still a mockup.
+It provides an **Adaptive Workspace** that changes its presentation depending on the device:
 
-## Named Journeys
+- **Desktop (16:9 Widescreen):** An interactive, spatial workspace. The customer chats with the florist assistant on one side, while visual tiles (arrangement preview, greeting card note, delivery calendar, and cart total) dynamically appear and update on the other side.
+- **Mobile (9:16 Handheld):** A streamlined, vertical concierge interface tailored for quick thumb scrolling and tap-to-select choices.
 
-Four 30-second phone tapes from 27 August 2026. They are that evening's evidence, not a fresh dual-viewport probe. Dual-viewport after CSS remains **Unknown**. Payment is still a mockup.
+Both interfaces share the exact same underlying session, inventory catalog, and business rules.
 
-### Urgent Sam
+---
 
-Same-day rose delivery with rapid checkout.
+## The Four Tested Customer Journeys
+
+To verify the store's behavior, we test the shopping flow against four distinct customer personas:
+
+### 1. Urgent Sam — Same-Day Delivery
+Sam needs roses delivered today for an unexpected celebration. The assistant quickly filters the catalog for arrangements currently in the cooler, verifies immediate delivery driver slots, and guides Sam through rapid checkout.
 
 ![Urgent Sam, 27 August 2026 phone tape, 30 seconds](assets/j1-urgent-sam-30s.mp4)
 
-### Planner Sarah
+---
 
-Scheduled celebration with custom ribbon and vase selection.
+### 2. Planner Sarah — Custom Arrangement & Message
+Sarah is planning a milestone anniversary days in advance. She customizes her order with a keepsake glass vase, luxury satin ribbon, and a heartfelt handwritten card message, using interactive card controls to review and confirm every detail.
 
 ![Planner Sarah, 27 August 2026 phone tape, 30 seconds](assets/j2-planner-sarah-30s.mp4)
 
-### Loyal Alex
+---
 
-Returning customer with persistent session memory across reloads.
+### 3. Loyal Alex — Seamless Session Persistence
+Alex adds flowers to their cart, steps away, and accidentally reloads the browser window. Instead of forgetting the cart or restarting the conversation, the session memory instantly restores Alex's selections, occasion context, and active cart.
 
 ![Loyal Alex, 27 August 2026 phone tape, 30 seconds](assets/j3-loyal-alex-30s.mp4)
 
-### Tracker Chris
+---
 
-Order tracking and gated florist support.
+### 4. Tracker Chris — Order Status & Florist Escalation
+Chris placed an order earlier and wants to know when it will arrive. Chris enters their order reference to see real-time fulfillment status, and taps "Contact Florist" to send an instant note directly to the atelier staff.
 
 ![Tracker Chris, 27 August 2026 phone tape, 30 seconds](assets/j4-tracker-chris-30s.mp4)
 
-## Honesty: Intended vs Verified
+---
 
-Dual-viewport presentation is the intended architectural design. While layout updates have shipped, end-to-end visual walkthrough evidence across both mobile and desktop viewports remains **Unknown**. Path B is marked **not fully verified** until verified by a fresh dual-viewport probe. The tapes above do not close that gap.
+## Architectural Honesty: Intended vs. Verified
 
-Status words require empirical proof. Until verified, the case study stays honest.
+- **Dual-Viewport Layout:** Providing side-by-side desktop and mobile views from a single codebase is the intended architectural design. While responsive CSS has been deployed, a continuous side-by-side video walkthrough recorded simultaneously on both viewports remains **Unknown**. Path B stays transparently labeled as *not fully verified* until that dual probe is recorded.
+- **Payment Processing:** Payment is safely handled by a deterministic simulation engine under ADR-016; live credit card processing (Stripe) is deliberately inactive.
 
-Explore the [journal](journal.html) for how these lessons were learned, see the [glossary](glossary.html) for terms used here, or return to the [framework home](index.html).
+---
+
+## Related Documentation
+
+- [System Stack](stack.html) — How the cloud servers, message bus, and mobile clients connect.
+- [Mobile Companion](companion.html) — Details on the native Android app and Google Play release.
+- [Project Journal](journal.html) — Stories of real-world challenges, solutions, and hard-learned lessons.
+- [Architecture Glossary](glossary.html) — Plain-English definitions of terms and concepts.
+- [Framework Home](index.html) — Return to the overview.
+

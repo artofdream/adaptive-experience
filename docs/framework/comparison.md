@@ -1,23 +1,27 @@
 # Comparison & Visual Guide
 
-This page is the public comparative guide to Adaptive Experience Architecture: mapping the six-layer outer harness, the five concentric floors, and the second brain memory plane next to public coding-agent practice.
+This page is the public comparative guide to Adaptive Experience Architecture: mapping the six-layer outer harness, the 5 concentric building floors, and engineered memory alongside modern software engineering practices.
+
+> **Why Most AI Prototypes Never Make It to Production:** A chatbot that talks charmingly in a demo is not a finished business. When real customers order flowers, the system must check physical cooler inventory, calculate delivery routes, itemize taxes, and process payments without leaking data. AI language models are probabilistic word predictors—they cannot manage a real warehouse. **The Outer Harness** is the software factory built around the AI to guarantee real-world honesty and safety.
 
 [What this is](#what-this-is) · [Why prototypes fail](#why-most-ai-prototypes-never-make-it-to-production) · [Everyday formula](#1-the-core-formula-in-everyday-terms) · [Three eras](#2-the-three-eras-of-building-with-ai-2023-2026) · [5 floors](#3-the-5-concentric-floors-why-ai-apps-break) · [Second brain](#4-how-the-second-brain-solves-ai-amnesia) · [Team roles](#5-team-organization-14-hats-mapped-to-6-functions) · [Six layers](#6-the-six-layers-of-the-outer-harness-in-practice) · [Honest ledger](#honest-status-ledger) · [Sources](#sources)
 
+---
+
 ## What this is
 
-An independent Art of Group note. It maps AEA onto six harness layers (guides, sensors, loop, memory, permissions, observability) and five concentric floors that public engineering writing uses. The AEA formula stays: Shared Understanding + Domain Services + Outer Harness. [Path B](glossary.html#path-b) at [aea.artof.link](https://aea.artof.link) is the case study, not a trophy.
+An independent architecture analysis by Art of Group. It maps AEA onto six harness layers (guides, sensors, loop, memory, permissions, observability) and five concentric floors used in contemporary engineering literature. The AEA formula remains: **Shared Understanding + Domain Services + Outer Harness**. The flower shop at [aea.artof.link](https://aea.artof.link) serves as our live reference case study.
+
+---
 
 ## What this is not
 
-- Not an official Google paper, not an OpenAI paper, not an Anthropic paper, not a HashiCorp paper.
-- Not affiliated with those organizations, and not endorsed by them.
-- Not a reprint of the internal vault working paper.
-- Not a leaderboard. Related-work benches (GAIA swings, Terminal Bench ranks, a million generated lines) are **not** AEA results. They were not run on Lily's Florist.
-- Not AGENTS.md, not DATE_RE, not a pitch deck, not 3DX Lab.
-- Not proof that Path B dual-viewport is done. That clip after the CSS is **Unknown**. [**CF-054**](glossary.html#cf-nnn-coherence-finding-codes) is **regressed**.
+- Not an official paper from Google, OpenAI, Anthropic, or HashiCorp.
+- Not affiliated with or endorsed by those organizations.
+- Not an artificial benchmark leaderboard. Third-party benchmarks (GAIA swings, Terminal Bench ranks, million generated lines) belong to cited external papers and were not measured on Lily's Florist.
+- Not proof that dual-viewport presentation is finished. A fresh journey clip after the recent CSS updates remains **Unknown**.
 
-> **Why Most AI Prototypes Never Make It to Production:** A chatbot that talks charmingly in a demo is not a finished business. When real customers order flowers, the system must check physical cooler inventory, calculate delivery routes, itemize taxes, and process payments without leaking data. AI language models are probabilistic word predictors—they cannot manage a real warehouse. **The Outer Harness** is the software factory built around the AI to guarantee real-world honesty and safety.
+---
 
 ## 1. The Core Formula in Everyday Terms
 
@@ -30,6 +34,8 @@ An independent Art of Group note. It maps AEA onto six harness layers (guides, s
 - **Fail-Closed Availability:** If the inventory server is unreachable, the purchase button turns off. It is far better to say "Checking stock..." than to sell bouquets you cannot deliver.
 - **No Self-Approval:** The engineer or AI that writes code is never the one who signs off on pushing it to customers.
 
+---
+
 ## 2. The Three Eras of Building with AI (2023 → 2026)
 
 | Era | Core Focus | What It Optimized | The Fatal Flaw |
@@ -37,6 +43,8 @@ An independent Art of Group note. It maps AEA onto six harness layers (guides, s
 | **Era 1: Prompting (2023–24)** | Single Utterance | Magic prompt keywords, tone, phrasing | The AI forgets everything the second the chat window closes. |
 | **Era 2: Context / RAG (2025)** | What the AI sees | Stuffing large PDF manuals and search results | Information overload; the AI knows facts but lacks real actions. |
 | **Era 3: Harness Eng. (2026)** | The Entire System | Automated test guards, databases, merge gates | None. The AI is bounded by real-world software engineering. |
+
+---
 
 ## 3. The 5 Concentric Floors (Why AI Apps Break)
 
@@ -47,6 +55,8 @@ Think of an AI system like a 5-story building. **Each floor rests on the one bel
 - **The Dependency Law:** If your multi-agent team keeps failing, don't blame the agents—check your memory filter. Bad input on Floor 2 ruins everything above it.
 - **The Economic Law:** Swapping the AI model (like switching from Claude to GPT or Gemini) takes **1 afternoon**. Rebuilding your 5-floor operational harness takes **3 months**. The harness is your real intellectual property.
 
+---
+
 ## 4. How the "Second Brain" Solves AI Amnesia
 
 Without engineered memory, an AI starts every new conversation from scratch. Dumping hundreds of pages of past chat logs into the prompt makes the AI slow, expensive, and confused. AEA organizes memory into **4 clean vaults**:
@@ -55,6 +65,8 @@ Without engineered memory, an AI starts every new conversation from scratch. Dum
 - **🚫 2. Correction Memory (Constraints):** Hard rules learned from past mistakes (e.g., "Never invent fake requirement IDs").
 - **🕸️ 3. Relationship Memory (Graph):** Links showing how features, requirements, customer occasions, and code connect.
 - **📅 4. Daily Brief (Handoff):** A clean 1-page summary of exactly where the team left off today so work resumes instantly.
+
+---
 
 ## 5. Team Organization: 14 Hats Mapped to 6 Functions
 
@@ -69,6 +81,8 @@ To prevent agents and developers from stepping on each other, AEA organizes 14 s
 | **5. Gatekeeper** | Merge Request Coordinator (@aea-mrc) | **Independent Review:** Verifies all tests pass before code touches production. |
 | **6. Knowledge** | Knowledge Guardian (@aea-kg) | Records every breakthrough and lesson into the Second Brain for future sessions. |
 
+---
+
 ## 6. The Six Layers of the Outer Harness in Practice
 
 1. **Guides (The Rulebook):** Clear instructions, role limits, and playbooks loaded before starting any task.
@@ -77,6 +91,8 @@ To prevent agents and developers from stepping on each other, AEA organizes 14 s
 4. **Memory (The Vault):** Preserves lessons and daily handoffs so past mistakes are never repeated.
 5. **Permissions (The Keycard):** Strict controls over who can touch sensitive customer data, budgets, or servers.
 6. **Observability (The Dashboard):** Real-time Grafana telemetry proving the entire system is healthy with hard facts.
+
+---
 
 ## Honest Status Ledger
 
