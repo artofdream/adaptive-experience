@@ -27,9 +27,9 @@ Instead of duplicating inventory, pricing, or checkout rules inside the phone ap
 
 Here is a 30-second recording of the app running on a physical Android phone connected to the live store backend. 
 
-Watch how tapping **Mom's Birthday (Same-Day)** immediately tailors the catalog to show birthday arrangements available for delivery today:
+Watch the full **Need → Pick → Pay** path: **Mom's Birthday (Same-Day)**, budget chip, **Budget Mixed Bunch**, then **Confirm** through to **Order Confirmed** on a physical ASUS ROG phone against live Path B:
 
-![Companion Need step on Android, 2 September 2026, 30 seconds](assets/companion-need-30s-2026-09-02.mp4)
+![Companion Need→Pick→Pay on Android ROG, 4 September 2026, 30 seconds](assets/companion-need-30s-2026-09-04.mp4)
 
 ---
 
@@ -52,7 +52,7 @@ If a feature hasn't been physically tested and proven, its status remains **Unkn
 
 Here is what has been physically verified in production, and what has not:
 
-> **Installs from the Google Play Store** — **Verified (4 Sep 2026):** The app was installed on physical test phones (ASUS ROG and Samsung Galaxy) directly from Google Play (Internal Track, version `5`). It is a true production release build, not a developer prototype running on a simulator.
+> **Installs from the Google Play Store** — **Verified (upload + prior device):** Play Internal has `versionCode` **7** / `0.1.0-alpha.7` (2026-09-04). Earlier the same day, ROG/A36 proved Play-honest installs (`installerPackageName=com.android.vending`, non-`DEBUGGABLE`) on prior Internal builds. **This page's 30s demo clip** was recorded on ROG from an App Dist / packageinstaller build so we could automate the journey; treat the clip as UX proof of live Need→Pick→Pay→Confirmed, not as Play-install honesty for that take.
 
 > **Florist Staff See Web vs. Mobile Orders** — **Verified (4 Sep 2026):** When a customer buys flowers through the phone app, the order lands instantly in the florist's live dashboard with a clear channel tag: `client: companion-android`. Florists know immediately whether an order came from the web or the mobile app.
 
@@ -73,17 +73,20 @@ For developers and technical evaluators who want to inspect the exact device log
 ### 1. Google Play Release Verification (#390)
 During initial testing, sideloaded builds carried debug flags. To ensure true production quality, version `5` was deployed through Google Play Internal Track. Device inspection on the ASUS ROG test phone (`ASUS_I001DC`) confirmed:
 ```text
-versionCode=5 minSdk=26 targetSdk=36
+versionCode=7 (Play Internal upload 2026-09-04; prior Play-honest prove used versionCode 4–5)
+# example dumpsys shape from Play-honest prove:
+# versionCode=5 minSdk=26 targetSdk=36
 installerPackageName=com.android.vending
 pkgFlags=[ HAS_CODE ALLOW_CLEAR_USER_DATA ALLOW_BACKUP ]
 ```
 The app has zero debug flags and is officially signed and distributed by Google Play (`com.android.vending`).
 
 ### 2. Live Order Verification (#375, #384)
-On 4 September 2026, a live test purchase was completed from the mobile app on the ASUS ROG phone:
-- **Order ID:** `34091114-cb91-44de-a5a3-6be78c503912`
-- **Item:** Classic Rose Dozen ($82.00 total)
-- **Result:** Appeared in real time at `GET https://aea.artof.link/api/v1/operator/orders` with `client: companion-android`.
+On 4 September 2026, live test purchases completed from the mobile app on the ASUS ROG phone. Latest demo recording:
+- **Order ID:** `f3583908-b2ca-4b5e-a4e8-aa0c6c040177`
+- **Item:** Budget Mixed Bunch + delivery (**$47,00** total)
+- **Status:** SUBMITTED (Preparing in atelier) · ETA afternoon → home
+- **Result:** Companion showed **Order Confirmed!**; same write-through path as prior florist probes (`client: companion-android`).
 
 ---
 
