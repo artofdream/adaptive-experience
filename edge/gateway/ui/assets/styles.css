@@ -781,10 +781,10 @@ dialog.operator-dialog::backdrop {
   background: transparent;
   border: 1px solid var(--line);
   border-radius: 50%;
-  width: 36px;
-  height: 36px;
-  min-width: 36px;
-  min-height: 36px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
   display: grid;
   place-items: center;
   font-size: 1.1rem;
@@ -882,8 +882,8 @@ dialog.operator-dialog::backdrop {
     background: transparent;
     border: 0;
     padding: 2px 0;
-    min-height: 36px;
-    min-width: 36px;
+    min-height: 44px;
+    min-width: 44px;
   }
   .operator-table th, .operator-table td {
     padding: 0.65rem 0.45rem;
@@ -953,6 +953,12 @@ dialog.operator-dialog::backdrop {
 }
 .scroll-ctrl-btn:active {
   transform: translateY(0);
+}
+
+@media (max-width: 40rem) {
+  /* #382 polish: wrap the console nav pills on phone so the 5th item
+     (Forecast) is never clipped/hidden behind a horizontal-scroll edge. */
+  .operator-nav { flex-wrap: wrap; overflow-x: visible; }
 }
 
 /* UX-P03: WCAG 2.1 AAA 44x44px Minimum Tap Target Enforcement */

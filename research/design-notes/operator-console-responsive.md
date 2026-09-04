@@ -1,13 +1,35 @@
-# Florist operator console — responsive UX spec (laptop / tablet / phone)
+# Florist operator console — responsive UX (laptop / tablet / phone)
 
 > Scope: `edge/gateway/ui/florist.html` + `assets/florist.js` + `assets/styles.css`
 > (served at `/florist`). Goal: a florist operator works **efficiently** from a
-> laptop, tablet, or phone. Implementation-ready spec so the change is turnkey.
->
-> **Coordination:** AGY (Antigravity) owns florist phase 1. This note is
-> zero-collision (docs only). Implement on top of AGY's merged phase-1 result;
-> rebase/reconcile rather than clobber. Follow the Figma↔shop-UI sync rule and
-> keep least-data / zero-PII operator reads (NFR-017). Do not invent IDs.
+> laptop, tablet, or phone.
+
+## Status (2026-09-04)
+
+**AGY (Antigravity) implemented the responsive redesign in `#382`** (merged to
+`main`): `operator-table-wrap` scroll containers, a jump-nav pill bar, proper
+filter pill buttons, and — at ≤48rem — the Staff Orders / Prepare tables collapse
+to key columns (Updated/Order/Status) with an `.order-mobile-meta` summary and a
+**"Details" trigger that opens a bottom-sheet order-details `<dialog>`**. Session
+splits stack ≤60rem.
+
+This branch **verified AGY's `#382` live from this remote session** across laptop
+(1280), tablet (768 + 900), and phone (390) — full 9-col table on laptop, clean
+3-col collapse + working order-details dialog on phone/tablet, no horizontal
+scroll at any width (evidence: screen recording + screenshots), and added two
+**surgical polish fixes** (building on `#382`, not clobbering it):
+
+1. **Phone nav wrap** — `.operator-nav { flex-wrap: wrap }` ≤40rem so the 5th pill
+   ("Forecast") is never clipped/hidden behind the horizontal-scroll edge.
+2. **≥44px tap targets** — the mobile `.order-detail-trigger` and the dialog close
+   button bumped 36px → 44px (objective requires ≥44px).
+
+Edge unit tests green (77). The reference spec below is retained for context.
+
+---
+
+> Original spec (pre-`#382`): implementation-ready responsive plan. Keep
+> least-data / zero-PII operator reads (NFR-017); do not invent IDs.
 
 ## Baseline (verified live in-session, current `main`)
 
