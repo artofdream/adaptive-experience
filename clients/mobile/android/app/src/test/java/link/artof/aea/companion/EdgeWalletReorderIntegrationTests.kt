@@ -106,4 +106,34 @@ class EdgeWalletReorderIntegrationTests {
         assertNull(repository.walletReorderReference())
         assertTrue(fakeApi.selections.isEmpty())
     }
+
+    @Test
+    fun latestWalletReceiptStateUpdatesOnCheckoutAndReset() = runBlocking {
+        assertNull(repository.latestWalletReceipt.value)
+        assertNull(repository.latestWalletReceipt())
+
+        fakeApi.sharedUnderstanding = SharedUnderstandingResponse(
+            contextVersion = 2,
+            structuredIntent = StructuredIntent(occasion = "anniversary", recipient = "Partner"),
+        )
+        repository.moveToPickStage()
+        repository.selectArrangement(rose)
+        repository.moveToPayStage()
+        repository.completeCheckout("With all my love")
+
+        val receipt = repository.latestWalletReceipt.value
+        assertEquals("classic-rose-dozen", receipt?.productId)
+        assertEquals("Partner", receipt?.recipientLabel)
+        assertEquals("With all my love", receipt?.cardMessageDraft)
+        assertEquals("anniversary", receipt?.occasionType)
+
+        // Survives startOver()
+        repository.startOver()
+        assertEquals(JourneyStage.NEED, repository.currentStage.value)
+        assertEquals(receipt, repository.latestWalletReceipt.value)
+
+        // Clear wallet clears reactive state
+        repository.clearWallet()
+        assertNull(repository.latestWalletReceipt.value)
+    }
 }

@@ -20,6 +20,7 @@ import link.artof.aea.companion.data.model.WorkspaceResponse
 import link.artof.aea.companion.data.wallet.EdgeWallet
 import link.artof.aea.companion.data.wallet.InMemoryWalletStore
 import link.artof.aea.companion.data.wallet.ReorderReference
+import link.artof.aea.companion.data.wallet.WalletReceipt
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -137,6 +138,10 @@ class SessionRepository(
 
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
+
+    /** ADR-020 Layer 2: reactive device-held latest wallet receipt for returning-customer affordance. */
+    private val _latestWalletReceipt = MutableStateFlow<WalletReceipt?>(wallet.latestReceipt())
+    val latestWalletReceipt: StateFlow<WalletReceipt?> = _latestWalletReceipt.asStateFlow()
 
     private val _sessionReady = MutableStateFlow(false)
     val sessionReady: StateFlow<Boolean> = _sessionReady.asStateFlow()
@@ -572,13 +577,14 @@ val band = parseBudgetBand(label) ?: BudgetBand(label, floor = null, ceiling = c
             // ever surfaced back to the platform (see EdgeWallet.reorderReference).
             if (status != "DECLINED" && orderId.isNotBlank() && orderId != "pending") {
                 val intent = _sharedUnderstanding.value
-                wallet.saveReceipt(
+                val receipt = wallet.saveReceipt(
                     orderReference = orderId,
                     productId = selected.sku,
                     recipientLabel = intent.recipient,
                     cardMessageDraft = cardMessage,
                     occasionType = intent.occasion,
                 )
+                _latestWalletReceipt.value = receipt
             }
 
             _currentStage.value = JourneyStage.TRACKING
@@ -594,6 +600,15 @@ val band = parseBudgetBand(label) ?: BudgetBand(label, floor = null, ceiling = c
 
     /** Device-held order count for a returning-customer affordance (no PII). */
     fun walletReceiptCount(): Int = wallet.receipts().size
+
+    /** ADR-020 Layer 2: device-held latest wallet receipt (contains device-only recipient label / occasion). */
+    fun latestWalletReceipt(): WalletReceipt? = wallet.latestReceipt()
+
+    /** Clear device-held wallet history (Right-to-be-forgotten / customer sign-out). */
+    fun clearWallet() {
+        wallet.clear()
+        _latestWalletReceipt.value = null
+    }
 
     /**
      * FR-008 one-tap reorder from the Edge Wallet: mint/ensure a session and
@@ -650,6 +665,7 @@ val band = parseBudgetBand(label) ?: BudgetBand(label, floor = null, ceiling = c
         budgetFloor = null
         budgetCeiling = null
         budgetChipLabel = null
+        _latestWalletReceipt.value = wallet.latestReceipt()
         _messages.value = listOf(
             ChatMessage(
                 id = "welcome",

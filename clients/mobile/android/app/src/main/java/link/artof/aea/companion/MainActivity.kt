@@ -86,6 +86,7 @@ fun LilyCompanionApp(repository: SessionRepository) {
     val destinationReference by repository.destinationReference.collectAsState()
     val deliveryDate by repository.deliveryDate.collectAsState()
     val escalationAck by repository.escalationAck.collectAsState()
+    val latestWalletReceipt by repository.latestWalletReceipt.collectAsState()
     var showContactFlorist by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
@@ -166,6 +167,10 @@ fun LilyCompanionApp(repository: SessionRepository) {
                         onSkipBudget = { repository.skipBudget() },
                         onContinueToPick = { draft ->
                             scope.launch { repository.continueToPick(draft) }
+                        },
+                        latestWalletReceipt = latestWalletReceipt,
+                        onReorderFromWallet = {
+                            scope.launch { repository.reorderFromWallet() }
                         },
                         onStartOver = { scope.launch { repository.startOver() } }
                     )
