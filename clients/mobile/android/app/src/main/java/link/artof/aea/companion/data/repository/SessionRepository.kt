@@ -3,6 +3,7 @@ package link.artof.aea.companion.data.repository
 import link.artof.aea.companion.data.api.BffClient
 import link.artof.aea.companion.data.model.AcceptedResponse
 import link.artof.aea.companion.data.model.Arrangement
+import link.artof.aea.companion.data.model.CatalogArt
 import link.artof.aea.companion.data.model.BffException
 import link.artof.aea.companion.data.model.ChatMessage
 import link.artof.aea.companion.data.model.CheckoutRequest
@@ -64,6 +65,7 @@ class SessionRepository(
     private val localFallbackCatalog = listOf(
         Arrangement(
             sku = "classic-rose-dozen",
+                    imageUrl = CatalogArt.imageUrlFor("classic-rose-dozen"),
             name = "Classic Rose Dozen",
             price = 70.00,
             description = "Reference catalog roses (local fallback when workspace catalog unavailable).",
@@ -72,6 +74,7 @@ class SessionRepository(
         ),
         Arrangement(
             sku = "budget-mixed-bunch",
+                    imageUrl = CatalogArt.imageUrlFor("budget-mixed-bunch"),
             name = "Budget Mixed Bunch",
             price = 35.00,
             description = "Value mixed bunch from reference catalog.",
@@ -80,6 +83,7 @@ class SessionRepository(
         ),
         Arrangement(
             sku = "lilac-bouquet",
+                    imageUrl = CatalogArt.imageUrlFor("lilac-bouquet"),
             name = "Lilac Bouquet",
             price = 95.00,
             description = "Seasonal lilac bouquet.",
@@ -88,6 +92,7 @@ class SessionRepository(
         ),
         Arrangement(
             sku = "peony-sold-out-local",
+                    imageUrl = CatalogArt.imageUrlFor("peony-sold-out-local"),
             name = "Blush Peonies (local fallback)",
             price = 85.00,
             description = "Sold-out fail-closed example when catalog is local fallback.",
@@ -673,6 +678,7 @@ val band = parseBudgetBand(label) ?: BudgetBand(label, floor = null, ceiling = c
                     name = productNames[item.productId] ?: item.productId,
                     price = item.price,
                     description = "Live workspace recommendation (rank ${item.rank}).",
+                    imageUrl = CatalogArt.imageUrlFor(item.productId),
                     available = item.available && item.availabilityStatus != "sold_out",
                     tags = listOfNotNull(
                         item.availabilityStatus.takeIf { it.isNotBlank() },

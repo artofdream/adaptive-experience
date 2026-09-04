@@ -32,8 +32,8 @@ android {
         targetSdk = 36
         // versionName must change with versionCode so Play Internal / dumpsys are easy to track.
         // Scheme: 0.1.0-alpha.<versionCode>
-        versionCode = 5
-        versionName = "0.1.0-alpha.5"
+        versionCode = 6
+        versionName = "0.1.0-alpha.6"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -133,6 +133,7 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.coil.compose)
 
     // ADR-020 Layer 2 Edge Wallet: at-rest encryption via Android Keystore.
     implementation(libs.androidx.security.crypto)
