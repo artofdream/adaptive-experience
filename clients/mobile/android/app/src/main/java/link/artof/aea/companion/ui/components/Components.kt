@@ -217,6 +217,52 @@ fun ArrangementCard(
 }
 
 @Composable
+fun QuantityStepper(
+    quantity: Int,
+    onQuantityChange: (Int) -> Unit,
+    enabled: Boolean = true,
+    modifier: Modifier = Modifier,
+    min: Int = 1,
+    max: Int = 10,
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = "Quantity",
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            OutlinedButton(
+                onClick = { onQuantityChange((quantity - 1).coerceAtLeast(min)) },
+                enabled = enabled && quantity > min,
+                modifier = Modifier.size(width = 48.dp, height = 40.dp),
+                contentPadding = PaddingValues(0.dp)
+            ) {
+                Text("−")
+            }
+            Text(
+                text = quantity.toString(),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
+            OutlinedButton(
+                onClick = { onQuantityChange((quantity + 1).coerceAtMost(max)) },
+                enabled = enabled && quantity < max,
+                modifier = Modifier.size(width = 48.dp, height = 40.dp),
+                contentPadding = PaddingValues(0.dp)
+            ) {
+                Text("+")
+            }
+        }
+    }
+}
+
+@Composable
 fun AsoDisclaimer(
     modifier: Modifier = Modifier
 ) {

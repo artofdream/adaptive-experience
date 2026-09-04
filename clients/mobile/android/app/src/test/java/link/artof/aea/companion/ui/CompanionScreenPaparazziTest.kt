@@ -51,6 +51,7 @@ class CompanionScreenPaparazziTest {
                 PickScreen(
                     arrangements = sampleArrangements,
                     selectedArrangement = sampleArrangements.first(),
+                    quantity = 2,
                     onSelectArrangement = {},
                     onContinueToPay = {},
                     onBack = {},

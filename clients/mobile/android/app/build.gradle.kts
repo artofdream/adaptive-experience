@@ -32,8 +32,8 @@ android {
         targetSdk = 36
         // versionName must change with versionCode so Play Internal / dumpsys are easy to track.
         // Scheme: 0.1.0-alpha.<versionCode>
-        versionCode = 6
-        versionName = "0.1.0-alpha.6"
+        versionCode = 7
+        versionName = "0.1.0-alpha.7"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

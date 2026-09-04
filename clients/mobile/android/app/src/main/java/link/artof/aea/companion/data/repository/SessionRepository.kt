@@ -13,6 +13,7 @@ import link.artof.aea.companion.data.model.DeliveryDetails
 import link.artof.aea.companion.data.model.DeliveryRequest
 import link.artof.aea.companion.data.model.DeliveryTiming
 import link.artof.aea.companion.data.model.OrderResult
+import link.artof.aea.companion.data.model.SelectionItem
 import link.artof.aea.companion.data.model.SelectionRequest
 import link.artof.aea.companion.data.model.SharedUnderstanding
 import link.artof.aea.companion.data.model.SharedUnderstandingResponse
@@ -106,6 +107,10 @@ class SessionRepository(
 
     private val _selectedArrangement = MutableStateFlow<Arrangement?>(null)
     val selectedArrangement: StateFlow<Arrangement?> = _selectedArrangement.asStateFlow()
+
+    /** T-04 / FR-003 quantity (web `#quantity` min 1 max 10). Default 1. */
+    private val _quantity = MutableStateFlow(QUANTITY_MIN)
+    val quantity: StateFlow<Int> = _quantity.asStateFlow()
 
     private val _sharedUnderstanding = MutableStateFlow(SharedUnderstanding())
     val sharedUnderstanding: StateFlow<SharedUnderstanding> = _sharedUnderstanding.asStateFlow()
@@ -377,9 +382,10 @@ val band = parseBudgetBand(label) ?: BudgetBand(label, floor = null, ceiling = c
         runGuarded {
             ensureSessionInternal()
             val accepted = api.postSelection(
-                SelectionRequest(
+                selectionWithQuantity(
                     productId = arrangement.sku,
-                    observedContextVersion = contextVersion
+                    quantity = _quantity.value,
+                    observedContextVersion = contextVersion,
                 )
             )
             if (accepted.contextVersion > 0) {
@@ -389,6 +395,21 @@ val band = parseBudgetBand(label) ?: BudgetBand(label, floor = null, ceiling = c
             _sharedUnderstanding.value = _sharedUnderstanding.value.copy(selectedSku = arrangement.sku)
             refreshSharedUnderstanding()
         }
+    }
+
+    /** Local clamp only (web `#quantity` 1–10). Does not POST until select / update. */
+    fun setQuantity(quantity: Int) {
+        _quantity.value = clampQuantity(quantity)
+    }
+
+    /**
+     * Shopper changed quantity on Pick/Pay (#399). Re-POSTs selection when a
+     * SKU is already chosen so workspace order_summary tracks web T-04.
+     */
+    suspend fun updateQuantity(quantity: Int) {
+        setQuantity(quantity)
+        val selected = _selectedArrangement.value ?: return
+        selectArrangement(selected)
     }
 
     fun moveToPayStage() {
@@ -438,6 +459,7 @@ val band = parseBudgetBand(label) ?: BudgetBand(label, floor = null, ceiling = c
         _selectedArrangement.value = null
         _sharedUnderstanding.value = _sharedUnderstanding.value.copy(selectedSku = null)
         _orderSummaryTotal.value = null
+        _quantity.value = QUANTITY_MIN
         _errorMessage.value = null
         _currentStage.value = JourneyStage.NEED
     }
@@ -455,7 +477,7 @@ val band = parseBudgetBand(label) ?: BudgetBand(label, floor = null, ceiling = c
     fun displayCheckoutTotal(selectedPrice: Double?): Double {
         orderSummaryTotal.value?.let { return it }
         val product = selectedPrice ?: return 0.0
-        return product + REFERENCE_DELIVERY_FEE
+        return product * _quantity.value + REFERENCE_DELIVERY_FEE
     }
 
     /**
@@ -471,16 +493,17 @@ val band = parseBudgetBand(label) ?: BudgetBand(label, floor = null, ceiling = c
             // Authoritative context_version before the mutation chain (#365).
             refreshContextFromWorkspace()
 
-            val options = if (cardMessage.isNotBlank()) {
+            val extraOptions = if (cardMessage.isNotBlank()) {
                 mapOf("card_message" to cardMessage.take(280))
             } else {
                 emptyMap()
             }
             val selectAccepted = postSelectionRetryingStale(
-                SelectionRequest(
+                selectionWithQuantity(
                     productId = selected.sku,
-                    options = options,
-                    observedContextVersion = contextVersion
+                    quantity = _quantity.value,
+                    observedContextVersion = contextVersion,
+                    extraOptions = extraOptions,
                 )
             )
             if (selectAccepted.contextVersion > 0) {
@@ -587,9 +610,10 @@ val band = parseBudgetBand(label) ?: BudgetBand(label, floor = null, ceiling = c
             ensureSessionInternal()
             refreshContextFromWorkspace()
             val accepted = postSelectionRetryingStale(
-                SelectionRequest(
+                selectionWithQuantity(
                     productId = reference.productId,
-                    observedContextVersion = contextVersion
+                    quantity = _quantity.value,
+                    observedContextVersion = contextVersion,
                 )
             )
             if (accepted.contextVersion > 0) {
@@ -616,6 +640,7 @@ val band = parseBudgetBand(label) ?: BudgetBand(label, floor = null, ceiling = c
         _selectedArrangement.value = null
         _orderResult.value = null
         _orderSummaryTotal.value = null
+        _quantity.value = QUANTITY_MIN
         _errorMessage.value = null
         _deliveryWindow.value = "afternoon"
         _destinationReference.value = BffClient.SESSION_DESTINATION_REFERENCE
@@ -860,6 +885,32 @@ val band = parseBudgetBand(label) ?: BudgetBand(label, floor = null, ceiling = c
     companion object {
         /** Matches platform aea_platform.pricing.REFERENCE_DELIVERY_FEE. */
         const val REFERENCE_DELIVERY_FEE = 12.0
+
+        /** Matches platform aea_platform.selection QUANTITY_MIN / QUANTITY_MAX and web `#quantity`. */
+        const val QUANTITY_MIN = 1
+        const val QUANTITY_MAX = 10
+
+        fun clampQuantity(value: Int): Int = value.coerceIn(QUANTITY_MIN, QUANTITY_MAX)
+
+        /**
+         * Web Path B selection body: `product_id` + `items[].quantity` +
+         * `options.quantity` (BFF accepts int or string; companion sends string
+         * because [SelectionRequest.options] is Map<String, String>).
+         */
+        fun selectionWithQuantity(
+            productId: String,
+            quantity: Int,
+            observedContextVersion: Int,
+            extraOptions: Map<String, String> = emptyMap(),
+        ): SelectionRequest {
+            val qty = clampQuantity(quantity)
+            return SelectionRequest(
+                productId = productId,
+                items = listOf(SelectionItem(productId = productId, quantity = qty)),
+                options = extraOptions + ("quantity" to qty.toString()),
+                observedContextVersion = observedContextVersion,
+            )
+        }
 
         data class BudgetBand(val label: String, val floor: Double?, val ceiling: Double?)
 

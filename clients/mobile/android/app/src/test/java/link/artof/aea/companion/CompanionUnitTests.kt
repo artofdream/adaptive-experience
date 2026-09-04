@@ -251,6 +251,86 @@ class CompanionUnitTests {
         assertEquals("classic-rose-dozen", repository.sharedUnderstanding.value.selectedSku)
         assertEquals(1, fakeApi.selections.size)
         assertEquals("classic-rose-dozen", fakeApi.selections.last().productId)
+        assertEquals("1", fakeApi.selections.last().options["quantity"])
+        assertEquals(1, fakeApi.selections.last().items?.first()?.quantity)
+    }
+
+    @Test
+    fun quantityStepperPostsSelectionOptionsAndItemsLikeWeb() = runBlocking {
+        fakeApi.sharedUnderstanding = SharedUnderstandingResponse(contextVersion = 3)
+        val rose = Arrangement(
+            sku = "classic-rose-dozen",
+            name = "Classic Roses",
+            price = 70.0,
+            available = true
+        )
+        repository.moveToPickStage()
+        repository.selectArrangement(rose)
+        repository.updateQuantity(3)
+        assertEquals(3, repository.quantity.value)
+        val posted = fakeApi.selections.last()
+        assertEquals("classic-rose-dozen", posted.productId)
+        assertEquals("3", posted.options["quantity"])
+        assertEquals(3, posted.items?.first()?.quantity)
+        assertEquals("classic-rose-dozen", posted.items?.first()?.productId)
+    }
+
+    @Test
+    fun quantityClampsToWebOneThroughTen() {
+        repository.setQuantity(0)
+        assertEquals(1, repository.quantity.value)
+        repository.setQuantity(11)
+        assertEquals(10, repository.quantity.value)
+        repository.setQuantity(4)
+        assertEquals(4, repository.quantity.value)
+        assertEquals(1, SessionRepository.clampQuantity(-3))
+        assertEquals(10, SessionRepository.clampQuantity(99))
+    }
+
+    @Test
+    fun checkoutPreservesQuantityInCardMessageReselection() = runBlocking {
+        fakeApi.sharedUnderstanding = SharedUnderstandingResponse(contextVersion = 4)
+        val rose = Arrangement(
+            sku = "classic-rose-dozen",
+            name = "Classic Roses",
+            price = 70.0,
+            available = true
+        )
+        repository.moveToPickStage()
+        repository.selectArrangement(rose)
+        repository.updateQuantity(2)
+        repository.moveToPayStage()
+        repository.completeCheckout("Happy Birthday Mom!")
+        val checkoutSelection = fakeApi.selections.last()
+        assertEquals("2", checkoutSelection.options["quantity"])
+        assertEquals("Happy Birthday Mom!", checkoutSelection.options["card_message"])
+        assertEquals(2, checkoutSelection.items?.first()?.quantity)
+        // 70 * 2 + 12 delivery
+        assertEquals(152.0, fakeApi.lastCheckout!!.observedTotal, 0.01)
+        assertEquals(152.0, repository.orderResult.value?.totalAmount ?: 0.0, 0.01)
+    }
+
+    @Test
+    fun displayCheckoutTotalScalesWithQuantity() {
+        assertEquals(82.0, repository.displayCheckoutTotal(70.0), 0.01)
+        repository.setQuantity(2)
+        assertEquals(152.0, repository.displayCheckoutTotal(70.0), 0.01)
+    }
+
+    @Test
+    fun selectionWithQuantityEncodesWebShape() {
+        val request = SessionRepository.selectionWithQuantity(
+            productId = "classic-rose-dozen",
+            quantity = 2,
+            observedContextVersion = 5,
+            extraOptions = mapOf("card_message" to "hi"),
+        )
+        val encoded = json.encodeToString(request)
+        assertTrue(encoded.contains("\"quantity\":\"2\""))
+        assertTrue(encoded.contains("\"product_id\":\"classic-rose-dozen\""))
+        assertTrue(encoded.contains("\"card_message\":\"hi\""))
+        assertEquals(2, request.items!!.first().quantity)
+        assertEquals("2", request.options["quantity"])
     }
 
     @Test
@@ -350,10 +430,12 @@ class CompanionUnitTests {
         repository.moveToPickStage()
         repository.selectArrangement(rose)
         repository.moveToPayStage()
+        repository.setQuantity(3)
         repository.startOver()
         assertEquals(JourneyStage.NEED, repository.currentStage.value)
         assertNull(repository.selectedArrangement.value)
         assertNull(repository.orderResult.value)
+        assertEquals(1, repository.quantity.value)
         assertTrue(
             "Start Over must clear BFF cookie/CSRF state before createSession (#366)",
             fakeApi.clearSessionStateCalls >= 1
@@ -785,12 +867,17 @@ class FakeBffClient : BffClient() {
             )
         }
         // Map known test SKUs to catalog-like prices for order_summary.
-        selectedPrice = when (request.productId) {
+        // Honor options.quantity / items.quantity so qty>1 matches web T-04 (#399).
+        val unit = when (request.productId) {
             "classic-rose-dozen" -> 70.0
             "budget-mixed-bunch" -> 35.0
             "lilac-bouquet" -> 95.0
             else -> 70.0
         }
+        val qty = request.options["quantity"]?.toIntOrNull()
+            ?: request.items?.firstOrNull()?.quantity
+            ?: 1
+        selectedPrice = unit * qty.coerceAtLeast(1)
         version = request.observedContextVersion + 1
         return AcceptedResponse(accepted = true, code = "accepted", contextVersion = version)
     }
