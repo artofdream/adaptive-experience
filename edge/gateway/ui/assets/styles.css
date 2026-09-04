@@ -694,6 +694,25 @@ body.operator { background: var(--page); }
   color: #ffffff;
   box-shadow: 0 1px 3px rgba(76, 47, 138, 0.2);
 }
+/* At-a-glance per-window triage counts on the filter pills (#398). */
+.operator-filter-count {
+  margin-inline-start: 0.4rem;
+  min-width: 1.2rem;
+  padding: 0 0.35rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.5;
+  background: rgba(76, 47, 138, 0.12);
+  color: inherit;
+}
+.operator-filter-btn[aria-pressed="true"] .operator-filter-count {
+  background: rgba(255, 255, 255, 0.26);
+  color: #ffffff;
+}
+.operator-filter-count:empty {
+  display: none;
+}
 
 .dialog-sheet-handle {
   display: none;

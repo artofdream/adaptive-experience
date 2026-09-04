@@ -454,6 +454,40 @@ const INBOX_FILTER_IDS = {
   "inbox-filter-7d": "7d",
   "inbox-filter-all": "all",
 };
+const ORDER_FILTER_LABELS = {
+  "order-filter-today": "Today",
+  "order-filter-3d": "3 days",
+  "order-filter-7d": "7 days",
+  "order-filter-delayed": "Delayed",
+  "order-filter-all": "All",
+};
+const INBOX_FILTER_LABELS = {
+  "inbox-filter-today": "Today",
+  "inbox-filter-3d": "3 days",
+  "inbox-filter-7d": "7 days",
+  "inbox-filter-all": "All",
+};
+
+// At-a-glance triage counts on the pills (#398): show how many rows each window
+// holds so an operator doesn't have to click every filter to find the work.
+function updateFilterCounts(ids, labels, rows, counter, noun) {
+  for (const [id, value] of Object.entries(ids)) {
+    const button = document.querySelector(`#${id}`);
+    if (!button) continue;
+    const count = counter(rows, value).length;
+    const span = button.querySelector(".operator-filter-count");
+    if (span) span.textContent = String(count);
+    button.setAttribute("aria-label", `${labels[id]}, ${count} ${count === 1 ? noun : `${noun}s`}`);
+  }
+}
+
+function updateOrderFilterCounts() {
+  updateFilterCounts(ORDER_FILTER_IDS, ORDER_FILTER_LABELS, state.orders, filterOrders, "order");
+}
+
+function updateInboxFilterCounts() {
+  updateFilterCounts(INBOX_FILTER_IDS, INBOX_FILTER_LABELS, state.items, filterInbox, "request");
+}
 
 function uniqueSorted(values) {
   return Array.from(new Set(values.filter(Boolean))).sort();
@@ -542,6 +576,7 @@ function renderOrders(items) {
   renderPrepare(state.orders);
   const visible = filterOrders(state.orders, state.orderFilter);
   syncOrderFilterButtons();
+  updateOrderFilterCounts();
   if (!state.orders.length) {
     orderRows.append(emptyRow(9, "No companion or website orders yet. This list stays empty until a checkout writes through."));
     decorateHeaderIcons();
@@ -617,6 +652,7 @@ function renderInbox(items) {
   const full = Array.isArray(state.items) ? state.items : [];
   inboxRows.replaceChildren();
   syncInboxFilterButtons();
+  updateInboxFilterCounts();
   if (!full.length) {
     inboxRows.append(emptyRow(3, "No Contact Florist requests yet. This inbox stays empty until a customer uses T-09."));
     decorateHeaderIcons();

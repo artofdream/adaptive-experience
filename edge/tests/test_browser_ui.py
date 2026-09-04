@@ -446,6 +446,11 @@ class BrowserUiTests(unittest.TestCase):
         self.assertIn("function inboxWithinDays", script)
         self.assertIn('orderFilter: "today"', script)
         self.assertIn('inboxFilter: "all"', script)
+        # At-a-glance per-window counts on the pills so operators don't have to
+        # click every filter to find where the work is (#398).
+        self.assertIn('class="operator-filter-count"', html)
+        self.assertIn("function updateOrderFilterCounts", script)
+        self.assertIn("function updateInboxFilterCounts", script)
         self.assertIn("Select an order or inbox row", html)
         self.assertIn("Has order", script)
         self.assertIn(">Inbox</span>", script)
