@@ -12,6 +12,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import coil.compose.AsyncImage
 import link.artof.aea.companion.data.model.Arrangement as FloristArrangement
 import link.artof.aea.companion.data.model.ChatMessage
 import link.artof.aea.companion.data.model.OrderResult
@@ -325,6 +328,19 @@ fun PayScreen(
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
+                val payImage = selectedArrangement?.imageUrl.orEmpty()
+                if (payImage.isNotBlank()) {
+                    AsyncImage(
+                        model = payImage,
+                        contentDescription = selectedArrangement?.name,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(120.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
                 Text(
                     text = selectedArrangement?.name ?: "No Arrangement Selected",
                     style = MaterialTheme.typography.titleMedium,

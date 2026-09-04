@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -18,6 +19,7 @@ import androidx.compose.foundation.layout.Arrangement
 import link.artof.aea.companion.data.model.Arrangement as FloristArrangement
 import link.artof.aea.companion.data.repository.JourneyStage
 import link.artof.aea.companion.ui.theme.*
+import coil.compose.AsyncImage
 
 @Composable
 fun StageProgressBar(
@@ -139,6 +141,18 @@ fun ArrangementCard(
         )
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
+            if (arrangement.imageUrl.isNotBlank()) {
+                AsyncImage(
+                    model = arrangement.imageUrl,
+                    contentDescription = arrangement.name,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(140.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+            }
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
