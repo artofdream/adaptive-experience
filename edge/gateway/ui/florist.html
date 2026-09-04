@@ -33,6 +33,14 @@
     </p>
     <p id="operator-mode" class="status operator-mode" aria-live="polite"></p>
 
+    <nav class="operator-nav" aria-label="Console navigation">
+      <a href="#orders" class="operator-nav-item">Orders</a>
+      <a href="#prepare" class="operator-nav-item">Prepare</a>
+      <a href="#inbox" class="operator-nav-item">Inbox</a>
+      <a href="#session" class="operator-nav-item">Session</a>
+      <a href="#forecast" class="operator-nav-item">Forecast</a>
+    </nav>
+
     <div class="operator-layout">
       <section id="orders" class="panel operator-inbox" aria-labelledby="orders-title">
         <header>
@@ -40,13 +48,11 @@
             <p class="eyebrow">FR-013</p>
             <h1 id="orders-title">Staff orders</h1>
             <p class="subtitle">Companion and website checkouts. Least-data. Opaque destination refs. Not CRM.</p>
-            <p class="hint" id="order-filter-bar" role="group" aria-label="Staff order filter">
-              <button type="button" class="text-link" id="order-filter-today" aria-pressed="true">Today</button>
-              ·
-              <button type="button" class="text-link" id="order-filter-delayed" aria-pressed="false">Delayed</button>
-              ·
-              <button type="button" class="text-link" id="order-filter-all" aria-pressed="false">All</button>
-            </p>
+            <div class="operator-filter-wrap" id="order-filter-bar" role="group" aria-label="Staff order filter">
+              <button type="button" class="operator-filter-btn text-link" id="order-filter-today" aria-pressed="true">Today</button>
+              <button type="button" class="operator-filter-btn text-link" id="order-filter-delayed" aria-pressed="false">Delayed</button>
+              <button type="button" class="operator-filter-btn text-link" id="order-filter-all" aria-pressed="false">All</button>
+            </div>
           </div>
         </header>
         <div class="operator-table-wrap">
@@ -78,7 +84,7 @@
           </div>
         </header>
         <div class="operator-table-wrap">
-          <table class="operator-table">
+          <table class="operator-table operator-table-prepare">
             <thead>
               <tr>
                 <th scope="col">Arrangement</th>
@@ -193,6 +199,7 @@
   </main>
 
   <dialog id="order-detail-dialog" class="operator-dialog" aria-labelledby="order-dialog-title">
+    <div class="dialog-sheet-handle" aria-hidden="true"></div>
     <div class="dialog-header">
       <div>
         <p class="eyebrow">FR-013 · Order details</p>

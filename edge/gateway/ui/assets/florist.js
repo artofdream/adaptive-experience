@@ -439,11 +439,20 @@ function renderPrepare(items) {
   for (const group of groups) {
     const row = document.createElement("tr");
     const cards = uniqueSorted(group.cards).slice(0, 2).join("; ") || "—";
-    row.innerHTML = `<td>${group.title}</td>
+    const channels = uniqueSorted(group.channels).join(" · ") || "—";
+    const cardMeta = cards !== "—" ? `<span class="prepare-mobile-cards">“${cards}”</span>` : "";
+    const channelMeta = channels !== "—" ? `<span><code>${channels}</code></span>` : "";
+    const mobileMeta = (cardMeta || channelMeta)
+      ? `<div class="prepare-mobile-meta">${cardMeta}${channelMeta}</div>`
+      : "";
+    row.innerHTML = `<td>
+        <span class="prepare-title-main">${group.title}</span>
+        ${mobileMeta}
+      </td>
       <td>${group.count}</td>
       <td>${uniqueSorted(group.windows).join(" · ") || "—"}</td>
       <td>${cards}</td>
-      <td><code>${uniqueSorted(group.channels).join(" · ") || "—"}</code></td>`;
+      <td><code>${channels}</code></td>`;
     prepareRows.append(row);
   }
 }
@@ -670,7 +679,14 @@ async function openSession(sessionId) {
 inboxRows.addEventListener("click", (event) => {
   const button = event.target.closest("[data-session]");
   if (button) {
-    openSession(button.getAttribute("data-session"));
+    const sessionId = button.getAttribute("data-session");
+    openSession(sessionId);
+    if (window.innerWidth <= 768) {
+      const sessionSection = document.querySelector("#session");
+      if (sessionSection) {
+        sessionSection.scrollIntoView({ behavior: "smooth" });
+      }
+    }
   }
 });
 
@@ -708,7 +724,18 @@ function openOrderDetail(orderId) {
   }
   addFact("Arrangement", item.catalog_title || item.product_id || "—");
   addFact("When", formatWhen(item.timing));
-  addFact("Card message", item.card_message || "—");
+  if (item.card_message) {
+    const dt = document.createElement("dt");
+    dt.textContent = "Card message";
+    const dd = document.createElement("dd");
+    const cardBox = document.createElement("div");
+    cardBox.className = "dialog-card-note";
+    cardBox.textContent = `“${item.card_message}”`;
+    dd.appendChild(cardBox);
+    facts.append(dt, dd);
+  } else {
+    addFact("Card message", "—");
+  }
   addFact("Channel", item.channel || "—");
   addFact("Payment", item.payment_state || "—", true);
   addFact("Destination handle", destinationHandleLabel(item.destination_reference));

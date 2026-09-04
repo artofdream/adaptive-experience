@@ -544,6 +544,10 @@ class BrowserUiTests(unittest.TestCase):
         # HTML table wrap and dialog
         self.assertIn('class="operator-table-wrap"', html)
         self.assertIn('class="operator-table operator-table-orders"', html)
+        self.assertIn('class="operator-table operator-table-prepare"', html)
+        self.assertIn('class="operator-nav"', html)
+        self.assertIn('class="operator-filter-wrap"', html)
+        self.assertIn('class="dialog-sheet-handle"', html)
         self.assertIn('id="order-detail-dialog"', html)
         self.assertIn('id="order-dialog-facts"', html)
         self.assertIn('id="order-dialog-title"', html)
@@ -557,12 +561,19 @@ class BrowserUiTests(unittest.TestCase):
         self.assertIn("order-detail-trigger", script)
         self.assertIn("order-cell-main", script)
         self.assertIn("order-mobile-meta", script)
+        self.assertIn("prepare-mobile-meta", script)
+        self.assertIn("dialog-card-note", script)
 
-        # CSS mobile responsive 3-column table and dialog
+        # CSS mobile responsive 3-column table, nav, and dialog
         self.assertIn(".operator-table-wrap", css)
         self.assertIn(".operator-cell-date", css)
+        self.assertIn(".operator-nav", css)
+        self.assertIn(".operator-filter-wrap", css)
         self.assertIn(".operator-table-orders th:nth-child(n+4)", css)
+        self.assertIn(".operator-table-prepare th:nth-child(n+4)", css)
         self.assertIn("dialog.operator-dialog", css)
+        self.assertIn(".dialog-sheet-handle", css)
+        self.assertIn(".dialog-card-note", css)
 
 
 if __name__ == "__main__":

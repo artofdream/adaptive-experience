@@ -634,6 +634,85 @@ body.operator { background: var(--page); }
 .operator-secondary { opacity: .96; }
 .operator-secondary h2 { font-size: 1.05rem; }
 
+.operator-nav {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding: 0.25rem 0 0.75rem;
+  margin-bottom: 0.75rem;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+.operator-nav-item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  background: var(--lavender-soft);
+  color: var(--purple-deep);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  border: 1px solid var(--line);
+  min-height: 40px;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.operator-nav-item:hover,
+.operator-nav-item:focus-visible {
+  background: var(--purple);
+  color: #ffffff;
+}
+
+.operator-filter-wrap {
+  display: inline-flex;
+  background: var(--lavender-soft);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 3px;
+  gap: 2px;
+  margin: 0.35rem 0 0.5rem;
+}
+.operator-filter-btn {
+  border: 0;
+  background: transparent;
+  padding: 0.4rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--purple-deep);
+  cursor: pointer;
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.operator-filter-btn[aria-pressed="true"] {
+  background: var(--purple);
+  color: #ffffff;
+  box-shadow: 0 1px 3px rgba(76, 47, 138, 0.2);
+}
+
+.dialog-sheet-handle {
+  display: none;
+  width: 36px;
+  height: 4px;
+  background: var(--line);
+  border-radius: 2px;
+  margin: 0 auto 0.75rem;
+}
+.dialog-card-note {
+  background: var(--lavender-soft);
+  border-left: 3px solid var(--purple);
+  padding: 0.5rem 0.75rem;
+  border-radius: 0 0.5rem 0.5rem 0;
+  font-style: italic;
+  font-size: 0.9rem;
+  margin-top: 0.2rem;
+}
+
 dialog.operator-dialog {
   width: min(34rem, calc(100% - 2rem));
   border: 0;
@@ -692,7 +771,8 @@ dialog.operator-dialog::backdrop {
 }
 
 @media (max-width: 60rem) {
-  .operator-split, .operator-facts { grid-template-columns: 1fr; }
+  .operator-split { grid-template-columns: 1fr; }
+  .operator-facts { grid-template-columns: minmax(7.5rem, auto) 1fr; }
   .operator .header-note { max-width: none; text-align: left; }
 }
 
@@ -701,6 +781,23 @@ dialog.operator-dialog::backdrop {
   .operator-table-orders th:nth-child(n+4),
   .operator-table-orders td:nth-child(n+4) {
     display: none;
+  }
+  /* 3-column Prepare table on mobile, matching Contact Florist inbox */
+  .operator-table-prepare th:nth-child(n+4),
+  .operator-table-prepare td:nth-child(n+4) {
+    display: none;
+  }
+  .prepare-mobile-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: 3px;
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+  .prepare-mobile-cards {
+    font-style: italic;
+    color: var(--ink);
   }
   .order-mobile-meta {
     display: flex;
@@ -734,6 +831,10 @@ dialog.operator-dialog::backdrop {
   .operator-table th, .operator-table td {
     padding: 0.65rem 0.45rem;
   }
+  .operator-facts {
+    grid-template-columns: minmax(6.5rem, auto) 1fr;
+    gap: 0.35rem 0.65rem;
+  }
   dialog.operator-dialog {
     width: 100%;
     max-width: 100%;
@@ -741,6 +842,14 @@ dialog.operator-dialog::backdrop {
     border-radius: 1.25rem 1.25rem 0 0;
     padding: 1.25rem 1rem max(1.25rem, env(safe-area-inset-bottom, 0px));
     box-shadow: 0 -8px 30px rgba(42, 36, 56, 0.35);
+  }
+  .dialog-sheet-handle {
+    display: block;
+  }
+  .operator-dialog .dialog-body {
+    max-height: 65vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
   .operator-dialog .dialog-footer {
     flex-direction: column-reverse;
