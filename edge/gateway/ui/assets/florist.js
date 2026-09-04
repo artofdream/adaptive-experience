@@ -195,6 +195,8 @@ const state = {
   inboxFilter: "all",
   ordersError: false,
   selectedId: "",
+  ordersNextCursor: null,
+  inboxNextCursor: null,
 };
 
 function headers(extra) {
@@ -642,6 +644,19 @@ function renderOrders(items) {
       <td>${destinationHandleLabel(item.destination_reference)}</td>`;
     orderRows.append(row);
   }
+  if (state.live && state.ordersNextCursor) {
+    const moreRow = document.createElement("tr");
+    const moreCell = document.createElement("td");
+    moreCell.colSpan = 9;
+    const moreBtn = document.createElement("button");
+    moreBtn.type = "button";
+    moreBtn.className = "text-link";
+    moreBtn.textContent = "Load more…";
+    moreBtn.addEventListener("click", loadMoreOrders);
+    moreCell.append(moreBtn);
+    moreRow.append(moreCell);
+    orderRows.append(moreRow);
+  }
   decorateHeaderIcons();
 }
 
@@ -658,6 +673,28 @@ document.querySelectorAll(Object.keys(INBOX_FILTER_IDS).map((id) => `#${id}`).jo
     renderInbox(state.items);
   });
 });
+
+async function loadMoreOrders() {
+  if (!state.live || !state.ordersNextCursor) return;
+  try {
+    const payload = await api(`/api/v1/operator/orders?cursor=${encodeURIComponent(state.ordersNextCursor)}`);
+    const more = Array.isArray(payload.items) ? payload.items : [];
+    state.ordersNextCursor = payload.next_cursor || null;
+    state.orders = state.orders.concat(more);
+    renderOrders(state.orders);
+  } catch (_error) { /* fail-closed: stop paging silently */ }
+}
+
+async function loadMoreInbox() {
+  if (!state.live || !state.inboxNextCursor) return;
+  try {
+    const payload = await api(`/api/v1/operator/escalations?cursor=${encodeURIComponent(state.inboxNextCursor)}`);
+    const more = payload.items || [];
+    state.inboxNextCursor = payload.next_cursor || null;
+    state.items = state.items.concat(more);
+    renderInbox(state.items);
+  } catch (_error) { /* fail-closed: stop paging silently */ }
+}
 
 function renderInbox(items) {
   if (Array.isArray(items)) state.items = items;
@@ -686,6 +723,19 @@ function renderInbox(items) {
       <td><button type="button" class="text-link" data-session="${item.session_id}">${reasonLabel(item.escalation_reason)}</button>${sample}${orderLink}</td>
       <td><code>${shortRef(item.context_reference || item.session_id)}</code></td>`;
     inboxRows.append(row);
+  }
+  if (state.live && state.inboxNextCursor) {
+    const moreRow = document.createElement("tr");
+    const moreCell = document.createElement("td");
+    moreCell.colSpan = 3;
+    const moreBtn = document.createElement("button");
+    moreBtn.type = "button";
+    moreBtn.className = "text-link";
+    moreBtn.textContent = "Load more…";
+    moreBtn.addEventListener("click", loadMoreInbox);
+    moreCell.append(moreBtn);
+    moreRow.append(moreCell);
+    inboxRows.append(moreRow);
   }
   decorateHeaderIcons();
 }
@@ -1140,26 +1190,39 @@ async function boot() {
   showSampleLayout("Showing labeled sample data until operator APIs are confirmed.");
   try {
     await ensureSession();
-    const inbox = await api("/api/v1/operator/escalations");
+    // Parallelize independent operator data fetches for faster boot.
+    const [inboxResult, ordersResult, forecastsResult] = await Promise.allSettled([
+      api("/api/v1/operator/escalations"),
+      api("/api/v1/operator/orders"),
+      api("/api/v1/operator/forecasts"),
+    ]);
+    // Fail-closed: if the primary inbox fetch fails, fall back to sample.
+    if (inboxResult.status === "rejected") {
+      const error = inboxResult.reason;
+      if (error.status === 404) {
+        showSampleLayout("Operator APIs disabled (fail closed). Labeled sample layout is shown.");
+      } else {
+        showSampleLayout(`Operator APIs unavailable (${error.message}). Labeled sample layout is shown.`);
+      }
+      return;
+    }
     state.live = true;
+    const inbox = inboxResult.value;
     let forecasts = [];
-    try {
-      const payload = await api("/api/v1/operator/forecasts");
-      forecasts = payload.items || [];
-    } catch (_error) {
-      forecasts = [];
+    if (forecastsResult.status === "fulfilled") {
+      forecasts = forecastsResult.value.items || [];
     }
     renderForecasts(forecasts);
     let orders = [];
     state.ordersError = false;
-    try {
-      const payload = await api("/api/v1/operator/orders");
-      orders = Array.isArray(payload.items) ? payload.items : [];
-    } catch (_error) {
-      orders = [];
+    if (ordersResult.status === "fulfilled") {
+      orders = Array.isArray(ordersResult.value.items) ? ordersResult.value.items : [];
+      state.ordersNextCursor = ordersResult.value.next_cursor || null;
+    } else {
       state.ordersError = true;
     }
     renderOrders(orders);
+    state.inboxNextCursor = inbox.next_cursor || null;
     const items = inbox.items || [];
     if (items.length) {
       state.selectedId = items[0].session_id;

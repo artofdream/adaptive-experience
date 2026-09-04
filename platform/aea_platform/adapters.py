@@ -352,17 +352,32 @@ class PsycopgOrderStore:
                 "delivery": row[3], "context_version": row[4],
                 "aea_client": row[5]}
 
-    def list_recent(self, *, limit: int = 50) -> list[dict]:
-        """Recent customer orders for the florist staff list (FR-013)."""
-        capped = min(max(int(limit), 1), 50)
-        rows = self.connection.execute(
-            "SELECT o.order_id, o.session_id, o.status, o.delayed, o.product, "
-            "o.delivery, o.updated_at, o.aea_client, i.decline_code "
-            "FROM orchestration.customer_order o "
-            "LEFT JOIN orchestration.checkout_intent i ON i.order_id = o.order_id "
-            "ORDER BY o.updated_at DESC, o.order_id DESC LIMIT %s",
-            (capped,),
-        ).fetchall()
+    def list_recent(self, *, limit: int = 50, after_cursor: str | None = None) -> list[dict]:
+        """Recent customer orders for the florist staff list (FR-013).
+
+        Keyset pagination: pass ``after_cursor`` (ISO timestamp from a previous
+        page's last ``updated_at``) to fetch the next page.
+        """
+        capped = min(max(int(limit), 1), 200)
+        if after_cursor:
+            rows = self.connection.execute(
+                "SELECT o.order_id, o.session_id, o.status, o.delayed, o.product, "
+                "o.delivery, o.updated_at, o.aea_client, i.decline_code "
+                "FROM orchestration.customer_order o "
+                "LEFT JOIN orchestration.checkout_intent i ON i.order_id = o.order_id "
+                "WHERE o.updated_at < %s "
+                "ORDER BY o.updated_at DESC, o.order_id DESC LIMIT %s",
+                (after_cursor, capped),
+            ).fetchall()
+        else:
+            rows = self.connection.execute(
+                "SELECT o.order_id, o.session_id, o.status, o.delayed, o.product, "
+                "o.delivery, o.updated_at, o.aea_client, i.decline_code "
+                "FROM orchestration.customer_order o "
+                "LEFT JOIN orchestration.checkout_intent i ON i.order_id = o.order_id "
+                "ORDER BY o.updated_at DESC, o.order_id DESC LIMIT %s",
+                (capped,),
+            ).fetchall()
         items = []
         for (order_id, session_id, status, delayed, product, delivery,
              updated_at, aea_client, decline_code) in rows:
@@ -698,19 +713,29 @@ class PsycopgSupportStore:
                 "VALUES (%s,%s,%s,'support.escalation.requested',%s,%s::jsonb)",
                 (message_id, session_id, context_version, session_id, json.dumps(envelope)))
 
-    def list_escalations(self, *, limit: int = 50) -> list[dict]:
+    def list_escalations(self, *, limit: int = 50, after_cursor: str | None = None) -> list[dict]:
         """Recent `support.escalation.requested` rows for a florist inbox.
 
         Returns opaque session/context references and the allowlisted reason.
         Envelope security_context (subject_reference) is not exposed.
+        Keyset pagination via ``after_cursor`` (ISO timestamp).
         """
-        capped = min(max(int(limit), 1), 50)
-        rows = self.connection.execute(
-            "SELECT message_id, session_id, created_at, envelope "
-            "FROM orchestration.outbox_message "
-            "WHERE topic = 'support.escalation.requested' "
-            "ORDER BY created_at DESC LIMIT %s",
-            (capped,)).fetchall()
+        capped = min(max(int(limit), 1), 200)
+        if after_cursor:
+            rows = self.connection.execute(
+                "SELECT message_id, session_id, created_at, envelope "
+                "FROM orchestration.outbox_message "
+                "WHERE topic = 'support.escalation.requested' "
+                "AND created_at < %s "
+                "ORDER BY created_at DESC LIMIT %s",
+                (after_cursor, capped)).fetchall()
+        else:
+            rows = self.connection.execute(
+                "SELECT message_id, session_id, created_at, envelope "
+                "FROM orchestration.outbox_message "
+                "WHERE topic = 'support.escalation.requested' "
+                "ORDER BY created_at DESC LIMIT %s",
+                (capped,)).fetchall()
         items = []
         for message_id, session_id, created_at, envelope in rows:
             payload = (envelope or {}).get("payload") or {}

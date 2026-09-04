@@ -1,11 +1,16 @@
 from __future__ import annotations
 
 import json
+import time
 import urllib.error
 import urllib.request
 
 from .ports import (CheckoutResult, CommandResult, ConversationResult, CorrectionResult,
                     DeliveryResult, EscalationResult, OrderResult, SelectionResult, SupportResult)
+
+# Bounded retry for transient failures on safe (GET) requests only.
+_GET_MAX_RETRIES = 2
+_GET_BACKOFF_BASE_SECONDS = 0.3
 
 
 class OrchestrationUnavailable(RuntimeError):
@@ -26,15 +31,27 @@ class HttpOrchestration:
 
     def _call(self, method: str, path: str, *, subject: str, payload=None) -> dict:
         headers = {"authorization": f"Bearer {self.token}", "x-subject-reference": subject}
-        try:
-            status, body = self.transport(method, self.base_url + path, headers, payload,
-                                          self.timeout_seconds)
-        except (OSError, TimeoutError, urllib.error.URLError) as error:
-            raise OrchestrationUnavailable("orchestration unavailable") from error
-        data = json.loads(body or "{}")
-        if status >= 500:
-            raise OrchestrationUnavailable("orchestration unavailable")
-        return {"status": status, **data}
+        is_get = method.upper() == "GET"
+        max_attempts = (1 + _GET_MAX_RETRIES) if is_get else 1
+        last_error = None
+        for attempt in range(max_attempts):
+            try:
+                status, body = self.transport(method, self.base_url + path, headers, payload,
+                                              self.timeout_seconds)
+            except (OSError, TimeoutError, urllib.error.URLError) as error:
+                last_error = error
+                if is_get and attempt < max_attempts - 1:
+                    time.sleep(_GET_BACKOFF_BASE_SECONDS * (2 ** attempt))
+                    continue
+                raise OrchestrationUnavailable("orchestration unavailable") from error
+            data = json.loads(body or "{}")
+            if status >= 500:
+                if is_get and attempt < max_attempts - 1:
+                    time.sleep(_GET_BACKOFF_BASE_SECONDS * (2 ** attempt))
+                    continue
+                raise OrchestrationUnavailable("orchestration unavailable")
+            return {"status": status, **data}
+        raise OrchestrationUnavailable("orchestration unavailable") from last_error
 
     @staticmethod
     def _urllib(method, url, headers, payload, timeout):
@@ -167,11 +184,23 @@ class HttpOrchestration:
                                 data.get("escalation_reason"))
 
     def list_operator_escalations(self, **kwargs):
-        return self._call("GET", "/internal/v1/operator/escalations",
+        params = []
+        if kwargs.get("limit"):
+            params.append(f"limit={kwargs['limit']}")
+        if kwargs.get("cursor"):
+            params.append(f"cursor={kwargs['cursor']}")
+        qs = f"?{'&'.join(params)}" if params else ""
+        return self._call("GET", f"/internal/v1/operator/escalations{qs}",
                           subject=kwargs["subject"])
 
     def list_operator_orders(self, **kwargs):
-        return self._call("GET", "/internal/v1/operator/orders",
+        params = []
+        if kwargs.get("limit"):
+            params.append(f"limit={kwargs['limit']}")
+        if kwargs.get("cursor"):
+            params.append(f"cursor={kwargs['cursor']}")
+        qs = f"?{'&'.join(params)}" if params else ""
+        return self._call("GET", f"/internal/v1/operator/orders{qs}",
                           subject=kwargs["subject"])
 
     def list_operator_forecasts(self, **kwargs):

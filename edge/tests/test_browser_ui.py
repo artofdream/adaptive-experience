@@ -416,6 +416,16 @@ class BrowserUiTests(unittest.TestCase):
         self.assertIn('id="inbox"', html)
         self.assertIn('id="orders"', html)
         self.assertIn("/api/v1/operator/orders", script)
+        # Operator console boot/pagination controls (efficiency improvements).
+        self.assertIn("Promise.allSettled", script)  # parallel inbox/forecasts/orders fetch
+        self.assertIn("ordersNextCursor", script)
+        self.assertIn("inboxNextCursor", script)
+        self.assertIn('Load more…', script)
+        self.assertIn("loadMoreOrders", script)
+        self.assertIn("loadMoreInbox", script)
+        # Cursor param forwarding to BFF/operator endpoints.
+        self.assertIn("/api/v1/operator/orders?cursor=", script)
+        self.assertIn("/api/v1/operator/escalations?cursor=", script)
         self.assertIn("catalog_title", script)
         self.assertIn("payment_state", script)
         self.assertIn("item.channel", script)

@@ -51,8 +51,9 @@ class FakeOrderStore:
             "context_version": 1,
         }
 
-    def list_recent(self, *, limit=50):
+    def list_recent(self, *, limit=50, after_cursor=None):
         self.listed_limit = limit
+        self.listed_cursor = after_cursor
         if not self.exists:
             return []
         return [{
@@ -221,7 +222,7 @@ class OrderServiceTests(unittest.TestCase):
 
     def test_list_recent_truncates_card_message_and_marks_delayed(self):
         store = FakeOrderStore(current="preparing")
-        def delayed_rows(*, limit=50):
+        def delayed_rows(*, limit=50, after_cursor=None):
             store.listed_limit = limit
             return [{
                 "order_id": "order-2",
@@ -245,7 +246,7 @@ class OrderServiceTests(unittest.TestCase):
 
     def test_list_recent_marks_declined_and_unknown_channel(self):
         store = FakeOrderStore(current="submitted")
-        def declined_rows(*, limit=50):
+        def declined_rows(*, limit=50, after_cursor=None):
             store.listed_limit = limit
             return [{
                 "order_id": "order-3",
@@ -264,6 +265,16 @@ class OrderServiceTests(unittest.TestCase):
         self.assertEqual("unknown", item["channel"])
         self.assertIsNone(item["catalog_title"])
 
+
+    def test_list_recent_accepts_cursor_and_raised_limit(self):
+        """Pagination: limit can go up to 200 and cursor is forwarded."""
+        store = FakeOrderStore(current="confirmed")
+        items = self._service(store).list_recent(limit=100, after_cursor="2026-09-01T00:00:00+00:00")
+        self.assertEqual(100, store.listed_limit)
+        self.assertEqual("2026-09-01T00:00:00+00:00", store.listed_cursor)
+        # Cap at 200
+        self._service(store).list_recent(limit=999)
+        self.assertEqual(200, store.listed_limit)
 
     def test_list_recent_includes_observed_total_when_priced(self):
         """#385: staff list exposes observed basket total without PII."""

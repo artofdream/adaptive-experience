@@ -136,6 +136,86 @@ class HttpOrchestrationTests(unittest.TestCase):
         self.assertEqual("c1", calls[0][2]["correlation_id"])
         self.assertEqual("user1", calls[0][3]["x-subject-reference"])
 
+    def test_get_retries_on_transient_failure_then_succeeds(self):
+        """GET requests retry up to 2 times on transient errors."""
+        import edge.bff.aea_bff.orchestration as orch_mod
+        original_sleep = orch_mod.time.sleep
+        orch_mod.time.sleep = lambda _: None  # skip actual delay in tests
+        try:
+            attempts = []
+            def transport(method, url, headers, payload, timeout):
+                attempts.append(method)
+                if len(attempts) < 3:
+                    raise TimeoutError("transient")
+                return 200, '{"session_id":"s1","context_version":1,"conversation":{"messages":[]}}'
+            adapter = HttpOrchestration("http://orchestration:8081", "internal", transport=transport)
+            result = adapter.load_session(session_id="s1", subject="user1")
+            self.assertEqual(3, len(attempts))
+            self.assertEqual("s1", result["session_id"])
+        finally:
+            orch_mod.time.sleep = original_sleep
+
+    def test_get_retries_exhausted_raises_unavailable(self):
+        """GET requests fail-closed after max retries."""
+        import edge.bff.aea_bff.orchestration as orch_mod
+        original_sleep = orch_mod.time.sleep
+        orch_mod.time.sleep = lambda _: None
+        try:
+            attempts = []
+            def transport(method, url, headers, payload, timeout):
+                attempts.append(method)
+                raise TimeoutError("always fails")
+            adapter = HttpOrchestration("http://orchestration:8081", "internal", transport=transport)
+            with self.assertRaises(OrchestrationUnavailable):
+                adapter.load_session(session_id="s1", subject="user1")
+            self.assertEqual(3, len(attempts))  # 1 + 2 retries
+        finally:
+            orch_mod.time.sleep = original_sleep
+
+    def test_post_does_not_retry_on_transient_failure(self):
+        """Non-GET requests must not retry (fail-closed immediately)."""
+        attempts = []
+        def transport(method, url, headers, payload, timeout):
+            attempts.append(method)
+            raise TimeoutError("transient")
+        adapter = HttpOrchestration("http://orchestration:8081", "internal", transport=transport)
+        with self.assertRaises(OrchestrationUnavailable):
+            adapter.submit_conversation_message(
+                session_id="s1", subject="user1", message_text="hi",
+                observed_context_version=1, correlation_id="c1")
+        self.assertEqual(1, len(attempts))
+
+    def test_get_retries_on_500_then_succeeds(self):
+        """GET requests retry on HTTP 500 responses."""
+        import edge.bff.aea_bff.orchestration as orch_mod
+        original_sleep = orch_mod.time.sleep
+        orch_mod.time.sleep = lambda _: None
+        try:
+            attempts = []
+            def transport(method, url, headers, payload, timeout):
+                attempts.append(method)
+                if len(attempts) < 2:
+                    return 500, '{"error":"internal"}'
+                return 200, '{"items":[]}'
+            adapter = HttpOrchestration("http://orchestration:8081", "internal", transport=transport)
+            result = adapter.list_operator_orders(subject="staff-1")
+            self.assertEqual(2, len(attempts))
+            self.assertEqual([], result["items"])
+        finally:
+            orch_mod.time.sleep = original_sleep
+
+    def test_operator_orders_forwards_pagination_params(self):
+        """Operator list methods forward limit and cursor query params."""
+        calls = []
+        def transport(method, url, headers, payload, timeout):
+            calls.append((method, url))
+            return 200, '{"items":[],"next_cursor":"2026-09-01T00:00:00+00:00"}'
+        adapter = HttpOrchestration("http://orchestration:8081", "internal", transport=transport)
+        result = adapter.list_operator_orders(subject="staff-1", limit="25", cursor="2026-09-02T00:00:00+00:00")
+        self.assertIn("limit=25", calls[0][1])
+        self.assertIn("cursor=2026-09-02", calls[0][1])
+        self.assertEqual("2026-09-01T00:00:00+00:00", result["next_cursor"])
+
     def test_operator_reads_use_internal_operator_paths(self):
         calls = []
         def transport(method, url, headers, payload, timeout):
