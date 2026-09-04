@@ -177,6 +177,52 @@ class IntentAnalysisService:
         return IntentAnalysisResult(message_id, version, merged, suggestions)
 
     @staticmethod
+    def _budget_amount(item):
+        """Normalize a budget fact to a number in [1, 10000], or None if invalid.
+
+        Companion Need chips PATCH a JSON number (`$100+` → 100.0). Web T-02 and
+        some model outputs send numeric strings. jsonb/Decimal loaders may yield
+        Decimal. Chip labels are accepted so a label restatement is not 422 (#401).
+        """
+        if isinstance(item, bool):
+            return None
+        if isinstance(item, Decimal):
+            item = float(item)
+        elif isinstance(item, str):
+            text = item.strip()
+            if not text:
+                return None
+            normalized = text.lower().replace("–", "-").replace("—", "-")
+            compact = re.sub(r"\s+", "", normalized)
+            if "100+" in compact:
+                item = 100.0
+            elif normalized.startswith("under"):
+                match = re.search(r"(\d+(?:[.,]\d{1,2})?)", normalized)
+                if match is None:
+                    return None
+                try:
+                    item = float(Decimal(match.group(1).replace(",", ".")))
+                except InvalidOperation:
+                    return None
+            elif re.search(r"50\s*-\s*100", normalized):
+                item = 100.0
+            else:
+                match = re.fullmatch(
+                    r"(?:[$€£]|usd|eur|gbp)?\s*(\d+(?:[.,]\d{1,2})?)\s*"
+                    r"(?:[$€£]|usd|eur|gbp)?",
+                    text, flags=re.IGNORECASE,
+                )
+                if match is None:
+                    return None
+                try:
+                    item = float(Decimal(match.group(1).replace(",", ".")))
+                except InvalidOperation:
+                    return None
+        if not isinstance(item, (int, float)) or item < 1 or item > 10000:
+            return None
+        return item
+
+    @staticmethod
     def _facets(value: dict) -> dict:
         if not isinstance(value, dict):
             raise IntentValidationError("interpreter facets must be an object")
@@ -186,10 +232,10 @@ class IntentAnalysisService:
         result = {}
         for key, item in value.items():
             if key == "budget":
-                if (not isinstance(item, (int, float)) or isinstance(item, bool)
-                        or item < 1 or item > 10000):
+                amount = IntentAnalysisService._budget_amount(item)
+                if amount is None:
                     raise IntentValidationError("budget is invalid")
-                result[key] = item
+                result[key] = amount
             elif not isinstance(item, str) or not item.strip() or len(item.strip()) > 120:
                 raise IntentValidationError(f"{key} is invalid")
             else:
@@ -281,7 +327,10 @@ class SharedUnderstandingService:
             changed = {key: value for key, value in correction.items()
                        if existing.get(key) != value}
             if not changed:
-                raise IntentValidationError("correction does not change shared understanding")
+                # Idempotent restatement (companion `$100+` after free-text when
+                # the interpreter already stored 100) must not 422 (#401).
+                suggestions = missing_facet_suggestions(existing)
+                return IntentCorrectionResult("", expected, existing, suggestions)
             merged = {**existing, **changed}
             suggestions = missing_facet_suggestions(merged)
             message_id = str(self.new_id())

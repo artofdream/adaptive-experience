@@ -17,6 +17,8 @@ from aea_platform.conversation import (
     ConversationSessionNotFound,
     ConversationValidationError,
 )
+from decimal import Decimal
+
 from aea_platform.intent import (
     IntentAnalysisService,
     IntentInterpretation,
@@ -452,8 +454,8 @@ class FoundationTests(unittest.TestCase):
             "state_schema_version": 1, "context_version": 2,
             "state": {"shared_understanding": {"occasion": "birthday"}},
         }
-        for corrections in ({}, {"occasion": "birthday"}, {"product_id": "rose-1"},
-                            {"budget": 0}):
+        for corrections in ({}, {"product_id": "rose-1"}, {"budget": 0},
+                            {"budget": "unlimited"}):
             store = FakeStateStore(current)
             with self.assertRaises(IntentValidationError):
                 SharedUnderstandingService(store).correct(
@@ -462,6 +464,91 @@ class FoundationTests(unittest.TestCase):
                     subject_reference="subject",
                 )
             self.assertEqual([], store.applied)
+
+        # Restating the current occasion is idempotent (not 422) so companion
+        # chip re-taps and AI-already-inferred facts do not block Need (#401).
+        store = FakeStateStore(current)
+        result = SharedUnderstandingService(store).correct(
+            session_id="session", corrections={"occasion": "birthday"},
+            observed_context_version=2, correlation_id="correction",
+            subject_reference="subject",
+        )
+        self.assertEqual(2, result.context_version)
+        self.assertEqual("", result.message_id)
+        self.assertEqual({"occasion": "birthday"}, result.structured_intent)
+        self.assertEqual([], store.applied)
+
+    def test_budget_correction_after_freetext_accepts_chips_and_restatement(self):
+        """#401: free-text Need then `$100+` (and sibling chips) must not 422."""
+        after_freetext = {
+            "state_schema_version": 1, "context_version": 3,
+            "state": {"shared_understanding": {"recipient": "friend"}},
+        }
+        store = FakeStateStore(after_freetext)
+        result = SharedUnderstandingService(store).correct(
+            session_id="session", corrections={"budget": 100.0},
+            observed_context_version=3, correlation_id="correction",
+            subject_reference="subject",
+        )
+        self.assertEqual(4, result.context_version)
+        self.assertEqual(100.0, result.structured_intent["budget"])
+        self.assertEqual("friend", result.structured_intent["recipient"])
+
+        # Interpreter already stored 100 (int); companion `$100+` sends 100.0.
+        restated = {
+            "state_schema_version": 1, "context_version": 4,
+            "state": {"shared_understanding": {"recipient": "friend", "budget": 100}},
+        }
+        store = FakeStateStore(restated)
+        result = SharedUnderstandingService(store).correct(
+            session_id="session", corrections={"budget": 100.0},
+            observed_context_version=4, correlation_id="correction",
+            subject_reference="subject",
+        )
+        self.assertEqual(4, result.context_version)
+        self.assertEqual(100, result.structured_intent["budget"])
+        self.assertEqual([], store.applied)
+
+        # Schema mismatch: chip label / numeric string instead of JSON number.
+        store = FakeStateStore(after_freetext)
+        labeled = SharedUnderstandingService(store).correct(
+            session_id="session", corrections={"budget": "$100+"},
+            observed_context_version=3, correlation_id="correction",
+            subject_reference="subject",
+        )
+        self.assertEqual(100.0, labeled.structured_intent["budget"])
+
+        store = FakeStateStore(after_freetext)
+        under = SharedUnderstandingService(store).correct(
+            session_id="session", corrections={"budget": "Under $50"},
+            observed_context_version=3, correlation_id="correction",
+            subject_reference="subject",
+        )
+        self.assertEqual(50.0, under.structured_intent["budget"])
+
+        store = FakeStateStore(after_freetext)
+        mid = SharedUnderstandingService(store).correct(
+            session_id="session", corrections={"budget": "$50–100"},
+            observed_context_version=3, correlation_id="correction",
+            subject_reference="subject",
+        )
+        self.assertEqual(100.0, mid.structured_intent["budget"])
+
+        store = FakeStateStore(after_freetext)
+        numeric_string = SharedUnderstandingService(store).correct(
+            session_id="session", corrections={"budget": "100"},
+            observed_context_version=3, correlation_id="correction",
+            subject_reference="subject",
+        )
+        self.assertEqual(100.0, numeric_string.structured_intent["budget"])
+
+        store = FakeStateStore(after_freetext)
+        decimal_budget = SharedUnderstandingService(store).correct(
+            session_id="session", corrections={"budget": Decimal("100.00")},
+            observed_context_version=3, correlation_id="correction",
+            subject_reference="subject",
+        )
+        self.assertEqual(100.0, decimal_budget.structured_intent["budget"])
 
     def test_conversation_submission_persists_and_publishes_one_governed_message(self):
         store = FakeStateStore({

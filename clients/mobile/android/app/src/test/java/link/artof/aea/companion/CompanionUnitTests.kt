@@ -23,6 +23,8 @@ import link.artof.aea.companion.data.repository.SessionRepository
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.double
+import kotlinx.serialization.json.jsonPrimitive
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -645,6 +647,29 @@ class CompanionUnitTests {
         assertEquals(100.0, plus.floor!!, 0.01)
         assertNull(plus.ceiling)
         assertNull(SessionRepository.parseBudgetBand("skipped"))
+    }
+
+    @Test
+    fun freeTextNeedPlus100SendsNumericBudgetNotChipLabel() = runBlocking {
+        // #401: type a need (no occasion chip) then `$100+` — wire budget is 100,
+        // not the label string that platform `_facets` used to reject.
+        fakeApi.sharedUnderstanding = SharedUnderstandingResponse(
+            contextVersion = 2,
+            structuredIntent = StructuredIntent()
+        )
+        repository.postUserMessage("flowers for a friend this weekend")
+        assertNull(repository.errorMessage.value)
+        repository.setBudgetChoice("$100+", null)
+        assertNull(repository.errorMessage.value)
+        assertTrue(repository.budgetPromptResolved.value)
+        assertEquals("$100+", repository.sharedUnderstanding.value.budget)
+        assertEquals(1, fakeApi.corrections.size)
+        val budgetEl = fakeApi.corrections.last().corrections["budget"]!!.jsonPrimitive
+        assertFalse("budget must be a JSON number, not \"$100+\"", budgetEl.isString)
+        assertEquals(100.0, budgetEl.double, 0.01)
+        val encoded = json.encodeToString(fakeApi.corrections.last())
+        assertTrue(encoded.contains("\"budget\":100"))
+        assertFalse(encoded.contains("\"budget\":\"\$100+\""))
     }
 
     @Test
