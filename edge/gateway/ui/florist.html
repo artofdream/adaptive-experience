@@ -48,8 +48,10 @@
             <p class="eyebrow">FR-013</p>
             <h1 id="orders-title">Staff orders</h1>
             <p class="subtitle">Companion and website checkouts. Least-data. Opaque destination refs. Not CRM.</p>
-            <div class="operator-filter-wrap" id="order-filter-bar" role="group" aria-label="Staff order filter">
+            <div class="operator-filter-wrap" id="order-filter-bar" role="group" aria-label="Staff order day and status filter">
               <button type="button" class="operator-filter-btn text-link" id="order-filter-today" aria-pressed="true">Today</button>
+              <button type="button" class="operator-filter-btn text-link" id="order-filter-3d" aria-pressed="false">3 days</button>
+              <button type="button" class="operator-filter-btn text-link" id="order-filter-7d" aria-pressed="false">7 days</button>
               <button type="button" class="operator-filter-btn text-link" id="order-filter-delayed" aria-pressed="false">Delayed</button>
               <button type="button" class="operator-filter-btn text-link" id="order-filter-all" aria-pressed="false">All</button>
             </div>
@@ -105,6 +107,12 @@
             <p class="eyebrow">T-09 · FR-006</p>
             <h2 id="inbox-title">Contact Florist inbox</h2>
             <p class="subtitle">Human follow-up requests. Opaque session references only. A read-only badge marks a row when the same session is also on Staff orders.</p>
+            <div class="operator-filter-wrap" id="inbox-filter-bar" role="group" aria-label="Contact Florist inbox day filter">
+              <button type="button" class="operator-filter-btn text-link" id="inbox-filter-today" aria-pressed="false">Today</button>
+              <button type="button" class="operator-filter-btn text-link" id="inbox-filter-3d" aria-pressed="false">3 days</button>
+              <button type="button" class="operator-filter-btn text-link" id="inbox-filter-7d" aria-pressed="false">7 days</button>
+              <button type="button" class="operator-filter-btn text-link" id="inbox-filter-all" aria-pressed="true">All</button>
+            </div>
           </div>
         </header>
         <div class="operator-table-wrap">
