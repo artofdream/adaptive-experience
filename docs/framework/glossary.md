@@ -41,6 +41,17 @@ A privacy-first design principle (ADR-020) where sensitive customer information 
 - **Why it matters:** Eliminates the risk of massive customer data breaches by refusing to build permanent PII honeypots.
 - **Where to see it:** Detailed on [Privacy CRM](crm.html).
 
+### Edge Wallet
+An encrypted notebook on the customer’s phone. After a confirmed order, the companion stores a receipt locally (Android Keystore). Names and card wording stay on the device. The store only ever sees an opaque product/order token if a reorder is sent later.
+- **Why it matters:** Repeat shopping does not require a central address book of customers.
+- **Honesty:** The **save** is live and has been probed. A Need-screen reorder **button** is not shipped yet.
+- **Where to see it:** [Mobile Companion](companion.html) and [Privacy CRM](crm.html).
+
+### Florist Staff Console
+The `/florist` page on the live shop. Florists see orders and Contact Florist requests in a browser. It is not a second native app.
+- **Why it matters:** Fulfillment stays on the same store hostname as the customer shop, with least-data reads.
+- **Where to see it:** [Path B Case Study](path-b.html).
+
 ---
 
 ## Project & Governance Terms

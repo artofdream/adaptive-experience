@@ -47,6 +47,8 @@ While the sponsor is away and `cts-ai` is unattended:
 
 ## 3. Resume Check upon Sponsor Return
 
+**Evening continuation (same date):** [[2026-09-04-session-memory-log-evening-mrc-rog-wallet-honesty]] — !450/!453/!434/!454/!455 merged; ROG Confirm→Track recut (local mp4 only); Pages must not claim a Need reorder tap.
+
 When returning (~18:55 CEST):
 1. Pull latest `origin/main`: `git pull --ff-only origin main`.
 2. Inspect GitLab notifications: `glab mr list` / `glab issue list`.

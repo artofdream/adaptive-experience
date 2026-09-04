@@ -16,9 +16,9 @@ Instead of duplicating inventory, pricing, or checkout rules inside the phone ap
 
 - **The Store Decides, Not the Phone:** The app never guesses prices, discounts, or stock levels. If an arrangement is sold out in the shop, the app immediately respects that.
 - **Fast, Focused Journey (Need → Pick → Pay):** The app focuses strictly on 3 core steps:
-  1. **Need:** Telling the app what occasion you are shopping for (e.g. *Mom's Birthday, Same-Day*).
-  2. **Pick:** Browsing tailored floral arrangements and choosing your favorite.
-  3. **Pay:** Selecting a delivery window and checking out securely.
+  1. **Need:** You can tap a suggestion (e.g. *Mom's Birthday, Same-Day*) **or type your own words**. Continue unlocks once the app has something useful to work with — not only a parsed occasion keyword.
+  2. **Pick:** Browsing tailored floral arrangements, choosing one, and setting **how many** (1–10), same as the website customize step.
+  3. **Pay:** Selecting a delivery window and destination nickname (`home` / `work`), then checking out securely.
 - **Privacy First:** The app never sees, transmits, or stores raw credit card numbers. It sends an opaque, single-use payment reference only.
 
 ---
@@ -60,6 +60,10 @@ Here is what has been physically verified in production, and what has not:
 
 > **Direct Write-Through to Order History** — **Verified (4 Sep 2026):** Placing an order writes directly to the central database, guaranteeing that inventory updates immediately across both phone and web.
 
+> **Phone remembers the last order (Edge Wallet)** — **Write verified; tap not shipped:** After Confirm, the phone stores an encrypted receipt on the device (no street address, no card number). That is the on-phone memory for a later reorder. **Need does not yet show a “Reorder previous arrangement” button.** Until that control is probed on a phone, one-tap reorder stays **Unknown** as a customer action — the save is real; the shortcut is not.
+
+> **Open companion honesty (do not treat as shipped):** After some free-text Need + **$100+** budget taps, the app has shown a validation error (issue #401). The **No limit** chip can still look selected while Pick/Pay say budget was skipped (issue #402). Both are open work.
+
 > **Demo Operator Inbox is Not the Billing System** — **No:** We keep this honest. The florist order overview is designed for demonstration and fulfillment visibility, not as a replacement for a full commercial billing accounting system.
 
 > **Real-Time Traffic Dashboard** — **Verified in Code:** Web visits and mobile app traffic are tracked separately in telemetry, so operators can monitor app performance and uptime independently.
@@ -92,8 +96,9 @@ On 4 September 2026, live test purchases completed from the mobile app on the AS
 
 ## Related Framework Topics
 
-- [Path B Case Study](path-b.html) — Watch the full florist workspace journey tapes.
-- [Privacy-Preserving CRM](crm.html) — How customer history and reminders work without storing personal data.
+- [Path B Case Study](path-b.html) — Customer journey tapes and the florist staff console (browser, not a second app).
+- [Privacy-Preserving CRM](crm.html) — How customer history and the on-phone wallet work without storing personal data.
+- [Journal](journal.html) — Why a saved receipt is not the same as a reorder button.
 - [System Architecture & Stack](stack.html) — How the cloud servers and mobile clients connect.
 - [Architecture Glossary](glossary.html) — Plain-English definitions of terms and concepts.
 - [Framework Home](index.html) — Return to the overview.
