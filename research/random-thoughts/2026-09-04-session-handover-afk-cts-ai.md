@@ -16,7 +16,8 @@ The sponsor is **AFK for 1h30 minutes** (until ~18:55 CEST / 16:55 UTC). Worksta
 * **Pre-Flight Guards**: **14/14 PASS** (`python scripts/run_all_guards.py`).
 * **Docker Integration Tests**: Clean local pass (exit code 0, 77/77 edge tests, healthy gateway/BFF/orchestration stack).
 * **Background Tasks on Host**: **0 running** (all background jobs terminated cleanly).
-* **Hardware Standby**: Connected Samsung Galaxy A36 (`SM-A366B`, serial `RZCY60W1EZW`) attached and idle via ADB.
+* **Hardware Standby**: Samsung Galaxy A36 (`SM-A366B`, serial `RZCY60W1EZW`) is the **sponsor daily phone** — Play companion installed. **Do not** `adb uninstall` / sideload debug over it. ROG (`K9AIKN07B088C89`) is **unplugged**.
+* **ADB work finished before AFK**: 30s `screenrecord` pulled to local `research/inbox/2026-09-04-edge-wallet-demo.mp4` (711 KB; Need → Mom chip → budget. Confirm was **not** in the tape. **Do not commit** the mp4). Play build has **no** one-tap reorder button — wallet write is silent on Confirm (`SessionRepository` / EncryptedPrefs). FR-008 tap UI is still missing.
 * **Public Runtimes**:
   * Live Shop & Operator API: [`https://aea.artof.link`](https://aea.artof.link) (AWS ECS Fargate `aea-pilot`).
   * Architecture Documentation Site: [`https://architecture.artof.link`](https://architecture.artof.link) (GitLab Pages).
@@ -37,9 +38,10 @@ While the sponsor is away and `cts-ai` is unattended:
    - Second Brain knowledge curation / harness comparison notes.
 
 ### Tasks Reserved for Sponsor Return (Requires `cts-ai` or Sponsor Decision):
-- Physical device screen recording or APK sideloading via USB ADB.
+- Plug **ROG** (not A36) to sideload debug companion and recut a 30s Edge Wallet clip: Need → **Reorder last (on this phone)** once that button exists, or Pay Confirm → Track showing the receipt write.
+- Add the Need-screen FR-008 reorder affordance (`reorderFromWallet()` is already in `SessionRepository`; `NeedScreen` / `MainActivity` are not wired). One issue → one branch → one MR. Do not invent a second wallet product.
 - AWS KMS Customer Managed Key provisioning (sponsor financial / cloud security gate).
-- Auto-merge on Draft MR !434 (awaiting PO/sponsor final go/no-go).
+- Auto-merge on Draft MR !434 (awaiting PO/sponsor final go/no-go). Do not undraft from cloud.
 
 ---
 
