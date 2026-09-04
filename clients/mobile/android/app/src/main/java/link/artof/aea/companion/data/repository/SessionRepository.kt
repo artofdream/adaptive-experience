@@ -13,7 +13,6 @@ import link.artof.aea.companion.data.model.DeliveryDetails
 import link.artof.aea.companion.data.model.DeliveryRequest
 import link.artof.aea.companion.data.model.DeliveryTiming
 import link.artof.aea.companion.data.model.OrderResult
-import link.artof.aea.companion.data.model.SelectionItem
 import link.artof.aea.companion.data.model.SelectionRequest
 import link.artof.aea.companion.data.model.SharedUnderstanding
 import link.artof.aea.companion.data.model.SharedUnderstandingResponse
@@ -893,9 +892,10 @@ val band = parseBudgetBand(label) ?: BudgetBand(label, floor = null, ceiling = c
         fun clampQuantity(value: Int): Int = value.coerceIn(QUANTITY_MIN, QUANTITY_MAX)
 
         /**
-         * Web Path B selection body: `product_id` + `items[].quantity` +
-         * `options.quantity` (BFF accepts int or string; companion sends string
-         * because [SelectionRequest.options] is Map<String, String>).
+         * Web T-04 customize body (#399): `product_id` + `options.quantity`.
+         * BFF accepts int or string; companion sends string because
+         * [SelectionRequest.options] is Map<String, String>. Multi-SKU
+         * `items[]` is deferred (web cart increment path only).
          */
         fun selectionWithQuantity(
             productId: String,
@@ -906,7 +906,6 @@ val band = parseBudgetBand(label) ?: BudgetBand(label, floor = null, ceiling = c
             val qty = clampQuantity(quantity)
             return SelectionRequest(
                 productId = productId,
-                items = listOf(SelectionItem(productId = productId, quantity = qty)),
                 options = extraOptions + ("quantity" to qty.toString()),
                 observedContextVersion = observedContextVersion,
             )

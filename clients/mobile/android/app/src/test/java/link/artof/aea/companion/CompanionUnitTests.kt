@@ -252,11 +252,11 @@ class CompanionUnitTests {
         assertEquals(1, fakeApi.selections.size)
         assertEquals("classic-rose-dozen", fakeApi.selections.last().productId)
         assertEquals("1", fakeApi.selections.last().options["quantity"])
-        assertEquals(1, fakeApi.selections.last().items?.first()?.quantity)
+        assertNull(fakeApi.selections.last().items)
     }
 
     @Test
-    fun quantityStepperPostsSelectionOptionsAndItemsLikeWeb() = runBlocking {
+    fun quantityStepperPostsOptionsQuantityLikeWebCustomize() = runBlocking {
         fakeApi.sharedUnderstanding = SharedUnderstandingResponse(contextVersion = 3)
         val rose = Arrangement(
             sku = "classic-rose-dozen",
@@ -271,8 +271,7 @@ class CompanionUnitTests {
         val posted = fakeApi.selections.last()
         assertEquals("classic-rose-dozen", posted.productId)
         assertEquals("3", posted.options["quantity"])
-        assertEquals(3, posted.items?.first()?.quantity)
-        assertEquals("classic-rose-dozen", posted.items?.first()?.productId)
+        assertNull("Multi-SKU items[] deferred (#399)", posted.items)
     }
 
     @Test
@@ -304,7 +303,7 @@ class CompanionUnitTests {
         val checkoutSelection = fakeApi.selections.last()
         assertEquals("2", checkoutSelection.options["quantity"])
         assertEquals("Happy Birthday Mom!", checkoutSelection.options["card_message"])
-        assertEquals(2, checkoutSelection.items?.first()?.quantity)
+        assertNull(checkoutSelection.items)
         // 70 * 2 + 12 delivery
         assertEquals(152.0, fakeApi.lastCheckout!!.observedTotal, 0.01)
         assertEquals(152.0, repository.orderResult.value?.totalAmount ?: 0.0, 0.01)
@@ -329,8 +328,9 @@ class CompanionUnitTests {
         assertTrue(encoded.contains("\"quantity\":\"2\""))
         assertTrue(encoded.contains("\"product_id\":\"classic-rose-dozen\""))
         assertTrue(encoded.contains("\"card_message\":\"hi\""))
-        assertEquals(2, request.items!!.first().quantity)
+        assertNull(request.items)
         assertEquals("2", request.options["quantity"])
+        assertFalse(encoded.contains("\"items\""))
     }
 
     @Test
