@@ -439,7 +439,11 @@ class BrowserUiTests(unittest.TestCase):
         self.assertIn('id="inbox-filter-all"', html)
         self.assertIn("function filterOrders", script)
         self.assertIn("function filterInbox", script)
-        self.assertIn("function isWithinDays", script)
+        # Directional day windows: orders look forward (upcoming delivery),
+        # inbox looks back (recent requests). updated_at must not drive the
+        # forward order window, or delayed/far-future orders would leak in.
+        self.assertIn("function orderWithinDays", script)
+        self.assertIn("function inboxWithinDays", script)
         self.assertIn('orderFilter: "today"', script)
         self.assertIn('inboxFilter: "all"', script)
         self.assertIn("Select an order or inbox row", html)

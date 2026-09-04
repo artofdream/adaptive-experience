@@ -404,15 +404,23 @@ function dayDiffFromToday(value, now = new Date()) {
   return Math.round((d.getTime() - base.getTime()) / 86400000);
 }
 
-/** True when value's calendar date is within +/- n days of today. n=0 => today. */
-function isWithinDays(value, n) {
-  const diff = dayDiffFromToday(value);
-  return diff !== null && Math.abs(diff) <= n;
+// Order day windows are an UPCOMING fulfillment horizon: an order counts when
+// its delivery date (timing.date) falls between today and today+n inclusive.
+// updated_at is deliberately not used here — it is a past timestamp, so a
+// far-future order touched recently must not leak into a "next N days" window.
+// Orders without a delivery date stay out of forward windows (still in All, and
+// in Today when updated today via isTodayOrder). n=0 => delivered today.
+function orderWithinDays(item, n) {
+  const diff = dayDiffFromToday(item?.timing?.date);
+  return diff !== null && diff >= 0 && diff <= n;
 }
 
-/** An order counts for a day window by its delivery date (timing.date) or last update. */
-function orderWithinDays(item, n) {
-  return isWithinDays(item?.timing?.date, n) || isWithinDays(item?.updated_at, n);
+// Inbox day windows are a RECENT-request horizon: a Contact Florist request
+// counts when requested_at falls between today and today-n inclusive (requests
+// are always in the past). n=0 => requested today.
+function inboxWithinDays(item, n) {
+  const diff = dayDiffFromToday(item?.requested_at);
+  return diff !== null && diff <= 0 && diff >= -n;
 }
 
 function filterOrders(items, filter = state.orderFilter) {
@@ -427,9 +435,9 @@ function filterOrders(items, filter = state.orderFilter) {
 // Per-section day filter for the Contact Florist inbox, by requested_at (#398).
 function filterInbox(items, filter = state.inboxFilter) {
   const list = Array.isArray(items) ? items : [];
-  if (filter === "today") return list.filter((item) => isWithinDays(item?.requested_at, 0));
-  if (filter === "3d") return list.filter((item) => isWithinDays(item?.requested_at, 3));
-  if (filter === "7d") return list.filter((item) => isWithinDays(item?.requested_at, 7));
+  if (filter === "today") return list.filter((item) => inboxWithinDays(item, 0));
+  if (filter === "3d") return list.filter((item) => inboxWithinDays(item, 3));
+  if (filter === "7d") return list.filter((item) => inboxWithinDays(item, 7));
   return list;
 }
 
