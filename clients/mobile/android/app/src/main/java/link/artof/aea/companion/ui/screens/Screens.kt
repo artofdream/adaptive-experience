@@ -25,6 +25,7 @@ import link.artof.aea.companion.data.model.ChatMessage
 import link.artof.aea.companion.data.model.OrderResult
 import link.artof.aea.companion.data.model.SharedUnderstanding
 import link.artof.aea.companion.data.repository.SessionRepository
+import link.artof.aea.companion.data.wallet.WalletReceipt
 import link.artof.aea.companion.ui.components.*
 
 @Composable
@@ -38,6 +39,8 @@ fun NeedScreen(
     onSkipBudget: () -> Unit = {},
     budgetPromptResolved: Boolean = false,
     onStartOver: (() -> Unit)? = null,
+    latestWalletReceipt: WalletReceipt? = null,
+    onReorderFromWallet: () -> Unit = {},
     isLoading: Boolean = false,
     modifier: Modifier = Modifier
 ) {
@@ -61,9 +64,55 @@ fun NeedScreen(
             }
         }
 
-        // Quick Suggestion Chips (only shown on fresh start before occasion or user message)
+        // Quick Suggestion Chips and Wallet Reorder (shown on fresh start before user message or occasion)
         val hasUserMessages = messages.any { it.sender == "user" }
         val hasOccasion = !sharedUnderstanding.occasion.isNullOrEmpty()
+
+        // ADR-020 / FR-008: Returning customer one-tap reorder card from device-held Edge Wallet
+        if (!hasUserMessages && !hasOccasion && latestWalletReceipt != null) {
+            val recipient = latestWalletReceipt.recipientLabel?.takeIf { it.isNotBlank() }
+            val reorderTitle = if (recipient != null) "Reorder for $recipient" else "Reorder previous bouquet"
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 4.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer
+                ),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 14.dp, vertical = 10.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = reorderTitle,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = "1-tap repeat order from this phone\'s encrypted wallet",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.85f)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Button(
+                        onClick = onReorderFromWallet,
+                        enabled = !isLoading,
+                        modifier = Modifier.height(44.dp)
+                    ) {
+                        Text("Reorder →")
+                    }
+                }
+            }
+        }
         if (!hasUserMessages && !hasOccasion) {
             Row(
                 modifier = Modifier
