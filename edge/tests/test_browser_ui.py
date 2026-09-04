@@ -467,6 +467,15 @@ class BrowserUiTests(unittest.TestCase):
         self.assertIn("location = /florist {", alb)
         self.assertIn("try_files /florist.html =404;", alb)
 
+    def test_florist_destination_handle_labels_without_street(self):
+        script = (ROOT / "ui" / "assets" / "florist.js").read_text(encoding="utf-8")
+        self.assertIn("function destinationHandleLabel", script)
+        self.assertIn('home: "Home"', script)
+        self.assertIn('work: "Work"', script)
+        self.assertIn("Destination handle", script)
+        self.assertNotIn("street", script.lower().split("destinationHandleLabel")[1][:400]
+                         if "destinationHandleLabel" in script else "street")
+
     def test_florist_today_prepare_list_is_derived_from_staff_orders(self):
         html = (ROOT / "ui" / "florist.html").read_text(encoding="utf-8")
         script = (ROOT / "ui" / "assets" / "florist.js").read_text(encoding="utf-8")

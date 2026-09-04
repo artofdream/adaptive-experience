@@ -248,6 +248,20 @@ function shortRef(value) {
   return text.length > 12 ? `${text.slice(0, 8)}…${text.slice(-4)}` : text;
 }
 
+/** Least-data fulfillment handle for florist (#382). Never invent street/PII. */
+const DESTINATION_KIND_LABELS = {
+  home: "Home",
+  work: "Work",
+  other: "Other saved place",
+};
+function destinationHandleLabel(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return "—";
+  const key = raw.toLowerCase();
+  if (DESTINATION_KIND_LABELS[key]) return DESTINATION_KIND_LABELS[key];
+  return shortRef(raw);
+}
+
 function reasonLabel(value) {
   const key = String(value || "");
   return REASON_LABELS[key] || key.replaceAll("_", " ");
@@ -436,7 +450,7 @@ function renderOrders(items) {
       <td><code>${channel}</code></td>
       <td><span class="badge">${paid}</span></td>
       <td>${formatWhen(item.timing)}</td>
-      <td><code>${shortRef(item.destination_reference)}</code></td>`;
+      <td>${destinationHandleLabel(item.destination_reference)}</td>`;
     orderRows.append(row);
   }
 }
@@ -526,7 +540,7 @@ function renderSession(summary, label) {
     fact("Card message", cardMessage);
   }
   if (summary.delivery?.destination_reference) {
-    fact("Saved destination", shortRef(summary.delivery.destination_reference));
+    fact("Destination handle", destinationHandleLabel(summary.delivery.destination_reference));
   }
   const timing = summary.delivery?.timing;
   if (timing && (timing.date || timing.window)) {
