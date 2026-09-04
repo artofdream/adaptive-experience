@@ -15,6 +15,7 @@ import link.artof.aea.companion.data.model.EscalationResponse
 import link.artof.aea.companion.data.model.SelectionRequest
 import link.artof.aea.companion.data.model.SessionCreateResponse
 import link.artof.aea.companion.data.model.SharedUnderstandingResponse
+import link.artof.aea.companion.data.model.SharedUnderstanding
 import link.artof.aea.companion.data.model.StructuredIntent
 import link.artof.aea.companion.data.model.WorkspaceResponse
 import link.artof.aea.companion.data.repository.JourneyStage
@@ -101,6 +102,63 @@ class CompanionUnitTests {
                 draftNeedText = "",
             )
         )
+        // Recipient-only facet (web intentKeys / "Something for my friend") unlocks
+        // even before treating conversation text as Need.
+        assertTrue(
+            SessionRepository.canContinueFromNeed(
+                occasion = null,
+                budgetPromptResolved = false,
+                hasPersistedNeedText = false,
+                draftNeedText = "",
+                hasUsableIntentFacet = true,
+            )
+        )
+        assertTrue(
+            SessionRepository.hasUsableIntentFacet(
+                SharedUnderstanding(recipient = "friend")
+            )
+        )
+        assertFalse(
+            SessionRepository.hasUsableIntentFacet(SharedUnderstanding())
+        )
+    }
+
+    @Test
+    fun occasionCorrectionPatchesSharedUnderstandingWhenParseMisses() = runBlocking {
+        fakeApi.sharedUnderstanding = SharedUnderstandingResponse(
+            contextVersion = 1,
+            structuredIntent = StructuredIntent()
+        )
+        repository.postUserMessage("I need a nice bouquet")
+        assertNull(repository.sharedUnderstanding.value.occasion)
+        assertTrue(repository.canContinueFromNeed())
+
+        repository.setOccasionChoice("Birthday")
+        assertEquals("birthday", repository.sharedUnderstanding.value.occasion)
+        assertEquals(1, fakeApi.corrections.size)
+        assertEquals(
+            "birthday",
+            (fakeApi.corrections.last().corrections["occasion"] as kotlinx.serialization.json.JsonPrimitive).content
+        )
+        // Occasion now known → budget CTA still required.
+        assertFalse(repository.budgetPromptResolved.value)
+        assertFalse(repository.canContinueFromNeed())
+        repository.skipBudget()
+        assertTrue(repository.canContinueFromNeed())
+    }
+
+    @Test
+    fun recipientOnlyFacetUnlocksNeedWithoutOccasionKeyword() = runBlocking {
+        // Web intentKeys: "Something for my friend" → recipient only.
+        fakeApi.sharedUnderstanding = SharedUnderstandingResponse(
+            contextVersion = 2,
+            structuredIntent = StructuredIntent(recipient = "friend")
+        )
+        repository.postUserMessage("Something for my friend")
+        assertEquals("friend", repository.sharedUnderstanding.value.recipient)
+        assertNull(repository.sharedUnderstanding.value.occasion)
+        assertTrue(SessionRepository.hasUsableIntentFacet(repository.sharedUnderstanding.value))
+        assertTrue(repository.canContinueFromNeed())
     }
 
     @Test
@@ -683,11 +741,14 @@ class FakeBffClient : BffClient() {
         version = request.observedContextVersion + 1
         val budgetEl = request.corrections["budget"] as? kotlinx.serialization.json.JsonPrimitive
         val budgetStr = budgetEl?.content
+        val occasionEl = request.corrections["occasion"] as? kotlinx.serialization.json.JsonPrimitive
+        val occasionStr = occasionEl?.content
         val intent = sharedUnderstanding.structuredIntent
         sharedUnderstanding = sharedUnderstanding.copy(
             contextVersion = version,
             structuredIntent = intent.copy(
-                budget = budgetStr ?: intent.budget
+                budget = budgetStr ?: intent.budget,
+                occasion = occasionStr ?: intent.occasion
             )
         )
         return AcceptedResponse(accepted = true, code = "accepted", contextVersion = version)

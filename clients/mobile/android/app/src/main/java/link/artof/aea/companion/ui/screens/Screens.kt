@@ -1,5 +1,6 @@
 package link.artof.aea.companion.ui.screens
 
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -33,6 +34,7 @@ fun NeedScreen(
     onSendMessage: (String) -> Unit,
     onContinueToPick: (draftText: String) -> Unit,
     onBudgetChoice: (label: String, ceiling: Double?) -> Unit = { _, _ -> },
+    onOccasionChoice: (label: String) -> Unit = {},
     onSkipBudget: () -> Unit = {},
     budgetPromptResolved: Boolean = false,
     onStartOver: (() -> Unit)? = null,
@@ -112,6 +114,37 @@ fun NeedScreen(
             }
         }
 
+        // Occasion correction when free-text missed OCCASIONS keywords (#400).
+        if (hasUserMessages && !hasOccasion) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 4.dp)
+            ) {
+                Text(
+                    text = "What is the occasion? (optional — you can continue without one)",
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    SessionRepository.OCCASION_CORRECTION_TOKENS.forEach { token ->
+                        FilterChip(
+                            selected = false,
+                            onClick = { onOccasionChoice(token) },
+                            enabled = !isLoading,
+                            label = { Text(token.replaceFirstChar { it.uppercase() }) }
+                        )
+                    }
+                }
+            }
+        }
+
         // Budget ask after occasion unlock *or* a persisted Need message (#359 / #374 / #400)
         val showBudget = hasOccasion || hasUserMessages
         if (showBudget) {
@@ -166,6 +199,7 @@ fun NeedScreen(
             budgetPromptResolved = budgetPromptResolved,
             hasPersistedNeedText = hasUserMessages,
             draftNeedText = inputText,
+            hasUsableIntentFacet = SessionRepository.hasUsableIntentFacet(sharedUnderstanding),
         )
         Button(
             onClick = { onContinueToPick(inputText) },

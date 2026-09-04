@@ -159,6 +159,9 @@ fun LilyCompanionApp(repository: SessionRepository) {
                         onBudgetChoice = { label, ceiling ->
                             scope.launch { repository.setBudgetChoice(label, ceiling) }
                         },
+                        onOccasionChoice = { label ->
+                            scope.launch { repository.setOccasionChoice(label) }
+                        },
                         onSkipBudget = { repository.skipBudget() },
                         onContinueToPick = { draft ->
                             scope.launch { repository.continueToPick(draft) }

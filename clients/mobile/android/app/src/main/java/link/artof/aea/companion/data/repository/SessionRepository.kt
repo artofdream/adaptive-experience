@@ -169,24 +169,29 @@ class SessionRepository(
     }
 
     /**
-     * Need Continue gate (#400). Web Path B unlocks Need steps without waiting
-     * for structured_intent.occasion (`unlockedThrough` starts at 2; a sent
-     * message advances to step 2). Companion previously required a parsed
-     * occasion, so free-text that the BFF did not facet-lock could not proceed.
+     * Need Continue gate (#400). Web Path B:
+     * - Need steps 1–2 always open (`unlockedThrough` starts at 2)
+     * - Pick (step 3) unlocks on any non-empty `structured_intent` facet
+     *   (`intentKeys` in app.js), not occasion alone.
+     * Companion previously required `structured_intent.occasion`, so free-text
+     * that missed ReferenceIntentInterpreter.OCCASIONS stayed stuck.
      *
-     * Occasion + budget (#359) still apply when occasion *is* known. Free-text
-     * (draft or already posted) is enough to leave Need when occasion is empty.
+     * Unlock: any usable intent facet, or persisted/draft Need text (conversation
+     * is first-class; parse-miss still proceeds). Budget (#359) still required
+     * when occasion *is* known.
      */
     fun canContinueFromNeed(
         occasion: String? = _sharedUnderstanding.value.occasion,
         budgetPromptResolved: Boolean = _budgetPromptResolved.value,
         hasPersistedNeedText: Boolean = _messages.value.any { it.sender == "user" },
         draftNeedText: String = "",
+        hasUsableIntentFacet: Boolean = hasUsableIntentFacet(_sharedUnderstanding.value),
     ): Boolean = Companion.canContinueFromNeed(
         occasion = occasion,
         budgetPromptResolved = budgetPromptResolved,
         hasPersistedNeedText = hasPersistedNeedText,
         draftNeedText = draftNeedText,
+        hasUsableIntentFacet = hasUsableIntentFacet,
     )
 
     /**
@@ -277,6 +282,31 @@ val band = parseBudgetBand(label) ?: BudgetBand(label, floor = null, ceiling = c
             _sharedUnderstanding.value = _sharedUnderstanding.value.copy(budget = label)
             refreshCatalogFromWorkspace()
             applyBudgetFilterToArrangements()
+        }
+    }
+
+    /**
+     * Occasion correction when free-text misses OCCASIONS keywords (#400).
+     * Same PATCH shared-understanding path as budget chips / web T-02.
+     */
+    suspend fun setOccasionChoice(label: String) {
+        val token = normalizeOccasionToken(label) ?: return
+        runGuarded {
+            ensureSessionInternal()
+            _sharedUnderstanding.value = _sharedUnderstanding.value.copy(occasion = token)
+            _messages.value = _messages.value + ChatMessage(
+                id = UUID.randomUUID().toString(),
+                sender = "user",
+                text = "Occasion: $token"
+            )
+            val accepted = patchCorrectionRetryingStale(
+                mapOf("occasion" to JsonPrimitive(token))
+            )
+            if (accepted.contextVersion > 0) {
+                contextVersion = accepted.contextVersion
+            }
+            refreshSharedUnderstanding()
+            _sharedUnderstanding.value = _sharedUnderstanding.value.copy(occasion = token)
         }
     }
 
@@ -889,17 +919,50 @@ val band = parseBudgetBand(label) ?: BudgetBand(label, floor = null, ceiling = c
         }
 
         /**
-         * Pure Need Continue predicate (#400). Occasion-known path still
-         * requires the #359 budget prompt (chip or skip). Free-text Need
-         * without a parsed occasion may proceed — same as web step 1→2.
+         * Web `intentKeys`: any non-empty structured_intent facet unlocks Pick.
+         * Occasion is sufficient but not required.
+         */
+        fun hasUsableIntentFacet(understanding: SharedUnderstanding): Boolean {
+            return listOf(
+                understanding.occasion,
+                understanding.recipient,
+                understanding.budget,
+                understanding.style,
+                understanding.flowerPreference,
+                understanding.timing,
+            ).any { !it.isNullOrBlank() }
+        }
+
+        /** Tokens accepted by ReferenceIntentInterpreter.OCCASIONS / BFF PATCH. */
+        val OCCASION_CORRECTION_TOKENS = listOf(
+            "birthday",
+            "anniversary",
+            "wedding",
+            "sympathy",
+            "thank you",
+        )
+
+        fun normalizeOccasionToken(label: String): String? {
+            val raw = label.trim().lowercase()
+            if (raw.isEmpty()) return null
+            return OCCASION_CORRECTION_TOKENS.firstOrNull { it == raw }
+        }
+
+        /**
+         * Pure Need Continue predicate (#400).
+         * Unlock on any usable intent facet (web Pick) or Need text (conversation
+         * first-class / parse-miss). Occasion-known path still requires budget
+         * chip or skip (#359) — CTA must say so, not look like Send failed.
          */
         fun canContinueFromNeed(
             occasion: String?,
             budgetPromptResolved: Boolean,
             hasPersistedNeedText: Boolean,
             draftNeedText: String = "",
+            hasUsableIntentFacet: Boolean = false,
         ): Boolean {
             val hasNeed = !occasion.isNullOrBlank() ||
+                hasUsableIntentFacet ||
                 hasPersistedNeedText ||
                 draftNeedText.isNotBlank()
             if (!hasNeed) return false
