@@ -15,6 +15,7 @@ import link.artof.aea.companion.data.model.EscalationResponse
 import link.artof.aea.companion.data.model.SelectionRequest
 import link.artof.aea.companion.data.model.SessionCreateResponse
 import link.artof.aea.companion.data.model.SharedUnderstandingResponse
+import link.artof.aea.companion.data.model.SharedUnderstanding
 import link.artof.aea.companion.data.model.StructuredIntent
 import link.artof.aea.companion.data.model.WorkspaceResponse
 import link.artof.aea.companion.data.repository.JourneyStage
@@ -53,6 +54,142 @@ class CompanionUnitTests {
         assertTrue(repository.messages.value.isNotEmpty())
         assertNull(repository.selectedArrangement.value)
         assertNull(repository.orderResult.value)
+    }
+
+    @Test
+    fun canContinueFromNeedAllowsFreeTextWithoutParsedOccasion() {
+        // Empty Need cannot proceed.
+        assertFalse(
+            SessionRepository.canContinueFromNeed(
+                occasion = null,
+                budgetPromptResolved = false,
+                hasPersistedNeedText = false,
+                draftNeedText = "",
+            )
+        )
+        // Non-empty draft (typed, not yet sent) unlocks Continue (#400).
+        assertTrue(
+            SessionRepository.canContinueFromNeed(
+                occasion = null,
+                budgetPromptResolved = false,
+                hasPersistedNeedText = false,
+                draftNeedText = "flowers for a friend this weekend",
+            )
+        )
+        // Posted free-text (no BFF occasion) unlocks Continue — web Path B parity.
+        assertTrue(
+            SessionRepository.canContinueFromNeed(
+                occasion = null,
+                budgetPromptResolved = false,
+                hasPersistedNeedText = true,
+                draftNeedText = "",
+            )
+        )
+        // Occasion-known path still requires budget chip or skip (#359).
+        assertFalse(
+            SessionRepository.canContinueFromNeed(
+                occasion = "birthday",
+                budgetPromptResolved = false,
+                hasPersistedNeedText = true,
+                draftNeedText = "",
+            )
+        )
+        assertTrue(
+            SessionRepository.canContinueFromNeed(
+                occasion = "birthday",
+                budgetPromptResolved = true,
+                hasPersistedNeedText = true,
+                draftNeedText = "",
+            )
+        )
+        // Recipient-only facet (web intentKeys / "Something for my friend") unlocks
+        // even before treating conversation text as Need.
+        assertTrue(
+            SessionRepository.canContinueFromNeed(
+                occasion = null,
+                budgetPromptResolved = false,
+                hasPersistedNeedText = false,
+                draftNeedText = "",
+                hasUsableIntentFacet = true,
+            )
+        )
+        assertTrue(
+            SessionRepository.hasUsableIntentFacet(
+                SharedUnderstanding(recipient = "friend")
+            )
+        )
+        assertFalse(
+            SessionRepository.hasUsableIntentFacet(SharedUnderstanding())
+        )
+    }
+
+    @Test
+    fun occasionCorrectionPatchesSharedUnderstandingWhenParseMisses() = runBlocking {
+        fakeApi.sharedUnderstanding = SharedUnderstandingResponse(
+            contextVersion = 1,
+            structuredIntent = StructuredIntent()
+        )
+        repository.postUserMessage("I need a nice bouquet")
+        assertNull(repository.sharedUnderstanding.value.occasion)
+        assertTrue(repository.canContinueFromNeed())
+
+        repository.setOccasionChoice("Birthday")
+        assertEquals("birthday", repository.sharedUnderstanding.value.occasion)
+        assertEquals(1, fakeApi.corrections.size)
+        assertEquals(
+            "birthday",
+            (fakeApi.corrections.last().corrections["occasion"] as kotlinx.serialization.json.JsonPrimitive).content
+        )
+        // Occasion now known → budget CTA still required.
+        assertFalse(repository.budgetPromptResolved.value)
+        assertFalse(repository.canContinueFromNeed())
+        repository.skipBudget()
+        assertTrue(repository.canContinueFromNeed())
+    }
+
+    @Test
+    fun recipientOnlyFacetUnlocksNeedWithoutOccasionKeyword() = runBlocking {
+        // Web intentKeys: "Something for my friend" → recipient only.
+        fakeApi.sharedUnderstanding = SharedUnderstandingResponse(
+            contextVersion = 2,
+            structuredIntent = StructuredIntent(recipient = "friend")
+        )
+        repository.postUserMessage("Something for my friend")
+        assertEquals("friend", repository.sharedUnderstanding.value.recipient)
+        assertNull(repository.sharedUnderstanding.value.occasion)
+        assertTrue(SessionRepository.hasUsableIntentFacet(repository.sharedUnderstanding.value))
+        assertTrue(repository.canContinueFromNeed())
+    }
+
+    @Test
+    fun continueToPickPersistsFreeTextThenEntersPick() = runBlocking {
+        fakeApi.sharedUnderstanding = SharedUnderstandingResponse(
+            contextVersion = 1,
+            structuredIntent = StructuredIntent()
+        )
+        assertFalse(repository.canContinueFromNeed(draftNeedText = ""))
+        assertTrue(repository.canContinueFromNeed(draftNeedText = "Sympathy arrangement, no occasion chip"))
+
+        repository.continueToPick("Sympathy arrangement, no occasion chip")
+        assertEquals(JourneyStage.PICK, repository.currentStage.value)
+        assertEquals(
+            "Sympathy arrangement, no occasion chip",
+            fakeApi.postedMessages.last().messageText
+        )
+        assertTrue(repository.messages.value.any { it.sender == "user" && it.text.contains("Sympathy") })
+        assertNull(
+            "Occasion must still come from shared-understanding, not keywords",
+            repository.sharedUnderstanding.value.occasion
+        )
+    }
+
+    @Test
+    fun continueToPickStaysOnNeedWhenDraftPostFails() = runBlocking {
+        fakeApi.failNextConversation = true
+        repository.continueToPick("please send lilies")
+        assertEquals(JourneyStage.NEED, repository.currentStage.value)
+        assertNotNull(repository.errorMessage.value)
+        assertTrue(fakeApi.postedMessages.isNotEmpty())
     }
 
     @Test
@@ -522,6 +659,8 @@ class FakeBffClient : BffClient() {
     var staleSelectionOnce: Boolean = false
     /** When true, first postConversationMessage throws stale_context 409 then succeeds. */
     var staleConversationOnce: Boolean = false
+    /** When true, next postConversationMessage throws a non-retryable BFF error (#400). */
+    var failNextConversation: Boolean = false
     var clearSessionStateCalls: Int = 0
     var createSessionCalls: Int = 0
     /** True when the most recent createSession was preceded by clearSessionState. */
@@ -571,6 +710,14 @@ class FakeBffClient : BffClient() {
         observedContextVersion: Int
     ): AcceptedResponse {
         postedMessages += ConversationMessageRequest(messageText, observedContextVersion)
+        if (failNextConversation) {
+            failNextConversation = false
+            throw BffException(
+                statusCode = 503,
+                errorCode = "orchestration_unavailable",
+                message = "BFF 503 orchestration_unavailable"
+            )
+        }
         if (staleConversationOnce) {
             staleConversationOnce = false
             version = observedContextVersion + 1
@@ -594,11 +741,14 @@ class FakeBffClient : BffClient() {
         version = request.observedContextVersion + 1
         val budgetEl = request.corrections["budget"] as? kotlinx.serialization.json.JsonPrimitive
         val budgetStr = budgetEl?.content
+        val occasionEl = request.corrections["occasion"] as? kotlinx.serialization.json.JsonPrimitive
+        val occasionStr = occasionEl?.content
         val intent = sharedUnderstanding.structuredIntent
         sharedUnderstanding = sharedUnderstanding.copy(
             contextVersion = version,
             structuredIntent = intent.copy(
-                budget = budgetStr ?: intent.budget
+                budget = budgetStr ?: intent.budget,
+                occasion = occasionStr ?: intent.occasion
             )
         )
         return AcceptedResponse(accepted = true, code = "accepted", contextVersion = version)
