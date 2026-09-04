@@ -12,7 +12,8 @@ from .intent import (IntentAnalysisService, IntentSessionNotFound, IntentValidat
                      ReferenceIntentInterpreter, SharedUnderstandingService,
                      is_stale_context_error)
 from .forecast import InventoryForecastService
-from .crm import EngagementCrmService, CrmValidationError
+from .crm import (CrmService, EngagementCrmService, CrmValidationError,
+                  compute_subject_reference)
 from .inventory import (InventoryAvailabilityService,
                         InventoryUnavailableError, InventoryValidationError)
 from .order import (ORDER_STATUS_SEQUENCE, CheckoutService, CheckoutStateError,
@@ -69,7 +70,9 @@ class InternalOrchestrationApp:
         self.checkout = CheckoutService(order_store, self.pricing)
         self.payment_handler = PaymentCheckoutHandler(order_store, ReferencePaymentAuthority())
         self.support = SupportService(PsycopgSupportStore(connection), quality=self.quality)
-        self.crm = EngagementCrmService(PsycopgCrmStore(connection))
+        self.crm_store = PsycopgCrmStore(connection)
+        self.crm = EngagementCrmService(self.crm_store)
+        self.subject_crm = CrmService(self.crm_store)
 
     async def __call__(self, scope, receive, send):
         headers = {key.decode().lower(): value.decode() for key, value in scope.get("headers", [])}
@@ -145,6 +148,12 @@ class InternalOrchestrationApp:
                 return await self._send(send, 200, {"code": "forgotten", "deleted": deleted})
             except CrmValidationError:
                 return await self._send(send, 422, {"code": "validation_failed"})
+        if (len(parts) == 5 and parts[:4] == ["internal", "v1", "operator", "subjects"]
+                and scope["method"] == "GET"):
+            insights = self.subject_crm.get_subject_insights(parts[4])
+            if insights is None:
+                return await self._send(send, 422, {"code": "validation_failed"})
+            return await self._send(send, 200, insights)
         if (len(parts) == 5 and parts[:4] == ["internal", "v1", "operator", "sessions"]
                 and scope["method"] == "GET"):
             try:
@@ -343,11 +352,100 @@ class InternalOrchestrationApp:
             facets["order"] = {"order_id": order["order_id"], "status": order["status"],
                                "delayed": delayed,
                                "authoritative_status": "delayed" if delayed else order["status"]}
+        reminders = self._occasion_reminders(session_id)
+        if reminders:
+            facets["reminders"] = {"items": reminders}
         return {
             "context_version": int(loaded["context_version"]),
             "facets": facets,
             **self._assistant_fields(),
         }
+
+    def _occasion_reminders(self, session_id: str) -> list[dict]:
+        """Least-data upcoming occasion reminders for this session's browser hash.
+
+        Deterministic pull signal (FR-016): the customer is shown reminders the
+        shop already holds for their own opaque browser hash. Never AI push, and
+        best-effort so a CRM read never breaks the workspace projection.
+        """
+        browser_hash = self._session_browser_hash(session_id)
+        if not browser_hash:
+            return []
+        try:
+            reminders = self.crm.get_reminders(browser_hash=browser_hash)
+        except Exception:
+            return []
+        return [{
+            "occasion_type": r.occasion_type,
+            "days_until_event": r.days_until_event,
+            "reminder_text": r.reminder_text,
+            "recipient_relation": r.recipient_relation,
+        } for r in reminders]
+
+    def _session_recall_source(self, session_id: str) -> str:
+        """Durable browser identifier: the session's recall_id when present, else session_id."""
+        try:
+            row = self.connection.execute(
+                "SELECT recall_id FROM orchestration.experience_session WHERE session_id=%s",
+                (session_id,),
+            ).fetchone()
+        except Exception:
+            row = None
+        if row is not None and row[0] is not None:
+            return str(row[0])
+        return str(session_id)
+
+    def _session_browser_hash(self, session_id: str) -> str | None:
+        try:
+            return self.crm.hash_browser(self._session_recall_source(session_id))
+        except Exception:
+            return None
+
+    def _capture_crm_on_order(self, session_id: str, loaded: dict, *, newly_created: bool) -> None:
+        """Zero-PII occasion + subject-profile capture on order creation (ADR-020).
+
+        Best-effort and fail-closed (NFR-017): a CRM capture failure or incomplete
+        intent never blocks or fails order creation. Only non-PII categorical
+        fields are recorded (occasion, month/day, recipient relation, spend band).
+        """
+        try:
+            state = loaded.get("state") or {}
+            shared = state.get("shared_understanding") or {}
+            decisions = state.get("decisions") or {}
+            occasion = shared.get("occasion")
+            recipient = shared.get("recipient") or "other"
+            delivery = decisions.get("delivery") if isinstance(decisions.get("delivery"), dict) else {}
+            timing = delivery.get("timing") if isinstance(delivery.get("timing"), dict) else {}
+            date_text = timing.get("date")
+            if not (isinstance(occasion, str) and occasion.strip()
+                    and isinstance(date_text, str) and date_text.strip()):
+                return
+            try:
+                event_date = datetime.strptime(date_text.strip(), "%Y-%m-%d")
+            except ValueError:
+                return
+            source = self._session_recall_source(session_id)
+            browser_hash = self.crm.hash_browser(source)
+            self.crm.record_occasion(
+                browser_hash=browser_hash, session_id=str(session_id),
+                occasion_type=occasion, event_month=event_date.month,
+                event_day=event_date.day,
+                recipient_relation=recipient if isinstance(recipient, str) else "other",
+            )
+            if newly_created:
+                summary = self.pricing.summarize(decisions) or {}
+                order_total = summary.get("total")
+                projection = self.order.projection(session_id=session_id) or {}
+                channel = projection.get("channel") or "web"
+                self.subject_crm.record_completed_order(
+                    subject_reference=compute_subject_reference(source),
+                    order_total=float(order_total) if isinstance(order_total, (int, float)) else 0.0,
+                    occasion=occasion,
+                    channel=channel,
+                )
+        except Exception:
+            # Fail-closed: CRM capture must never break order creation (NFR-017).
+            pass
 
     def _assistant_fields(self) -> dict:
         """NFR-005 honesty: disclosure matches last interpreter mode."""
@@ -691,11 +789,13 @@ class InternalOrchestrationApp:
         correlation_id = body.get("correlation_id")
         if not isinstance(correlation_id, str) or not correlation_id.strip():
             return await self._send(send, 422, {"code": "validation_failed"})
+        newly_created = self.order.projection(session_id=session_id) is None
         try:
             self._ensure_precheckout_order(session_id, loaded)
         except OrderIncompleteError as error:
             return await self._send(send, 422, {"code": "order_incomplete",
                                                "missing": error.missing})
+        self._capture_crm_on_order(session_id, loaded, newly_created=newly_created)
         try:
             submitted = self.checkout.submit(
                 session_id=session_id, payment_reference=body.get("payment_reference"),
@@ -763,6 +863,7 @@ class InternalOrchestrationApp:
         if not isinstance(correlation_id, str) or not correlation_id.strip():
             return await self._send(send, 422, {"code": "validation_failed"})
         decisions = (loaded.get("state") or {}).get("decisions") or {}
+        newly_created = self.order.projection(session_id=session_id) is None
         try:
             # An order requires the assembled product (#142/#122) and delivery (#33)
             # decisions; it is a separate authoritative aggregate (pre-checkout).
@@ -772,6 +873,7 @@ class InternalOrchestrationApp:
                 aea_client=body.get("aea_client") if isinstance(body, dict) else None)
         except OrderIncompleteError as error:
             return await self._send(send, 422, {"code": "order_incomplete", "missing": error.missing})
+        self._capture_crm_on_order(session_id, loaded, newly_created=newly_created)
         return await self._send(send, 202, {"code": "accepted",
             "order_id": result["order_id"], "order_status": result["status"]})
 

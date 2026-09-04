@@ -215,3 +215,15 @@ class HttpOrchestration:
                 "recipient_relation": kwargs.get("recipient_relation", "other"),
             })
 
+    def delete_crm_occasions(self, **kwargs):
+        return self._call(
+            "DELETE",
+            f"/internal/v1/crm/occasions?browser_hash={kwargs['browser_hash']}",
+            subject=kwargs["subject"])
+
+    def operator_subject_insights(self, **kwargs):
+        return self._call(
+            "GET",
+            f"/internal/v1/operator/subjects/{kwargs['subject_reference']}",
+            subject=kwargs["subject"])
+

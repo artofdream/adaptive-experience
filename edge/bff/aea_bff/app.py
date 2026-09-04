@@ -600,6 +600,32 @@ class BffApp:
                 return await self._error(send, 503, "orchestration_unavailable", correlation_id)
             return await self._json(send, 201, raw, correlation_id)
 
+        if path == "/api/v1/crm/occasions" and method == "DELETE":
+            query = parse_qs(scope.get("query_string", b"").decode())
+            browser_hash = (query.get("browser_hash") or [""])[0]
+            if not browser_hash or len(browser_hash) != 64:
+                return await self._error(send, 422, "invalid_browser_hash", correlation_id)
+            try:
+                raw = self.orchestration.delete_crm_occasions(
+                    browser_hash=browser_hash, subject=subject)
+            except OrchestrationUnavailable:
+                return await self._error(send, 503, "orchestration_unavailable", correlation_id)
+            return await self._json(send, 200, {"code": raw.get("code", "forgotten"),
+                                                "deleted": int(raw.get("deleted", 0))}, correlation_id)
+
+        operator_subject_prefix = "/api/v1/operator/subjects/"
+        if path.startswith(operator_subject_prefix) and method == "GET":
+            if not self.florist_operator_enabled:
+                return await self._error(send, 404, "not_found", correlation_id)
+            subject_reference = path[len(operator_subject_prefix):]
+            try:
+                raw = self.orchestration.operator_subject_insights(
+                    subject_reference=subject_reference, subject=subject)
+            except OrchestrationUnavailable:
+                return await self._error(send, 503, "orchestration_unavailable", correlation_id)
+            return await self._json(send, 200,
+                                    self._least_data_subject_insights(raw), correlation_id)
+
         await self._error(send, 404, "not_found", correlation_id)
 
     async def _body(self, receive, headers):
@@ -762,6 +788,14 @@ class BffApp:
             if isinstance(summary_in.get("currency"), str):
                 order_summary["currency"] = summary_in["currency"]
             facets["order_summary"] = order_summary
+        if isinstance(facets_in.get("reminders"), dict):
+            items = []
+            for item in facets_in["reminders"].get("items") or []:
+                if isinstance(item, dict):
+                    items.append({key: item[key] for key in
+                                  ("occasion_type", "days_until_event", "reminder_text",
+                                   "recipient_relation") if key in item})
+            facets["reminders"] = {"items": items}
         return {"context_version": int(raw.get("context_version", 0)),
                 "facets": facets,
                 "ai_generated": bool(raw.get("ai_generated", False)),
@@ -850,6 +884,25 @@ class BffApp:
             if shaped.get("order_id"):
                 items.append(shaped)
         return {"items": items}
+
+    @staticmethod
+    def _least_data_subject_insights(raw: dict) -> dict:
+        """Least-data pseudonymous subject summary for the operator console (ADR-020)."""
+        allowed_bands = {"band_0_50", "band_50_100", "band_100_250", "band_250_plus"}
+        allowed_segments = {"new_shopper", "returning_buyer", "frequent_buyer"}
+        shaped = {
+            "subject_reference": raw.get("subject_reference"),
+            "customer_segment": raw.get("customer_segment"),
+            "total_orders": int(raw.get("total_orders", 0)),
+            "lifetime_spend_band": raw.get("lifetime_spend_band"),
+            "primary_occasion": raw.get("primary_occasion"),
+            "preferred_channel": raw.get("preferred_channel"),
+        }
+        if shaped["customer_segment"] not in allowed_segments:
+            shaped["customer_segment"] = "new_shopper"
+        if shaped["lifetime_spend_band"] not in allowed_bands:
+            shaped["lifetime_spend_band"] = "band_0_50"
+        return shaped
 
     @staticmethod
     def _least_data_operator_forecasts(raw: dict) -> dict:
