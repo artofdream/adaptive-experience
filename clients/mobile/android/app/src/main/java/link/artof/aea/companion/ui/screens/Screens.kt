@@ -4,12 +4,15 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -20,6 +23,7 @@ import link.artof.aea.companion.data.model.Arrangement as FloristArrangement
 import link.artof.aea.companion.data.model.ChatMessage
 import link.artof.aea.companion.data.model.OrderResult
 import link.artof.aea.companion.data.model.SharedUnderstanding
+import link.artof.aea.companion.data.repository.SessionRepository
 import link.artof.aea.companion.ui.components.*
 
 @Composable
@@ -27,7 +31,7 @@ fun NeedScreen(
     messages: List<ChatMessage>,
     sharedUnderstanding: SharedUnderstanding,
     onSendMessage: (String) -> Unit,
-    onContinueToPick: () -> Unit,
+    onContinueToPick: (draftText: String) -> Unit,
     onBudgetChoice: (label: String, ceiling: Double?) -> Unit = { _, _ -> },
     onSkipBudget: () -> Unit = {},
     budgetPromptResolved: Boolean = false,
@@ -77,6 +81,12 @@ fun NeedScreen(
         }
 
         // Text input row
+        val sendDraft: () -> Unit = {
+            if (inputText.isNotBlank()) {
+                onSendMessage(inputText)
+                inputText = ""
+            }
+        }
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -88,25 +98,23 @@ fun NeedScreen(
                 onValueChange = { inputText = it },
                 placeholder = { Text("Tell Lily what you need...") },
                 modifier = Modifier.weight(1f),
-                maxLines = 2
+                maxLines = 2,
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
+                keyboardActions = KeyboardActions(onSend = { sendDraft() }),
             )
             Spacer(modifier = Modifier.width(8.dp))
             Button(
-                onClick = {
-                    if (inputText.isNotBlank()) {
-                        onSendMessage(inputText)
-                        inputText = ""
-                    }
-                },
-                enabled = !isLoading,
+                onClick = sendDraft,
+                enabled = !isLoading && inputText.isNotBlank(),
                 modifier = Modifier.height(56.dp)
             ) {
                 Text("Send")
             }
         }
 
-        // Budget ask after occasion unlock (#359 / #374) — compact FilterChips with active highlight
-        if (hasOccasion) {
+        // Budget ask after occasion unlock *or* a persisted Need message (#359 / #374 / #400)
+        val showBudget = hasOccasion || hasUserMessages
+        if (showBudget) {
             val currentBudget = sharedUnderstanding.budget
             Column(
                 modifier = Modifier
@@ -152,9 +160,15 @@ fun NeedScreen(
         }
 
         // Primary Single CTA (UX Rule: exactly one primary CTA per stage)
-        val canContinue = hasOccasion && budgetPromptResolved
+        // #400: non-empty free-text (draft or posted) unlocks Continue like web Need.
+        val canContinue = SessionRepository.canContinueFromNeed(
+            occasion = sharedUnderstanding.occasion,
+            budgetPromptResolved = budgetPromptResolved,
+            hasPersistedNeedText = hasUserMessages,
+            draftNeedText = inputText,
+        )
         Button(
-            onClick = onContinueToPick,
+            onClick = { onContinueToPick(inputText) },
             enabled = canContinue && !isLoading,
             modifier = Modifier
                 .fillMaxWidth()
@@ -163,9 +177,12 @@ fun NeedScreen(
         ) {
             Text(
                 when {
-                    !hasOccasion -> "Specify Occasion to Continue"
-                    !budgetPromptResolved -> "Choose a Budget Range to Continue"
-                    else -> "View Arrangements (${sharedUnderstanding.occasion}) →"
+                    !canContinue && hasOccasion && !budgetPromptResolved ->
+                        "Choose a Budget Range to Continue"
+                    !canContinue -> "Tell Lily what you need to continue"
+                    !sharedUnderstanding.occasion.isNullOrBlank() ->
+                        "View Arrangements (${sharedUnderstanding.occasion}) →"
+                    else -> "View Arrangements →"
                 }
             )
         }

@@ -56,6 +56,85 @@ class CompanionUnitTests {
     }
 
     @Test
+    fun canContinueFromNeedAllowsFreeTextWithoutParsedOccasion() {
+        // Empty Need cannot proceed.
+        assertFalse(
+            SessionRepository.canContinueFromNeed(
+                occasion = null,
+                budgetPromptResolved = false,
+                hasPersistedNeedText = false,
+                draftNeedText = "",
+            )
+        )
+        // Non-empty draft (typed, not yet sent) unlocks Continue (#400).
+        assertTrue(
+            SessionRepository.canContinueFromNeed(
+                occasion = null,
+                budgetPromptResolved = false,
+                hasPersistedNeedText = false,
+                draftNeedText = "flowers for a friend this weekend",
+            )
+        )
+        // Posted free-text (no BFF occasion) unlocks Continue — web Path B parity.
+        assertTrue(
+            SessionRepository.canContinueFromNeed(
+                occasion = null,
+                budgetPromptResolved = false,
+                hasPersistedNeedText = true,
+                draftNeedText = "",
+            )
+        )
+        // Occasion-known path still requires budget chip or skip (#359).
+        assertFalse(
+            SessionRepository.canContinueFromNeed(
+                occasion = "birthday",
+                budgetPromptResolved = false,
+                hasPersistedNeedText = true,
+                draftNeedText = "",
+            )
+        )
+        assertTrue(
+            SessionRepository.canContinueFromNeed(
+                occasion = "birthday",
+                budgetPromptResolved = true,
+                hasPersistedNeedText = true,
+                draftNeedText = "",
+            )
+        )
+    }
+
+    @Test
+    fun continueToPickPersistsFreeTextThenEntersPick() = runBlocking {
+        fakeApi.sharedUnderstanding = SharedUnderstandingResponse(
+            contextVersion = 1,
+            structuredIntent = StructuredIntent()
+        )
+        assertFalse(repository.canContinueFromNeed(draftNeedText = ""))
+        assertTrue(repository.canContinueFromNeed(draftNeedText = "Sympathy arrangement, no occasion chip"))
+
+        repository.continueToPick("Sympathy arrangement, no occasion chip")
+        assertEquals(JourneyStage.PICK, repository.currentStage.value)
+        assertEquals(
+            "Sympathy arrangement, no occasion chip",
+            fakeApi.postedMessages.last().messageText
+        )
+        assertTrue(repository.messages.value.any { it.sender == "user" && it.text.contains("Sympathy") })
+        assertNull(
+            "Occasion must still come from shared-understanding, not keywords",
+            repository.sharedUnderstanding.value.occasion
+        )
+    }
+
+    @Test
+    fun continueToPickStaysOnNeedWhenDraftPostFails() = runBlocking {
+        fakeApi.failNextConversation = true
+        repository.continueToPick("please send lilies")
+        assertEquals(JourneyStage.NEED, repository.currentStage.value)
+        assertNotNull(repository.errorMessage.value)
+        assertTrue(fakeApi.postedMessages.isNotEmpty())
+    }
+
+    @Test
     fun momKeywordAloneDoesNotUnlockOccasionWithoutBffSharedUnderstanding() = runBlocking {
         // Fake BFF returns empty structured_intent — keyword path must be gone (#357).
         fakeApi.sharedUnderstanding = SharedUnderstandingResponse(
@@ -522,6 +601,8 @@ class FakeBffClient : BffClient() {
     var staleSelectionOnce: Boolean = false
     /** When true, first postConversationMessage throws stale_context 409 then succeeds. */
     var staleConversationOnce: Boolean = false
+    /** When true, next postConversationMessage throws a non-retryable BFF error (#400). */
+    var failNextConversation: Boolean = false
     var clearSessionStateCalls: Int = 0
     var createSessionCalls: Int = 0
     /** True when the most recent createSession was preceded by clearSessionState. */
@@ -571,6 +652,14 @@ class FakeBffClient : BffClient() {
         observedContextVersion: Int
     ): AcceptedResponse {
         postedMessages += ConversationMessageRequest(messageText, observedContextVersion)
+        if (failNextConversation) {
+            failNextConversation = false
+            throw BffException(
+                statusCode = 503,
+                errorCode = "orchestration_unavailable",
+                message = "BFF 503 orchestration_unavailable"
+            )
+        }
         if (staleConversationOnce) {
             staleConversationOnce = false
             version = observedContextVersion + 1

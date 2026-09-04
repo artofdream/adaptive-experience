@@ -169,6 +169,40 @@ class SessionRepository(
     }
 
     /**
+     * Need Continue gate (#400). Web Path B unlocks Need steps without waiting
+     * for structured_intent.occasion (`unlockedThrough` starts at 2; a sent
+     * message advances to step 2). Companion previously required a parsed
+     * occasion, so free-text that the BFF did not facet-lock could not proceed.
+     *
+     * Occasion + budget (#359) still apply when occasion *is* known. Free-text
+     * (draft or already posted) is enough to leave Need when occasion is empty.
+     */
+    fun canContinueFromNeed(
+        occasion: String? = _sharedUnderstanding.value.occasion,
+        budgetPromptResolved: Boolean = _budgetPromptResolved.value,
+        hasPersistedNeedText: Boolean = _messages.value.any { it.sender == "user" },
+        draftNeedText: String = "",
+    ): Boolean = Companion.canContinueFromNeed(
+        occasion = occasion,
+        budgetPromptResolved = budgetPromptResolved,
+        hasPersistedNeedText = hasPersistedNeedText,
+        draftNeedText = draftNeedText,
+    )
+
+    /**
+     * Persist any unsent Need draft (web conversation POST), then enter Pick.
+     * Stays on Need if the draft post fails so intent is not dropped.
+     */
+    suspend fun continueToPick(draftText: String = "") {
+        val trimmed = draftText.trim()
+        if (trimmed.isNotEmpty()) {
+            postUserMessage(trimmed)
+            if (_errorMessage.value != null) return
+        }
+        moveToPickStage()
+    }
+
+    /**
      * Post user text to live conversation/messages, then refresh shared-understanding
      * and conversation. Does NOT keyword-match Mom/birthday for occasion unlock.
      */
@@ -852,6 +886,25 @@ val band = parseBudgetBand(label) ?: BudgetBand(label, floor = null, ceiling = c
                 occ.isNotBlank() -> "Thinking of you$whoPart."
                 else -> ""
             }.replace("  ", " ").trim()
+        }
+
+        /**
+         * Pure Need Continue predicate (#400). Occasion-known path still
+         * requires the #359 budget prompt (chip or skip). Free-text Need
+         * without a parsed occasion may proceed — same as web step 1→2.
+         */
+        fun canContinueFromNeed(
+            occasion: String?,
+            budgetPromptResolved: Boolean,
+            hasPersistedNeedText: Boolean,
+            draftNeedText: String = "",
+        ): Boolean {
+            val hasNeed = !occasion.isNullOrBlank() ||
+                hasPersistedNeedText ||
+                draftNeedText.isNotBlank()
+            if (!hasNeed) return false
+            if (!occasion.isNullOrBlank() && !budgetPromptResolved) return false
+            return true
         }
 
         fun parseBudgetCeiling(labelOrText: String?): Double? {
