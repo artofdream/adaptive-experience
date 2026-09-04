@@ -3,6 +3,8 @@ package link.artof.aea.companion.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -277,6 +279,13 @@ fun PayScreen(
     sharedUnderstanding: SharedUnderstanding,
     onCheckout: (String) -> Unit,
     checkoutTotal: Double? = null,
+    deliveryDate: String = "",
+    deliveryWindow: String = "afternoon",
+    destinationReference: String = "home",
+    onDeliveryDateOffset: (Int) -> Unit = {},
+    onDeliveryWindow: (String) -> Unit = {},
+    onDestinationReference: (String) -> Unit = {},
+    onContactFlorist: (() -> Unit)? = null,
     onBack: (() -> Unit)? = null,
     onStartOver: (() -> Unit)? = null,
     isLoading: Boolean = false,
@@ -298,6 +307,7 @@ fun PayScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(16.dp)
     ) {
         AsoDisclaimer()
@@ -321,8 +331,14 @@ fun PayScreen(
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(text = "Delivery: ${sharedUnderstanding.deliveryDate ?: "Today (Same-Day)"}", style = MaterialTheme.typography.bodyMedium)
-                Text(text = "Destination: Ref# LILY-PARIS-01 (Zero-PII, ADR-013)", style = MaterialTheme.typography.bodyMedium)
+                Text(
+                    text = "When: ${deliveryDate.ifBlank { sharedUnderstanding.deliveryDate ?: "today" }} · $deliveryWindow",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Text(
+                    text = "Destination: $destinationReference (opaque ref, ADR-013 — not a street)",
+                    style = MaterialTheme.typography.bodyMedium
+                )
                 val budgetHonesty = sharedUnderstanding.budget
                 if (!budgetHonesty.isNullOrBlank()) {
                     val ceiling = link.artof.aea.companion.data.repository.SessionRepository
@@ -378,6 +394,70 @@ fun PayScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        Text(
+            text = "Delivery date",
+            style = MaterialTheme.typography.titleSmall
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            val todayIso = java.time.LocalDate.now().toString()
+            val tomorrowIso = java.time.LocalDate.now().plusDays(1).toString()
+            FilterChip(
+                selected = deliveryDate == todayIso || deliveryDate.isBlank(),
+                onClick = { onDeliveryDateOffset(0) },
+                enabled = !isLoading,
+                label = { Text("Today") }
+            )
+            FilterChip(
+                selected = deliveryDate == tomorrowIso,
+                onClick = { onDeliveryDateOffset(1) },
+                enabled = !isLoading,
+                label = { Text("Tomorrow") }
+            )
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = "Window",
+            style = MaterialTheme.typography.titleSmall
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            listOf("morning", "afternoon", "evening").forEach { window ->
+                FilterChip(
+                    selected = deliveryWindow == window,
+                    onClick = { onDeliveryWindow(window) },
+                    enabled = !isLoading,
+                    label = { Text(window.replaceFirstChar { it.uppercase() }) }
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = "Destination reference",
+            style = MaterialTheme.typography.titleSmall
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            listOf("home", "work").forEach { ref ->
+                FilterChip(
+                    selected = destinationReference == ref,
+                    onClick = { onDestinationReference(ref) },
+                    enabled = !isLoading,
+                    label = { Text(ref.replaceFirstChar { it.uppercase() }) }
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
         // Card Message input
         OutlinedTextField(
             value = cardMessage,
@@ -388,7 +468,7 @@ fun PayScreen(
             maxLines = 3
         )
 
-        Spacer(modifier = Modifier.weight(1f))
+        Spacer(modifier = Modifier.height(16.dp))
 
         // Single Primary Confirm CTA (NFR-017 zero-PII checkout)
         Button(
@@ -421,6 +501,15 @@ fun PayScreen(
                 Text("Start Over")
             }
         }
+        if (onContactFlorist != null) {
+            TextButton(
+                onClick = onContactFlorist,
+                enabled = !isLoading,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Contact Florist")
+            }
+        }
     }
 }
 
@@ -428,6 +517,8 @@ fun PayScreen(
 fun TrackingScreen(
     orderResult: OrderResult?,
     onStartOver: () -> Unit,
+    onContactFlorist: (() -> Unit)? = null,
+    escalationAck: String? = null,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -460,6 +551,27 @@ fun TrackingScreen(
 
         Spacer(modifier = Modifier.height(32.dp))
 
+        if (!escalationAck.isNullOrBlank()) {
+            Text(
+                text = escalationAck,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+        }
+
+        if (onContactFlorist != null) {
+            OutlinedButton(
+                onClick = onContactFlorist,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
+            ) {
+                Text("Contact Florist")
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
         Button(
             onClick = onStartOver,
             modifier = Modifier
@@ -469,4 +581,52 @@ fun TrackingScreen(
             Text("Start New Arrangement")
         }
     }
+}
+
+@Composable
+fun ContactFloristDialog(
+    onDismiss: () -> Unit,
+    onSubmit: (String) -> Unit,
+    acknowledgement: String?,
+    isLoading: Boolean
+) {
+    val reasons = listOf(
+        "unresolved_request" to "Unresolved request",
+        "order_issue" to "Order issue",
+        "delivery_issue" to "Delivery issue",
+        "product_question" to "Product question"
+    )
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Contact Florist") },
+        text = {
+            Column {
+                Text(
+                    text = "A person on the florist team will see this session. Choose a reason — no street address or card details.",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                reasons.forEach { (value, label) ->
+                    TextButton(
+                        onClick = { onSubmit(value) },
+                        enabled = !isLoading,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(label)
+                    }
+                }
+                if (!acknowledgement.isNullOrBlank()) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = acknowledgement,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) { Text("Close") }
+        }
+    )
 }

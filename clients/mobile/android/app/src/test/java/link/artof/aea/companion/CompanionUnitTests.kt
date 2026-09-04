@@ -11,6 +11,7 @@ import link.artof.aea.companion.data.model.CorrectionRequest
 import link.artof.aea.companion.data.model.ConversationMessageRequest
 import link.artof.aea.companion.data.model.ConversationResponse
 import link.artof.aea.companion.data.model.DeliveryRequest
+import link.artof.aea.companion.data.model.EscalationResponse
 import link.artof.aea.companion.data.model.SelectionRequest
 import link.artof.aea.companion.data.model.SessionCreateResponse
 import link.artof.aea.companion.data.model.SharedUnderstandingResponse
@@ -136,6 +137,55 @@ class CompanionUnitTests {
         assertEquals(82.0, fakeApi.lastCheckout!!.observedTotal, 0.01)
         assertEquals(82.0, repository.orderResult.value?.totalAmount ?: 0.0, 0.01)
         assertEquals("CONFIRMED", repository.orderResult.value?.status)
+        assertEquals("afternoon", fakeApi.lastDelivery!!.delivery.timing.window)
+        assertEquals(BffClient.SESSION_DESTINATION_REFERENCE, fakeApi.lastDelivery!!.delivery.destinationReference)
+    }
+
+    @Test
+    fun checkoutPostsChosenWindowAndDestinationNotHardcodedDefaults() = runBlocking {
+        fakeApi.sharedUnderstanding = SharedUnderstandingResponse(contextVersion = 4)
+        val rose = Arrangement(
+            sku = "classic-rose-dozen",
+            name = "Classic Roses",
+            price = 70.0,
+            available = true
+        )
+        repository.moveToPickStage()
+        repository.selectArrangement(rose)
+        repository.moveToPayStage()
+        repository.setDeliveryWindow("morning")
+        repository.setDestinationReference("work")
+        repository.setDeliveryDateOffset(1)
+        repository.completeCheckout("Happy Birthday Mom!")
+
+        val posted = fakeApi.lastDelivery!!
+        assertEquals("morning", posted.delivery.timing.window)
+        assertEquals("work", posted.delivery.destinationReference)
+        assertEquals(java.time.LocalDate.now().plusDays(1).toString(), posted.delivery.timing.date)
+        assertTrue(repository.orderResult.value?.estimatedDelivery?.contains("morning") == true)
+        assertTrue(repository.orderResult.value?.estimatedDelivery?.contains("work") == true)
+    }
+
+    @Test
+    fun invalidDeliveryChoiceIsIgnored() {
+        repository.setDeliveryWindow("midnight")
+        assertEquals("afternoon", repository.deliveryWindow.value)
+        repository.setDestinationReference("12 Rue Invented")
+        assertEquals("home", repository.destinationReference.value)
+        repository.setDeliveryDateOffset(-1)
+        assertEquals(java.time.LocalDate.now().toString(), repository.deliveryDate.value)
+    }
+
+    @Test
+    fun escalationPostsAllowlistedReasonOnly() = runBlocking {
+        repository.requestEscalation("unresolved_request")
+        assertEquals("unresolved_request", fakeApi.lastEscalation)
+        assertNotNull(repository.escalationAck.value)
+
+        fakeApi.lastEscalation = null
+        repository.requestEscalation("please call me at +331234")
+        assertNull(fakeApi.lastEscalation)
+        assertTrue(repository.errorMessage.value?.contains("Choose why") == true)
     }
 
     @Test
@@ -466,6 +516,8 @@ class FakeBffClient : BffClient() {
     val selections = mutableListOf<SelectionRequest>()
     var orderPosted: Boolean = false
     var lastCheckout: CheckoutRequest? = null
+    var lastDelivery: DeliveryRequest? = null
+    var lastEscalation: String? = null
     /** When true, first postSelection throws stale_context 409 then succeeds. */
     var staleSelectionOnce: Boolean = false
     /** When true, first postConversationMessage throws stale_context 409 then succeeds. */
@@ -594,9 +646,21 @@ class FakeBffClient : BffClient() {
     }
 
     override suspend fun postDelivery(request: DeliveryRequest): AcceptedResponse {
+        lastDelivery = request
         deliveryPosted = true
         version = request.observedContextVersion + 1
         return AcceptedResponse(accepted = true, code = "accepted", contextVersion = version)
+    }
+
+    override suspend fun postEscalation(reason: String): EscalationResponse {
+        lastEscalation = reason
+        return EscalationResponse(
+            accepted = true,
+            code = "escalation_recorded",
+            messageId = "esc-test",
+            acknowledgement = "A florist will follow up on this session.",
+            escalationReason = reason
+        )
     }
 
     override suspend fun postOrder(): AcceptedResponse {

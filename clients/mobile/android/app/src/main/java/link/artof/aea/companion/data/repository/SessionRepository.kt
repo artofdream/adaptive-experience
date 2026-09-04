@@ -136,6 +136,21 @@ class SessionRepository(
     private val _orderSummaryTotal = MutableStateFlow<Double?>(null)
     val orderSummaryTotal: StateFlow<Double?> = _orderSummaryTotal.asStateFlow()
 
+    /** T-05: shopper-chosen FR-014 window (not hardcoded afternoon) (#381). */
+    private val _deliveryWindow = MutableStateFlow("afternoon")
+    val deliveryWindow: StateFlow<String> = _deliveryWindow.asStateFlow()
+
+    /** T-05: opaque destination ref (not hardcoded home-only) (#381). */
+    private val _destinationReference = MutableStateFlow(BffClient.SESSION_DESTINATION_REFERENCE)
+    val destinationReference: StateFlow<String> = _destinationReference.asStateFlow()
+
+    /** T-05: ISO date; default today. Tomorrow is the other allowlisted chip. */
+    private val _deliveryDate = MutableStateFlow(LocalDate.now().toString())
+    val deliveryDate: StateFlow<String> = _deliveryDate.asStateFlow()
+
+    private val _escalationAck = MutableStateFlow<String?>(null)
+    val escalationAck: StateFlow<String?> = _escalationAck.asStateFlow()
+
     private var contextVersion: Int = 0
     private var usingLocalCatalogFallback: Boolean = true
 
@@ -311,6 +326,44 @@ val band = parseBudgetBand(label) ?: BudgetBand(label, floor = null, ceiling = c
         _currentStage.value = JourneyStage.PAY
     }
 
+    /** T-05: shopper confirms an allowlisted window (#381). */
+    fun setDeliveryWindow(window: String) {
+        if (window in BffClient.ALLOWED_WINDOWS) {
+            _deliveryWindow.value = window
+        }
+    }
+
+    /** T-05: shopper confirms an opaque destination ref — never a street (#381). */
+    fun setDestinationReference(reference: String) {
+        if (reference in BffClient.ALLOWED_DESTINATION_REFS) {
+            _destinationReference.value = reference
+        }
+    }
+
+    /** T-05: today (offset 0) or tomorrow (offset 1). Past dates rejected. */
+    fun setDeliveryDateOffset(daysFromToday: Int) {
+        if (daysFromToday !in 0..1) return
+        _deliveryDate.value = LocalDate.now().plusDays(daysFromToday.toLong()).toString()
+    }
+
+    /**
+     * T-09 Contact Florist — POST /api/v1/support/escalation with allowlisted reason.
+     * App shoppers then appear on /florist inbox.
+     */
+    suspend fun requestEscalation(reason: String) {
+        val trimmed = reason.trim()
+        if (trimmed !in BffClient.ALLOWED_ESCALATION_REASONS) {
+            _errorMessage.value = "Choose why you need a florist (unresolved request, order, delivery, or product)."
+            return
+        }
+        runGuarded {
+            ensureSessionInternal()
+            val result = api.postEscalation(trimmed)
+            _escalationAck.value = result.acknowledgement
+                ?: "A florist will follow up on this session."
+        }
+    }
+
     /** Pick → Need: clear local selection so Pick does not keep a stale card (#365). */
     fun backToNeed() {
         _selectedArrangement.value = null
@@ -365,12 +418,14 @@ val band = parseBudgetBand(label) ?: BudgetBand(label, floor = null, ceiling = c
                 contextVersion = selectAccepted.contextVersion
             }
 
-            val today = LocalDate.now().toString()
+            val chosenDate = _deliveryDate.value
+            val chosenWindow = _deliveryWindow.value
+            val chosenDest = _destinationReference.value
             val deliveryAccepted = postDeliveryRetryingStale(
                 DeliveryRequest(
                     delivery = DeliveryDetails(
-                        timing = DeliveryTiming(date = today, window = "afternoon"),
-                        destinationReference = BffClient.SESSION_DESTINATION_REFERENCE
+                        timing = DeliveryTiming(date = chosenDate, window = chosenWindow),
+                        destinationReference = chosenDest
                     ),
                     observedContextVersion = contextVersion
                 )
@@ -414,7 +469,7 @@ val band = parseBudgetBand(label) ?: BudgetBand(label, floor = null, ceiling = c
             _orderResult.value = OrderResult(
                 orderId = orderId,
                 status = status,
-                estimatedDelivery = "Today ($today afternoon window)",
+                estimatedDelivery = "$chosenDate $chosenWindow → $chosenDest",
                 totalAmount = observedTotal,
                 declineCode = checkout.declineCode
             )
@@ -493,6 +548,10 @@ val band = parseBudgetBand(label) ?: BudgetBand(label, floor = null, ceiling = c
         _orderResult.value = null
         _orderSummaryTotal.value = null
         _errorMessage.value = null
+        _deliveryWindow.value = "afternoon"
+        _destinationReference.value = BffClient.SESSION_DESTINATION_REFERENCE
+        _deliveryDate.value = LocalDate.now().toString()
+        _escalationAck.value = null
         _sharedUnderstanding.value = SharedUnderstanding()
         _budgetPromptResolved.value = false
         budgetFloor = null

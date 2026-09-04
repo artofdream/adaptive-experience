@@ -24,6 +24,8 @@ import link.artof.aea.companion.data.model.CorrectionRequest
 import link.artof.aea.companion.data.model.ConversationMessageRequest
 import link.artof.aea.companion.data.model.ConversationResponse
 import link.artof.aea.companion.data.model.DeliveryRequest
+import link.artof.aea.companion.data.model.EscalationRequest
+import link.artof.aea.companion.data.model.EscalationResponse
 import link.artof.aea.companion.data.model.SelectionRequest
 import link.artof.aea.companion.data.model.SessionCreateResponse
 import link.artof.aea.companion.data.model.SharedUnderstandingResponse
@@ -135,6 +137,17 @@ open class BffClient(
 
     open suspend fun postCheckout(request: CheckoutRequest): AcceptedResponse {
         val response = rawRequest(HttpMethod.Post, "/api/v1/checkout", body = request, csrf = true)
+        return decodeOrThrow(response, expected = setOf(202))
+    }
+
+    /** T-09 Contact Florist — POST /api/v1/support/escalation (#381). */
+    open suspend fun postEscalation(reason: String): EscalationResponse {
+        val response = rawRequest(
+            HttpMethod.Post,
+            "/api/v1/support/escalation",
+            body = EscalationRequest(reason),
+            csrf = true
+        )
         return decodeOrThrow(response, expected = setOf(202))
     }
 
@@ -255,5 +268,19 @@ open class BffClient(
         const val SESSION_PAYMENT_REFERENCE = "session_pay_ref"
         /** ADR-013 opaque destination mirrored from web SESSION_DESTINATION_REFERENCE. */
         const val SESSION_DESTINATION_REFERENCE = "home"
+        /** FR-014 windows — same allowlist as platform/aea_platform/delivery.py. */
+        val ALLOWED_WINDOWS = listOf("morning", "afternoon", "evening")
+        /**
+         * Opaque destination refs the shopper can confirm (#381). Not a street.
+         * #382 (named handle) stays parked — these tokens are enough for florist honesty.
+         */
+        val ALLOWED_DESTINATION_REFS = listOf("home", "work")
+        /** BFF allowlist on POST /api/v1/support/escalation. */
+        val ALLOWED_ESCALATION_REASONS = listOf(
+            "unresolved_request",
+            "order_issue",
+            "delivery_issue",
+            "product_question"
+        )
     }
 }
