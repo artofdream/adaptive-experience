@@ -4,7 +4,7 @@
 > **Captured**: 2026-09-04 ~16:45 Europe/Berlin (14:45 UTC)
 > **Author**: `@aea-knowledge-guardian` & `@aea-ux-designer`
 > **Repository**: `artof-group/adaptive-experience-architecture`
-> **Related**: [[2026-09-04-session-memory-log-mrc-crm-companion-v5-play-honesty]] · `edge/gateway/ui/florist.html` · `edge/gateway/ui/assets/florist.js` · `edge/gateway/ui/assets/styles.css`
+> **Related**: [[2026-09-04-florist-operator-multi-device-responsive-architecture]] · [[2026-09-04-session-memory-log-mrc-crm-companion-v5-play-honesty]] · `edge/gateway/ui/florist.html` · `edge/gateway/ui/assets/florist.js` · `edge/gateway/ui/assets/styles.css`
 
 ---
 

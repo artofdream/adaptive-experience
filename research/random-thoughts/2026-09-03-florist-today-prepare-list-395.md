@@ -3,7 +3,7 @@
 > **Tags**: #aea #florist #operator #395 #least-data #fr-013
 > **Captured**: 2026-09-03
 > **Issue**: #395
-> **Related**: [[2026-09-02-florist-operator-session-facts-383-385]] · [[2026-09-02-native-web-gap-closing-technical-handoff]] · [[2026-09-02-florist-operator-native-web-completeness-gaps]]
+> **Related**: [[2026-09-04-florist-operator-multi-device-responsive-architecture]] · [[2026-09-02-florist-operator-session-facts-383-385]] · [[2026-09-02-native-web-gap-closing-technical-handoff]] · [[2026-09-02-florist-operator-native-web-completeness-gaps]]
 
 ## Slice
 
