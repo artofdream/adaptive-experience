@@ -192,6 +192,7 @@ const state = {
   items: SAMPLE_INBOX,
   orders: SAMPLE_ORDERS,
   orderFilter: "today",
+  inboxFilter: "all",
   ordersError: false,
   selectedId: "",
 };
@@ -384,11 +385,108 @@ function sessionIdSet(items) {
   return new Set((items || []).map((item) => item.session_id).filter(Boolean));
 }
 
+// Day-window filtering (#398): parse a YYYY-MM-DD date or an ISO datetime to a
+// local calendar date so the window comparison is timezone-stable and matches
+// isTodayOrder's string semantics for timing.date.
+function toLocalDate(value) {
+  if (!value) return null;
+  const s = String(value);
+  const ymd = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (ymd) return new Date(Number(ymd[1]), Number(ymd[2]) - 1, Number(ymd[3]));
+  const d = new Date(s);
+  return Number.isNaN(d.getTime()) ? null : new Date(d.getFullYear(), d.getMonth(), d.getDate());
+}
+
+function dayDiffFromToday(value, now = new Date()) {
+  const d = toLocalDate(value);
+  if (!d) return null;
+  const base = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return Math.round((d.getTime() - base.getTime()) / 86400000);
+}
+
+// Order day windows are an UPCOMING fulfillment horizon: an order counts when
+// its delivery date (timing.date) falls between today and today+n inclusive.
+// updated_at is deliberately not used here — it is a past timestamp, so a
+// far-future order touched recently must not leak into a "next N days" window.
+// Orders without a delivery date stay out of forward windows (still in All, and
+// in Today when updated today via isTodayOrder). n=0 => delivered today.
+function orderWithinDays(item, n) {
+  const diff = dayDiffFromToday(item?.timing?.date);
+  return diff !== null && diff >= 0 && diff <= n;
+}
+
+// Inbox day windows are a RECENT-request horizon: a Contact Florist request
+// counts when requested_at falls between today and today-n inclusive (requests
+// are always in the past). n=0 => requested today.
+function inboxWithinDays(item, n) {
+  const diff = dayDiffFromToday(item?.requested_at);
+  return diff !== null && diff <= 0 && diff >= -n;
+}
+
 function filterOrders(items, filter = state.orderFilter) {
   const list = Array.isArray(items) ? items : [];
   if (filter === "delayed") return list.filter(isDelayedOrder);
   if (filter === "today") return list.filter((item) => isTodayOrder(item));
+  if (filter === "3d") return list.filter((item) => orderWithinDays(item, 3));
+  if (filter === "7d") return list.filter((item) => orderWithinDays(item, 7));
   return list;
+}
+
+// Per-section day filter for the Contact Florist inbox, by requested_at (#398).
+function filterInbox(items, filter = state.inboxFilter) {
+  const list = Array.isArray(items) ? items : [];
+  if (filter === "today") return list.filter((item) => inboxWithinDays(item, 0));
+  if (filter === "3d") return list.filter((item) => inboxWithinDays(item, 3));
+  if (filter === "7d") return list.filter((item) => inboxWithinDays(item, 7));
+  return list;
+}
+
+const ORDER_FILTER_IDS = {
+  "order-filter-today": "today",
+  "order-filter-3d": "3d",
+  "order-filter-7d": "7d",
+  "order-filter-delayed": "delayed",
+  "order-filter-all": "all",
+};
+const INBOX_FILTER_IDS = {
+  "inbox-filter-today": "today",
+  "inbox-filter-3d": "3d",
+  "inbox-filter-7d": "7d",
+  "inbox-filter-all": "all",
+};
+const ORDER_FILTER_LABELS = {
+  "order-filter-today": "Today",
+  "order-filter-3d": "3 days",
+  "order-filter-7d": "7 days",
+  "order-filter-delayed": "Delayed",
+  "order-filter-all": "All",
+};
+const INBOX_FILTER_LABELS = {
+  "inbox-filter-today": "Today",
+  "inbox-filter-3d": "3 days",
+  "inbox-filter-7d": "7 days",
+  "inbox-filter-all": "All",
+};
+
+// At-a-glance triage counts on the pills (#398): show how many rows each window
+// holds so an operator doesn't have to click every filter to find the work.
+function updateFilterCounts(ids, labels, rows, counter, noun) {
+  for (const [id, value] of Object.entries(ids)) {
+    const button = document.querySelector(`#${id}`);
+    if (!button) continue;
+    const count = counter(rows, value).length;
+    const span = button.querySelector(".operator-filter-count");
+    if (span) span.textContent = String(count);
+    button.setAttribute("aria-label", `${labels[id]}, ${count} ${count === 1 ? noun : `${noun}s`}`);
+  }
+}
+
+function updateOrderFilterCounts() {
+  updateFilterCounts(ORDER_FILTER_IDS, ORDER_FILTER_LABELS, state.orders, filterOrders, "order");
+}
+
+function updateInboxFilterCounts() {
+  updateFilterCounts(INBOX_FILTER_IDS, INBOX_FILTER_LABELS, state.items, filterInbox, "request");
 }
 
 function uniqueSorted(values) {
@@ -470,13 +568,16 @@ function renderPrepare(items) {
 }
 
 function syncOrderFilterButtons() {
-  for (const [id, value] of [
-    ["#order-filter-today", "today"],
-    ["#order-filter-delayed", "delayed"],
-    ["#order-filter-all", "all"],
-  ]) {
-    const button = document.querySelector(id);
+  for (const [id, value] of Object.entries(ORDER_FILTER_IDS)) {
+    const button = document.querySelector(`#${id}`);
     if (button) button.setAttribute("aria-pressed", String(state.orderFilter === value));
+  }
+}
+
+function syncInboxFilterButtons() {
+  for (const [id, value] of Object.entries(INBOX_FILTER_IDS)) {
+    const button = document.querySelector(`#${id}`);
+    if (button) button.setAttribute("aria-pressed", String(state.inboxFilter === value));
   }
 }
 
@@ -487,15 +588,20 @@ function renderOrders(items) {
   renderPrepare(state.orders);
   const visible = filterOrders(state.orders, state.orderFilter);
   syncOrderFilterButtons();
+  updateOrderFilterCounts();
   if (!state.orders.length) {
     orderRows.append(emptyRow(9, "No companion or website orders yet. This list stays empty until a checkout writes through."));
     decorateHeaderIcons();
     return;
   }
   if (!visible.length) {
-    const copy = state.orderFilter === "delayed"
-      ? "No delayed orders."
-      : "No orders for today.";
+    const ORDER_EMPTY_COPY = {
+      delayed: "No delayed orders.",
+      today: "No orders for today.",
+      "3d": "No orders in the next 3 days.",
+      "7d": "No orders in the next 7 days.",
+    };
+    const copy = ORDER_EMPTY_COPY[state.orderFilter] || "No orders in this range.";
     orderRows.append(emptyRow(9, copy));
     decorateHeaderIcons();
     return;
@@ -539,24 +645,38 @@ function renderOrders(items) {
   decorateHeaderIcons();
 }
 
-document.querySelectorAll("#order-filter-today, #order-filter-delayed, #order-filter-all").forEach((button) => {
+document.querySelectorAll(Object.keys(ORDER_FILTER_IDS).map((id) => `#${id}`).join(",")).forEach((button) => {
   button.addEventListener("click", () => {
-    if (button.id === "order-filter-delayed") state.orderFilter = "delayed";
-    else if (button.id === "order-filter-all") state.orderFilter = "all";
-    else state.orderFilter = "today";
+    state.orderFilter = ORDER_FILTER_IDS[button.id] || "today";
     renderOrders(state.orders);
   });
 });
 
+document.querySelectorAll(Object.keys(INBOX_FILTER_IDS).map((id) => `#${id}`).join(",")).forEach((button) => {
+  button.addEventListener("click", () => {
+    state.inboxFilter = INBOX_FILTER_IDS[button.id] || "all";
+    renderInbox(state.items);
+  });
+});
+
 function renderInbox(items) {
+  if (Array.isArray(items)) state.items = items;
+  const full = Array.isArray(state.items) ? state.items : [];
   inboxRows.replaceChildren();
-  state.items = items;
-  if (!items.length) {
+  syncInboxFilterButtons();
+  updateInboxFilterCounts();
+  if (!full.length) {
     inboxRows.append(emptyRow(3, "No Contact Florist requests yet. This inbox stays empty until a customer uses T-09."));
     decorateHeaderIcons();
     return;
   }
-  for (const item of items) {
+  const visible = filterInbox(full, state.inboxFilter);
+  if (!visible.length) {
+    inboxRows.append(emptyRow(3, "No Contact Florist requests in this day range."));
+    decorateHeaderIcons();
+    return;
+  }
+  for (const item of visible) {
     const row = document.createElement("tr");
     if (item.session_id === state.selectedId) row.className = "is-selected";
     const sample = item.sample ? ' <span class="status">Sample</span>' : "";

@@ -429,8 +429,28 @@ class BrowserUiTests(unittest.TestCase):
         self.assertIn("<th scope=\"col\">Paid</th>", html)
         self.assertIn('id="order-filter-today"', html)
         self.assertIn('id="order-filter-delayed"', html)
+        # Per-section day-window filters (#398): orders gain 3/7-day windows and
+        # the Contact Florist inbox gains its own Today/3/7/All filter group.
+        self.assertIn('id="order-filter-3d"', html)
+        self.assertIn('id="order-filter-7d"', html)
+        self.assertIn('id="inbox-filter-today"', html)
+        self.assertIn('id="inbox-filter-3d"', html)
+        self.assertIn('id="inbox-filter-7d"', html)
+        self.assertIn('id="inbox-filter-all"', html)
         self.assertIn("function filterOrders", script)
+        self.assertIn("function filterInbox", script)
+        # Directional day windows: orders look forward (upcoming delivery),
+        # inbox looks back (recent requests). updated_at must not drive the
+        # forward order window, or delayed/far-future orders would leak in.
+        self.assertIn("function orderWithinDays", script)
+        self.assertIn("function inboxWithinDays", script)
         self.assertIn('orderFilter: "today"', script)
+        self.assertIn('inboxFilter: "all"', script)
+        # At-a-glance per-window counts on the pills so operators don't have to
+        # click every filter to find where the work is (#398).
+        self.assertIn('class="operator-filter-count"', html)
+        self.assertIn("function updateOrderFilterCounts", script)
+        self.assertIn("function updateInboxFilterCounts", script)
         self.assertIn("Select an order or inbox row", html)
         self.assertIn("Has order", script)
         self.assertIn(">Inbox</span>", script)
