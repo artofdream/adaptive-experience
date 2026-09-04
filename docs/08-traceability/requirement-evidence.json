@@ -873,13 +873,16 @@
         "paths": [
           "edge/gateway/ui/florist.html",
           "edge/gateway/ui/index.html",
+          "platform/aea_platform/adapters.py",
           "platform/aea_platform/agent_gateway.py",
           "platform/aea_platform/crm.py",
           "platform/aea_platform/payment.py",
           "platform/aea_platform/privacy.py",
           "platform/aea_platform/support.py",
           "platform/migrations/018_engagement_crm.sql",
-          "platform/migrations/024_operator_crm_subject_profile.sql"
+          "platform/migrations/024_operator_crm_subject_profile.sql",
+          "platform/migrations/025_crm_retention_indexes.sql",
+          "platform/scripts/purge_crm_retention.py"
         ]
       },
       "test": {
