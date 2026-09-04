@@ -1120,3 +1120,35 @@ class PsycopgCrmStore:
             "recipient_relation": str(row[5]),
         } for row in rows]
 
+    def delete_occasion_memories(self, *, browser_hash: str) -> int:
+        """Erase all occasion memory for a browser hash (customer opt-out; NFR-017)."""
+        with self.connection.transaction():
+            cur = self.connection.execute(
+                "DELETE FROM crm.customer_occasion_memory WHERE browser_hash = %s",
+                (browser_hash,)
+            )
+        return cur.rowcount
+
+    def purge_expired_memories(self, *, cutoff: datetime) -> int:
+        """Delete occasion memory not updated since ``cutoff`` (retention lifecycle)."""
+        with self.connection.transaction():
+            cur = self.connection.execute(
+                "DELETE FROM crm.customer_occasion_memory WHERE updated_at < %s",
+                (cutoff,)
+            )
+        return cur.rowcount
+
+    def purge_expired_fulfillment(self, *, now: datetime) -> int:
+        """Shred ephemeral fulfillment records past their 14-day expiry (ADR-020 L3).
+
+        Deletes rows in ``orchestration.ephemeral_fulfillment`` whose ``expires_at``
+        has passed. Only the retention/shredding lifecycle is implemented here; the
+        KMS-encrypted write path for ``encrypted_address`` remains sponsor-gated.
+        """
+        with self.connection.transaction():
+            cur = self.connection.execute(
+                "DELETE FROM orchestration.ephemeral_fulfillment WHERE expires_at < %s",
+                (now,)
+            )
+        return cur.rowcount
+

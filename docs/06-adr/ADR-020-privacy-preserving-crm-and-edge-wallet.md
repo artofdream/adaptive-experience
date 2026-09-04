@@ -1,8 +1,8 @@
 ﻿# ADR-020 — Privacy-Preserving Pseudonymous CRM & Edge Wallet
 
-Status: Accepted — Layer 1 shipped (M12 `crm.py`); **Layer 2 (Edge Wallet) sponsor-accepted and implemented** in the Android companion; Layer 3 (ephemeral address-shredding vault) remains proposed.
+Status: Accepted — Layer 1 shipped (M12 `crm.py`) with a zero-PII privacy lifecycle (erasure + retention); **Layer 2 (Edge Wallet) implemented** in the Android companion; Layer 3 ephemeral-fulfillment **14-day shredding lifecycle implemented** (KMS-encrypted write path sponsor-gated).
 
-Date: 2026-09-02 (Layer 2 accepted 2026-09-03)
+Date: 2026-09-02 (Layer 2 accepted 2026-09-03; privacy lifecycle 2026-09-03)
 
 Related requirements: NFR-017 (zero-PII / least-data perimeter), FR-008 (thin reorder hint), FR-013 (least-data staff orders), ADR-013 (confirmation-driven experience / tokenized references), ADR-018 (mobile session auth)
 
@@ -42,7 +42,16 @@ Adopt **Alternative 3 (3-Layer Privacy-Preserving CRM & Edge Wallet Architecture
 
 - **Layer 1 (Platform):** shipped as the M12 zero-PII Engagement CRM
   (`platform/aea_platform/crm.py`, `crm.customer_occasion_memory`, migration
-  018) with occasion memory + reminder endpoints.
+  018) with occasion memory + reminder endpoints. Reminders are **deterministic
+  pull signals** computed on read (`GET .../crm/reminders`); proactive push
+  delivery (FCM/APNs) is not shipped (see ADR-019). Privacy lifecycle
+  (NFR-017): customer erasure via `EngagementCrmService.forget` /
+  `DELETE /internal/v1/crm/occasions`, and time-based retention via
+  `purge_expired` (default ~13 months since last update); operational job
+  `platform/scripts/purge_crm_retention.py`. The pseudonymous subject-profile
+  aggregate table (`orchestration.subject_profile`, migration 024) and the
+  `CrmService` spend-band/insight helpers exist, but their persistence adapter
+  and wiring are still in progress (tracked separately).
 - **Layer 2 (Edge Wallet):** **sponsor-accepted (2026-09-03) and implemented**
   in the Android companion (`clients/mobile/android`). Device-owned receipts
   are stored in `EncryptedSharedPreferences` under an Android Keystore AES-256
@@ -54,8 +63,13 @@ Adopt **Alternative 3 (3-Layer Privacy-Preserving CRM & Edge Wallet Architecture
   re-selects the opaque product with authoritative NFR-009 inventory
   revalidation). See
   [`research/design-notes/adr-020-layer2-edge-wallet.md`](../../research/design-notes/adr-020-layer2-edge-wallet.md).
-- **Layer 3 (Fulfillment):** the 14-day ephemeral KMS address-shredding vault
-  remains proposed and unbuilt.
+- **Layer 3 (Fulfillment):** the ephemeral fulfillment table
+  (`orchestration.ephemeral_fulfillment`, migration 024) and the **14-day
+  auto-shredding lifecycle** are implemented —
+  `PsycopgCrmStore.purge_expired_fulfillment` deletes rows past `expires_at`,
+  run by `platform/scripts/purge_crm_retention.py`. The KMS-encrypted write
+  path for `encrypted_address` (populating the vault at fulfillment time)
+  remains **sponsor-gated** (cloud KMS + budget) and unbuilt.
 
 ## Consequences
 

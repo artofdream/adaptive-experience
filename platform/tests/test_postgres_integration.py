@@ -108,8 +108,8 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
             int(path.name[:3])
             for path in sorted((ROOT / "migrations").glob("[0-9][0-9][0-9]_*.sql"))
         ]
-        self.assertEqual(len(expected), 24)
-        self.assertTrue({19, 20, 21, 22, 23, 24}.issubset(set(expected)))
+        self.assertEqual(len(expected), 25)
+        self.assertTrue({19, 20, 21, 22, 23, 24, 25}.issubset(set(expected)))
         self.assertEqual(expected, versions)
 
     def test_superseded_mutation_function_is_dropped(self):
@@ -432,6 +432,71 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         product_charge = [c for c in summary["itemized_charges"] if c["label"] == "product"][0]
         self.assertEqual(2, product_charge["quantity"])
         self.assertEqual(70.0, product_charge["amount"])
+
+    def test_crm_occasion_erasure_and_retention_purge(self):
+        """Zero-PII CRM privacy lifecycle: erasure (forget) + time-based retention purge."""
+        from aea_platform.adapters import PsycopgCrmStore
+        from aea_platform.crm import EngagementCrmService
+
+        store = PsycopgCrmStore(self.connection)
+        svc = EngagementCrmService(store)
+        browser_hash = svc.hash_browser(f"itest-{uuid.uuid4()}")
+
+        svc.record_occasion(browser_hash=browser_hash, session_id=str(uuid.uuid4()),
+                            occasion_type="Birthday", event_month=9, event_day=5,
+                            recipient_relation="Mother")
+        svc.record_occasion(browser_hash=browser_hash, session_id=str(uuid.uuid4()),
+                            occasion_type="Anniversary", event_month=6, event_day=1,
+                            recipient_relation="Partner")
+        self.assertEqual(2, len(store.list_occasion_memories(browser_hash=browser_hash)))
+
+        # Erasure (customer opt-out) removes exactly this browser's memory.
+        self.assertEqual(2, svc.forget(browser_hash=browser_hash))
+        self.assertEqual(0, len(store.list_occasion_memories(browser_hash=browser_hash)))
+        self.assertEqual(0, svc.forget(browser_hash=browser_hash))  # idempotent
+
+        # Retention: a memory whose updated_at predates the window is purged.
+        svc.record_occasion(browser_hash=browser_hash, session_id=str(uuid.uuid4()),
+                            occasion_type="Birthday", event_month=9, event_day=5,
+                            recipient_relation="Mother")
+        with self.connection.transaction():
+            self.connection.execute(
+                "UPDATE crm.customer_occasion_memory SET updated_at = %s WHERE browser_hash = %s",
+                (datetime.now(timezone.utc) - timedelta(days=500), browser_hash))
+        purged = svc.purge_expired(retention_days=400)
+        self.assertGreaterEqual(purged, 1)
+        self.assertEqual(0, len(store.list_occasion_memories(browser_hash=browser_hash)))
+
+    def test_ephemeral_fulfillment_shredding_purge(self):
+        """ADR-020 Layer 3 retention: expired ephemeral fulfillment rows are shredded."""
+        from aea_platform.adapters import PsycopgCrmStore
+
+        store = PsycopgCrmStore(self.connection)
+        expired_ref = str(uuid.uuid4())
+        live_ref = str(uuid.uuid4())
+        now = datetime.now(timezone.utc)
+        with self.connection.transaction():
+            self.connection.execute(
+                "INSERT INTO orchestration.ephemeral_fulfillment "
+                "(destination_reference, encrypted_address, expires_at) VALUES (%s, %s, %s)",
+                (expired_ref, b"cipher", now - timedelta(days=1)))
+            self.connection.execute(
+                "INSERT INTO orchestration.ephemeral_fulfillment "
+                "(destination_reference, encrypted_address, expires_at) VALUES (%s, %s, %s)",
+                (live_ref, b"cipher", now + timedelta(days=13)))
+
+        shredded = store.purge_expired_fulfillment(now=now)
+        self.assertGreaterEqual(shredded, 1)
+        remaining = {str(r[0]) for r in self.connection.execute(
+            "SELECT destination_reference FROM orchestration.ephemeral_fulfillment "
+            "WHERE destination_reference IN (%s, %s)", (expired_ref, live_ref)).fetchall()}
+        self.assertNotIn(expired_ref, remaining)   # shredded
+        self.assertIn(live_ref, remaining)          # within 14-day window
+        # cleanup
+        with self.connection.transaction():
+            self.connection.execute(
+                "DELETE FROM orchestration.ephemeral_fulfillment WHERE destination_reference = %s",
+                (live_ref,))
 
     def _order_ready_for_checkout(self, app):
         import asyncio

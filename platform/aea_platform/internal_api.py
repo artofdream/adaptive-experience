@@ -137,6 +137,14 @@ class InternalOrchestrationApp:
                 return await self._send(send, 201, {"code": "created", "occasion": result})
             except (CrmValidationError, ValueError, TypeError):
                 return await self._send(send, 422, {"code": "validation_failed"})
+        if scope["path"] == "/internal/v1/crm/occasions" and scope["method"] == "DELETE":
+            query = parse_qs(scope.get("query_string", b"").decode())
+            browser_hash = (query.get("browser_hash") or [""])[0]
+            try:
+                deleted = self.crm.forget(browser_hash=browser_hash)
+                return await self._send(send, 200, {"code": "forgotten", "deleted": deleted})
+            except CrmValidationError:
+                return await self._send(send, 422, {"code": "validation_failed"})
         if (len(parts) == 5 and parts[:4] == ["internal", "v1", "operator", "sessions"]
                 and scope["method"] == "GET"):
             try:
