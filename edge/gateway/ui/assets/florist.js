@@ -313,7 +313,7 @@ const TABLE_HEADER_ICONS = {
   Destination: `<svg class="th-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`,
   Reason: `<svg class="th-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`,
   Session: `<svg class="th-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`,
-  Count: `<svg class="th-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>`,
+  Count: `<svg class="th-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>`,
   Product: `<svg class="th-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>`,
   Trend: `<svg class="th-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>`,
   Recommendation: `<svg class="th-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="9" y1="18" x2="15" y2="18"/><line x1="10" y1="22" x2="14" y2="22"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg>`,
@@ -323,7 +323,7 @@ function decorateHeaderIcons() {
   document.querySelectorAll(".operator-table th").forEach((th) => {
     const text = th.textContent.trim();
     if (TABLE_HEADER_ICONS[text] && !th.querySelector(".th-icon")) {
-      th.innerHTML = `${TABLE_HEADER_ICONS[text]} <span class="th-label">${text}</span>`;
+      th.innerHTML = `<span class="th-wrap">${TABLE_HEADER_ICONS[text]}<span class="th-label">${text}</span></span>`;
     }
   });
 }
@@ -409,6 +409,7 @@ function groupPrepareItems(items) {
         windows: [],
         cards: [],
         channels: [],
+        orders: [],
       });
     }
     const group = groups.get(key);
@@ -417,6 +418,7 @@ function groupPrepareItems(items) {
     if (when !== "—") group.windows.push(when);
     if (item.card_message) group.cards.push(String(item.card_message).slice(0, 40));
     if (item.channel) group.channels.push(item.channel);
+    if (item.order_id) group.orders.push(item.order_id);
   }
   return Array.from(groups.values()).sort((a, b) => String(a.title).localeCompare(String(b.title)));
 }
@@ -438,23 +440,33 @@ function renderPrepare(items) {
   }
   for (const group of groups) {
     const row = document.createElement("tr");
+    row.setAttribute("data-prepare-title", group.title);
     const cards = uniqueSorted(group.cards).slice(0, 2).join("; ") || "—";
     const channels = uniqueSorted(group.channels).join(" · ") || "—";
+    const windowsText = uniqueSorted(group.windows).join(" · ") || "—";
     const cardMeta = cards !== "—" ? `<span class="prepare-mobile-cards">“${cards}”</span>` : "";
     const channelMeta = channels !== "—" ? `<span><code>${channels}</code></span>` : "";
     const mobileMeta = (cardMeta || channelMeta)
       ? `<div class="prepare-mobile-meta">${cardMeta}${channelMeta}</div>`
       : "";
     row.innerHTML = `<td>
-        <span class="prepare-title-main">${group.title}</span>
-        ${mobileMeta}
+        <div class="prepare-cell-main">
+          <span class="prepare-title-main">${group.title}</span>
+          ${mobileMeta}
+        </div>
       </td>
-      <td>${group.count}</td>
-      <td>${uniqueSorted(group.windows).join(" · ") || "—"}</td>
+      <td><span class="badge count-badge">${group.count}</span></td>
+      <td>
+        <div class="prepare-cell-actions">
+          <span class="prepare-windows-text">${windowsText}</span>
+          <button type="button" class="text-link prepare-detail-trigger" data-prepare-title="${group.title}" aria-label="View details for ${group.title}">Details ↗</button>
+        </div>
+      </td>
       <td>${cards}</td>
       <td><code>${channels}</code></td>`;
     prepareRows.append(row);
   }
+  decorateHeaderIcons();
 }
 
 function syncOrderFilterButtons() {
@@ -806,6 +818,129 @@ if (orderDetailDialog) {
     if (e.target === orderDetailDialog && typeof orderDetailDialog.close === "function") {
       orderDetailDialog.close();
     }
+  });
+}
+
+function openPrepareDetail(groupTitle) {
+  const groups = groupPrepareItems(state.orders);
+  const group = groups.find((g) => g.title === groupTitle);
+  if (!group) return;
+  const dialog = document.querySelector("#prepare-detail-dialog");
+  const facts = document.querySelector("#prepare-dialog-facts");
+  const title = document.querySelector("#prepare-dialog-title");
+  const cardsContainer = document.querySelector("#prepare-dialog-cards");
+  if (!dialog || !facts || !title || !cardsContainer) return;
+
+  title.textContent = `${group.title} (${group.count})`;
+  facts.replaceChildren();
+
+  function addFact(term, value, isBadge = false) {
+    const dt = document.createElement("dt");
+    dt.textContent = term;
+    const dd = document.createElement("dd");
+    if (isBadge) {
+      const span = document.createElement("span");
+      span.className = "badge";
+      span.textContent = value;
+      dd.appendChild(span);
+    } else {
+      dd.textContent = value;
+    }
+    facts.append(dt, dd);
+  }
+
+  addFact("Arrangement", group.title);
+  addFact("Total to prepare", String(group.count), true);
+  addFact("Delivery windows", uniqueSorted(group.windows).join(" · ") || "—");
+  addFact("Channels", uniqueSorted(group.channels).join(" · ") || "—");
+  if (group.orders && group.orders.length) {
+    addFact("Order IDs", group.orders.map(shortRef).join(", "));
+  }
+
+  cardsContainer.replaceChildren();
+  const rawCards = (state.orders || [])
+    .filter((o) => (o.catalog_title || o.product_id) === group.title && o.card_message)
+    .map((o) => o.card_message);
+  const uniqueCards = uniqueSorted(rawCards);
+  if (uniqueCards.length) {
+    for (const cardText of uniqueCards) {
+      const cardBox = document.createElement("div");
+      cardBox.className = "dialog-card-note";
+      cardBox.textContent = `“${cardText}”`;
+      cardsContainer.appendChild(cardBox);
+    }
+  } else {
+    const emptyCard = document.createElement("p");
+    emptyCard.className = "operator-empty";
+    emptyCard.textContent = "No gift card messages for this arrangement.";
+    cardsContainer.appendChild(emptyCard);
+  }
+
+  const jumpOrdersBtn = document.querySelector("#prepare-dialog-jump-orders");
+  if (jumpOrdersBtn) {
+    jumpOrdersBtn.onclick = () => {
+      if (typeof dialog.close === "function") dialog.close();
+      else dialog.removeAttribute("open");
+      state.orderFilter = "today";
+      renderOrders(state.orders);
+      const ordersSection = document.querySelector("#orders");
+      if (ordersSection) ordersSection.scrollIntoView({ behavior: "smooth" });
+    };
+  }
+
+  if (typeof dialog.showModal === "function") {
+    dialog.showModal();
+  } else {
+    dialog.setAttribute("open", "");
+  }
+}
+
+if (prepareRows) {
+  prepareRows.addEventListener("click", (event) => {
+    const trigger = event.target.closest(".prepare-detail-trigger");
+    if (trigger) {
+      openPrepareDetail(trigger.getAttribute("data-prepare-title"));
+      return;
+    }
+    const row = event.target.closest("tr[data-prepare-title]");
+    if (row && window.innerWidth <= 768) {
+      openPrepareDetail(row.getAttribute("data-prepare-title"));
+    }
+  });
+}
+
+document.querySelectorAll("[data-close-prepare-dialog]").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const dialog = document.querySelector("#prepare-detail-dialog");
+    if (dialog && typeof dialog.close === "function") {
+      dialog.close();
+    } else if (dialog) {
+      dialog.removeAttribute("open");
+    }
+  });
+});
+
+const prepareDetailDialog = document.querySelector("#prepare-detail-dialog");
+if (prepareDetailDialog) {
+  prepareDetailDialog.addEventListener("click", (e) => {
+    if (e.target === prepareDetailDialog && typeof prepareDetailDialog.close === "function") {
+      prepareDetailDialog.close();
+    }
+  });
+}
+
+const scrollToTopBtn = document.querySelector("#scroll-to-top");
+const scrollToBottomBtn = document.querySelector("#scroll-to-bottom");
+
+if (scrollToTopBtn) {
+  scrollToTopBtn.addEventListener("click", () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+}
+
+if (scrollToBottomBtn) {
+  scrollToBottomBtn.addEventListener("click", () => {
+    window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
   });
 }
 

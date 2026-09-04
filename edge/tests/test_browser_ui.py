@@ -541,7 +541,7 @@ class BrowserUiTests(unittest.TestCase):
         script = (ROOT / "ui" / "assets" / "florist.js").read_text(encoding="utf-8")
         css = (ROOT / "ui" / "assets" / "styles.css").read_text(encoding="utf-8")
 
-        # HTML table wrap and dialog
+        # HTML table wrap, dialogs, and scroll controls
         self.assertIn('class="operator-table-wrap"', html)
         self.assertIn('class="operator-table operator-table-orders"', html)
         self.assertIn('class="operator-table operator-table-prepare"', html)
@@ -552,28 +552,44 @@ class BrowserUiTests(unittest.TestCase):
         self.assertIn('id="order-dialog-facts"', html)
         self.assertIn('id="order-dialog-title"', html)
         self.assertIn('data-close-order-dialog', html)
+        self.assertIn('id="prepare-detail-dialog"', html)
+        self.assertIn('id="prepare-dialog-facts"', html)
+        self.assertIn('id="prepare-dialog-title"', html)
+        self.assertIn('data-close-prepare-dialog', html)
+        self.assertIn('class="operator-scroll-controls"', html)
+        self.assertIn('id="scroll-to-top"', html)
+        self.assertIn('id="scroll-to-bottom"', html)
 
-        # JS date formatting and overlay
+        # JS date formatting, overlays, and scroll handlers
         self.assertIn("function formatRequestedDateHtml", script)
         self.assertIn("function openOrderDetail", script)
+        self.assertIn("function openPrepareDetail", script)
         self.assertIn("TABLE_HEADER_ICONS", script)
         self.assertIn("function decorateHeaderIcons", script)
         self.assertIn("order-detail-trigger", script)
+        self.assertIn("prepare-detail-trigger", script)
         self.assertIn("order-cell-main", script)
+        self.assertIn("prepare-cell-main", script)
         self.assertIn("order-mobile-meta", script)
         self.assertIn("prepare-mobile-meta", script)
         self.assertIn("dialog-card-note", script)
+        self.assertIn("scrollToTopBtn", script)
+        self.assertIn("scrollToBottomBtn", script)
 
-        # CSS mobile responsive 3-column table, nav, and dialog
+        # CSS mobile responsive 3-column table, nav, dialog, and scroll controls
         self.assertIn(".operator-table-wrap", css)
         self.assertIn(".operator-cell-date", css)
         self.assertIn(".operator-nav", css)
         self.assertIn(".operator-filter-wrap", css)
+        self.assertIn(".th-wrap", css)
         self.assertIn(".operator-table-orders th:nth-child(n+4)", css)
         self.assertIn(".operator-table-prepare th:nth-child(n+4)", css)
+        self.assertIn("#prepare .operator-table th:nth-child(n+4)", css)
         self.assertIn("dialog.operator-dialog", css)
         self.assertIn(".dialog-sheet-handle", css)
         self.assertIn(".dialog-card-note", css)
+        self.assertIn(".operator-scroll-controls", css)
+        self.assertIn(".scroll-ctrl-btn", css)
 
 
 if __name__ == "__main__":

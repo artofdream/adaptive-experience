@@ -11,7 +11,7 @@
 </head>
 <body class="operator">
   <a class="skip-link" href="#orders">Skip to staff orders</a>
-  <header class="site-header">
+  <header class="site-header" id="top">
     <a class="brand" href="/florist" aria-label="Florist operator home">Lily's Florist · Operator</a>
     <p class="header-note">Shop is a separate browser. Do not open this console in the same browser as the customer workspace (CSRF).</p>
   </header>
@@ -215,5 +215,32 @@
       <button type="button" class="primary" data-close-order-dialog>Close</button>
     </div>
   </dialog>
+
+  <dialog id="prepare-detail-dialog" class="operator-dialog" aria-labelledby="prepare-dialog-title">
+    <div class="dialog-sheet-handle" aria-hidden="true"></div>
+    <div class="dialog-header">
+      <div>
+        <p class="eyebrow">FR-013 · Today's prepare grouping</p>
+        <h2 id="prepare-dialog-title" class="dialog-title">Arrangement details</h2>
+      </div>
+      <button type="button" class="dialog-close" data-close-prepare-dialog aria-label="Close arrangement details">✕</button>
+    </div>
+    <div class="dialog-body">
+      <dl id="prepare-dialog-facts" class="operator-facts"></dl>
+      <div id="prepare-dialog-cards-section" class="dialog-section">
+        <h3>Customer card messages</h3>
+        <div id="prepare-dialog-cards" class="dialog-card-list"></div>
+      </div>
+    </div>
+    <div class="dialog-footer">
+      <button type="button" class="secondary" id="prepare-dialog-jump-orders">View related orders</button>
+      <button type="button" class="primary" data-close-prepare-dialog>Close</button>
+    </div>
+  </dialog>
+
+  <aside class="operator-scroll-controls" aria-label="Console scroll navigation">
+    <button type="button" id="scroll-to-top" class="scroll-ctrl-btn" aria-label="Scroll to top of console" title="Scroll to top">↑</button>
+    <button type="button" id="scroll-to-bottom" class="scroll-ctrl-btn" aria-label="Scroll to bottom of console" title="Scroll to bottom">↓</button>
+  </aside>
 </body>
 </html>

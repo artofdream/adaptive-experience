@@ -570,14 +570,21 @@ body.operator { background: var(--page); }
 }
 .operator-table th {
   white-space: nowrap;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-weight: 700;
   color: var(--purple-deep);
+  padding: .65rem .5rem;
+}
+.th-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  white-space: nowrap;
 }
 .th-icon {
   display: inline-block;
-  vertical-align: -0.15em;
-  margin-right: .3rem;
+  vertical-align: middle;
+  flex-shrink: 0;
   color: var(--purple);
 }
 .th-label {
@@ -609,6 +616,25 @@ body.operator { background: var(--page); }
 .order-mobile-meta {
   display: none;
 }
+.prepare-cell-main {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.prepare-title-main {
+  font-weight: 650;
+  color: var(--purple-deep);
+  line-height: 1.25;
+}
+.prepare-cell-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+.prepare-detail-trigger {
+  display: none;
+}
 .status-cell-main {
   display: flex;
   flex-direction: column;
@@ -617,6 +643,17 @@ body.operator { background: var(--page); }
 }
 .order-detail-trigger {
   display: none;
+}
+.dialog-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.35rem;
+}
+.dialog-section h3 {
+  font-size: 0.95rem;
+  color: var(--purple-deep);
+  margin: 1rem 0 0.4rem;
 }
 .operator-table tbody tr.is-selected { background: var(--lavender-soft); }
 .operator-table .text-link { color: var(--purple); font-weight: 650; }
@@ -784,7 +821,9 @@ dialog.operator-dialog::backdrop {
   }
   /* 3-column Prepare table on mobile, matching Contact Florist inbox */
   .operator-table-prepare th:nth-child(n+4),
-  .operator-table-prepare td:nth-child(n+4) {
+  .operator-table-prepare td:nth-child(n+4),
+  #prepare .operator-table th:nth-child(n+4),
+  #prepare .operator-table td:nth-child(n+4) {
     display: none;
   }
   .prepare-mobile-meta {
@@ -798,6 +837,24 @@ dialog.operator-dialog::backdrop {
   .prepare-mobile-cards {
     font-style: italic;
     color: var(--ink);
+  }
+  .prepare-detail-trigger {
+    display: inline-block;
+    font-size: 0.8rem;
+    font-weight: 650;
+    color: var(--purple);
+    text-decoration: underline;
+    cursor: pointer;
+    background: transparent;
+    border: 0;
+    padding: 2px 0;
+    min-height: 36px;
+    min-width: 36px;
+  }
+  .prepare-windows-text {
+    font-size: 0.82rem;
+    color: var(--ink);
+    font-weight: 600;
   }
   .order-mobile-meta {
     display: flex;
@@ -857,6 +914,45 @@ dialog.operator-dialog::backdrop {
   .operator-dialog .dialog-footer button {
     width: 100%;
   }
+}
+
+.operator-scroll-controls {
+  position: fixed;
+  bottom: 1.25rem;
+  right: 1.25rem;
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.scroll-ctrl-btn {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 50%;
+  background: var(--card);
+  border: 1px solid var(--line);
+  color: var(--purple-deep);
+  font-size: 1.25rem;
+  font-weight: 700;
+  box-shadow: 0 4px 14px rgba(76, 47, 138, 0.22);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+  padding: 0;
+  line-height: 1;
+}
+.scroll-ctrl-btn:hover,
+.scroll-ctrl-btn:focus-visible {
+  background: var(--purple);
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(76, 47, 138, 0.35);
+}
+.scroll-ctrl-btn:active {
+  transform: translateY(0);
 }
 
 /* UX-P03: WCAG 2.1 AAA 44x44px Minimum Tap Target Enforcement */

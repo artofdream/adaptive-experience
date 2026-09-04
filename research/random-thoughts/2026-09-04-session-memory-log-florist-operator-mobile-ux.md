@@ -34,15 +34,32 @@ Live verification of the Florist Operator console (`https://aea.artof.link/flori
      - **Column 3 (`Windows`)**: Scheduled delivery windows.
    - Secondary columns 4 & 5 (`Cards`, `Channels`) are hidden on mobile to avoid horizontal crushing while keeping all information accessible in Column 1.
 
-3. **Multi-Device Navigation (`.operator-nav`) & Touch Ergonomics**:
+3. **"Today's arrangements to prepare" (`#prepare`) 3-Column Redesign & Arrangement Details Dialog**:
+   - Modeled `#prepare` directly after Staff Orders and Contact Florist 3-column ergonomics:
+     - **Column 1 (`Arrangement`)**: Prominent arrangement title (`.prepare-title-main`) + inline `.prepare-mobile-meta` with first 2 card message snippets and channels.
+     - **Column 2 (`Count`)**: Centered count badge (`.order-status-badge`).
+     - **Column 3 (`Windows & Details`)**: Scheduled delivery windows (`.prepare-windows-text`) + `Details ↗` trigger (`.prepare-detail-trigger`).
+   - Fixed header icon collisions on narrow viewports: wrapped header icons and text in `.th-wrap` (`display: inline-flex; align-items: center; gap: 0.35rem; white-space: nowrap;`) and replaced the 4-line intersecting grid Count icon with a clean 4-square tally symbol.
+   - Secondary columns 4 & 5 (`Cards`, `Channels`) hidden via `#prepare .operator-table th:nth-child(n+4)` on mobile viewports (`<=48rem`).
+   - Added native bottom-sheet `<dialog id="prepare-detail-dialog">`:
+     - Displays arrangement title, total count, delivery windows, channels, and associated order IDs.
+     - Displays full uncapped customer card messages in quote cards (`.dialog-card-note`).
+     - Includes "View related orders" action that filters Staff orders and scrolls smoothly to `#orders`.
+
+4. **Go All The Way Up or Down Scroll Controls (`.operator-scroll-controls`)**:
+   - Pinned floating action buttons (`#scroll-to-top` `↑` and `#scroll-to-bottom` `↓`) to bottom-right (`bottom: 1.25rem; right: 1.25rem; z-index: 90;`).
+   - Sized to 44×44px circular tap targets (WCAG 2.1 AAA) with soft lavender drop shadow and hover/focus elevation states.
+   - Smoothly scrolls to top (`window.scrollTo({ top: 0, behavior: 'smooth' })`) or bottom of the operator console (`window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })`).
+
+5. **Multi-Device Navigation (`.operator-nav`) & Touch Ergonomics**:
    - Added horizontal quick-nav chips (`#orders`, `#prepare`, `#inbox`, `#session`, `#forecast`) with smooth scrolling so mobile and tablet operators can jump directly across panels without friction.
    - Enhanced `#order-filter-bar` into a modern segmented pill control (`.operator-filter-wrap`, `.operator-filter-btn`) providing WCAG 2.1 AAA minimum 44x44px touch targets.
    - Added auto-scroll on small screens (`window.innerWidth <= 768`) when tapping Contact Florist inbox rows, bringing `#session` directly into view.
 
-4. **Tablet & Mobile Fact Grid Alignment (`.operator-facts`)**:
+6. **Tablet & Mobile Fact Grid Alignment (`.operator-facts`)**:
    - Resolved awkward single-column collapsing on tablet/mobile screens (<=60rem): updated `.operator-facts` to maintain a 2-column key-value grid (`minmax(7.5rem, auto) 1fr` on tablet, `minmax(6.5rem, auto) 1fr` on mobile) so terms and definitions remain paired side-by-side.
 
-5. **Order Detail Overlay (`<dialog id="order-detail-dialog">`) with Native Bottom-Sheet Styling**:
+7. **Order Detail Overlay (`<dialog id="order-detail-dialog">`) with Native Bottom-Sheet Styling**:
    - Added an HTML5 `<dialog class="operator-dialog">` styled as a native bottom-sheet drawer on mobile with a sheet drag handle (`.dialog-sheet-handle`) and centered modal on desktop.
    - Formats customer card messages with dedicated quote styling (`.dialog-card-note`).
    - Surfaces all 9 order facts: Order ID, authoritative status & delayed flag, arrangement title, delivery window (`When`), card message, channel, payment state, destination handle, and updated timestamp.
@@ -50,25 +67,26 @@ Live verification of the Florist Operator console (`https://aea.artof.link/flori
    - Includes "Jump to session transcript ↓" action that closes the dialog, selects the session, and scrolls smoothly to `#session`.
    - On mobile viewports (<=768px), tapping an order row or the `Details ↗` button immediately opens this dialog for zero-friction inspection.
 
-6. **Preservation of Laptop / Desktop Experience (>= 1024px / >= 64rem)**:
+8. **Preservation of Laptop / Desktop Experience (>= 1024px / >= 64rem)**:
    - Preserved full 9-column Staff Orders and 5-column Prepare tables on desktop/laptop.
    - User explicitly confirmed "the view is fine from a laptop" — desktop ergonomics, wide layout, and data density remain completely intact.
 
-7. **Best-Practice Iconography**:
+9. **Best-Practice Iconography**:
    - Injected feather-weight, accessible SVG icons (`aria-hidden="true"`) for all table headers (`Updated`, `Requested`, `Order`, `Status`, `Arrangement`, `Card`, `Channel`, `Paid`, `When`, `Destination`, `Reason`, `Session`, `Count`, `Product`, `Trend`, `Recommendation`).
    - Done progressively via `decorateHeaderIcons()` at boot time so existing test assertions (`<th scope="col">Card</th>`, `<th scope="col">Channel</th>`, `<th scope="col">Paid</th>`) remain intact.
 
-8. **Eliminated Single-Character Word Breaking**:
-   - Replaced `overflow-wrap: anywhere` on `.operator-table th, .operator-table td` with `overflow-wrap: break-word; word-break: normal;`.
-   - Added `.operator-table-wrap` for smooth horizontal touch scrolling on intermediate viewports.
-   - Wrapped date display in `.operator-cell-date` with `white-space: nowrap` and `font-variant-numeric: tabular-nums`.
+10. **Eliminated Single-Character Word Breaking**:
+    - Replaced `overflow-wrap: anywhere` on `.operator-table th, .operator-table td` with `overflow-wrap: break-word; word-break: normal;`.
+    - Added `.operator-table-wrap` for smooth horizontal touch scrolling on intermediate viewports.
+    - Wrapped date display in `.operator-cell-date` with `white-space: nowrap` and `font-variant-numeric: tabular-nums`.
 
 ---
 
 ## 3. Verification & Evidence
 
-- **Unit Tests**: Added `test_florist_operator_mobile_table_and_order_overlay` to `edge/tests/test_browser_ui.py` asserting tables, overlay, navigation, segmented pills, sheet handle, and styling.
+- **Unit Tests**: Updated `test_florist_operator_mobile_table_and_order_overlay` in `edge/tests/test_browser_ui.py`:
+  - Asserting order and prepare tables, order and prepare dialogs (`#order-detail-dialog`, `#prepare-detail-dialog`), facts grids, navigation, scroll controls (`#scroll-to-top`, `#scroll-to-bottom`), `.th-wrap`, and styles.
   - All 26 browser UI tests passed.
   - All 77 edge tests passed (`python -m unittest discover -s edge/tests`).
-- **Docker Integration Tests**: Validated with `python edge/scripts/run_integration_tests.py` against edge services and Nginx TLS perimeter.
+- **Docker Integration Tests**: Validated with `python edge/scripts/run_integration_tests.py` against edge services and Nginx TLS perimeter (all 8 scenarios passed, including SLO guard).
 - **Quality Guards**: All 14/14 pre-flight quality guards passed (`python scripts/run_all_guards.py`).
