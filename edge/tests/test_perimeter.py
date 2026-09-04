@@ -94,6 +94,8 @@ class FakeOrchestration:
             "catalog_title": "Classic Rose Dozen",
             "channel": "web",
             "payment_state": "paid",
+            "total": 82.0,
+            "currency": "EUR",
             "updated_at": "2026-09-02T12:00:00+00:00",
             "secret": "omit",
             "email": "private@example.invalid",
@@ -114,8 +116,11 @@ class FakeOrchestration:
             "shared_understanding": {
                 "structured_intent": {"occasion": "birthday", "secret": "omit"}},
             "order": {"order_id": "order-9", "status": "preparing",
-                      "delayed": False, "authoritative_status": "preparing"},
+                      "delayed": False, "authoritative_status": "preparing",
+                      "channel": "web", "payment_state": "paid",
+                      "total": 82.0, "currency": "EUR"},
             "selection": {"product_id": "classic-rose-dozen",
+                          "catalog_title": "Classic Rose Dozen",
                           "options": {"card_message": "Happy birthday Mum"}},
             "delivery": {"destination_reference": "dest-1",
                          "timing": {"date": "2026-08-16", "window": "morning"}},
@@ -727,6 +732,8 @@ class PerimeterTests(unittest.TestCase):
         self.assertEqual("Classic Rose Dozen", orders["items"][0]["catalog_title"])
         self.assertEqual("web", orders["items"][0]["channel"])
         self.assertEqual("paid", orders["items"][0]["payment_state"])
+        self.assertEqual(82.0, orders["items"][0]["total"])
+        self.assertEqual("EUR", orders["items"][0]["currency"])
         self.assertNotIn("secret", orders["items"][0])
         self.assertNotIn("email", orders["items"][0])
         self.assertNotIn("decline_code", orders["items"][0])
@@ -745,6 +752,11 @@ class PerimeterTests(unittest.TestCase):
         self.assertEqual("roses for mum", summary["conversation"]["messages"][0]["text"])
         self.assertEqual({"occasion": "birthday"}, summary["shared_understanding"]["structured_intent"])
         self.assertEqual("preparing", summary["order"]["authoritative_status"])
+        self.assertEqual("web", summary["order"]["channel"])
+        self.assertEqual("paid", summary["order"]["payment_state"])
+        self.assertEqual(82.0, summary["order"]["total"])
+        self.assertEqual("EUR", summary["order"]["currency"])
+        self.assertEqual("Classic Rose Dozen", summary["selection"]["catalog_title"])
         self.assertEqual("Happy birthday Mum", summary["selection"]["card_message"])
         self.assertEqual({"date": "2026-08-16", "window": "morning"},
                          summary["delivery"]["timing"])
@@ -765,6 +777,8 @@ class PerimeterTests(unittest.TestCase):
                 "channel": "rog-phone",
                 "payment_state": "refunded",
                 "catalog_title": "x" * 200,
+                "total": "nope",
+                "currency": "EUROPEAN-UNION-TOO-LONG",
                 "email": "private@example.invalid",
             }]
         })
@@ -772,7 +786,30 @@ class PerimeterTests(unittest.TestCase):
         self.assertNotIn("channel", stripped["items"][0])
         self.assertNotIn("payment_state", stripped["items"][0])
         self.assertNotIn("catalog_title", stripped["items"][0])
+        self.assertNotIn("total", stripped["items"][0])
+        self.assertNotIn("currency", stripped["items"][0])
         self.assertNotIn("email", stripped["items"][0])
+        summary_ok = BffApp._least_data_operator_summary({
+            "session_id": "11111111-1111-4111-8111-111111111111",
+            "context_version": 1,
+            "conversation": {"messages": []},
+            "shared_understanding": {"structured_intent": {}},
+            "order": {"order_id": "o1", "status": "submitted",
+                      "authoritative_status": "submitted", "delayed": False,
+                      "channel": "companion-android", "payment_state": "unpaid",
+                      "total": 55.5, "currency": "EUR", "email": "x@y.z"},
+            "selection": {"product_id": "lilac-bouquet",
+                          "catalog_title": "Lilac Bouquet",
+                          "card_message": "Hi"},
+            "delivery": {"destination_reference": "home"},
+            "availability": [],
+            "support_answers": [],
+        })
+        self.assertEqual("Lilac Bouquet", summary_ok["selection"]["catalog_title"])
+        self.assertEqual("companion-android", summary_ok["order"]["channel"])
+        self.assertEqual(55.5, summary_ok["order"]["total"])
+        self.assertEqual("EUR", summary_ok["order"]["currency"])
+        self.assertNotIn("email", summary_ok["order"])
 
     def test_workspace_reminders_facet_is_least_data(self):
         cookie, _csrf = self.session()

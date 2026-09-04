@@ -866,7 +866,7 @@ class BffApp:
                       ("order_id", "session_id", "status", "delayed",
                        "authoritative_status", "product_id", "catalog_title",
                        "destination_reference", "card_message", "updated_at",
-                       "channel", "payment_state")
+                       "channel", "payment_state", "total", "currency")
                       if key in item}
             if shaped.get("channel") not in {"web", "companion-android", "unknown"}:
                 shaped.pop("channel", None)
@@ -877,6 +877,16 @@ class BffApp:
                 shaped.pop("catalog_title", None)
             elif "catalog_title" in shaped:
                 shaped["catalog_title"] = title.strip()
+            total = shaped.get("total")
+            if not isinstance(total, (int, float)) or isinstance(total, bool):
+                shaped.pop("total", None)
+            else:
+                shaped["total"] = round(float(total), 2)
+            currency = shaped.get("currency")
+            if not isinstance(currency, str) or not currency.strip() or len(currency) > 8:
+                shaped.pop("currency", None)
+            elif "currency" in shaped:
+                shaped["currency"] = currency.strip()
             if isinstance(item.get("timing"), dict):
                 timing = item["timing"]
                 shaped["timing"] = {key: timing[key] for key in ("date", "window")
@@ -933,8 +943,23 @@ class BffApp:
         order = None
         if isinstance(raw.get("order"), dict):
             order = {key: raw["order"][key] for key in
-                     ("order_id", "status", "authoritative_status", "delayed")
+                     ("order_id", "status", "authoritative_status", "delayed",
+                      "channel", "payment_state", "total", "currency")
                      if key in raw["order"]}
+            if order.get("channel") not in {"web", "companion-android", "unknown"}:
+                order.pop("channel", None)
+            if order.get("payment_state") not in {"paid", "declined", "unpaid"}:
+                order.pop("payment_state", None)
+            total = order.get("total")
+            if not isinstance(total, (int, float)) or isinstance(total, bool):
+                order.pop("total", None)
+            else:
+                order["total"] = round(float(total), 2)
+            currency = order.get("currency")
+            if not isinstance(currency, str) or not currency.strip() or len(currency) > 8:
+                order.pop("currency", None)
+            elif "currency" in order:
+                order["currency"] = currency.strip()
         selection = None
         if isinstance(raw.get("selection"), dict) and isinstance(raw["selection"].get("product_id"), str):
             selection = {"product_id": raw["selection"]["product_id"]}
@@ -946,6 +971,9 @@ class BffApp:
                 card = raw["selection"]["card_message"].strip()[:280]
             if card:
                 selection["card_message"] = card
+            title = raw["selection"].get("catalog_title")
+            if isinstance(title, str) and title.strip() and len(title.strip()) <= 80:
+                selection["catalog_title"] = title.strip()
         delivery = None
         if isinstance(raw.get("delivery"), dict):
             delivery = {}
