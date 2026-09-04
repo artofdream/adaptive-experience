@@ -248,7 +248,7 @@ function shortRef(value) {
   return text.length > 12 ? `${text.slice(0, 8)}…${text.slice(-4)}` : text;
 }
 
-/** Least-data fulfillment handle for florist (#382). Never invent street/PII. */
+/** Least-data fulfillment handle for florist (#382). Kinds only — no address fields. */
 const DESTINATION_KIND_LABELS = {
   home: "Home",
   work: "Work",

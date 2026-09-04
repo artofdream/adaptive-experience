@@ -473,8 +473,9 @@ class BrowserUiTests(unittest.TestCase):
         self.assertIn('home: "Home"', script)
         self.assertIn('work: "Work"', script)
         self.assertIn("Destination handle", script)
-        self.assertNotIn("street", script.lower().split("destinationHandleLabel")[1][:400]
-                         if "destinationHandleLabel" in script else "street")
+        self.assertIn("destinationHandleLabel(item.destination_reference)", script)
+        self.assertIn(
+            "destinationHandleLabel(summary.delivery.destination_reference)", script)
 
     def test_florist_today_prepare_list_is_derived_from_staff_orders(self):
         html = (ROOT / "ui" / "florist.html").read_text(encoding="utf-8")
