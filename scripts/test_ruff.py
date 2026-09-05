@@ -18,7 +18,7 @@ CONFIG = ROOT / "ruff.toml"
 PINNED_VERSION = "0.16.5"
 
 sys.path.insert(0, str(ROOT / "scripts"))
-from check_ruff import EXCLUDE_REASONS, FORMAT_EXCLUDE_REASONS, SCOPED_TREES  # noqa: E402
+from check_ruff import EXCLUDE_REASONS, FORMAT_EXCLUDE_REASONS, FORMAT_PATHS, SCOPED_TREES  # noqa: E402
 
 
 def ruff_job_block() -> str:
@@ -58,8 +58,10 @@ class RuffGateTests(unittest.TestCase):
         self.assertNotIn("scripts", excludes)
         format_excludes = list(config.get("format", {}).get("exclude", []))
         self.assertEqual(set(format_excludes), set(FORMAT_EXCLUDE_REASONS))
-        self.assertEqual(set(format_excludes), {"platform/**", "edge/**"})
-        self.assertNotIn("scripts/**", format_excludes)
+        self.assertEqual(set(format_excludes), {"platform/**", "edge/**", "scripts/**"})
+        self.assertIn("scripts/check_ruff.py", FORMAT_PATHS)
+        self.assertIn("scripts/test_ruff.py", FORMAT_PATHS)
+        self.assertIn("scripts/fixtures/ruff/clean_baseline.py", FORMAT_PATHS)
 
     def test_header_comment_calls_ruff_blocking(self) -> None:
         header = "\n".join(CI.read_text(encoding="utf-8").splitlines()[:9])

@@ -28,10 +28,11 @@ select = [
 [format]
 quote-style = "preserve"
 docstring-code-format = false
-# Existing platform/edge modules would be rewritten (unwrap/reflow). That is
-# the leftover dirty `ruff --fix` class of change and is out of this slice.
-# `ruff check` still covers both trees. scripts/ stays format-checked.
+# Existing trees would be rewritten (unwrap/reflow). That leftover dirty
+# `ruff --fix` rewrite is out of this slice. `ruff check` still covers
+# scripts/, platform/, and edge/. Gate files are format-checked by path.
 exclude = [
   "platform/**",
   "edge/**",
+  "scripts/**",
 ]

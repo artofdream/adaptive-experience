@@ -250,9 +250,11 @@ recurring blind spot outranks an expensive fix for a rare one.
    is the syntax / undefined-name class only (`E9`, `F63`, `F7`, `F82`).
    Line length stays 600 so this slice does not reflow existing long
    lines. Fixture path `scripts/fixtures/ruff` is the only extend-exclude.
-   Format excludes `platform/**` and `edge/**` (a mass unwrap/reflow of
-   those trees is the leftover dirty `ruff --fix` class of change);
-   `ruff check` still covers both. `scripts/` stays format-checked.
+   Format excludes `scripts/**`, `platform/**`, and `edge/**` (a mass
+   unwrap/reflow is the leftover dirty `ruff --fix` class of change);
+   `ruff check` still covers all three. Gate files
+   (`scripts/check_ruff.py`, `scripts/test_ruff.py`, the clean fixture)
+   are format-checked by path.
    No `allow_failure` and no `|| true`.
 6. **Edge Docker integration evidence — closed by #228.**
    `edge-docker-integration` invokes `edge/scripts/run_integration_tests.py`

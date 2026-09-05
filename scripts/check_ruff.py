@@ -17,13 +17,18 @@ FIXTURES = ROOT / "scripts" / "fixtures" / "ruff"
 KNOWN_BAD = FIXTURES / "known_bad.py"
 CLEAN_BASELINE = FIXTURES / "clean_baseline.py"
 SCOPED_TREES = ("scripts", "platform", "edge")
+# Existing trees would unwrap/reflow. Format-check the gate files only.
+FORMAT_PATHS = (
+    "scripts/check_ruff.py",
+    "scripts/test_ruff.py",
+    "scripts/fixtures/ruff/clean_baseline.py",
+)
 
 # Every extend-exclude entry in ruff.toml must have a reason here.
 # Do not add a pattern to silence an unclassified failure.
 EXCLUDE_REASONS = {
     "scripts/fixtures/ruff": (
-        "Gate fixtures. Known-bad must fail when invoked explicitly; "
-        "it is not part of the repository baseline."
+        "Gate fixtures. Known-bad must fail when invoked explicitly; it is not part of the repository baseline."
     ),
 }
 
@@ -31,13 +36,13 @@ EXCLUDE_REASONS = {
 # here to hide a lint finding.
 FORMAT_EXCLUDE_REASONS = {
     "platform/**": (
-        "Existing platform modules would be rewritten (unwrap/reflow). "
-        "That leftover dirty ruff --fix rewrite is out of this slice. "
-        "ruff check still covers platform/."
+        "Existing platform modules would be rewritten (unwrap/reflow). That leftover dirty ruff --fix rewrite is out of this slice. ruff check still covers platform/."
     ),
     "edge/**": (
-        "Existing edge/BFF/test modules would be rewritten (unwrap/reflow). "
-        "Same class of change as platform/**. ruff check still covers edge/."
+        "Existing edge/BFF/test modules would be rewritten (unwrap/reflow). Same class of change as platform/**. ruff check still covers edge/."
+    ),
+    "scripts/**": (
+        "Existing scripts would be rewritten (unwrap/reflow; 47 files at line-length 600). ruff check still covers scripts/. Gate files in FORMAT_PATHS are format-checked by path."
     ),
 }
 
@@ -46,8 +51,7 @@ def find_ruff() -> str:
     binary = shutil.which("ruff")
     if not binary:
         print(
-            "FAIL: ruff is not on PATH. Install the pinned CLI: "
-            f"pip install {PINNED_PACKAGE}",
+            f"FAIL: ruff is not on PATH. Install the pinned CLI: pip install {PINNED_PACKAGE}",
             file=sys.stderr,
         )
         sys.exit(2)
@@ -87,8 +91,7 @@ def check_config_reasons() -> None:
     unexpected = [code for code in select if code not in {"E9", "F63", "F7", "F82"}]
     if unexpected:
         print(
-            "FAIL: ruff lint select grew beyond the #327 baseline "
-            f"(extra {unexpected}). Broader families belong in a later slice.",
+            f"FAIL: ruff lint select grew beyond the #327 baseline (extra {unexpected}). Broader families belong in a later slice.",
             file=sys.stderr,
         )
         sys.exit(1)
@@ -102,17 +105,9 @@ def check_config_reasons() -> None:
         for pattern in extra_fmt:
             print(f"  unused format reason: {pattern}", file=sys.stderr)
         sys.exit(1)
-    leaked = [
-        path
-        for path in format_excludes
-        if not path.startswith(("platform/", "edge/"))
-    ]
-    if leaked:
-        print(
-            "FAIL: format.exclude must stay limited to documented platform/ "
-            f"and edge/ trees, not {leaked}",
-            file=sys.stderr,
-        )
+    expected = {"platform/**", "edge/**", "scripts/**"}
+    if set(format_excludes) != expected:
+        print(f"FAIL: format.exclude must be {sorted(expected)}, not {format_excludes}", file=sys.stderr)
         sys.exit(1)
 
 
@@ -151,12 +146,12 @@ def check_scoped_repository(binary: str) -> None:
         print("FAIL: scoped repository ruff check did not exit 0", file=sys.stderr)
         sys.exit(check.returncode or 1)
     print("ok: scoped repository ruff check exited 0")
-    fmt = run_ruff(binary, "format", "--check", *SCOPED_TREES)
+    fmt = run_ruff(binary, "format", "--check", *FORMAT_PATHS)
     print_output(fmt)
     if fmt.returncode != 0:
-        print("FAIL: scoped repository ruff format-check did not exit 0", file=sys.stderr)
+        print("FAIL: gate-file ruff format-check did not exit 0", file=sys.stderr)
         sys.exit(fmt.returncode or 1)
-    print("ok: scoped repository ruff format-check exited 0")
+    print(f"ok: gate-file ruff format-check exited 0 ({len(FORMAT_PATHS)} files)")
 
 
 def main() -> int:
