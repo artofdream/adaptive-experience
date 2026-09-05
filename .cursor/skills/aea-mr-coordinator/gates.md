@@ -50,6 +50,7 @@ but `edge/` or `platform/` changed.
 - No failed **required** jobs. `markdownlint` is required (#325).
   `linkcheck` is required (#326). `ruff` is required (#327).
   `bandit` is required (#328). `python-lock` is required (#329).
+  `pip-audit` is required (#330).
 - Local integration recorded when the SOP requires it (command + outcome in
   MR, chat, or CI job that is the same runner).
 - CI-only: **not** sponsor by default. PM-SM may accept it for a named MR

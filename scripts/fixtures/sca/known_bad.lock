@@ -1,0 +1,5 @@
+# Known-bad Python SCA fixture (#330).
+# PyYAML 5.3 is CVE-2020-14343 / GHSA-6757-jp84-gxfx (Critical).
+# Must fail when scanned explicitly. Do not add this pin to platform/ or edge/.
+
+pyyaml==5.3
