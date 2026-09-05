@@ -3,7 +3,7 @@
 # - traceability-guard (blocking, #323): evidence inventory + live issue/milestone/closure.
 # - process-coherence-guard (blocking, #324): MR delivery evidence + named Process-Exception.
 # - markdownlint (blocking, #325): pinned markdownlint-cli2, scoped published docs.
-# - linkcheck (advisory): quality signal, non-blocking until #326.
+# - linkcheck (blocking, #326): pinned markdown-link-check, scoped published docs.
 
 stages:
   - report
@@ -800,17 +800,17 @@ markdownlint:
 
 linkcheck:
   stage: lint
-  image: node:20-alpine
-  allow_failure: true
+  image: node:22-alpine
+  # required (#326): do not suppress failures
+  before_script:
+    - apk add --no-cache python3
+    - npm install -g markdown-link-check@3.15.0
   script:
-    - npm install -g markdown-link-check
-    - >
-      find . -name '*.md' -not -path './node_modules/*' -print0
-      | xargs -0 -n1 markdown-link-check -q -c .mlc.json || true
+    - python3 scripts/test_linkcheck.py -v
+    - python3 scripts/check_linkcheck.py
   rules:
-    - changes:
-        - "**/*.md"
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
 
 # Path B: cloud images only. OIDC role trusts main. Do not push to pilot ECR from a laptop.
 # Alpine aws-cli is musl Python; --upgrade expat so pyexpat symbols resolve (#204).
