@@ -232,10 +232,15 @@ fun NeedScreen(
                         label = { Text("$100+") }
                     )
                     FilterChip(
-                        selected = currentBudget == "skipped",
-                        onClick = onSkipBudget,
+                        selected = SessionRepository.isUnlimitedBudgetLabel(currentBudget),
+                        onClick = {
+                            onBudgetChoice(
+                                SessionRepository.NO_LIMIT_LABEL,
+                                SessionRepository.UNLIMITED_BUDGET_SENTINEL,
+                            )
+                        },
                         enabled = !isLoading,
-                        label = { Text("No limit") }
+                        label = { Text(SessionRepository.NO_LIMIT_LABEL) }
                     )
                 }
             }
@@ -313,10 +318,8 @@ fun PickScreen(
 
         if (!budgetLabel.isNullOrBlank()) {
             Text(
-                text = if (budgetLabel == "skipped")
-                    "Budget not set (skipped on Need)."
-                else
-                    "Filtering / ranking with budget: $budgetLabel (local price filter when catalog has prices).",
+                text = SessionRepository.pickBudgetCaption(budgetLabel)
+                    ?: "Filtering / ranking with budget: $budgetLabel (local price filter when catalog has prices).",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp)
@@ -474,15 +477,10 @@ fun PayScreen(
                 )
                 val budgetHonesty = sharedUnderstanding.budget
                 if (!budgetHonesty.isNullOrBlank()) {
-                    val ceiling = link.artof.aea.companion.data.repository.SessionRepository
-                        .parseBudgetCeiling(budgetHonesty)
-                    val selectedPrice = selectedArrangement?.price
-                    val honesty = when {
-                        budgetHonesty == "skipped" -> "Budget: skipped on Need"
-                        ceiling != null && selectedPrice != null && selectedPrice > ceiling ->
-                            "Budget: $budgetHonesty — selected price exceeds ceiling"
-                        else -> "Budget: $budgetHonesty"
-                    }
+                    val honesty = SessionRepository.payBudgetCaption(
+                        budgetHonesty,
+                        selectedArrangement?.price,
+                    ) ?: "Budget: $budgetHonesty"
                     Text(text = honesty, style = MaterialTheme.typography.bodyMedium)
                 }
                 Spacer(modifier = Modifier.height(8.dp))

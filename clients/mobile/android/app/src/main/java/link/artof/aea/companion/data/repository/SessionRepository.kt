@@ -261,19 +261,27 @@ class SessionRepository(
     suspend fun setBudgetChoice(label: String, ceiling: Double?) {
         runGuarded {
             ensureSessionInternal()
-val band = parseBudgetBand(label) ?: BudgetBand(label, floor = null, ceiling = ceiling)
+            val unlimited = isUnlimitedBudgetLabel(label)
+            val band = if (unlimited) {
+                BudgetBand(NO_LIMIT_LABEL, floor = null, ceiling = null)
+            } else {
+                parseBudgetBand(label) ?: BudgetBand(label, floor = null, ceiling = ceiling)
+            }
             // Prefer explicit chip ceiling arg when band had no ceiling ($100+ uses floor only).
+            // No limit: no local filter; PATCH schema-max 10000 (platform [1, 10000]).
             budgetFloor = band.floor
-            budgetCeiling = band.ceiling ?: ceiling
-            budgetChipLabel = label
+            budgetCeiling = if (unlimited) null else (band.ceiling ?: ceiling)
+            val displayLabel = if (unlimited) NO_LIMIT_LABEL else label
+            budgetChipLabel = displayLabel
             _budgetPromptResolved.value = true
-            _sharedUnderstanding.value = _sharedUnderstanding.value.copy(budget = label)
+            _sharedUnderstanding.value = _sharedUnderstanding.value.copy(budget = displayLabel)
             _messages.value = _messages.value + ChatMessage(
                 id = UUID.randomUUID().toString(),
                 sender = "user",
-                text = "Budget: $label"
+                text = "Budget: $displayLabel"
             )
             val correctionValue = when {
+                unlimited -> UNLIMITED_BUDGET_SENTINEL
                 budgetCeiling != null -> budgetCeiling!!
                 budgetFloor != null -> budgetFloor!!
                 else -> 250.0
@@ -284,11 +292,11 @@ val band = parseBudgetBand(label) ?: BudgetBand(label, floor = null, ceiling = c
                 contextVersion = accepted.contextVersion
             }
             refreshSharedUnderstanding()
-// Keep chip band + label (refresh may coerce numeric budget from BFF) (#388).
+            // Keep chip band + label (refresh may coerce numeric budget from BFF) (#388).
             budgetFloor = band.floor
-            budgetCeiling = band.ceiling ?: ceiling
-            budgetChipLabel = label
-            _sharedUnderstanding.value = _sharedUnderstanding.value.copy(budget = label)
+            budgetCeiling = if (unlimited) null else (band.ceiling ?: ceiling)
+            budgetChipLabel = displayLabel
+            _sharedUnderstanding.value = _sharedUnderstanding.value.copy(budget = displayLabel)
             refreshCatalogFromWorkspace()
             applyBudgetFilterToArrangements()
         }
@@ -319,12 +327,12 @@ val band = parseBudgetBand(label) ?: BudgetBand(label, floor = null, ceiling = c
         }
     }
 
-    /** Explicit Skip — honesty that budget was deferred (#359). */
+    /** Explicit Skip — honesty that budget was deferred (#359). Not the No limit chip (#402). */
     fun skipBudget() {
         _budgetPromptResolved.value = true
         budgetFloor = null
         budgetCeiling = null
-        budgetChipLabel = "skipped"
+        budgetChipLabel = SKIPPED_BUDGET_LABEL
         if (_sharedUnderstanding.value.budget.isNullOrBlank()) {
             _sharedUnderstanding.value = _sharedUnderstanding.value.copy(budget = "skipped")
         }
@@ -706,9 +714,9 @@ val band = parseBudgetBand(label) ?: BudgetBand(label, floor = null, ceiling = c
         val intent = remote.structuredIntent
         val previous = _sharedUnderstanding.value
         val displayBudget = when {
-            !budgetChipLabel.isNullOrBlank() -> budgetChipLabel
-            !intent.budget.isNullOrBlank() -> intent.budget
-            else -> previous.budget
+            !budgetChipLabel.isNullOrBlank() -> displayBudgetLabel(budgetChipLabel)
+            !intent.budget.isNullOrBlank() -> displayBudgetLabel(intent.budget)
+            else -> displayBudgetLabel(previous.budget)
         }
         _sharedUnderstanding.value = previous.copy(
             occasion = intent.occasion,
@@ -725,7 +733,8 @@ val band = parseBudgetBand(label) ?: BudgetBand(label, floor = null, ceiling = c
         if (!intent.budget.isNullOrBlank()) {
             _budgetPromptResolved.value = true
             // Apply soft ceiling from live numeric intent only when no chip band is active.
-            if (budgetFloor == null && budgetCeiling == null) {
+            // Schema-max 10000 is the No limit sentinel — do not treat it as a ceiling.
+            if (budgetFloor == null && budgetCeiling == null && !isUnlimitedBudgetLabel(intent.budget)) {
                 val band = parseBudgetBand(intent.budget)
                 if (band != null) {
                     budgetFloor = band.floor
@@ -901,6 +910,18 @@ val band = parseBudgetBand(label) ?: BudgetBand(label, floor = null, ceiling = c
         /** Matches platform aea_platform.pricing.REFERENCE_DELIVERY_FEE. */
         const val REFERENCE_DELIVERY_FEE = 12.0
 
+        /** Need chip label for an explicit no-budget-constraint (#402). */
+        const val NO_LIMIT_LABEL = "No limit"
+
+        /** Need chip / local fact when the customer deferred budget (#359). */
+        const val SKIPPED_BUDGET_LABEL = "skipped"
+
+        /**
+         * Platform `_facets` budget max (1..10000). Companion No limit PATCHes this
+         * number so florist/operator get a real fact without a new facet.
+         */
+        const val UNLIMITED_BUDGET_SENTINEL = 10000.0
+
         /** Matches platform aea_platform.selection QUANTITY_MIN / QUANTITY_MAX and web `#quantity`. */
         const val QUANTITY_MIN = 1
         const val QUANTITY_MAX = 10
@@ -932,7 +953,7 @@ val band = parseBudgetBand(label) ?: BudgetBand(label, floor = null, ceiling = c
         /**
          * Parse Need chip / BFF budget into an inclusive local catalog band (#387).
          * Under $50 → [null, 50]; $50–100 → [50, 100]; $100+ → [100, null];
-         * skipped / blank → null band (no filter); bare number → [null, n] soft ceiling.
+         * skipped / No limit / blank → null band (no filter); bare number → [null, n] soft ceiling.
          */
         fun parseBudgetBand(labelOrText: String?): BudgetBand? {
             val raw = labelOrText?.trim().orEmpty()
@@ -942,7 +963,7 @@ val band = parseBudgetBand(label) ?: BudgetBand(label, floor = null, ceiling = c
                 .replace('—', '-')
                 .lowercase()
             when {
-                normalized == "skipped" -> return null
+                isSkippedBudgetLabel(raw) || isUnlimitedBudgetLabel(raw) -> return null
                 "100+" in normalized -> return BudgetBand(raw, floor = 100.0, ceiling = null)
                 normalized.startsWith("under") -> {
                     val ceiling = Regex("""(\d+(?:\.\d+)?)""").find(normalized)
@@ -1036,6 +1057,49 @@ val band = parseBudgetBand(label) ?: BudgetBand(label, floor = null, ceiling = c
             return true
         }
 
+        fun isSkippedBudgetLabel(labelOrText: String?): Boolean {
+            return labelOrText?.trim()?.equals(SKIPPED_BUDGET_LABEL, ignoreCase = true) == true
+        }
+
+        fun isUnlimitedBudgetLabel(labelOrText: String?): Boolean {
+            val normalized = labelOrText?.trim()?.lowercase().orEmpty()
+            if (normalized.isEmpty()) return false
+            if (normalized == NO_LIMIT_LABEL.lowercase() || normalized == "unlimited") return true
+            val number = normalized.replace("$", "").replace(",", "").toDoubleOrNull()
+            return number != null && number == UNLIMITED_BUDGET_SENTINEL
+        }
+
+        /** Chip / florist-facing budget label. Maps schema-max 10000 → No limit (#402). */
+        fun displayBudgetLabel(labelOrText: String?): String? {
+            val raw = labelOrText?.trim().orEmpty()
+            if (raw.isEmpty()) return null
+            if (isSkippedBudgetLabel(raw)) return SKIPPED_BUDGET_LABEL
+            if (isUnlimitedBudgetLabel(raw)) return NO_LIMIT_LABEL
+            return raw
+        }
+
+        fun pickBudgetCaption(budgetLabel: String?): String? {
+            val label = displayBudgetLabel(budgetLabel) ?: return null
+            return when (label) {
+                SKIPPED_BUDGET_LABEL -> "Budget not set (skipped on Need)."
+                NO_LIMIT_LABEL -> "No budget limit — full catalog (No limit on Need)."
+                else ->
+                    "Filtering / ranking with budget: $label (local price filter when catalog has prices)."
+            }
+        }
+
+        fun payBudgetCaption(budgetHonesty: String?, selectedPrice: Double?): String? {
+            val label = displayBudgetLabel(budgetHonesty) ?: return null
+            if (label == SKIPPED_BUDGET_LABEL) return "Budget: skipped on Need"
+            if (label == NO_LIMIT_LABEL) return "Budget: No limit"
+            val ceiling = parseBudgetCeiling(label)
+            return if (ceiling != null && selectedPrice != null && selectedPrice > ceiling) {
+                "Budget: $label — selected price exceeds ceiling"
+            } else {
+                "Budget: $label"
+            }
+        }
+
         fun parseBudgetCeiling(labelOrText: String?): Double? {
             val raw = labelOrText?.trim().orEmpty()
             if (raw.isEmpty()) return null
@@ -1044,7 +1108,7 @@ val band = parseBudgetBand(label) ?: BudgetBand(label, floor = null, ceiling = c
                 .replace('\u2014', '-') // em-dash
                 .lowercase()
             when {
-                normalized == "skipped" -> return null
+                isSkippedBudgetLabel(raw) || isUnlimitedBudgetLabel(raw) -> return null
                 "100+" in normalized -> return null
                 normalized.startsWith("under") -> {
                     return Regex("""(\d+(?:\.\d+)?)""").find(normalized)

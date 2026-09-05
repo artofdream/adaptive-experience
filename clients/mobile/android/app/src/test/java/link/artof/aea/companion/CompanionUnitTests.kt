@@ -647,6 +647,58 @@ class CompanionUnitTests {
         assertEquals(100.0, plus.floor!!, 0.01)
         assertNull(plus.ceiling)
         assertNull(SessionRepository.parseBudgetBand("skipped"))
+        assertNull(SessionRepository.parseBudgetBand("No limit"))
+        assertNull(SessionRepository.parseBudgetBand("10000"))
+    }
+
+    @Test
+    fun noLimitPatchesSchemaMaxAndDoesNotInjectSkipCopy() = runBlocking {
+        // #402: No limit is a real unlimited fact, not skipBudget().
+        fakeApi.sharedUnderstanding = SharedUnderstandingResponse(
+            contextVersion = 2,
+            structuredIntent = StructuredIntent(occasion = "birthday")
+        )
+        repository.postUserMessage("birthday flowers")
+        repository.setBudgetChoice(
+            SessionRepository.NO_LIMIT_LABEL,
+            SessionRepository.UNLIMITED_BUDGET_SENTINEL,
+        )
+        assertNull(repository.errorMessage.value)
+        assertTrue(repository.budgetPromptResolved.value)
+        assertEquals(SessionRepository.NO_LIMIT_LABEL, repository.sharedUnderstanding.value.budget)
+        assertEquals(1, fakeApi.corrections.size)
+        val budgetEl = fakeApi.corrections.last().corrections["budget"]!!.jsonPrimitive
+        assertFalse(budgetEl.isString)
+        assertEquals(SessionRepository.UNLIMITED_BUDGET_SENTINEL, budgetEl.double, 0.01)
+        assertTrue(repository.messages.value.any { it.sender == "user" && it.text == "Budget: No limit" })
+        assertFalse(repository.messages.value.any { it.text.contains("Skip budget for now") })
+        assertEquals(
+            "No budget limit — full catalog (No limit on Need).",
+            SessionRepository.pickBudgetCaption(repository.sharedUnderstanding.value.budget),
+        )
+        assertEquals(
+            "Budget: No limit",
+            SessionRepository.payBudgetCaption(repository.sharedUnderstanding.value.budget, 70.0),
+        )
+        assertTrue(repository.arrangements.value.size >= 3)
+    }
+
+    @Test
+    fun noLimitLabelSurvivesWhenBffReturnsSchemaMax() = runBlocking {
+        fakeApi.sharedUnderstanding = SharedUnderstandingResponse(
+            contextVersion = 2,
+            structuredIntent = StructuredIntent(occasion = "birthday")
+        )
+        repository.postUserMessage("birthday flowers")
+        repository.setBudgetChoice(SessionRepository.NO_LIMIT_LABEL, null)
+        fakeApi.sharedUnderstanding = SharedUnderstandingResponse(
+            contextVersion = 4,
+            structuredIntent = StructuredIntent(occasion = "birthday", budget = "10000.0")
+        )
+        val arrangement = repository.arrangements.value.first { it.available }
+        repository.selectArrangement(arrangement)
+        assertEquals(SessionRepository.NO_LIMIT_LABEL, repository.sharedUnderstanding.value.budget)
+        assertEquals(SessionRepository.NO_LIMIT_LABEL, SessionRepository.displayBudgetLabel("10000"))
     }
 
     @Test
@@ -704,7 +756,14 @@ class CompanionUnitTests {
         assertEquals(100.0, SessionRepository.parseBudgetCeiling("$50–100")!!, 0.01)
         assertNull(SessionRepository.parseBudgetCeiling("$100+"))
         assertNull(SessionRepository.parseBudgetCeiling("skipped"))
+        assertNull(SessionRepository.parseBudgetCeiling("No limit"))
+        assertNull(SessionRepository.parseBudgetCeiling("10000"))
         assertEquals(75.0, SessionRepository.parseBudgetCeiling("75")!!, 0.01)
+        assertEquals("Budget: skipped on Need", SessionRepository.payBudgetCaption("skipped", 70.0))
+        assertEquals(
+            "Budget not set (skipped on Need).",
+            SessionRepository.pickBudgetCaption("skipped"),
+        )
     }
 
     @Test
