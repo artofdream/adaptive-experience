@@ -10,6 +10,7 @@
 # - pip-audit (blocking, #330): platform/edge locks, High/Critical fail, report retained.
 # - image-digest (blocking, #331): runtime/base and material CI/Compose digest pins.
 # - image-scan (blocking, #332): commit-SHA images, fixable High/Critical, SBOMs.
+# - iac-scan (blocking, #334): terraform fmt/validate + pinned Checkov, world-open non-ALB.
 
 stages:
   - report
@@ -928,6 +929,28 @@ image-scan:
       - image-scan-report.json
       - trivy-*.json
       - sbom-*.json
+    expire_in: 14 days
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+iac-scan:
+  stage: lint
+  image: python:3.12@sha256:cd7c412d000912f29075a1b8803e43cb2f38bb67f104019df526df5ceaf30569
+  # required (#334): do not suppress failures. Separate from image-scan
+  # (#332). Backend-free Terraform init/validate; no AWS credentials.
+  before_script:
+    - apt-get update && apt-get install -y --no-install-recommends curl ca-certificates
+    - python3 scripts/check_iac_scan.py --install-terraform
+    - pip install --no-cache-dir checkov==3.2.447
+  script:
+    - python3 scripts/test_iac_scan.py -v
+    - python3 scripts/check_iac_scan.py
+  artifacts:
+    when: always
+    paths:
+      - iac-scan-report.json
+      - checkov-report.json
     expire_in: 14 days
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
