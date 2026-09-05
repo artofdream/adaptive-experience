@@ -1,13 +1,14 @@
 ---
 tags: #aea #coherence
 finding_id: CF-056
-status: in-mr
+status: verified
 severity: low
 source_assessment: 2026-08-29-framework-glossary-and-jargon
 supersedes:
 issue: "#342"
-branch: cursor/docs-cf056-honesty-crosslink-e17d
+branch: cursor/docs-cf056-queue-verified-59d4
 merge_request: "!361"
+verified_on_main: 0783d3d
 ---
 
 ## Claim
@@ -25,6 +26,19 @@ The same honesty incident is named two ways on the public framework site
   same incident.
 - Verification command: `python3 scripts/test_build_framework_site.py` and
   `python3 scripts/build_framework_site.py`.
+
+Post-merge verify 2026-09-05 against `origin/main` `3ee4191` (descendant of
+!361 merge `0783d3d`, 2026-08-31, `#342` closed):
+
+- `comparison.md` still says Daily-brief honesty and links
+  `journal.html#claim-vs-probe`.
+- `journal.md` `#claim-vs-probe` still aliases Daily-brief honesty and links
+  `comparison.html#what-aea-claims-here`.
+- Glossary Probe example had dropped the dual-title sentence after the later
+  plain-English reformulation; restored in this verify MR so !361's intended
+  three-page alias remains.
+- `python3 scripts/test_build_framework_site.py -k cf056` PASS.
+- `#342` stays closed. Do not reopen. Relates to `#342` / `!361`.
 
 ## Intended fix
 
@@ -47,12 +61,14 @@ Do not invent IDs. Do not batch with other tickets.
 | 2026-08-29 | queued | Intake via assessment 2026-08-29-framework-glossary-and-jargon.md |
 | 2026-08-31 | investigating | Reproduced on origin/main `d6b39aa`: comparison.md line names Daily-brief honesty; journal.md `#claim-vs-probe` has no alias. |
 | 2026-08-31 | in-mr | Cross-links applied. Issue #342. MR !361. |
+| 2026-09-05 | verified | !361 merged `0783d3d`. Re-probed on `origin/main` `3ee4191`: comparison↔journal still linked. Glossary Probe dual-title restored. Queue row 56 set `verified`. CF-054 stays `regressed`. |
 
 ## Assessment history
 
 | Assessment | Result | Notes |
 |------------|--------|-------|
 | 2026-08-29-framework-glossary-and-jargon | first-seen | Distinct from CF-055; one finding per MR |
+| 2026-09-05 post-merge verify | resolved | Pages still cross-link; queue lag `in-mr` after merge is honesty drift, not a new claim |
 
 ## Completion
 
@@ -63,5 +79,5 @@ Do not invent IDs. Do not batch with other tickets.
 - [x] Focused fix committed and pushed
 - [x] Relevant checks passed
 - [x] MR includes `Closes #N`, summary, and test plan
-- [ ] MR merged
-- [ ] Post-merge verification passed on `main`
+- [x] MR merged
+- [x] Post-merge verification passed on `main`
