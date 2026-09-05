@@ -54,10 +54,9 @@ flowchart TD
         PC["check_process_coherence.py<br/>(MR delivery evidence, advisory)"]
         PU["platform/edge unit + integration tests"]
         LINT["markdownlint / linkcheck<br/>(advisory only)"]
+        TRACE["check_traceability.py<br/>(FR/NFR -> issue -> milestone -> closure)"]
+        EVIDENCE["check_requirement_evidence.py<br/>(FR/NFR -> ADR + code/test citations)"]
     end
-
-    TRACE["check_traceability.py<br/>(FR/NFR -> issue -> milestone -> closure, advisory)"]
-    EVIDENCE["check_requirement_evidence.py<br/>(FR/NFR -> ADR + code/test citations, advisory)"]
     DOCKER["docker-integration-before-mr.mdc<br/>(local attestation + Edge CI evidence)"]
     MRC["aea-mr-coordinator<br/>(merge gate)"]
     MAIN[("main<br/>(protected)")]
@@ -73,8 +72,8 @@ flowchart TD
     DOCKER -- "Edge CI constrains" --> MRC
     ROADMAP -- feed --> TRACE
     ISSUES -- feed --> TRACE
-    TRACE -. advisory only .-> MRC
-    EVIDENCE -. advisory only .-> MRC
+    TRACE -- constrain --> MRC
+    EVIDENCE -- constrain --> MRC
     MRC -- merge --> MAIN
     MAIN -- feed --> CC
     MAIN -- feed --> TS
@@ -168,9 +167,9 @@ flowchart TD
 | `check_daily_brief_freshness.py` | guard | CI, schedule only (04:00 UTC) | `aea-coherence-guardian` | automated |
 | `generate_daily_brief.py` | producer | CI, schedule only (04:00 UTC) | `aea-coherence-guardian` | automated, **unverified end-to-end** |
 | `platform-foundation-unit` / `edge-perimeter-unit` / `platform-foundation-integration` / `edge-docker-integration` | guard | CI, on relevant `platform/`/`edge/` changes | script | automated |
-| `check_traceability.py` | guard | CI, on `requirements.md`/`roadmap.md`/self changes + every MR/main | `aea-senior-software-engineer` | automated, advisory (see gap 1) |
+| `check_traceability.py` | guard | CI, on `requirements.md`/`roadmap.md`/self changes + every MR/main | `aea-senior-software-engineer` | automated, blocking (`traceability-guard`, #323) |
 | `check_process_coherence.py` | guard | every MR/main + scheduled daily-brief evidence | `aea-project-manager` | automated, advisory; inaccessible MR change details become explicit findings instead of aborting the loop; semantic focus remains manual |
-| `check_requirement_evidence.py` | guard | CI, on requirements/ADR/platform/edge/evidence changes + every MR/main | `aea-senior-software-engineer` | automated, advisory citation evidence |
+| `check_requirement_evidence.py` | guard | CI, on requirements/ADR/platform/edge/evidence changes + every MR/main | `aea-senior-software-engineer` | automated, blocking citation evidence (`traceability-guard`, #323) |
 | `markdownlint` / `linkcheck` | guard | CI, on `.md` changes, MR only | script | automated, advisory only |
 | `docker-integration-before-mr.mdc` | guard | local attestation per MR; Edge runner repeated in CI | every specialist role / `aea-devsecops-platform` | **automated for edge** by `edge-docker-integration`; **partially automated for platform** (`platform-foundation-integration` runs equivalent Postgres+Kafka coverage via CI `services:`, not the literal script) |
 | `research/coherence-findings-loop.md` | remediation cycle | on-demand / `aea-coherence-guardian` invocation | `aea-coherence-guardian` | manual trigger, disciplined procedure |
@@ -201,18 +200,19 @@ Ordered by leverage, not just severity — a cheap fix that removes a
 recurring blind spot outranks an expensive fix for a rare one.
 
 1. **Requirements→issue→milestone→closure and citation traceability —
-   partially closed.** `scripts/check_traceability.py` (CI,
-   `aea-senior-software-engineer`)
-   now continuously checks, for all 40 canonical FR/NFR IDs: a canonical
-   GitLab issue exists (no orphans), its milestone matches what
-   `roadmap.md` claims (the CF-039 class of drift, now caught
-   automatically instead of by hand), and a closed issue was actually
-   closed by a merged MR. The v2 `requirement-evidence.json` inventory and
+   closed as a blocking CI gate by #323.** `scripts/check_traceability.py`
+   (CI, `aea-senior-software-engineer`) continuously checks, for all 40
+   canonical FR/NFR IDs: a canonical GitLab issue exists (no orphans), its
+   milestone matches any `roadmap.md` claim including the Future row
+   (thin-delivered dual-listed IDs such as FR-006 / NFR-014 align with
+   GitLab `Future Backlog`), and a closed issue was actually closed by a
+   merged MR. The v2 `requirement-evidence.json` inventory and
    `check_requirement_evidence.py` add explicit ADR, implementation, and test
    citation dispositions for all 40 IDs. They reject false paths and ADR
    declarations and expose `unclaimed` debt. They deliberately do not equate a
    source comment or test citation with proof that behavior is sufficient;
    substantive coverage remains a specialist/reviewer judgment.
+   `traceability-guard` is required: no `allow_failure` and no `|| true`.
 2. **PM-SM process coherence is partially automated.**
    `scripts/check_process_coherence.py` now checks falsifiable MR evidence:
    one closing issue (or the allowlisted recurring-report exception), branch
