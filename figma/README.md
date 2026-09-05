@@ -22,7 +22,7 @@ Sync and new-journey prototype rules:
 | Components | Active | Color-matched atoms bound to AEA Shop CSS variables (includes `Journey stepper`) |
 | Shop UI · current journey | Active | Mid-fidelity mockups of steps 1–7 + clickable prototype; mobile Discover chrome (`49:98`) |
 | Shop UI · returning shopper (proposal) | Proposal | M8 reorder / modify-before-reorder mockups + clickable proto (#194). Not live shop. |
-| Florist operator · T-09 inbox | Active | Operator console first slice: honest empty inbox, labeled sample, session read (#213). Mirrors `/florist`. |
+| Florist operator · T-09 inbox | Active | Operator console: honest empty inbox, labeled sample, staff orders (FR-013), today's prepare batching, 3-column mobile collapse, order/prepare detail dialogs, day-window filters, and ? Help routine (#213, #382, #398, #405). Mirrors `/florist`. |
 | AEA Design System | Archive | Grayscale wireframe components + `adaptive-workspace-mvp` |
 | Discovery v0.1 | Archive | Older composed workspace (component instances) |
 | Recommendation Journey | Stub | Hidden / empty placeholder |
@@ -39,7 +39,7 @@ Sync and new-journey prototype rules:
 | Collection **AEA Shop CSS** (`purple`, `ink`, `page`, …) | `edge/gateway/ui/assets/styles.css` `:root` |
 | Collection **AEA Wireframe Grayscale** | Archive only — not the live shop |
 | Text styles `AEA/Brand` … `AEA/Button` | Inter sizes/weights in `styles.css` |
-| Components `Button`, `Chip`, `Badge`, `Composer`, `Tile`, `Product Card` (`45:11`), `Header`, `ASO`, `Operator banner`, `Journey stepper` (`49:97`) | Classes in `index.html` / `florist.html` + `styles.css`. `Journey stepper` is the mobile `#journey-steps` strip (seven short labels). |
+| Components `Button`, `Chip`, `Badge`, `Composer`, `Tile`, `Product Card` (`45:11`), `Header`, `ASO`, `Operator banner`, `Journey stepper` (`49:97`), `Operator nav` (wrapped pills), `Operator filter buttons`, `Dialog sheet handle`, `Dialog card note`, `Circular scroll controls` | Classes in `index.html` / `florist.html` + `styles.css`. Operator touch targets meet WCAG 2.1 ≥44×44px. |
 | Shop UI · current journey `1 Discover` T-01 Chip | Live T-01 thought-completion copy (`for Mom` after a partial thought; API questions remapped in `app.js`) |
 | Shop UI · current journey T-03 Product Card | Live T-03 card with vendored SKU still (`PRODUCT_ART` / `/assets/sku-*.jpg`); optional `Ordered earlier in this browser` hint uses existing `.hint` (thin FR-008, same browser, no login). Photos are category likenesses, not the shop cooler. |
 | Shop UI · current journey T-04 selection thumb | Same vendored still as T-03 (`#selection-thumb`) |
@@ -47,6 +47,8 @@ Sync and new-journey prototype rules:
 | Prototype **Shop UI · returning shopper (proposal)** | M8 FR-008 proposal only. Reorder + modify-before-reorder in the persistent workspace. Do not restyle live shop until approved. |
 | Florist operator · T-09 inbox `1 Live empty` | Live `/florist` empty inbox (no sample rows when operator APIs are on) |
 | Florist operator · T-09 inbox `2 Sample layout` | Fail-closed labeled sample; T-09 primary, session next, forecast secondary |
+| Florist operator · responsive mobile (phone/tablet) | Mobile/tablet 3-column table collapse, order-detail bottom-sheet dialog, and today's prepare grouping (#382, #398) |
+| Florist operator · controls & routine dialog | Segmented day-filter pills (`Today`, `3 days`, `7 days`, `Delayed`, `All`), `? Help` shift routine dialog, and floating scroll buttons (`↑` / `↓`) (#398, #405) |
 
 Current-journey prototype (click Continue through steps 1→7):
 
