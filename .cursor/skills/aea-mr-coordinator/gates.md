@@ -53,6 +53,7 @@ but `edge/` or `platform/` changed.
   `pip-audit` is required (#330).
   `image-digest` is required (#331).
   `image-scan` is required (#332).
+  `iac-scan` is required (#334).
 - Local integration recorded when the SOP requires it (command + outcome in
   MR, chat, or CI job that is the same runner).
 - CI-only: **not** sponsor by default. PM-SM may accept it for a named MR
