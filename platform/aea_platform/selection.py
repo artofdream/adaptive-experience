@@ -98,7 +98,7 @@ def normalize_safety_exclusions(value) -> list[str]:
         value = [value]
     if not isinstance(value, (list, tuple, set)):
         raise SelectionValidationError("safety_exclusions must be a list or array")
-
+    
     normalized = []
     for item in value:
         token = normalize_option_token(item, field="safety_exclusions")

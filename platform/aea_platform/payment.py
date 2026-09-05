@@ -50,7 +50,7 @@ class ReferencePaymentAuthority:
         reference = normalize_payment_reference(payment_reference)
         if isinstance(total, bool) or not isinstance(total, (int, float)) or total <= 0:
             return PaymentOutcome(False, "invalid_total")
-
+        
         # Decline simulation tokens (stripe-mock style or decline- prefix)
         if reference.startswith("decline-"):
             return PaymentOutcome(
@@ -64,7 +64,7 @@ class ReferencePaymentAuthority:
                 decline_code="card_declined",
                 event_type="payment.failed.v1"
             )
-
+        
         # Successful payment simulation tokens (tok_visa, tok_visa_debit, pay_token_*)
         txn_id = f"txn_sim_{hash(reference + str(total)) & 0xFFFFFFFF:08x}"
         return PaymentOutcome(

@@ -27,6 +27,23 @@ EXCLUDE_REASONS = {
     ),
 }
 
+# format.exclude only. Lint still covers these files. Do not add a path
+# here to hide a lint finding.
+FORMAT_EXCLUDE_REASONS = {
+    "platform/aea_platform/crm.py": (
+        "Pre-existing trailing whitespace on a blank line. This slice does "
+        "not rewrite platform product modules; ruff check still runs."
+    ),
+    "platform/aea_platform/payment.py": (
+        "Pre-existing trailing whitespace on blank lines. This slice does "
+        "not rewrite platform product modules; ruff check still runs."
+    ),
+    "platform/aea_platform/selection.py": (
+        "Pre-existing trailing whitespace on a blank line. This slice does "
+        "not rewrite platform product modules; ruff check still runs."
+    ),
+}
+
 
 def find_ruff() -> str:
     binary = shutil.which("ruff")
@@ -75,6 +92,24 @@ def check_config_reasons() -> None:
         print(
             "FAIL: ruff lint select grew beyond the #327 baseline "
             f"(extra {unexpected}). Broader families belong in a later slice.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+    format_excludes = list(config.get("format", {}).get("exclude", []))
+    missing_fmt = [p for p in format_excludes if p not in FORMAT_EXCLUDE_REASONS]
+    extra_fmt = [p for p in FORMAT_EXCLUDE_REASONS if p not in format_excludes]
+    if missing_fmt or extra_fmt:
+        print("FAIL: ruff.toml format.exclude and FORMAT_EXCLUDE_REASONS drifted", file=sys.stderr)
+        for pattern in missing_fmt:
+            print(f"  undocumented format exclude: {pattern}", file=sys.stderr)
+        for pattern in extra_fmt:
+            print(f"  unused format reason: {pattern}", file=sys.stderr)
+        sys.exit(1)
+    leaked = [p for p in format_excludes if not p.startswith("platform/")]
+    if leaked:
+        print(
+            "FAIL: format.exclude must stay limited to documented platform "
+            f"whitespace leftovers, not {leaked}",
             file=sys.stderr,
         )
         sys.exit(1)

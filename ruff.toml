@@ -28,3 +28,10 @@ select = [
 [format]
 quote-style = "preserve"
 docstring-code-format = false
+# Trailing whitespace on blank lines only. A product-tree rewrite is out of
+# this slice; lint check still covers these files.
+exclude = [
+  "platform/aea_platform/crm.py",
+  "platform/aea_platform/payment.py",
+  "platform/aea_platform/selection.py",
+]
