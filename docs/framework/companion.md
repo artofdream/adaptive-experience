@@ -52,7 +52,7 @@ If a feature hasn't been physically tested and proven, its status remains **Unkn
 
 Here is what has been physically verified in production, and what has not:
 
-> **Installs from the Google Play Store** — **Verified (upload + prior device):** Play Internal has `versionCode` **7** / `0.1.0-alpha.7` (2026-09-04). Earlier the same day, ROG/A36 proved Play-honest installs (`installerPackageName=com.android.vending`, non-`DEBUGGABLE`) on prior Internal builds. **This page's 30s demo clip** was recorded on ROG from an App Dist / packageinstaller build so we could automate the journey; treat the clip as UX proof of live Need→Pick→Pay→Confirmed, not as Play-install honesty for that take.
+> **Installs from the Google Play Store** — **Verified (A36 Play Internal v8, 5 Sep 2026):** Samsung A36 (`SM_A366B`, adb `RZCY60W1EZW`) installed companion `versionCode` **8** / `versionName` `0.1.0-alpha.8` from Play Internal (`installerPackageName=com.android.vending`, non-`DEBUGGABLE`). Earlier Play-honest proves on ROG/A36 used prior Internal builds (v4–v7). **This page's 30s demo clip** remains the 4 Sep ROG App Dist / packageinstaller take — UX proof of Need→Pick→Pay→Confirmed, not Play-install honesty for that take or for v8.
 
 > **Florist Staff See Web vs. Mobile Orders** — **Verified (4 Sep 2026):** When a customer buys flowers through the phone app, the order lands instantly in the florist's live dashboard with a clear channel tag: `client: companion-android`. Florists know immediately whether an order came from the web or the mobile app.
 
@@ -60,9 +60,9 @@ Here is what has been physically verified in production, and what has not:
 
 > **Direct Write-Through to Order History** — **Verified (4 Sep 2026):** Placing an order writes directly to the central database, guaranteeing that inventory updates immediately across both phone and web.
 
-> **Phone remembers the last order (Edge Wallet)** — **Write verified; Need reorder tap now on `main` (!459 / #404):** After Confirm, the phone stores an encrypted receipt on the device (no street address, no card number). That **save** is a separate fact from the shortcut. Need now shows a returning-customer card (`Reorder for {recipient}` / `Reorder previous bouquet` + **Reorder →**) when a receipt exists. The #404 vault note records a sideloaded ROG walk of that tap — treat it as UX/code proof, not Play-install honesty. **This page's 30s demo clip** remains the !455 Need→Pick→Pay take and does not show the reorder card.
+> **Phone remembers the last order (Edge Wallet)** — **Write verified; Need reorder tap on `main` (!459 / #404); A36 tap Unknown:** After Confirm, the phone stores an encrypted receipt on the device (no street address, no card number). That **save** is a separate fact from the shortcut. Need shows a returning-customer card when a receipt exists. On 5 Sep 2026, A36 Play v8 **fresh Need** showed **no** Reorder / wallet one-tap CTA — leave A36 reorder-tap **Unknown**. ROG remains the preferred hardware gap for a #404 tap prove. The #404 vault note records a sideloaded ROG walk — UX/code proof, not Play-install honesty. **This page's 30s demo clip** remains the !455 Need→Pick→Pay take and does not show the reorder card.
 
-> **Budget chips after free-text / No limit:** Issues #401 and #402 are closed on `main` (!457, !460). A device re-walk of those specific fixes stays **Unknown** unless a later clip proves them.
+> **Budget chips after free-text / No limit:** Issues #401 and #402 are closed on `main` (!457, !460). **Device prove (A36 Play v8, 5 Sep 2026 — not ROG):** #401 **PASS** — free-text Need then `$100+` → chat `Budget: $100+`; no BFF 422; View Arrangements shown. #402 **PASS** — **No limit** chip → Need/Pick/Pay honest No limit copy (not Skip budget / Budget not set). Sponsor-machine evidence path (not inspected from this checkout): `C:\Users\claud\Temp\aea-v8\evidence\`.
 
 > **Demo Operator Inbox is Not the Billing System** — **No:** We keep this honest. The florist order overview is designed for demonstration and fulfillment visibility, not as a replacement for a full commercial billing accounting system.
 
@@ -75,15 +75,14 @@ Here is what has been physically verified in production, and what has not:
 For developers and technical evaluators who want to inspect the exact device logs and transaction IDs:
 
 ### 1. Google Play Release Verification (#390)
-During initial testing, sideloaded builds carried debug flags. To ensure true production quality, version `5` was deployed through Google Play Internal Track. Device inspection on the ASUS ROG test phone (`ASUS_I001DC`) confirmed:
+During initial testing, sideloaded builds carried debug flags. To ensure true production quality, later Internal builds were deployed through Google Play Internal Track. The latest Play-honest device prove is Samsung A36 (`SM_A366B`, adb `RZCY60W1EZW`) on 5 Sep 2026 — not ROG:
 ```text
-versionCode=7 (Play Internal upload 2026-09-04; prior Play-honest prove used versionCode 4–5)
-# example dumpsys shape from Play-honest prove:
-# versionCode=5 minSdk=26 targetSdk=36
+versionCode=8 versionName=0.1.0-alpha.8
 installerPackageName=com.android.vending
-pkgFlags=[ HAS_CODE ALLOW_CLEAR_USER_DATA ALLOW_BACKUP ]
+non-DEBUGGABLE
+# prior Play-honest proves: ROG/A36 on versionCode 4–5; Play Internal upload also reached versionCode 7
 ```
-The app has zero debug flags and is officially signed and distributed by Google Play (`com.android.vending`).
+The v8 A36 install is signed and distributed by Google Play (`com.android.vending`) with no debug flag. This session did not inspect the sponsor evidence directory.
 
 ### 2. Live Order Verification (#375, #384)
 On 4 September 2026, live test purchases completed from the mobile app on the ASUS ROG phone. Latest demo recording:
