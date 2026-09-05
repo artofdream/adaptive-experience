@@ -64,7 +64,7 @@ work as its **own** MR — not a coherence finding dump.
 - `platform-foundation-unit`, `edge-perimeter-unit`
 - `platform-foundation-integration` (Postgres + Kafka services,
   `AEA_INTEGRATION=1`)
-- required `markdownlint` (#325); advisory `linkcheck`
+- required `markdownlint` (#325); required `linkcheck` (#326)
 
 A cloud deploy job belongs with the AWS track, using OIDC, not static AWS
 access keys in the repo.

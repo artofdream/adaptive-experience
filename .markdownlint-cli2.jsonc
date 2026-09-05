@@ -1,7 +1,7 @@
 {
   // #325: published architecture only. research/, wiki/, archive/, and
   // generated skill adapters stay out of this blocking gate. linkcheck
-  // remains a later slice (#326).
+  // (#326) uses the same published-docs scope.
   "globs": [
     "docs/**/*.md",
     "implementations/**/*.md",

@@ -1,1 +1,27 @@
-{}
+{
+  "ignorePatterns": [
+    {
+      "pattern": "^https?://localhost(:[0-9]+)?(/|$)"
+    },
+    {
+      "pattern": "^https?://127\\.0\\.0\\.1(:[0-9]+)?(/|$)"
+    },
+    {
+      "pattern": "^file://"
+    },
+    {
+      "pattern": "^#"
+    }
+  ],
+  "replacementPatterns": [
+    {
+      "pattern": "^(?!https?://|file:|mailto:)(.+)\\.html(#.*)?$",
+      "replacement": "$1.md$2"
+    }
+  ],
+  "timeout": "20s",
+  "retryOn429": true,
+  "retryCount": 5,
+  "fallbackRetryDelay": "10s",
+  "aliveStatusCodes": [200, 206]
+}

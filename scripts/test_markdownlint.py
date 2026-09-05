@@ -49,7 +49,7 @@ class MarkdownlintGateTests(unittest.TestCase):
     def test_header_comment_calls_markdownlint_blocking(self) -> None:
         header = "\n".join(CI.read_text(encoding="utf-8").splitlines()[:8])
         self.assertIn("markdownlint (blocking, #325)", header)
-        self.assertIn("linkcheck (advisory)", header)
+        self.assertIn("linkcheck (blocking, #326)", header)
 
     def test_known_bad_fixture_fails(self) -> None:
         if not shutil.which("markdownlint-cli2"):
