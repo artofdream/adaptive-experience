@@ -37,6 +37,9 @@ crash.*.log
 # Temporary workspace scratch & test artifacts
 bandit-report.json
 image-digest-report.json
+image-scan-report.json
+trivy-*.json
+sbom-*.json
 artifacts/
 public/
 .worktrees/

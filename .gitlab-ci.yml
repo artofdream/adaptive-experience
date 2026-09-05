@@ -9,6 +9,7 @@
 # - python-lock (blocking, #329): committed platform/edge locks; regen no-diff.
 # - pip-audit (blocking, #330): platform/edge locks, High/Critical fail, report retained.
 # - image-digest (blocking, #331): runtime/base and material CI/Compose digest pins.
+# - image-scan (blocking, #332): commit-SHA images, fixable High/Critical, SBOMs.
 
 stages:
   - report
@@ -899,7 +900,42 @@ image-digest:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_COMMIT_BRANCH == "main"'
 
+image-scan:
+  stage: integration
+  image: docker:27.1.1-cli@sha256:39d10d90ef5f6712e6d956c0b175a814259cc9fbd890cf16661c8093de7b04b1
+  # required (#332): do not suppress failures. Separate from image-digest
+  # (#331). Do not stack #334 (IaC scan). Existing AWS OIDC only; this
+  # job builds local commit-SHA tags and does not push to ECR.
+  services:
+    - name: docker:27.1.1-dind@sha256:a690693976550aba640859bb3c3c29eb323a4f53f684c99b2a8282b14a22308b
+      alias: docker
+      command: ["--tls=false"]
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+    DOCKER_DRIVER: overlay2
+  timeout: 45m
+  before_script:
+    - apk add --no-cache python3 curl
+    - python3 scripts/check_image_scan.py --install-trivy
+    - docker info
+  script:
+    - python3 scripts/test_image_scan.py -v
+    - python3 scripts/check_image_scan.py
+  artifacts:
+    when: always
+    paths:
+      - image-scan-report.json
+      - trivy-*.json
+      - sbom-*.json
+    expire_in: 14 days
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
 # Path B: cloud images only. OIDC role trusts main. Do not push to pilot ECR from a laptop.
+# image-scan (#332) is required in integration; this job has no needs so
+# stage order keeps the scan ahead of ECR push.
 # Alpine aws-cli is musl Python; --upgrade expat so pyexpat symbols resolve (#204).
 .aws_oidc:
   id_tokens:
@@ -965,6 +1001,7 @@ deploy-ecs:
   image: python:3.12-alpine@sha256:b64631e04e4920160c50fbe8d8df828f7f35f06f425cb44aa09bca53e708a35a
   needs:
     - job: build-ecr
+    - job: image-scan
   timeout: 30m
   resource_group: path-b-ecs
   before_script:
@@ -1057,6 +1094,7 @@ deploy-ecs-agent-runner:
   image: python:3.12-alpine@sha256:b64631e04e4920160c50fbe8d8df828f7f35f06f425cb44aa09bca53e708a35a
   needs:
     - job: build-ecr-agent-runner
+    - job: image-scan
   timeout: 30m
   resource_group: path-b-ecs
   before_script:
