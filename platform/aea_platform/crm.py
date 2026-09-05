@@ -128,7 +128,7 @@ class EngagementCrmService:
             if 0 <= days_until <= lookahead_days:
                 occasion_title = row["occasion_type"].title()
                 relation_title = row["recipient_relation"].title()
-                
+
                 if days_until == 0:
                     text = f"Today is {relation_title}'s {occasion_title}! 1-click same-day flower order."
                 else:

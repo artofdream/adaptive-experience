@@ -47,7 +47,7 @@ class MarkdownlintGateTests(unittest.TestCase):
         self.assertNotIn("scripts/fixtures", config)
 
     def test_header_comment_calls_markdownlint_blocking(self) -> None:
-        header = "\n".join(CI.read_text(encoding="utf-8").splitlines()[:8])
+        header = "\n".join(CI.read_text(encoding="utf-8").splitlines()[:9])
         self.assertIn("markdownlint (blocking, #325)", header)
         self.assertIn("linkcheck (blocking, #326)", header)
 

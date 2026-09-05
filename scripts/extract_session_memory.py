@@ -41,9 +41,9 @@ def extract_session_memory(title: str) -> Path:
 
     content = f"""# Project Memory Log: {title}
 
-> **Tags**: #aea #second-brain #session-memory #building-process #history  
-> **Captured Date**: {today}  
-> **Target Vault Location**: `research/random-thoughts/{filename}`  
+> **Tags**: #aea #second-brain #session-memory #building-process #history
+> **Captured Date**: {today}
+> **Target Vault Location**: `research/random-thoughts/{filename}`
 
 ---
 

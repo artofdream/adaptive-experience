@@ -30,6 +30,7 @@ def clean_scratch_files():
     if cleaned == 0:
         print("   No temporary scratch files found.")
 
+
 def check_git_status():
     print("\n[GIT] [2/4] Checking Git working tree cleanliness...")
     result = subprocess.run(["git", "status", "--porcelain"], capture_output=True, text=True, cwd=REPO_ROOT)

@@ -75,6 +75,7 @@ def md_to_html_body(md_text: str) -> str:
 
     return '\n'.join(html_lines)
 
+
 def generate_pdf(md_path: Path, output_pdf: Path, artifact_pdf: Path, title: str):
     md_text = md_path.read_text(encoding='utf-8')
     body_html = md_to_html_body(md_text)
