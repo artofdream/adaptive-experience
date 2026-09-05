@@ -1,5 +1,6 @@
 # CI for the Adaptive Experience Architecture docs repository.
 # - coherence-guard (blocking): parse canonical xlsx and match docs counts (7/23+17/40).
+# - traceability-guard (blocking, #323): evidence inventory + live issue/milestone/closure.
 # - markdownlint / linkcheck (advisory): quality signals, non-blocking.
 
 stages:
@@ -114,17 +115,18 @@ secrets-posture-guard:
 traceability-guard:
   stage: verify
   image: python:3.12-alpine
-  allow_failure: true  # advisory until a first clean run confirms no pre-existing gaps
   script:
     - python scripts/generate_requirement_evidence.py --check
     - python scripts/check_requirement_evidence.py
     - python scripts/test_requirement_evidence.py -v
-    - python scripts/check_traceability.py || true
+    - python scripts/test_traceability.py -v
+    - python scripts/check_traceability.py
   rules:
     - changes:
         - "docs/02-business-analysis/requirements.md"
         - "docs/07-roadmap/roadmap.md"
         - "scripts/check_traceability.py"
+        - "scripts/test_traceability.py"
         - "scripts/generate_requirement_evidence.py"
         - "scripts/check_requirement_evidence.py"
         - "scripts/test_requirement_evidence.py"

@@ -47,7 +47,8 @@ ROADMAP_DOC = ROOT / "docs" / "07-roadmap" / "roadmap.md"
 
 REQ_ID_RE = re.compile(r"\b((?:NFR-)?FR-\d{3}|NFR-\d{3})\b")
 ROADMAP_ROW_RE = re.compile(
-    r"^\|\s*\*\*(M\d+)\*\*\s*\|[^|]*\|[^|]*\|\s*([^|]+?)\s*\|\s*$", re.MULTILINE
+    r"^\|\s*\*\*(M\d+|Future)\*\*\s*\|[^|]*\|[^|]*\|\s*([^|]+?)\s*\|\s*$",
+    re.MULTILINE,
 )
 
 
@@ -73,14 +74,34 @@ def canonical_requirement_ids() -> set[str]:
     return ids
 
 
-def roadmap_milestone_for(req_id: str) -> str | None:
-    """Which roadmap milestone (short code, e.g. 'M4') claims this ID."""
+def roadmap_milestones_for(req_id: str) -> list[str]:
+    """All roadmap milestone codes that claim this ID (M-rows and Future).
+
+    Thin-delivered Future IDs are dual-listed: a reference-extension M-row
+    (remaining scope) and the Future backlog row (workbook scope). First
+    M-row wins would treat GitLab ``Future Backlog`` as drift.
+    """
     text = ROADMAP_DOC.read_text(encoding="utf-8")
+    found: list[str] = []
     for m in ROADMAP_ROW_RE.finditer(text):
         milestone, coverage_cell = m.group(1), m.group(2)
         if req_id in REQ_ID_RE.findall(coverage_cell):
-            return milestone
-    return None
+            found.append(milestone)
+    return found
+
+
+def gitlab_milestone_code(issue: dict) -> str | None:
+    title = (issue.get("milestone") or {}).get("title", "") or ""
+    return title.split(" ", 1)[0] if title else None
+
+
+def milestone_aligned(roadmap_milestones: list[str], gitlab_code: str | None) -> bool:
+    """True when GitLab matches any roadmap claim, or the roadmap claims none."""
+    if not roadmap_milestones:
+        return True
+    if not gitlab_code:
+        return False
+    return gitlab_code in roadmap_milestones
 
 
 def fetch_canonical_issues() -> dict[str, list[dict]]:
@@ -171,18 +192,13 @@ def main() -> None:
                   f"({', '.join('#' + str(m['iid']) for m in matches)}) -- ambiguous, "
                   f"using the lowest IID (#{issue['iid']})")
 
-        roadmap_milestone = roadmap_milestone_for(req_id)
-        gitlab_milestone = (issue.get("milestone") or {}).get("title", "")
-        gitlab_milestone_code = gitlab_milestone.split(" ", 1)[0] if gitlab_milestone else None
-        if roadmap_milestone and gitlab_milestone_code and roadmap_milestone != gitlab_milestone_code:
+        claimed = roadmap_milestones_for(req_id)
+        gitlab_code = gitlab_milestone_code(issue)
+        if not milestone_aligned(claimed, gitlab_code):
             milestone_mismatches.append(
-                f"{req_id} (#{issue['iid']}): roadmap says {roadmap_milestone}, "
-                f"GitLab says {gitlab_milestone_code or '(none)'}"
-            )
-        elif roadmap_milestone and not gitlab_milestone_code:
-            milestone_mismatches.append(
-                f"{req_id} (#{issue['iid']}): roadmap says {roadmap_milestone}, "
-                "GitLab has no milestone set"
+                f"{req_id} (#{issue['iid']}): roadmap says "
+                f"{', '.join(claimed) or '(none)'}, "
+                f"GitLab says {gitlab_code or '(none)'}"
             )
 
         if issue["state"] == "closed" and issue["iid"] not in closed_by_merged_mr:
