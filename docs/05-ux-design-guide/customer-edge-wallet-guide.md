@@ -52,7 +52,7 @@ Here is the exact boundary:
 
 Buying flowers for recurring celebrations (like Mother's Day, birthdays, or anniversaries) shouldn't require answering the same chatbot questions every single year.
 
-The Edge Wallet makes reordering effortless while keeping you 100% anonymous:
+The Edge Wallet makes reordering effortless while keeping you 100% anonymous. The returning-customer card appears only when a **local encrypted receipt** already exists — not on a first / empty Play install. Play Internal v8 cold-start Need on A36 and ROG (5 Sep 2026) showed suggestion chips only; Play tap remains Unknown (#407).
 
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
