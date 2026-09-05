@@ -39,6 +39,7 @@
       <a href="#inbox" class="operator-nav-item">Inbox</a>
       <a href="#session" class="operator-nav-item">Session</a>
       <a href="#forecast" class="operator-nav-item">Forecast</a>
+      <button type="button" class="operator-nav-item operator-nav-help" data-open-help-dialog aria-label="Open operator guide and shift routine">? Help</button>
     </nav>
 
     <div class="operator-layout">
@@ -243,6 +244,35 @@
     <div class="dialog-footer">
       <button type="button" class="secondary" id="prepare-dialog-jump-orders">View related orders</button>
       <button type="button" class="primary" data-close-prepare-dialog>Close</button>
+    </div>
+  </dialog>
+
+  <dialog id="operator-help-dialog" class="operator-dialog" aria-labelledby="help-dialog-title">
+    <div class="dialog-sheet-handle" aria-hidden="true"></div>
+    <div class="dialog-header">
+      <div>
+        <p class="eyebrow">FR-013 · Operator runbook</p>
+        <h2 id="help-dialog-title" class="dialog-title">Atelier Shift Routine</h2>
+      </div>
+      <button type="button" class="dialog-close" data-close-help-dialog aria-label="Close operator help">✕</button>
+    </div>
+    <div class="dialog-body">
+      <div class="dialog-section">
+        <h3>4 Daily Shift Steps</h3>
+        <ol class="operator-help-steps">
+          <li><strong>Morning Batching (#prepare):</strong> Review bouquet counts and delivery windows (Morning, Afternoon, Evening). Tap <code>Details ↗</code> on any arrangement to read and transcribe customer enclosure card notes.</li>
+          <li><strong>Order Assembly (#orders):</strong> Work through the <code>Today</code> queue. Verify channel tags (<code>web</code> vs <code>companion-android</code>) and attach the matching handwritten card.</li>
+          <li><strong>Customer Inquiries (#inbox):</strong> Watch for incoming Contact Florist requests (T-09). Tap any inquiry to inspect the customer's shared session context.</li>
+          <li><strong>End-of-Day Review:</strong> Filter by <code>Delayed</code> to confirm zero missed orders, then review <code>3 days</code> / <code>7 days</code> to plan cooler replenishment.</li>
+        </ol>
+      </div>
+      <div class="dialog-section">
+        <h3>Quick Navigation &amp; Privacy</h3>
+        <p class="dialog-help-note">Tap top navigation pills to jump between panels. On phones, tables collapse to 3 clean columns with zero horizontal scroll. This console operates under zero-PII rules (NFR-017)—customer delivery addresses are ephemeral and shredded automatically after 14 days.</p>
+      </div>
+    </div>
+    <div class="dialog-footer">
+      <button type="button" class="primary" data-close-help-dialog>Got it</button>
     </div>
   </dialog>
 

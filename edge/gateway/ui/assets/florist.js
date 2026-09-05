@@ -1099,6 +1099,40 @@ if (prepareDetailDialog) {
   });
 }
 
+function openHelpDialog() {
+  const dialog = document.querySelector("#operator-help-dialog");
+  if (!dialog) return;
+  if (typeof dialog.showModal === "function") {
+    dialog.showModal();
+  } else {
+    dialog.setAttribute("open", "");
+  }
+}
+
+document.querySelectorAll("[data-open-help-dialog]").forEach((btn) => {
+  btn.addEventListener("click", openHelpDialog);
+});
+
+document.querySelectorAll("[data-close-help-dialog]").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const dialog = document.querySelector("#operator-help-dialog");
+    if (dialog && typeof dialog.close === "function") {
+      dialog.close();
+    } else if (dialog) {
+      dialog.removeAttribute("open");
+    }
+  });
+});
+
+const operatorHelpDialog = document.querySelector("#operator-help-dialog");
+if (operatorHelpDialog) {
+  operatorHelpDialog.addEventListener("click", (e) => {
+    if (e.target === operatorHelpDialog && typeof operatorHelpDialog.close === "function") {
+      operatorHelpDialog.close();
+    }
+  });
+}
+
 const scrollToTopBtn = document.querySelector("#scroll-to-top");
 const scrollToBottomBtn = document.querySelector("#scroll-to-bottom");
 

@@ -94,6 +94,18 @@ On 4 September 2026, live test purchases completed from the mobile app on the AS
 
 ---
 
+## Shopper Privacy & Edge Wallet Guide: How Reordering Works
+
+When you place an order on Lily's Florist Companion, your personal details (recipient name, card message draft, address nickname) never enter a centralized CRM tracking database. Instead, they are stored securely in your phone's **Edge Wallet** (Android Keystore hardware encryption):
+
+1. **Zero-PII Storage:** The florist atelier only receives the bouquet SKU, delivery window, and message text to print on the physical card.
+2. **1-Tap Reorder Shortcut (FR-008):** When you return to the app for a new arrangement, a private card appears on the Need screen (*"Reorder for {recipient}"*). Tapping **`Reorder →`** revalidates current cooler stock and takes you straight to Pick with your arrangement pre-selected.
+3. **Right to Be Forgotten:** You can wipe your local encrypted history at any time; physical delivery addresses at the shop are automatically shredded after 14 days.
+
+*For full details on on-device encryption and privacy guarantees, see the [Customer Edge Wallet Guide](../05-ux-design-guide/customer-edge-wallet-guide.md).*
+
+---
+
 ## Related Framework Topics
 
 - [Path B Case Study](path-b.html) — Customer journey tapes and the florist staff console (browser, not a second app).
