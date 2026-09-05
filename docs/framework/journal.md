@@ -58,6 +58,15 @@ A short history of Adaptive Experience Architecture: what was difficult, how we 
 
 ---
 
+## A saved receipt is not a button
+
+- **The Challenge:** Once the phone could store an encrypted last-order receipt, it was easy to write as if shoppers already had “reorder in one tap.” The save happens quietly on Confirm. For a stretch, Need had no reorder control even though `reorderFromWallet()` existed.
+- **The Solution:** Say the two facts separately. The **wallet write** is probed on a physical phone. The **reorder tap** is only claimed once that button exists and is walked on the same class of device.
+- **What Shipped:** Companion Need can continue from the shopper’s own words (not only occasion chips). Pick/Pay can set quantity 1–10 like the website. Need now shows a returning-customer **Reorder →** card when the on-phone wallet has a receipt (!459 / #404; ROG walk in the #404 vault note, sideload). Florist staff `/florist` gained day-window filters, load-more paging, faster first paint, and phone-sized tap targets. A native **staff** app is explicitly a future — the operator stays mobile web until four gates are evidenced.
+- **The Lesson Learned:** “The code can reorder” is not the same as “the customer can tap Reorder.” Pages and vault notes must not collapse those sentences. After !459 the tap exists on `main`; that does not rewrite the earlier write-only evening. Two merge requests that both edit the staff `florist.js` file will collide; the merge coordinator does not rebase — a named engineer keeps both features, then merge resumes.
+
+---
+
 ## How This Journal Stays Honest
 
 - **Curated Milestones Only:** Focuses on substantive architectural decisions, not routine bug fixes.

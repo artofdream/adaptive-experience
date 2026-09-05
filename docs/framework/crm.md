@@ -23,7 +23,7 @@ Layers stack from operator view (top) down to where raw PII may briefly live (bo
 ## 2. Core Pillars
 
 1. **Pseudonymous Subject Profiles:** Platform tables represent returning customers via deterministic salted hashes (`sub_9b179aea00e...`). Repeat orders, spend bands (`$50–$100`), and occasion types are tracked without storing names or emails.
-2. **Client-Side Edge Wallet (Android Companion):** Detailed transaction history and recipient labels (e.g. "Mom") stay on the user's physical device in platform-backed encrypted storage. One-tap reorders (FR-008) present opaque claims directly.
+2. **Client-Side Edge Wallet (Android Companion):** Detailed transaction history and recipient labels (e.g. "Mom") stay on the user's physical device in platform-backed encrypted storage. After a confirmed order, the phone can later send back only an opaque product/order token — not a name or address. **The save path is live.** The Need-screen reorder control landed on `main` in !459 (#404). Treat write and tap as two facts; a saved receipt is not proof that the button had always been there.
 3. **14-Day Ephemeral Address Shredding:** Physical street addresses and delivery phone numbers exist solely in an isolated KMS-encrypted table with an automated 14-day database-level TTL purge.
 
 ---
@@ -37,7 +37,7 @@ Every capability is classified by its verified code and hardware probe status:
 | **Layer 1: Occasion Memory & Pull Reminders** | **Live on `main` / Tested** | Migration `018_engagement_crm.sql`. Order-triggered occasion capture records categorical event month/day and relation. Workspace projection exposes deterministic `reminders` facet. |
 | **Layer 1: Pseudonymous Subject Profiles** | **Live on `main` / Tested** | Migrations `024_operator_crm_subject_profile.sql` and `026_crm_lifetime_spend.sql`. Cumulative running spend bands (`band_50_100`, `band_250_plus`), order counter, preferred channel. 274 integration tests pass. |
 | **Layer 1: Privacy Lifecycle & Retention Purge** | **Live on `main` / Tested** | Migration `025_crm_retention_indexes.sql`. Customer erasure (`DELETE /api/v1/crm/occasions` / `forget`), 400-day annual retention purge job (`purge_crm_retention.py`), and idempotent deletions. |
-| **Layer 2: Client-Side Edge Wallet** | **Live on `main` / Probed on Hardware** | Pure Kotlin on Android companion. Verified on physical ASUS ROG handset (`ASUS_I001DC`): Android Keystore Tink authenticated envelope encryption (`AesSivKey` + `AesGcmKey`). Zero raw PII or card message plain text at rest. |
+| **Layer 2: Client-Side Edge Wallet** | **Save live / Need tap on `main` (!459)** | Pure Kotlin on Android companion. Verified on physical ASUS ROG handset (`ASUS_I001DC`): Android Keystore Tink authenticated envelope encryption (`AesSivKey` + `AesGcmKey`). Receipt write on Confirm probed. Need-screen one-tap reorder control is on `main` (#404); the #404 vault note records a sideloaded ROG walk (not the !455 Play-install clip). |
 | **Layer 3: Ephemeral Fulfillment Shredding** | **Live on `main` / Tested** | `orchestration.ephemeral_fulfillment` with 14-day `expires_at`. Automated database-level TTL purge via `PsycopgCrmStore.purge_expired_fulfillment`. |
 | **Layer 3: KMS Address Encryption Write Path** | **Sponsor-Gated (Unbuilt)** | Database schema and retention shredder are in place. The live write path and AWS KMS Customer Managed Key (CMK) provisioning remain sponsor-gated for key lifecycle governance. |
 

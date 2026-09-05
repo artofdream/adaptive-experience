@@ -16,7 +16,7 @@
 - The **operator** stays **mobile-web** at `/florist` (plus optional **PWA / Add-to-Home-Screen** later if useful).
 - Do **not** start a second native product surface for staff until the gates below are all evidenced — not vibes, preference, or “apps feel nicer.”
 
-**Near-term path:** finish florist **responsive honesty** (!450 and related polish), then consider PWA / Add-to-Home-Screen **before** any native operator app.
+**Near-term path:** florist **responsive honesty** landed in !450; day filters !453 and boot/pagination !434 also on `main`. Next is PWA / Add-to-Home-Screen **before** any native operator app — still gated below. Public wording: [[2026-09-04-session-memory-log-evening-mrc-rog-wallet-honesty]] and `docs/framework/path-b.md`.
 
 **Gates before developing a native operator app** (all must be true and evidenced):
 
@@ -36,7 +36,7 @@ Until those clear: operator = mobile-web `/florist`; companion = the only native
 | Surface | Status | Notes |
 |---------|--------|-------|
 | Customer **companion** (native Android) | **Current Path B product** | Play Internal / App Dist; keep honesty on versionCode / installer / debuggable |
-| Florist **operator** (`/florist`) | **Mobile-web now** | Responsive polish in flight (!450); optional PWA later |
+| Florist **operator** (`/florist`) | **Mobile-web now** | Responsive polish !450, day filters !453, boot/pagination !434 on `main`; optional PWA later |
 | Native Android **operator** app | **Potential future only** | Not scheduled; blocked on gates below |
 
 ### Development gates (must all be evidenced)

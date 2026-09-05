@@ -53,6 +53,20 @@ Chris placed an order earlier and wants to know when it will arrive. Chris enter
 
 ---
 
+## Florist staff console (not a second native app)
+
+Staff fulfill orders on the **same live store**, at `/florist` in a browser (phone, tablet, or laptop). That page is **mobile web**, not a separate Play Store app for florists.
+
+What is on the live staff page as of 4 September 2026, in plain terms:
+
+- **Day windows:** Staff Orders can show Today / next 3 days / next 7 days / Delayed / All, with counts on each pill. Contact Florist has its own day windows (looking backward).
+- **Load more:** Long lists page in rather than dumping everything at once.
+- **Phone layout:** Tables collapse; a Details sheet opens the arrangement and card; nav pills wrap so Forecast is not clipped off-screen; tap targets are at least 44 pixels.
+
+A **native Android app for florists** is a possible later product. It is not current work. The customer companion stays the only native Path B app until shop-floor proof, a hard web/PWA limit, a second Play track the staff will actually maintain, and an explicit go are all evidenced.
+
+---
+
 ## Architectural Honesty: Intended vs. Verified
 
 - **Dual-Viewport Layout:** Providing side-by-side desktop and mobile views from a single codebase is the intended architectural design. While responsive CSS has been deployed, a continuous side-by-side video walkthrough recorded simultaneously on both viewports remains **Unknown**. Path B stays transparently labeled as *not fully verified* until that dual probe is recorded.
