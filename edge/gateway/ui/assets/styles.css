@@ -701,6 +701,10 @@ body.operator { background: var(--page); }
   background: var(--purple);
   color: #ffffff;
 }
+button.operator-nav-item {
+  cursor: pointer;
+  font-family: inherit;
+}
 
 .operator-filter-wrap {
   display: inline-flex;
@@ -824,6 +828,25 @@ dialog.operator-dialog::backdrop {
   gap: 0.75rem;
   padding-top: 1rem;
   border-top: 1px solid var(--line);
+}
+
+.operator-help-steps {
+  margin: 0.5rem 0 1rem 1.25rem;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+.operator-help-steps li strong {
+  color: var(--purple-deep);
+}
+.dialog-help-note {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+  margin: 0.25rem 0 0;
 }
 
 @media (max-width: 60rem) {

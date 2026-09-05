@@ -65,6 +65,17 @@ What is on the live staff page as of 4 September 2026, in plain terms:
 
 A **native Android app for florists** is a possible later product. It is not current work. The customer companion stays the only native Path B app until shop-floor proof, a hard web/PWA limit, a second Play track the staff will actually maintain, and an explicit go are all evidenced.
 
+### Atelier Shift Routine: 4 Daily Steps for Shop Staff
+
+For florists working the shop floor, the daily workflow follows 4 focused steps:
+
+1. **Morning Batching (`#prepare`):** Check arrangement tallies (e.g. *5× Classic Rose Dozen*) and delivery window splits (Morning / Afternoon). Tap **`Details ↗`** to open the bottom sheet and transcribe the customer's handwritten card messages.
+2. **Order Fulfillment (`#orders`):** Work through the **Today** queue. Note channel badges (`web` vs `companion-android`) and packaging notes.
+3. **Inquiry Triage (`#inbox`):** Watch for real-time customer escalations from the Contact Florist button. Tap any inquiry to jump to that customer's shared session context.
+4. **End-of-Day Review:** Switch filters to **Delayed** to ensure zero missed orders, then check **3 days** / **7 days** to plan upcoming flower cooler inventory.
+
+*For complete operational procedures, multi-device shortcuts, and least-data guarantees, see the [Florist Operator Guide](../05-ux-design-guide/florist-operator-guide.md).*
+
 ---
 
 ## Architectural Honesty: Intended vs. Verified
