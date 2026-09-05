@@ -7,6 +7,7 @@
 # - ruff (blocking, #327): pinned ruff, scoped scripts/platform/edge.
 # - bandit (blocking, #328): pinned bandit, High findings fail, report retained.
 # - python-lock (blocking, #329): committed platform/edge locks; regen no-diff.
+# - pip-audit (blocking, #330): platform/edge locks, High/Critical fail, report retained.
 
 stages:
   - report
@@ -857,6 +858,25 @@ python-lock:
     - python3 scripts/check_python_locks.py
     - pip install --no-cache-dir -r platform/requirements.txt -c platform/requirements.lock
     - pip install --no-cache-dir -r edge/requirements.txt -c edge/requirements.lock
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+pip-audit:
+  stage: lint
+  image: python:3.12-alpine
+  # required (#330): do not suppress failures. Separate from python-lock
+  # (#329). Do not stack #331–#334 (digest pin, image SBOM, IaC scan).
+  before_script:
+    - pip install --no-cache-dir pip-audit==2.10.1
+  script:
+    - python3 scripts/test_python_sca.py -v
+    - python3 scripts/check_python_sca.py
+  artifacts:
+    when: always
+    paths:
+      - pip-audit-report.json
+    expire_in: 14 days
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_COMMIT_BRANCH == "main"'

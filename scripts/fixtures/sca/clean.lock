@@ -1,0 +1,2 @@
+# Clean Python SCA fixture (#330).
+# No pins → zero High/Critical findings by construction.
