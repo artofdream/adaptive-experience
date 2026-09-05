@@ -1,0 +1,23 @@
+{
+  // #325: published architecture only. research/, wiki/, archive/, and
+  // generated skill adapters stay out of this blocking gate. linkcheck
+  // remains a later slice (#326).
+  "globs": [
+    "docs/**/*.md",
+    "implementations/**/*.md",
+    "README.md",
+    "AGENTS.md",
+    "CLAUDE.md"
+  ],
+  "ignores": [
+    "**/node_modules/**",
+    "research/**",
+    "archive/**",
+    "wiki/**"
+  ],
+  "config": {
+    // Framework pages generate heading IDs (unicode arrows, in-page TOC)
+    // that do not match GitHub fragment spelling. Do not invent slugs.
+    "MD051": false
+  }
+}

@@ -246,21 +246,27 @@ All changes merged into `main` must pass automated CI jobs configured in [`.gitl
 ## 9. Operational SOPs & Developer Reference
 
 1. **Local Coherence Check**:
+
    ```bash
    python scripts/check_coherence.py
    ```
+
 2. **Synchronize 6-Way Stakeholder Skills**:
+
    ```bash
    python scripts/generate_codex_stakeholder_skills.py
    python scripts/generate_codex_stakeholder_skills.py --check
    ```
+
 3. **Execute Unit & Graph Engineering Tests**:
+
    ```bash
    python scripts/test_traceability_graph.py -v
    python scripts/test_loop_graph.py -v
    python platform/tests/test_graph.py
    python platform/tests/test_knowledge_graph.py
    ```
+
 4. **GitLab Merge Request Workflow**:
    * Issue creation (`glab issue create`) → Feature branch → Code implementation → Unit tests → Local coherence check → Push branch → Create MR (`glab mr create`) → MR Coordinator review → Auto-merge on CI success (`MWPS`).
 

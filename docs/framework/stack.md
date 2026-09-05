@@ -23,7 +23,7 @@ These two sites do not share a server, database, or load balancer. If the shop r
 
 ## The Documentation Site
 
-The framework site at [architecture.artof.link](https://architecture.artof.link) is built entirely from verified markdown files in this repository. 
+The framework site at [architecture.artof.link](https://architecture.artof.link) is built entirely from verified markdown files in this repository.
 
 - **Pure Static Delivery:** A standard-library Python script converts the documentation into lightweight, fast-loading HTML pages published via GitLab Pages.
 - **Zero Content Management Systems (CMS):** There is no WordPress, no database, and no tracking scripts. Updates are made through peer-reviewed git merge requests.
@@ -75,17 +75,17 @@ The Android companion is an alternative mobile client designed for fast on-the-g
 Every capability mentioned on this site is classified by its verified production status:
 
 > **Two Public Hostnames** — **Live & Probed:** `architecture.artof.link` (documentation) and `aea.artof.link` (shop) operate on independent infrastructure.
-
+>
 > **Backend Domain Services** — **Live on AWS ECS:** PostgreSQL, Kafka-compatible event streaming, and Edge BFF are deployed and active on AWS ECS Fargate.
-
+>
 > **Google Play Mobile Distribution** — **Probed (4 Sep 2026):** Production release build (version `5`, non-debuggable) verified on physical ASUS ROG and Samsung Galaxy hardware via Google Play Internal Track (#390).
-
+>
 > **Mobile Order Write-Through** — **Probed (4 Sep 2026):** Orders placed in the companion app write through to the store's central database and appear in real time on the florist dashboard with `client: companion-android` (Order `34091114-cb91-44de-a5a3-6be78c503912`, #375, #384).
-
+>
 > **Payment Processing** — **Deterministic Simulation:** Real credit card charging is not connected. Payment is safely simulated via an in-memory payment engine under ADR-016.
-
+>
 > **Dual-Viewport Layout Proof** — **Unknown:** While responsive CSS has merged, a complete side-by-side journey recording showing desktop (16:9) and phone (9:16) working simultaneously has not yet been captured.
-
+>
 > **Operator Dashboard vs. Commercial Billing** — **Operational Distinction:** The sample florist order screen provides order fulfillment visibility, but is not a replacement for an external enterprise billing ERP.
 
 ---
@@ -97,4 +97,3 @@ Every capability mentioned on this site is classified by its verified production
 - [Path B Case Study](path-b.html) — Journey tapes and customer shopping flows.
 - [Architecture Blueprint](schema.html) — Core formula, 6 layers, and execution loop.
 - [Framework Home](index.html) — Return to the overview.
-

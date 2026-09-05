@@ -95,5 +95,3 @@ To validate requirement execution across active tiles (T-01 through T-09), the d
   and M12 (engagement CRM / FR-016, FR-017) are Completed delivery labels;
   staff live chat and ticketing remain M16 reference-extension scope. AWS
   Path B is unparked and is not a milestone.
-
-

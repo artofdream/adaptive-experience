@@ -181,4 +181,3 @@ Still out of scope (unchanged exclusions):
 Production UI may expose interactive selects for the thin keys. Contracts,
 BFF allowlists, persistence, and acceptance tests accept these keys and continue
 to reject unknown keys and gift-card value fields.
-

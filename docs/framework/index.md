@@ -45,4 +45,3 @@ The live flower shop at [aea.artof.link](https://aea.artof.link) is our referenc
 - Learn about [Privacy-Preserving CRM](crm.html) for zero-PII customer intelligence, edge wallets, and 14-day address shredding.
 - Read the [Journal](journal.html) for curated stories of real-world challenges, solutions, and hard-learned lessons.
 - Check the [Glossary](glossary.html) for plain-English definitions of terms used across this site.
-

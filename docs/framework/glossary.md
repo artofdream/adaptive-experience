@@ -85,4 +85,3 @@ The 14 specialized quality perspectives AEA uses to inspect code and architectur
 - [Comparison & Visual Guide](comparison.html) — 5-floor building model.
 - [System Stack](stack.html) — Cloud infrastructure and request flow.
 - [Project Journal](journal.html) — The story behind the architecture.
-
