@@ -172,11 +172,23 @@ class ImageScanGateTests(unittest.TestCase):
         }
         self.assertEqual(unused_exceptions([], [leftover], today), [leftover])
 
-    def test_exceptions_file_is_strict_and_empty_at_baseline(self) -> None:
+    def test_exceptions_file_is_strict_with_owner_reason_expiry(self) -> None:
         items = load_exceptions()
-        self.assertEqual(items, [])
         payload = json.loads(EXCEPTIONS.read_text(encoding="utf-8"))
-        self.assertEqual(payload, {"exceptions": []})
+        self.assertEqual(payload.get("exceptions"), items)
+        self.assertTrue(items, "live #331 alpine pins need recorded expiring OS exceptions")
+        today = date.today()
+        seen = set()
+        for item in items:
+            key = (item["id"], item["image"], item["package"])
+            self.assertNotIn(key, seen)
+            seen.add(key)
+            self.assertTrue(item["id"].startswith(("CVE-", "GHSA-")))
+            self.assertIn(item["image"], {"bff", "gateway", "orchestration", "agent-runner", "*"})
+            self.assertTrue(item["owner"].startswith("@"))
+            self.assertTrue(item["reason"])
+            expires = date.fromisoformat(item["expires"])
+            self.assertGreaterEqual(expires, today)
 
     def test_clean_baseline_mode_passes_without_trivy(self) -> None:
         result = subprocess.run(
