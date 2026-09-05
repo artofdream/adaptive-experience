@@ -1,0 +1,13 @@
+# #328 blocking Python SAST baseline (Bandit).
+# Scan covers scripts/, platform/, and edge/ (same trees as
+# python-compile-gate / ruff). High findings fail the required job.
+# Medium/Low stay in the retained report and wait for a later slice.
+# Exclusions stay narrow and documented in scripts/check_sast.py
+# EXCLUDE_REASONS / SKIP_REASONS. Do not add a skip to silence an
+# unclassified High finding.
+
+exclude_dirs:
+  - scripts/fixtures/sast
+
+# No High test IDs are skipped in this baseline.
+skips: []
