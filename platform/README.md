@@ -26,7 +26,7 @@ Experience-state migrations still do not depend on the extension.
 Install the optional runtime adapters before running the Python commands:
 
 ```sh
-python -m pip install -r platform/requirements.txt
+python -m pip install -r platform/requirements.txt -c platform/requirements.lock
 ```
 
 No production secret is stored here. Local credentials are intentionally

@@ -16,7 +16,7 @@ Ledger: `research/random-thoughts/dependency-pin-ledger.csv`
 | Surface | Owner | Examples |
 |---|---|---|
 | Environment / image pins | `@aea-devsecops-platform` | `.gitlab-ci.yml` `image:`, Compose vs cloud, `cimg/*`, `docker:*` |
-| App toolchain / libraries | `@aea-senior-software-engineer` | Gradle, AGP, Kotlin, `jvmTarget`, `platform/requirements.txt`, edge Python |
+| App toolchain / libraries | `@aea-senior-software-engineer` | Gradle, AGP, Kotlin, `jvmTarget`, `platform/requirements.txt` + `platform/requirements.lock`, edge Python + `edge/requirements.lock` |
 | Vulnerable pin (CVE) | `@aea-appsec-auditor` files; SSE/DSO patch | Not this cadence’s default |
 
 Do not pick one owner for “all dependencies.” A collision needs **both**.

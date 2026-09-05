@@ -57,6 +57,7 @@ flowchart TD
         LINK["linkcheck<br/>(blocking, #326)"]
         RUFF["ruff<br/>(blocking, #327)"]
         SAST["bandit<br/>(blocking, #328)"]
+        LOCK["python-lock<br/>(blocking, #329)"]
         TRACE["check_traceability.py<br/>(FR/NFR -> issue -> milestone -> closure)"]
         EVIDENCE["check_requirement_evidence.py<br/>(FR/NFR -> ADR + code/test citations)"]
     end
@@ -75,6 +76,7 @@ flowchart TD
     LINK -- constrain --> MRC
     RUFF -- constrain --> MRC
     SAST -- constrain --> MRC
+    LOCK -- constrain --> MRC
     DOCKER -- "Edge CI constrains" --> MRC
     ROADMAP -- feed --> TRACE
     ISSUES -- feed --> TRACE
@@ -180,6 +182,7 @@ flowchart TD
 | `linkcheck` | guard | every MR/main (`linkcheck` job) | `aea-knowledge-guardian` / `aea-devsecops-platform` | automated, blocking (`linkcheck`, #326); pinned `markdown-link-check@3.15.0`; scoped to published architecture markdown; `scripts/check_linkcheck.py` proves a known-bad fixture fails |
 | `ruff` | guard | every MR/main (`ruff` job) | `aea-senior-software-engineer` / `aea-devsecops-platform` | automated, blocking (`ruff`, #327); pinned `ruff==0.16.5`; scoped to `scripts/`, `platform/`, and `edge/`; `scripts/check_ruff.py` proves a known-bad fixture fails |
 | `bandit` / `check_sast.py` | guard | every MR/main (`bandit` job) | `aea-appsec-auditor` / `aea-senior-software-engineer` / `aea-devsecops-platform` | automated, blocking (`bandit`, #328); pinned `bandit==1.9.4`; scoped to `scripts/`, `platform/`, and `edge/`; High findings fail; `scripts/check_sast.py` proves a known-bad fixture fails and retains `bandit-report.json` |
+| `python-lock` / `check_python_locks.py` | guard | every MR/main (`python-lock` job) | `aea-senior-software-engineer` / `aea-devsecops-platform` | automated, blocking (`python-lock`, #329); human-authored `platform/requirements.txt` and `edge/requirements.txt` retained; committed `requirements.lock` consumed by build/test installs; unchanged regeneration has no diff |
 | `docker-integration-before-mr.mdc` | guard | local attestation per MR; Edge runner repeated in CI | every specialist role / `aea-devsecops-platform` | **automated for edge** by `edge-docker-integration`; **partially automated for platform** (`platform-foundation-integration` runs equivalent Postgres+Kafka coverage via CI `services:`, not the literal script) |
 | `research/coherence-findings-loop.md` | remediation cycle | on-demand / `aea-coherence-guardian` invocation | `aea-coherence-guardian` | manual trigger, disciplined procedure |
 | `aea-project-manager` | role loop | on-demand / cadence (08:00/12:00/16:00/20:00, **no automated trigger**) | human or AI session acting as PM | manual trigger |
@@ -268,8 +271,19 @@ recurring blind spot outranks an expensive fix for a rare one.
    artifact (`when: always`) and wait for a later slice. Fixture path
    `scripts/fixtures/sast` is the only exclude. No High test IDs are
    skipped. No `allow_failure` and no `|| true`. Separate from
-   dependency SCA (#329–#330).
-7. **Edge Docker integration evidence — closed by #228.**
+   dependency locks (#329) and SCA (#330).
+7. **Python dependency locks — closed as a blocking CI gate by #329.**
+   `python-lock` is required: human-authored
+   `platform/requirements.txt` and `edge/requirements.txt` stay as
+   inputs; committed `platform/requirements.lock` and
+   `edge/requirements.lock` pin the resolved graph. Unchanged
+   regeneration (`scripts/compile_python_locks.py --check`) has no
+   diff. Build/test installs consume the locks (`-c`). Fresh install
+   of both trees runs on `python:3.12` (debian, not alpine) so
+   `confluent-kafka` / `psycopg-binary` wheels resolve. No
+   `allow_failure` and no `|| true`. Separate from dependency SCA
+   (#330). Do not stack #330–#334 on this slice.
+8. **Edge Docker integration evidence — closed by #228.**
    `edge-docker-integration` invokes `edge/scripts/run_integration_tests.py`
    against the repository Compose stack in GitLab Docker-in-Docker. It checks
    gateway/BFF/orchestration health, the customer path, and the assistant SLO,
@@ -277,26 +291,26 @@ recurring blind spot outranks an expensive fix for a rare one.
    MR; CI now independently constrains Edge-impacting merges. Platform remains
    equivalent rather than literal runner coverage through
    `platform-foundation-integration` (real PostgreSQL and Kafka services).
-8. **`session-start-briefing.mdc` compliance is unverifiable
+9. **`session-start-briefing.mdc` compliance is unverifiable
    mechanically.** No loop watches whether a session actually read the
    brief before acting — this is inherent to the mechanism (you can't
    automatically prove a model read something), not a fixable gap so
    much as a known soft spot.
-9. **Stakeholder cadence status guard — closed by #234.**
+10. **Stakeholder cadence status guard — closed by #234.**
    `scripts/check_stakeholder_cadence.py` and `stakeholder-cadence-guard`
    CI job continuously monitor role activity windows, active issue owners,
    and daily brief freshness across all AEA stakeholder roles.
-10. **Gemini and Grok adapters — closed by #232 and #237.**
+11. **Gemini and Grok adapters — closed by #232 and #237.**
    `scripts/generate_codex_stakeholder_skills.py` now enforces 6-way skill
    synchronization across Cursor, Codex, Claude, Copilot, Gemini, and Grok.
-11. **A disabled Claude Code cloud routine
+12. **A disabled Claude Code cloud routine
    (`aea-coherence-guardian-daily-brief`) is dead weight.** Superseded by
    `generate_daily_brief.py`'s CI-native approach after the routine's
    GitHub-only repo-source limitation made it unusable for this
    GitLab-hosted repo. Not cleaned up (routines can't be deleted by an
    agent session — only by the account owner at
    `claude.ai/code/routines`).
-12. **`generate_daily_brief.py`'s Anthropic call and `GITLAB_MR_TOKEN`
+13. **`generate_daily_brief.py`'s Anthropic call and `GITLAB_MR_TOKEN`
    auth are unproven end to end** as of this document's writing — see
    Diagram 2.
 

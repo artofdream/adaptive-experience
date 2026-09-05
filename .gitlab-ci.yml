@@ -6,6 +6,7 @@
 # - linkcheck (blocking, #326): pinned markdown-link-check, scoped published docs.
 # - ruff (blocking, #327): pinned ruff, scoped scripts/platform/edge.
 # - bandit (blocking, #328): pinned bandit, High findings fail, report retained.
+# - python-lock (blocking, #329): committed platform/edge locks; regen no-diff.
 
 stages:
   - report
@@ -740,7 +741,7 @@ platform-foundation-integration:
     AEA_POSTGRES_DSN: postgresql://aea_migration:ci-migration-only@postgres:5432/adaptive_experience
     AEA_KAFKA_BOOTSTRAP: kafka:9092
   before_script:
-    - pip install -r platform/requirements.txt
+    - pip install -r platform/requirements.txt -c platform/requirements.lock
   script:
     - python platform/scripts/wait_for_services.py
     - python platform/scripts/apply_migrations.py
@@ -841,6 +842,21 @@ bandit:
     paths:
       - bandit-report.json
     expire_in: 14 days
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+python-lock:
+  stage: lint
+  image: python:3.12
+  # required (#329): do not suppress failures. debian image so
+  # confluent-kafka / psycopg-binary wheels resolve (not alpine).
+  script:
+    - python3 scripts/test_python_locks.py -v
+    - python3 scripts/compile_python_locks.py --check
+    - python3 scripts/check_python_locks.py
+    - pip install --no-cache-dir -r platform/requirements.txt -c platform/requirements.lock
+    - pip install --no-cache-dir -r edge/requirements.txt -c edge/requirements.lock
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_COMMIT_BRANCH == "main"'

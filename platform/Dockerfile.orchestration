@@ -3,7 +3,11 @@ FROM python:3.12-slim-bookworm
 WORKDIR /app
 # slim (not alpine): confluent-kafka publishes manylinux wheels; alpine Path B
 # relay/consumer crash-looped with ModuleNotFoundError: confluent_kafka.
-RUN pip install --no-cache-dir "psycopg[binary]>=3.2,<4" "uvicorn>=0.30,<1" "confluent-kafka>=2.6,<3"
+COPY platform/requirements.txt platform/requirements.lock /tmp/platform/
+COPY edge/requirements.txt edge/requirements.lock /tmp/edge/
+RUN pip install --no-cache-dir \
+    -r /tmp/platform/requirements.txt -c /tmp/platform/requirements.lock \
+    -r /tmp/edge/requirements.txt -c /tmp/edge/requirements.lock
 COPY platform ./platform
 ENV PYTHONPATH=/app/platform
 USER nobody
