@@ -1814,6 +1814,53 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         _, shared = drive("GET", f"/internal/v1/sessions/{session_id}/shared-understanding")
         self.assertEqual("Mum", shared["structured_intent"]["recipient"])
 
+    def test_shared_understanding_budget_after_freetext_is_idempotent(self):
+        """#401: conversation free-text then `$100+` PATCH must 202, including restatement."""
+        import asyncio
+        from aea_platform.internal_api import InternalOrchestrationApp
+
+        session_id = self.create_session()
+        app = InternalOrchestrationApp(self.connection, "internal-token")
+
+        def drive(method, path, body=b""):
+            return asyncio.run(self._invoke_internal(app, method, path, body))
+
+        status, accepted = drive(
+            "POST", f"/internal/v1/sessions/{session_id}/conversation",
+            json.dumps({"message_text": "flowers for a friend this weekend",
+                        "observed_context_version": 0, "correlation_id": "need"}).encode())
+        self.assertEqual(202, status)
+        observed = accepted["context_version"]
+
+        status, first = drive(
+            "PATCH", f"/internal/v1/sessions/{session_id}/shared-understanding",
+            json.dumps({"corrections": {"budget": 100.0},
+                        "observed_context_version": observed, "correlation_id": "b1"}).encode())
+        self.assertEqual(202, status, first)
+        self.assertEqual("accepted", first["code"])
+        self.assertGreater(first["context_version"], observed)
+
+        status, again = drive(
+            "PATCH", f"/internal/v1/sessions/{session_id}/shared-understanding",
+            json.dumps({"corrections": {"budget": 100.0},
+                        "observed_context_version": first["context_version"],
+                        "correlation_id": "b2"}).encode())
+        self.assertEqual(202, status, again)
+        self.assertEqual("accepted", again["code"])
+        self.assertEqual(first["context_version"], again["context_version"])
+
+        _, shared = drive("GET", f"/internal/v1/sessions/{session_id}/shared-understanding")
+        self.assertEqual(100.0, shared["structured_intent"]["budget"])
+        self.assertEqual("friend", shared["structured_intent"].get("recipient"))
+
+        status, labeled = drive(
+            "PATCH", f"/internal/v1/sessions/{session_id}/shared-understanding",
+            json.dumps({"corrections": {"budget": "$100+"},
+                        "observed_context_version": again["context_version"],
+                        "correlation_id": "b3"}).encode())
+        self.assertEqual(202, status, labeled)
+        self.assertEqual(again["context_version"], labeled["context_version"])
+
     def test_intent_and_faq_quality_endpoint_is_payload_free(self):
         import asyncio
         from aea_platform.generative_ai import AvailableIntentInterpreter, GenerativeAIUnavailable
