@@ -27,23 +27,15 @@ FORMAT_PATHS = (
 # Every extend-exclude entry in ruff.toml must have a reason here.
 # Do not add a pattern to silence an unclassified failure.
 EXCLUDE_REASONS = {
-    "scripts/fixtures/ruff": (
-        "Gate fixtures. Known-bad must fail when invoked explicitly; it is not part of the repository baseline."
-    ),
+    "scripts/fixtures/ruff": ("Gate fixtures. Known-bad must fail when invoked explicitly; it is not part of the repository baseline."),
 }
 
 # format.exclude only. Lint still covers these trees. Do not add a path
 # here to hide a lint finding.
 FORMAT_EXCLUDE_REASONS = {
-    "platform/**": (
-        "Existing platform modules would be rewritten (unwrap/reflow). That leftover dirty ruff --fix rewrite is out of this slice. ruff check still covers platform/."
-    ),
-    "edge/**": (
-        "Existing edge/BFF/test modules would be rewritten (unwrap/reflow). Same class of change as platform/**. ruff check still covers edge/."
-    ),
-    "scripts/**": (
-        "Existing scripts would be rewritten (unwrap/reflow; 47 files at line-length 600). ruff check still covers scripts/. Gate files in FORMAT_PATHS are format-checked by path."
-    ),
+    "platform/**": ("Existing platform modules would be rewritten (unwrap/reflow). That leftover dirty ruff --fix rewrite is out of this slice. ruff check still covers platform/."),
+    "edge/**": ("Existing edge/BFF/test modules would be rewritten (unwrap/reflow). Same class of change as platform/**. ruff check still covers edge/."),
+    "scripts/**": ("Existing scripts would be rewritten (unwrap/reflow; 47 files at line-length 600). ruff check still covers scripts/. Gate files in FORMAT_PATHS are format-checked by path."),
 }
 
 
