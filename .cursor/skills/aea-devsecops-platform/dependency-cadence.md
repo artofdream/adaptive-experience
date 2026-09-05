@@ -10,6 +10,7 @@ once a month so a Java 21 app is not tested on an OpenJDK 17 CI image
 (!341 / `cimg/android:2024.01`).
 
 Ledger: `research/random-thoughts/dependency-pin-ledger.csv`
+Digest resolutions (#331): `research/random-thoughts/image-digest-pins.csv`
 
 ## Who owns what
 

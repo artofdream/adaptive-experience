@@ -8,6 +8,7 @@
 # - bandit (blocking, #328): pinned bandit, High findings fail, report retained.
 # - python-lock (blocking, #329): committed platform/edge locks; regen no-diff.
 # - pip-audit (blocking, #330): platform/edge locks, High/Critical fail, report retained.
+# - image-digest (blocking, #331): runtime/base and material CI/Compose digest pins.
 
 stages:
   - report
@@ -18,7 +19,7 @@ stages:
 
 coherence-guard:
   stage: verify
-  image: python:3.12-alpine
+  image: python:3.12-alpine@sha256:b64631e04e4920160c50fbe8d8df828f7f35f06f425cb44aa09bca53e708a35a
   script:
     - sh scripts/check-coherence.sh
   rules:
@@ -34,7 +35,7 @@ coherence-guard:
 
 topic-schema-guard:
   stage: verify
-  image: python:3.12-alpine
+  image: python:3.12-alpine@sha256:b64631e04e4920160c50fbe8d8df828f7f35f06f425cb44aa09bca53e708a35a
   script:
     - python scripts/check_topic_schemas.py
     - python scripts/test_topic_schema_guard.py
@@ -50,7 +51,7 @@ topic-schema-guard:
 
 stakeholder-skill-sync:
   stage: verify
-  image: python:3.12-alpine
+  image: python:3.12-alpine@sha256:b64631e04e4920160c50fbe8d8df828f7f35f06f425cb44aa09bca53e708a35a
   script:
     - python scripts/generate_codex_stakeholder_skills.py --check
   rules:
@@ -69,7 +70,7 @@ stakeholder-skill-sync:
 
 stakeholder-cadence-guard:
   stage: verify
-  image: python:3.12-alpine
+  image: python:3.12-alpine@sha256:b64631e04e4920160c50fbe8d8df828f7f35f06f425cb44aa09bca53e708a35a
   allow_failure: true
   before_script:
     # check_stakeholder_cadence.py runs `git log`; alpine image has no git (#349).
@@ -86,7 +87,7 @@ stakeholder-cadence-guard:
 
 scheduled-email-brief:
   stage: report
-  image: python:3.12-alpine
+  image: python:3.12-alpine@sha256:b64631e04e4920160c50fbe8d8df828f7f35f06f425cb44aa09bca53e708a35a
   allow_failure: true
   script:
     - python scripts/send_email_brief.py --recipient claude.tsarafidy@gmail.com
@@ -96,7 +97,7 @@ scheduled-email-brief:
 
 ui-visual-sync-guard:
   stage: verify
-  image: python:3.12-alpine
+  image: python:3.12-alpine@sha256:b64631e04e4920160c50fbe8d8df828f7f35f06f425cb44aa09bca53e708a35a
   script:
     - python edge/scripts/check_ui_visual_sync.py
     - python edge/tests/test_ui_visual_sync.py -v
@@ -110,7 +111,7 @@ ui-visual-sync-guard:
 
 secrets-posture-guard:
   stage: verify
-  image: python:3.12-alpine
+  image: python:3.12-alpine@sha256:b64631e04e4920160c50fbe8d8df828f7f35f06f425cb44aa09bca53e708a35a
   script:
     - python scripts/check_secrets_posture.py
     - python scripts/test_secrets_posture.py -v
@@ -120,7 +121,7 @@ secrets-posture-guard:
 
 traceability-guard:
   stage: verify
-  image: python:3.12-alpine
+  image: python:3.12-alpine@sha256:b64631e04e4920160c50fbe8d8df828f7f35f06f425cb44aa09bca53e708a35a
   script:
     - python scripts/generate_requirement_evidence.py --check
     - python scripts/check_requirement_evidence.py
@@ -145,7 +146,7 @@ traceability-guard:
 
 traceability-graph-guard:
   stage: verify
-  image: python:3.12-alpine
+  image: python:3.12-alpine@sha256:b64631e04e4920160c50fbe8d8df828f7f35f06f425cb44aa09bca53e708a35a
   script:
     - python scripts/generate_traceability_graph.py --check
     - python scripts/test_traceability_graph.py -v
@@ -160,7 +161,7 @@ traceability-graph-guard:
 
 assistant-slo-guard:
   stage: verify
-  image: python:3.12-alpine
+  image: python:3.12-alpine@sha256:b64631e04e4920160c50fbe8d8df828f7f35f06f425cb44aa09bca53e708a35a
   script:
     - python edge/scripts/check_assistant_slo.py --check
     - python edge/tests/test_assistant_slo.py -v
@@ -173,7 +174,7 @@ assistant-slo-guard:
 
 unified-guard-runner:
   stage: verify
-  image: python:3.12-alpine
+  image: python:3.12-alpine@sha256:b64631e04e4920160c50fbe8d8df828f7f35f06f425cb44aa09bca53e708a35a
   script:
     - python scripts/run_all_guards.py
     - python scripts/test_run_all_guards.py -v
@@ -186,7 +187,7 @@ unified-guard-runner:
 
 trust-but-verify-guard:
   stage: verify
-  image: python:3.12-alpine
+  image: python:3.12-alpine@sha256:b64631e04e4920160c50fbe8d8df828f7f35f06f425cb44aa09bca53e708a35a
   script:
     - python scripts/run_verify_job.py
   rules:
@@ -195,7 +196,7 @@ trust-but-verify-guard:
 
 python-compile-gate:
   stage: verify
-  image: python:3.12-alpine
+  image: python:3.12-alpine@sha256:b64631e04e4920160c50fbe8d8df828f7f35f06f425cb44aa09bca53e708a35a
   script:
     - python scripts/check_python_compile.py
     - python scripts/test_python_compile.py -v
@@ -205,7 +206,7 @@ python-compile-gate:
 
 process-coherence-guard:
   stage: verify
-  image: python:3.12-alpine
+  image: python:3.12-alpine@sha256:b64631e04e4920160c50fbe8d8df828f7f35f06f425cb44aa09bca53e708a35a
   variables:
     GIT_DEPTH: "0"
   before_script:
@@ -221,7 +222,7 @@ process-coherence-guard:
 
 loop-graph-guard:
   stage: verify
-  image: python:3.12-alpine
+  image: python:3.12-alpine@sha256:b64631e04e4920160c50fbe8d8df828f7f35f06f425cb44aa09bca53e708a35a
   script:
     - python scripts/check_loop_graph.py
     - python scripts/test_loop_graph.py -v
@@ -235,7 +236,7 @@ loop-graph-guard:
 
 daily-brief-generate:
   stage: report
-  image: python:3.12-alpine
+  image: python:3.12-alpine@sha256:b64631e04e4920160c50fbe8d8df828f7f35f06f425cb44aa09bca53e708a35a
   variables:
     GIT_DEPTH: "0"
   before_script:
@@ -253,7 +254,7 @@ daily-brief-generate:
 
 daily-brief-freshness:
   stage: verify
-  image: python:3.12-alpine
+  image: python:3.12-alpine@sha256:b64631e04e4920160c50fbe8d8df828f7f35f06f425cb44aa09bca53e708a35a
   needs:
     - job: daily-brief-generate
   script:
@@ -263,7 +264,7 @@ daily-brief-freshness:
 
 daily-brief-honesty:
   stage: verify
-  image: python:3.12-alpine
+  image: python:3.12-alpine@sha256:b64631e04e4920160c50fbe8d8df828f7f35f06f425cb44aa09bca53e708a35a
   script:
     - python scripts/test_generate_daily_brief.py -v
   rules:
@@ -279,7 +280,7 @@ daily-brief-honesty:
 
 platform-foundation-unit:
   stage: verify
-  image: python:3.12-alpine
+  image: python:3.12-alpine@sha256:b64631e04e4920160c50fbe8d8df828f7f35f06f425cb44aa09bca53e708a35a
   script:
     - python -m unittest discover -s platform/tests -v
   rules:
@@ -291,7 +292,7 @@ platform-foundation-unit:
 
 edge-perimeter-unit:
   stage: verify
-  image: python:3.12-alpine
+  image: python:3.12-alpine@sha256:b64631e04e4920160c50fbe8d8df828f7f35f06f425cb44aa09bca53e708a35a
   script:
     - python -m unittest discover -s edge/tests -v
   rules:
@@ -307,7 +308,7 @@ android-build-debug:
   # default is OpenJDK 21. Do not target JDK 22+ — AGP 8.7 / D8 still cap
   # the Android toolchain at 21. Keep assemble and testDebugUnitTest in
   # this required job — do not allow_failure.
-  image: cimg/android:2024.04
+  image: cimg/android:2024.04@sha256:03abdefacd626f387ac523715ceee9a956dee9365683b958708427f3d6b51649
   variables:
     GRADLE_OPTS: "-Dorg.gradle.daemon=false"
   before_script:
@@ -352,7 +353,7 @@ android-build-debug:
 # Companion UX validation docs guard (#363 Phase A). Blocking on android MRs.
 android-ux-checklist:
   stage: verify
-  image: python:3.12-alpine
+  image: python:3.12-alpine@sha256:b64631e04e4920160c50fbe8d8df828f7f35f06f425cb44aa09bca53e708a35a
   script:
     - python scripts/check_companion_ux_validation.py
   rules:
@@ -379,7 +380,7 @@ android-ux-checklist:
 # (honesty #360). Play internal remains the store-install honesty gate.
 android-compose-screenshots:
   stage: verify
-  image: cimg/android:2024.04
+  image: cimg/android:2024.04@sha256:03abdefacd626f387ac523715ceee9a956dee9365683b958708427f3d6b51649
   timeout: 45m
   variables:
     GRADLE_OPTS: "-Dorg.gradle.daemon=false"
@@ -435,7 +436,7 @@ android-compose-screenshots:
 # until sponsor pastes the file variable and runs the job.
 android-app-distribution:
   stage: verify
-  image: cimg/android:2024.04
+  image: cimg/android:2024.04@sha256:03abdefacd626f387ac523715ceee9a956dee9365683b958708427f3d6b51649
   timeout: 45m
   variables:
     GRADLE_OPTS: "-Dorg.gradle.daemon=false"
@@ -506,7 +507,7 @@ android-app-distribution:
 # job is Unknown until a run with sponsor-pasted secrets produces the .aab.
 android-bundle-release:
   stage: verify
-  image: cimg/android:2024.04
+  image: cimg/android:2024.04@sha256:03abdefacd626f387ac523715ceee9a956dee9365683b958708427f3d6b51649
   timeout: 45m
   variables:
     GRADLE_OPTS: "-Dorg.gradle.daemon=false"
@@ -589,7 +590,7 @@ android-bundle-release:
 # versionCode must be bumped in app/build.gradle.kts or Play rejects the edit.
 android-play-internal-upload:
   stage: verify
-  image: cimg/android:2024.04
+  image: cimg/android:2024.04@sha256:03abdefacd626f387ac523715ceee9a956dee9365683b958708427f3d6b51649
   timeout: 45m
   needs:
     - job: android-bundle-release
@@ -713,11 +714,11 @@ android-play-internal-upload:
 
 platform-foundation-integration:
   stage: integration
-  image: python:3.12
+  image: python:3.12@sha256:cd7c412d000912f29075a1b8803e43cb2f38bb67f104019df526df5ceaf30569
   services:
-    - name: pgvector/pgvector:pg16
+    - name: pgvector/pgvector:pg16@sha256:ccc6e83d6e35e931dc7c5def2022729d5a6c370318d099181995567ff1fb4d6b
       alias: postgres
-    - name: apache/kafka:3.9.1
+    - name: apache/kafka:3.9.1@sha256:4ceccc577f03f51f6af8dbfda55194d0d892f4fa7913ffbded567ce3895622ed
       alias: kafka
       variables:
         KAFKA_NODE_ID: "1"
@@ -759,9 +760,9 @@ platform-foundation-integration:
 
 edge-docker-integration:
   stage: integration
-  image: docker:27.1.1-cli
+  image: docker:27.1.1-cli@sha256:39d10d90ef5f6712e6d956c0b175a814259cc9fbd890cf16661c8093de7b04b1
   services:
-    - name: docker:27.1.1-dind
+    - name: docker:27.1.1-dind@sha256:a690693976550aba640859bb3c3c29eb323a4f53f684c99b2a8282b14a22308b
       alias: docker
       command: ["--tls=false"]
   variables:
@@ -790,7 +791,7 @@ edge-docker-integration:
 
 markdownlint:
   stage: lint
-  image: node:22-alpine
+  image: node:22-alpine@sha256:c610fcdfb1d5b4740dd70c284ed3cb16bb857e0f7166196e36a5501df7a3aa32
   # required (#325): do not suppress failures
   before_script:
     - apk add --no-cache python3
@@ -804,7 +805,7 @@ markdownlint:
 
 linkcheck:
   stage: lint
-  image: node:22-alpine
+  image: node:22-alpine@sha256:c610fcdfb1d5b4740dd70c284ed3cb16bb857e0f7166196e36a5501df7a3aa32
   # required (#326): do not suppress failures
   before_script:
     - apk add --no-cache python3
@@ -818,7 +819,7 @@ linkcheck:
 
 ruff:
   stage: lint
-  image: python:3.12-alpine
+  image: python:3.12-alpine@sha256:b64631e04e4920160c50fbe8d8df828f7f35f06f425cb44aa09bca53e708a35a
   # required (#327): do not suppress failures
   before_script:
     - pip install --no-cache-dir ruff==0.16.5
@@ -831,7 +832,7 @@ ruff:
 
 bandit:
   stage: lint
-  image: python:3.12-alpine
+  image: python:3.12-alpine@sha256:b64631e04e4920160c50fbe8d8df828f7f35f06f425cb44aa09bca53e708a35a
   # required (#328): do not suppress failures
   before_script:
     - pip install --no-cache-dir bandit==1.9.4
@@ -849,7 +850,7 @@ bandit:
 
 python-lock:
   stage: lint
-  image: python:3.12
+  image: python:3.12@sha256:cd7c412d000912f29075a1b8803e43cb2f38bb67f104019df526df5ceaf30569
   # required (#329): do not suppress failures. debian image so
   # confluent-kafka / psycopg-binary wheels resolve (not alpine).
   script:
@@ -864,7 +865,7 @@ python-lock:
 
 pip-audit:
   stage: lint
-  image: python:3.12-alpine
+  image: python:3.12-alpine@sha256:b64631e04e4920160c50fbe8d8df828f7f35f06f425cb44aa09bca53e708a35a
   # required (#330): do not suppress failures. Separate from python-lock
   # (#329). Do not stack #331–#334 (digest pin, image SBOM, IaC scan).
   before_script:
@@ -876,6 +877,23 @@ pip-audit:
     when: always
     paths:
       - pip-audit-report.json
+    expire_in: 14 days
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+image-digest:
+  stage: lint
+  image: python:3.12-alpine@sha256:b64631e04e4920160c50fbe8d8df828f7f35f06f425cb44aa09bca53e708a35a
+  # required (#331): do not suppress failures. Separate from pip-audit
+  # (#330). Do not stack #332/#334 (image SBOM, image scan, IaC scan).
+  script:
+    - python3 scripts/test_image_digests.py -v
+    - python3 scripts/check_image_digests.py
+  artifacts:
+    when: always
+    paths:
+      - image-digest-report.json
     expire_in: 14 days
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
@@ -894,9 +912,9 @@ pip-audit:
 build-ecr:
   extends: .aws_oidc
   stage: deploy
-  image: docker:27.1.1-cli
+  image: docker:27.1.1-cli@sha256:39d10d90ef5f6712e6d956c0b175a814259cc9fbd890cf16661c8093de7b04b1
   services:
-    - name: docker:27.1.1-dind
+    - name: docker:27.1.1-dind@sha256:a690693976550aba640859bb3c3c29eb323a4f53f684c99b2a8282b14a22308b
       alias: docker
       command: ["--tls=false"]
   variables:
@@ -944,7 +962,7 @@ build-ecr:
 deploy-ecs:
   extends: .aws_oidc
   stage: deploy
-  image: python:3.12-alpine
+  image: python:3.12-alpine@sha256:b64631e04e4920160c50fbe8d8df828f7f35f06f425cb44aa09bca53e708a35a
   needs:
     - job: build-ecr
   timeout: 30m
@@ -986,9 +1004,9 @@ deploy-ecs:
 build-ecr-agent-runner:
   extends: .aws_oidc
   stage: deploy
-  image: docker:27.1.1-cli
+  image: docker:27.1.1-cli@sha256:39d10d90ef5f6712e6d956c0b175a814259cc9fbd890cf16661c8093de7b04b1
   services:
-    - name: docker:27.1.1-dind
+    - name: docker:27.1.1-dind@sha256:a690693976550aba640859bb3c3c29eb323a4f53f684c99b2a8282b14a22308b
       alias: docker
       command: ["--tls=false"]
   variables:
@@ -1036,7 +1054,7 @@ build-ecr-agent-runner:
 deploy-ecs-agent-runner:
   extends: .aws_oidc
   stage: deploy
-  image: python:3.12-alpine
+  image: python:3.12-alpine@sha256:b64631e04e4920160c50fbe8d8df828f7f35f06f425cb44aa09bca53e708a35a
   needs:
     - job: build-ecr-agent-runner
   timeout: 30m
@@ -1081,7 +1099,7 @@ deploy-ecs-agent-runner:
 # Daily brief schedule must NOT match. Probe ≠ Play / ≠ #360 dual-probe.
 companion-bff-parity-probe:
   stage: verify
-  image: python:3.12-alpine
+  image: python:3.12-alpine@sha256:b64631e04e4920160c50fbe8d8df828f7f35f06f425cb44aa09bca53e708a35a
   variables:
     AEA_BFF_BASE_URL: "https://aea.artof.link"
     AEA_PARITY_PROBE_JSON_OUT: "parity-probe-report.json"
@@ -1120,7 +1138,7 @@ companion-bff-parity-probe:
 # Merge to main publishes. Custom domain DNS is a sponsor one-time leftover.
 pages:
   stage: deploy
-  image: python:3.12-alpine
+  image: python:3.12-alpine@sha256:b64631e04e4920160c50fbe8d8df828f7f35f06f425cb44aa09bca53e708a35a
   script:
     - python scripts/build_framework_site.py
   artifacts:
