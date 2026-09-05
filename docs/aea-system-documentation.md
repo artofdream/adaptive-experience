@@ -266,6 +266,7 @@ All changes merged into `main` must pass automated CI jobs configured in [`.gitl
    python platform/tests/test_graph.py
    python platform/tests/test_knowledge_graph.py
    ```
+
 4. **GitLab Merge Request Workflow**:
    * Issue creation (`glab issue create`) → Feature branch → Code implementation → Unit tests → Local coherence check → Push branch → Create MR (`glab mr create`) → MR Coordinator review → Auto-merge on CI success (`MWPS`).
 

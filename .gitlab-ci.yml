@@ -786,7 +786,7 @@ edge-docker-integration:
 
 markdownlint:
   stage: lint
-  image: node:20-alpine
+  image: node:22-alpine
   # required (#325): do not suppress failures
   before_script:
     - apk add --no-cache python3

@@ -13,8 +13,7 @@
     "**/node_modules/**",
     "research/**",
     "archive/**",
-    "wiki/**",
-    "scripts/fixtures/markdownlint/known_bad.md"
+    "wiki/**"
   ],
   "config": {
     // Framework pages generate heading IDs (unicode arrows, in-page TOC)

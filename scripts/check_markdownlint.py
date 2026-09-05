@@ -38,6 +38,11 @@ def run_markdownlint(binary: str, *args: str) -> subprocess.CompletedProcess[str
     )
 
 
+def run_fixture(binary: str, path: Path) -> subprocess.CompletedProcess[str]:
+    # --no-globs keeps the published-docs config from also linting the repo.
+    return run_markdownlint(binary, "--no-globs", str(path.relative_to(ROOT)))
+
+
 def print_output(result: subprocess.CompletedProcess[str]) -> None:
     if result.stdout:
         print(result.stdout, end="" if result.stdout.endswith("\n") else "\n")
@@ -46,7 +51,7 @@ def print_output(result: subprocess.CompletedProcess[str]) -> None:
 
 
 def prove_known_bad(binary: str) -> subprocess.CompletedProcess[str]:
-    result = run_markdownlint(binary, str(KNOWN_BAD.relative_to(ROOT)))
+    result = run_fixture(binary, KNOWN_BAD)
     print_output(result)
     if result.returncode == 0:
         print("FAIL: known-bad markdownlint fixture unexpectedly passed", file=sys.stderr)
@@ -56,7 +61,7 @@ def prove_known_bad(binary: str) -> subprocess.CompletedProcess[str]:
 
 
 def prove_clean_baseline(binary: str) -> None:
-    result = run_markdownlint(binary, str(CLEAN_BASELINE.relative_to(ROOT)))
+    result = run_fixture(binary, CLEAN_BASELINE)
     print_output(result)
     if result.returncode != 0:
         print("FAIL: clean markdownlint baseline did not pass", file=sys.stderr)

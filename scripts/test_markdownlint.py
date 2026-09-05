@@ -29,6 +29,7 @@ class MarkdownlintGateTests(unittest.TestCase):
     def test_ci_pins_markdownlint_cli2(self) -> None:
         block = markdownlint_job_block()
         self.assertIn(f"markdownlint-cli2@{PINNED_VERSION}", block)
+        self.assertIn("node:22-alpine", block)
         self.assertNotIn("npm install -g markdownlint-cli2\n", block)
 
     def test_ci_job_is_required(self) -> None:
@@ -43,7 +44,7 @@ class MarkdownlintGateTests(unittest.TestCase):
         self.assertIn('"docs/**/*.md"', config)
         self.assertIn('"implementations/**/*.md"', config)
         self.assertIn("research/**", config)
-        self.assertIn("known_bad.md", config)
+        self.assertNotIn("scripts/fixtures", config)
 
     def test_header_comment_calls_markdownlint_blocking(self) -> None:
         header = "\n".join(CI.read_text(encoding="utf-8").splitlines()[:8])
