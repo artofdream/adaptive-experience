@@ -4,7 +4,7 @@
 > **Captured**: 2026-09-05 ~17:00 CEST
 > **Author**: `@aea-project-manager` with `@aea-knowledge-guardian`
 > **Repository**: `artof-group/adaptive-experience-architecture`
-> **Related**: [[2026-09-05-session-memory-log-a36-play-v8-honesty-401-402]] · [[2026-09-04-session-handover-afk-cts-ai]] · [[2026-09-04-future-native-florist-operator-app-gates]] · [[2026-09-03-session-handover-afk-cloud-runners]]
+> **Related**: [[2026-09-05-session-memory-log-a36-play-v8-honesty-401-402]] · [[2026-09-05-session-memory-log-rog-play-v8-404-absent]] · [[2026-09-04-session-handover-afk-cts-ai]] · [[2026-09-04-future-native-florist-operator-app-gates]] · [[2026-09-03-session-handover-afk-cloud-runners]]
 
 ---
 
@@ -26,7 +26,7 @@ Live DATE_RE bus: `research/daily-briefs/2026-09-05.md` (ignore `*-daily-brief.m
 | Play Internal | **v8 already used** (2026-09-05 web pipeline [2822802127](https://gitlab.com/artof-group/adaptive-experience-architecture/-/pipelines/2822802127): bundle [16324668240](https://gitlab.com/artof-group/adaptive-experience-architecture/-/jobs/16324668240) success; Play upload [16324668241](https://gitlab.com/artof-group/adaptive-experience-architecture/-/jobs/16324668241) failed honestly `Version code 8 has already been used.`) |
 | Operator native app | **Do not start.** Sponsor: no operator native unless specifically requested. Gates: [[2026-09-04-future-native-florist-operator-app-gates]] |
 | Operator surface | Mobile-web `/florist` only. Figma node IDs on `main` via !464 |
-| #398 / #352 / #401 / #402 / #404 / #405 | **Closed** on GitLab. #404 **A36 reorder-tap** remains **Unknown** (needs ROG, not A36) |
+| #398 / #352 / #401 / #402 / #404 / #405 | **Closed** on GitLab. #404 Play tap remains **Unknown** on A36 **and** ROG Play v8 (CTA **ABSENT**). Follow-up **#407** — do not reopen #404 |
 | CF queue active | **CF-054** `regressed` (clip after CSS Unknown). **CF-056** still `in-mr` in the queue though !361 **merged** 2026-08-31 — honesty drift |
 
 Public runtimes (independent of `cts-ai`):
@@ -75,7 +75,7 @@ Local `cts-ai` had a **checkout named** `quality/327-blocking-ruff-baseline` wit
 |---|---|
 | **Native florist / operator Android** | Sponsor: not requested. Four gates still closed |
 | **CF-054** Path B dual-viewport `verified` | Needs phone **and** desktop journey clips **dated after** CSS !300. Cloud cannot mint those clips honestly |
-| **#404 A36 reorder-tap** | Unknown until **ROG** (`K9AIKN07B088C89`) walk. Do **not** sideload debug over Samsung A36 `RZCY60W1EZW` |
+| **#404 / #407 Play reorder-tap** | ROG Play v8 cold-start Need also **ABSENT** (same as A36). Do **not** sideload debug over A36. Play-honest wallet dump / Confirm→Start Over is #407 |
 | **Play `versionCode` 9** / new AAB | Not requested. v8 is already on Internal |
 | **Firebase App Dist** | Optional; not Play honesty |
 | **#27 / #35 / #36** and epics #13–#19 | Workbook **Future**. Need `@aea-product-owner` unpark (M12 still parked) |

@@ -4,7 +4,7 @@
 > **Captured**: 2026-09-05
 > **Author**: `@aea-knowledge-guardian` with `@aea-coherence-guardian`
 > **Repository**: `artof-group/adaptive-experience-architecture`
-> **Related**: [[2026-09-04-session-memory-log-evening-mrc-rog-wallet-honesty]] · [[2026-09-04-session-handover-afk-cts-ai]] · [[2026-09-04-session-memory-log-companion-edge-wallet-reorder-issue-404]] · [[ADR-020]] · [[FR-008]] · #401 · #402 · #404
+> **Related**: [[2026-09-04-session-memory-log-evening-mrc-rog-wallet-honesty]] · [[2026-09-04-session-handover-afk-cts-ai]] · [[2026-09-04-session-memory-log-companion-edge-wallet-reorder-issue-404]] · [[2026-09-05-session-memory-log-rog-play-v8-404-absent]] · [[ADR-020]] · [[FR-008]] · #401 · #402 · #404 · #407
 
 ---
 
@@ -39,7 +39,7 @@ This is the sponsor daily phone already named in [[2026-09-04-session-handover-a
 | [#402](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/402) | **PASS** | **No limit** chip → Need/Pick/Pay honest **No limit** copy (not Skip budget / Budget not set) |
 | [#404](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/404) | **ABSENT** on this take | Fresh Need: no Reorder / wallet one-tap CTA visible |
 
-#404 reorder **tap** on A36 stays **Unknown**. A missing CTA on a fresh Need is not a tap prove. ROG remains the preferred hardware gap for #404 (do not sideload debug over the A36).
+#404 reorder **tap** on A36 stays **Unknown**. A missing CTA on a fresh Need is not a tap prove. Later the same day, ROG Play Internal v8 showed the same **ABSENT** on cold-start Need — do not leave ROG as the preferred #404 tap prove. Follow-up is #407. Vault: [[2026-09-05-session-memory-log-rog-play-v8-404-absent]]. Do not sideload debug over the A36.
 
 Sponsor-machine evidence directory (not seen in this session): `C:\Users\claud\Temp\aea-v8\evidence\`
 
@@ -55,4 +55,4 @@ Sponsor-machine evidence directory (not seen in this session): `C:\Users\claud\T
 
 ## Wikilinks
 
-[[2026-09-04-session-memory-log-evening-mrc-rog-wallet-honesty]] · [[2026-09-04-session-handover-afk-cts-ai]] · [[2026-09-04-session-memory-log-companion-edge-wallet-reorder-issue-404]] · [[ADR-020]] · [[FR-008]]
+[[2026-09-04-session-memory-log-evening-mrc-rog-wallet-honesty]] · [[2026-09-04-session-handover-afk-cts-ai]] · [[2026-09-04-session-memory-log-companion-edge-wallet-reorder-issue-404]] · [[2026-09-05-session-memory-log-rog-play-v8-404-absent]] · [[ADR-020]] · [[FR-008]]
