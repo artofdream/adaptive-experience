@@ -8,5 +8,8 @@
       "command": "sudo docker compose -f edge/docker-compose.yml logs -f"
     }
   ],
-  "ports": [8443, 3000]
+  "ports": [
+    { "port": 8443 },
+    { "port": 3000 }
+  ]
 }
