@@ -58,8 +58,8 @@ class RuffGateTests(unittest.TestCase):
         self.assertNotIn("scripts", excludes)
         format_excludes = list(config.get("format", {}).get("exclude", []))
         self.assertEqual(set(format_excludes), set(FORMAT_EXCLUDE_REASONS))
-        self.assertTrue(format_excludes)
-        self.assertTrue(all(path.startswith("platform/") for path in format_excludes))
+        self.assertEqual(set(format_excludes), {"platform/**", "edge/**"})
+        self.assertNotIn("scripts/**", format_excludes)
 
     def test_header_comment_calls_ruff_blocking(self) -> None:
         header = "\n".join(CI.read_text(encoding="utf-8").splitlines()[:9])

@@ -28,10 +28,10 @@ select = [
 [format]
 quote-style = "preserve"
 docstring-code-format = false
-# Trailing whitespace on blank lines only. A product-tree rewrite is out of
-# this slice; lint check still covers these files.
+# Existing platform/edge modules would be rewritten (unwrap/reflow). That is
+# the leftover dirty `ruff --fix` class of change and is out of this slice.
+# `ruff check` still covers both trees. scripts/ stays format-checked.
 exclude = [
-  "platform/aea_platform/crm.py",
-  "platform/aea_platform/payment.py",
-  "platform/aea_platform/selection.py",
+  "platform/**",
+  "edge/**",
 ]

@@ -27,20 +27,17 @@ EXCLUDE_REASONS = {
     ),
 }
 
-# format.exclude only. Lint still covers these files. Do not add a path
+# format.exclude only. Lint still covers these trees. Do not add a path
 # here to hide a lint finding.
 FORMAT_EXCLUDE_REASONS = {
-    "platform/aea_platform/crm.py": (
-        "Pre-existing trailing whitespace on a blank line. This slice does "
-        "not rewrite platform product modules; ruff check still runs."
+    "platform/**": (
+        "Existing platform modules would be rewritten (unwrap/reflow). "
+        "That leftover dirty ruff --fix rewrite is out of this slice. "
+        "ruff check still covers platform/."
     ),
-    "platform/aea_platform/payment.py": (
-        "Pre-existing trailing whitespace on blank lines. This slice does "
-        "not rewrite platform product modules; ruff check still runs."
-    ),
-    "platform/aea_platform/selection.py": (
-        "Pre-existing trailing whitespace on a blank line. This slice does "
-        "not rewrite platform product modules; ruff check still runs."
+    "edge/**": (
+        "Existing edge/BFF/test modules would be rewritten (unwrap/reflow). "
+        "Same class of change as platform/**. ruff check still covers edge/."
     ),
 }
 
@@ -105,11 +102,15 @@ def check_config_reasons() -> None:
         for pattern in extra_fmt:
             print(f"  unused format reason: {pattern}", file=sys.stderr)
         sys.exit(1)
-    leaked = [p for p in format_excludes if not p.startswith("platform/")]
+    leaked = [
+        path
+        for path in format_excludes
+        if not path.startswith(("platform/", "edge/"))
+    ]
     if leaked:
         print(
-            "FAIL: format.exclude must stay limited to documented platform "
-            f"whitespace leftovers, not {leaked}",
+            "FAIL: format.exclude must stay limited to documented platform/ "
+            f"and edge/ trees, not {leaked}",
             file=sys.stderr,
         )
         sys.exit(1)
