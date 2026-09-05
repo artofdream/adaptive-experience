@@ -35,6 +35,7 @@ crash.*.log
 .terraform.tfstate.lock.info
 
 # Temporary workspace scratch & test artifacts
+bandit-report.json
 artifacts/
 public/
 .worktrees/

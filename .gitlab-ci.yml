@@ -5,6 +5,7 @@
 # - markdownlint (blocking, #325): pinned markdownlint-cli2, scoped published docs.
 # - linkcheck (blocking, #326): pinned markdown-link-check, scoped published docs.
 # - ruff (blocking, #327): pinned ruff, scoped scripts/platform/edge.
+# - bandit (blocking, #328): pinned bandit, High findings fail, report retained.
 
 stages:
   - report
@@ -822,6 +823,24 @@ ruff:
   script:
     - python3 scripts/test_ruff.py -v
     - python3 scripts/check_ruff.py
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+bandit:
+  stage: lint
+  image: python:3.12-alpine
+  # required (#328): do not suppress failures
+  before_script:
+    - pip install --no-cache-dir bandit==1.9.4
+  script:
+    - python3 scripts/test_sast.py -v
+    - python3 scripts/check_sast.py
+  artifacts:
+    when: always
+    paths:
+      - bandit-report.json
+    expire_in: 14 days
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_COMMIT_BRANCH == "main"'
