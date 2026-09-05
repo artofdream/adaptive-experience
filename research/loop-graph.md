@@ -51,7 +51,7 @@ flowchart TD
         CC["check_coherence.py<br/>(workbook/docs ID+scope)"]
         TS["check_topic_schemas.py<br/>(governed payload schemas)"]
         SS["generate_codex_stakeholder_skills.py --check<br/>(4-way skill sync)"]
-        PC["check_process_coherence.py<br/>(MR delivery evidence, advisory)"]
+        PC["check_process_coherence.py<br/>(MR delivery evidence, blocking)"]
         PU["platform/edge unit + integration tests"]
         LINT["markdownlint / linkcheck<br/>(advisory only)"]
         TRACE["check_traceability.py<br/>(FR/NFR -> issue -> milestone -> closure)"]
@@ -66,7 +66,7 @@ flowchart TD
     CC -- constrain --> MRC
     TS -- constrain --> MRC
     SS -- constrain --> MRC
-    PC -. advisory only .-> MRC
+    PC -- constrain --> MRC
     PU -- constrain --> MRC
     LINT -. advisory only .-> MRC
     DOCKER -- "Edge CI constrains" --> MRC
@@ -168,7 +168,7 @@ flowchart TD
 | `generate_daily_brief.py` | producer | CI, schedule only (04:00 UTC) | `aea-coherence-guardian` | automated, **unverified end-to-end** |
 | `platform-foundation-unit` / `edge-perimeter-unit` / `platform-foundation-integration` / `edge-docker-integration` | guard | CI, on relevant `platform/`/`edge/` changes | script | automated |
 | `check_traceability.py` | guard | CI, on `requirements.md`/`roadmap.md`/self changes + every MR/main | `aea-senior-software-engineer` | automated, blocking (`traceability-guard`, #323) |
-| `check_process_coherence.py` | guard | every MR/main + scheduled daily-brief evidence | `aea-project-manager` | automated, advisory; inaccessible MR change details become explicit findings instead of aborting the loop; semantic focus remains manual |
+| `check_process_coherence.py` | guard | every MR/main + scheduled daily-brief evidence | `aea-project-manager` | automated, blocking (`process-coherence-guard`, #324); named `Process-Exception` values remain the only explicit exceptions; inaccessible MR change details become explicit findings instead of aborting the loop; semantic focus remains manual |
 | `check_requirement_evidence.py` | guard | CI, on requirements/ADR/platform/edge/evidence changes + every MR/main | `aea-senior-software-engineer` | automated, blocking citation evidence (`traceability-guard`, #323) |
 | `markdownlint` / `linkcheck` | guard | CI, on `.md` changes, MR only | script | automated, advisory only |
 | `docker-integration-before-mr.mdc` | guard | local attestation per MR; Edge runner repeated in CI | every specialist role / `aea-devsecops-platform` | **automated for edge** by `edge-docker-integration`; **partially automated for platform** (`platform-foundation-integration` runs equivalent Postgres+Kafka coverage via CI `services:`, not the literal script) |
@@ -213,13 +213,14 @@ recurring blind spot outranks an expensive fix for a rare one.
    source comment or test citation with proof that behavior is sufficient;
    substantive coverage remains a specialist/reviewer judgment.
    `traceability-guard` is required: no `allow_failure` and no `|| true`.
-2. **PM-SM process coherence is partially automated.**
-   `scripts/check_process_coherence.py` now checks falsifiable MR evidence:
-   one closing issue (or the allowlisted recurring-report exception), branch
-   discipline, a validation section, and integration/CI-only evidence when
-   platform, edge, or infra paths change. It runs advisory in CI and in the
-   scheduled daily brief. Semantic focus, justified exceptions, and whether
-   evidence is substantively adequate remain PM-SM review responsibilities.
+2. **PM-SM process coherence — closed as a blocking CI gate by #324.**
+   `scripts/check_process_coherence.py` checks falsifiable MR evidence:
+   one closing issue (or the allowlisted `Process-Exception: recurring-report`),
+   branch discipline, a validation section, and integration/CI-only evidence when
+   platform, edge, or infra paths change. `process-coherence-guard` is required:
+   no `allow_failure` and no `|| true`. Semantic focus and whether evidence is
+   substantively adequate remain PM-SM review responsibilities; unknown
+   exception tokens still fail.
 3. **Edge Docker integration evidence — closed by #228.**
    `edge-docker-integration` invokes `edge/scripts/run_integration_tests.py`
    against the repository Compose stack in GitLab Docker-in-Docker. It checks

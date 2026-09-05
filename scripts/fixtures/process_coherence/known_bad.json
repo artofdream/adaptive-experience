@@ -1,0 +1,16 @@
+{
+  "merge_requests": [
+    {
+      "iid": 2,
+      "source_branch": "docs/process-coherence-bad",
+      "target_branch": "main",
+      "description": "Closes #10\nCloses #11\n\nProcess-Exception: skip-all\n\nNo validation section.",
+      "changes": [
+        {
+          "old_path": "platform/example.py",
+          "new_path": "platform/example.py"
+        }
+      ]
+    }
+  ]
+}

@@ -1,7 +1,9 @@
-"""Advisory PM/SM process-coherence guard for GitLab merge requests.
+"""Blocking PM/SM process-coherence guard for GitLab merge requests.
 
 Checks only falsifiable delivery-process evidence. It does not attempt to judge
-whether a diff is semantically focused or technically correct.
+whether a diff is semantically focused or technically correct. Named
+``Process-Exception`` values in ALLOWED_EXCEPTIONS remain the only explicit,
+reviewable exceptions.
 """
 
 import argparse
@@ -15,7 +17,7 @@ from urllib.error import HTTPError
 from pathlib import Path
 
 
-CLOSE_RE = re.compile(r"(?im)^\s*(?:closes?|fixes?|resolves?)\s+#(\d+)\s*$")
+CLOSE_RE = re.compile(r"(?im)^\s*(?:closes?|fixes?|resolves?)\s+#(\d+)\s*[.]?\s*$")
 EXCEPTION_RE = re.compile(r"(?im)^\s*Process-Exception:\s*([a-z0-9-]+)\s*$")
 ALLOWED_EXCEPTIONS = {"recurring-report"}
 CODE_PREFIXES = ("platform/", "edge/", "infra/")
@@ -150,7 +152,10 @@ def main() -> None:
         print("PROCESS COHERENCE FINDINGS:")
         for finding in findings:
             print(f"  - {finding}")
-        print("Advisory only: PM-SM must review semantic focus and any exceptions.")
+        print(
+            "Blocking: named Process-Exception values are the only explicit "
+            "exceptions; PM-SM still reviews semantic focus."
+        )
         sys.exit(1)
     print("ok: falsifiable MR process-coherence evidence is present")
 

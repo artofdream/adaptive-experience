@@ -1,0 +1,16 @@
+{
+  "merge_requests": [
+    {
+      "iid": 3,
+      "source_branch": "docs/daily-brief-recurring",
+      "target_branch": "main",
+      "description": "Process-Exception: recurring-report\n\nValidation: deterministic report generation",
+      "changes": [
+        {
+          "old_path": "research/daily-briefs/2026-08-18.md",
+          "new_path": "research/daily-briefs/2026-08-18.md"
+        }
+      ]
+    }
+  ]
+}

@@ -1,8 +1,15 @@
+import subprocess
+import sys
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 from urllib.error import HTTPError
 
 from check_process_coherence import changed_paths, evaluate, evaluate_live
+
+ROOT = Path(__file__).resolve().parents[1]
+CHECKER = ROOT / "scripts" / "check_process_coherence.py"
+FIXTURES = ROOT / "scripts" / "fixtures" / "process_coherence"
 
 
 class ProcessCoherenceTests(unittest.TestCase):
@@ -18,6 +25,10 @@ class ProcessCoherenceTests(unittest.TestCase):
 
     def test_docs_mr_with_one_issue_and_validation_passes(self):
         mr = self.mr("Closes #10\n\n## Validation:\n- coherence guard")
+        self.assertEqual([], evaluate(mr, ["docs/example.md"]))
+
+    def test_closing_issue_accepts_trailing_period(self):
+        mr = self.mr("Closes #10.\n\n## Validation:\n- coherence guard")
         self.assertEqual([], evaluate(mr, ["docs/example.md"]))
 
     def test_code_mr_requires_integration_evidence(self):
@@ -95,6 +106,33 @@ class ProcessCoherenceTests(unittest.TestCase):
         with patch("check_process_coherence.gitlab_api", side_effect=error):
             with self.assertRaises(HTTPError):
                 evaluate_live(mr)
+
+    def _run_fixture(self, name: str) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            [sys.executable, str(CHECKER), "--fixture", str(FIXTURES / name)],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+
+    def test_known_bad_fixture_fails(self):
+        result = self._run_fixture("known_bad.json")
+        self.assertNotEqual(0, result.returncode, result.stdout + result.stderr)
+        self.assertIn("PROCESS COHERENCE FINDINGS", result.stdout)
+        self.assertIn("exactly one closing issue", result.stdout)
+        self.assertIn("unknown Process-Exception", result.stdout)
+        self.assertIn("lacks a Validation section", result.stdout)
+        self.assertIn("named Process-Exception", result.stdout)
+
+    def test_clean_baseline_fixture_passes(self):
+        result = self._run_fixture("clean_baseline.json")
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        self.assertIn("ok: falsifiable MR process-coherence evidence is present", result.stdout)
+
+    def test_named_exception_fixture_passes(self):
+        result = self._run_fixture("named_exception.json")
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        self.assertIn("ok: falsifiable MR process-coherence evidence is present", result.stdout)
 
 
 if __name__ == "__main__":
