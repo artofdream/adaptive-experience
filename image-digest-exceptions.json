@@ -1,0 +1,8 @@
+[
+  {
+    "image": "ghcr.io/berriai/litellm:main-latest",
+    "owner": "@aea-devsecops-platform",
+    "reason": "Opt-in Path A overlay only. GHCR digest was not live-resolved on this slice (registry egress blocked). Do not invent a current main-latest digest.",
+    "expires": "2026-10-05"
+  }
+]

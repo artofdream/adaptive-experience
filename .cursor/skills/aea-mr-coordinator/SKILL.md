@@ -169,8 +169,8 @@ MR coordinator:
    the user named another target).
 2. Walk [gates.md](gates.md). Record pass/fail for scope, boundary,
    validation.
-3. `glab ci status` / pipeline on the MR HEAD. `markdownlint` (#325),
-   `linkcheck` (#326), `ruff` (#327), `bandit` (#328), `python-lock` (#329), and `pip-audit` (#330) are required; **required** jobs must be green
+3.   `glab ci status` / pipeline on the MR HEAD. `markdownlint` (#325),
+   `linkcheck` (#326), `ruff` (#327), `bandit` (#328), `python-lock` (#329), `pip-audit` (#330), and `image-digest` (#331) are required; **required** jobs must be green
    (or still running — then use auto-merge / MWPS, do not merge immediately).
 4. If any gate fails or you are unsure → canvas + ask. **Stop.**
 5. If all gates pass, **must** set auto-merge (prefer MWPS while the
