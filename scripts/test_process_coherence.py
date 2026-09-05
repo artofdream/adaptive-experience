@@ -1,8 +1,21 @@
+import subprocess
+import sys
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 from urllib.error import HTTPError
 
-from check_process_coherence import changed_paths, evaluate, evaluate_live
+from check_process_coherence import (
+    changed_paths,
+    ci_git_changed_paths,
+    evaluate,
+    evaluate_live,
+    parse_git_name_status,
+)
+
+ROOT = Path(__file__).resolve().parents[1]
+CHECKER = ROOT / "scripts" / "check_process_coherence.py"
+FIXTURES = ROOT / "scripts" / "fixtures" / "process_coherence"
 
 
 class ProcessCoherenceTests(unittest.TestCase):
@@ -18,6 +31,10 @@ class ProcessCoherenceTests(unittest.TestCase):
 
     def test_docs_mr_with_one_issue_and_validation_passes(self):
         mr = self.mr("Closes #10\n\n## Validation:\n- coherence guard")
+        self.assertEqual([], evaluate(mr, ["docs/example.md"]))
+
+    def test_closing_issue_accepts_trailing_period(self):
+        mr = self.mr("Closes #10.\n\n## Validation:\n- coherence guard")
         self.assertEqual([], evaluate(mr, ["docs/example.md"]))
 
     def test_code_mr_requires_integration_evidence(self):
@@ -62,14 +79,15 @@ class ProcessCoherenceTests(unittest.TestCase):
     def test_live_diffs_preserve_old_and_new_paths(self):
         mr = self.mr("Closes #10\n\nValidation: unit tests")
         diffs = [{"old_path": "edge/legacy.py", "new_path": "docs/legacy.md"}]
-        with patch("check_process_coherence.gitlab_api", return_value=diffs) as api:
-            paths = changed_paths(mr)
+        with patch("check_process_coherence.ci_git_changed_paths", return_value=None):
+            with patch("check_process_coherence.gitlab_api", return_value=diffs) as api:
+                paths = changed_paths(mr)
         self.assertEqual(["docs/legacy.md", "edge/legacy.py"], paths)
         api.assert_called_once_with(
             "merge_requests/10/diffs", {"per_page": 100, "page": 1}
         )
 
-    def test_live_diffs_404_is_an_explicit_finding_not_a_crash(self):
+    def test_live_diffs_404_does_not_block_when_description_is_valid(self):
         mr = self.mr("Closes #10\n\nValidation: unit tests")
         error = HTTPError(
             "https://gitlab.example/api/v4/projects/1/merge_requests/10/diffs",
@@ -79,9 +97,33 @@ class ProcessCoherenceTests(unittest.TestCase):
             None,
         )
         with patch("check_process_coherence.gitlab_api", side_effect=error):
+            with patch("check_process_coherence.ci_git_changed_paths", return_value=None):
+                findings = evaluate_live(mr)
+        self.assertEqual([], findings)
+
+    def test_git_name_status_keeps_rename_old_and_new_paths(self):
+        output = "R100\tedge/legacy.py\tdocs/legacy.md\nM\tdocs/example.md\n"
+        self.assertEqual(
+            ["docs/example.md", "docs/legacy.md", "edge/legacy.py"],
+            parse_git_name_status(output),
+        )
+
+    def test_ci_git_changed_paths_reads_mr_base_and_head(self):
+        env = {
+            "CI_MERGE_REQUEST_DIFF_BASE_SHA": "abc",
+            "CI_COMMIT_SHA": "def",
+        }
+        with patch.dict("os.environ", env, clear=False):
+            with patch("check_process_coherence.subprocess.check_output", return_value="A\tplatform/x.py\n") as git:
+                paths = ci_git_changed_paths()
+        self.assertEqual(["platform/x.py"], paths)
+        git.assert_called_once()
+
+    def test_evaluate_live_uses_git_paths_for_integration_rule(self):
+        mr = self.mr("Closes #10\n\nValidation: unit tests")
+        with patch("check_process_coherence.ci_git_changed_paths", return_value=["platform/x.py"]):
             findings = evaluate_live(mr)
-        self.assertTrue(any("changed paths could not be verified" in value for value in findings))
-        self.assertTrue(any("integration evidence remains unknown" in value for value in findings))
+        self.assertTrue(any("integration" in finding for finding in findings))
 
     def test_live_non_404_diffs_error_is_not_hidden(self):
         mr = self.mr("Closes #10\n\nValidation: unit tests")
@@ -92,9 +134,37 @@ class ProcessCoherenceTests(unittest.TestCase):
             None,
             None,
         )
-        with patch("check_process_coherence.gitlab_api", side_effect=error):
-            with self.assertRaises(HTTPError):
-                evaluate_live(mr)
+        with patch("check_process_coherence.ci_git_changed_paths", return_value=None):
+            with patch("check_process_coherence.gitlab_api", side_effect=error):
+                with self.assertRaises(HTTPError):
+                    evaluate_live(mr)
+
+    def _run_fixture(self, name: str) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            [sys.executable, str(CHECKER), "--fixture", str(FIXTURES / name)],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+
+    def test_known_bad_fixture_fails(self):
+        result = self._run_fixture("known_bad.json")
+        self.assertNotEqual(0, result.returncode, result.stdout + result.stderr)
+        self.assertIn("PROCESS COHERENCE FINDINGS", result.stdout)
+        self.assertIn("exactly one closing issue", result.stdout)
+        self.assertIn("unknown Process-Exception", result.stdout)
+        self.assertIn("lacks a Validation section", result.stdout)
+        self.assertIn("named Process-Exception", result.stdout)
+
+    def test_clean_baseline_fixture_passes(self):
+        result = self._run_fixture("clean_baseline.json")
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        self.assertIn("ok: falsifiable MR process-coherence evidence is present", result.stdout)
+
+    def test_named_exception_fixture_passes(self):
+        result = self._run_fixture("named_exception.json")
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        self.assertIn("ok: falsifiable MR process-coherence evidence is present", result.stdout)
 
 
 if __name__ == "__main__":

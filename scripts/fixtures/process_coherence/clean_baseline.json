@@ -1,0 +1,16 @@
+{
+  "merge_requests": [
+    {
+      "iid": 1,
+      "source_branch": "docs/process-coherence-clean",
+      "target_branch": "main",
+      "description": "Closes #10.\n\n## Validation:\n- process-coherence unit tests",
+      "changes": [
+        {
+          "old_path": "docs/example.md",
+          "new_path": "docs/example.md"
+        }
+      ]
+    }
+  ]
+}
