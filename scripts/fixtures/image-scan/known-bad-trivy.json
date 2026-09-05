@@ -1,0 +1,19 @@
+{
+  "ArtifactName": "aea/known-bad:seed",
+  "Results": [
+    {
+      "Target": "Python",
+      "Type": "python-pkg",
+      "Vulnerabilities": [
+        {
+          "VulnerabilityID": "CVE-2020-14343",
+          "PkgName": "pyyaml",
+          "InstalledVersion": "5.3",
+          "FixedVersion": "5.3.1",
+          "Severity": "CRITICAL",
+          "Title": "PyYAML: arbitrary command execution"
+        }
+      ]
+    }
+  ]
+}
