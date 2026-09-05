@@ -73,21 +73,33 @@ class TestBuildFrameworkSite(unittest.TestCase):
         journal = (root / "docs" / "framework" / "journal.md").read_text(
             encoding="utf-8"
         )
+        glossary = (root / "docs" / "framework" / "glossary.md").read_text(
+            encoding="utf-8"
+        )
         self.assertIn("Daily-brief honesty", comparison)
         self.assertIn("journal.html#claim-vs-probe", comparison)
         self.assertIn("## Claim vs probe", journal)
         self.assertIn("Daily-brief honesty", journal)
         self.assertIn("comparison.html#what-aea-claims-here", journal)
+        self.assertIn("Daily-brief honesty", glossary)
+        self.assertIn("Claim vs probe", glossary)
+        self.assertIn("journal.html#claim-vs-probe", glossary)
+        self.assertIn("comparison.html#what-aea-claims-here", glossary)
 
         self.assertEqual(build(), 0)
         comparison_html = (root / "public" / "comparison.html").read_text(
             encoding="utf-8"
         )
         journal_html = (root / "public" / "journal.html").read_text(encoding="utf-8")
+        glossary_html = (root / "public" / "glossary.html").read_text(encoding="utf-8")
         self.assertIn('href="journal.html#claim-vs-probe"', comparison_html)
         self.assertIn('id="claim-vs-probe"', journal_html)
         self.assertIn("Daily-brief honesty", journal_html)
         self.assertIn('href="comparison.html#what-aea-claims-here"', journal_html)
+        self.assertIn("Daily-brief honesty", glossary_html)
+        self.assertIn("Claim vs probe", glossary_html)
+        self.assertIn('href="journal.html#claim-vs-probe"', glossary_html)
+        self.assertIn('href="comparison.html#what-aea-claims-here"', glossary_html)
 
 
 if __name__ == "__main__":

@@ -63,7 +63,7 @@ The code name for our live reference flower shop implementation, running at [htt
 ### Probe
 A verification action performed on real hardware or live servers to prove that a feature works as claimed, rather than assuming it works because a ticket was closed.
 - **Why it matters:** "Verified" is a claim until backed by a probe. If an unverified feature has not been tested, its status remains **Unknown**.
-- **Where to see it:** Illustrated in the [Journal](journal.html#claim-vs-probe).
+- **Where to see it:** Illustrated in the [Journal](journal.html#claim-vs-probe) as **Claim vs probe** (the same incident the [comparison](comparison.html#what-aea-claims-here) page calls **Daily-brief honesty**).
 
 ### CF-NNN (Coherence Finding Codes)
 An internal tracking identifier for an architectural discrepancy or falsifiable claim. Each finding follows a strict 1-finding → 1-issue → 1-branch discipline until verified or resolved.
