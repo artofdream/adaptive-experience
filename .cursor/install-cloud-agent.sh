@@ -33,6 +33,8 @@ JSON
 
 # 3. Host-side Python runtime dependencies for scripts and unit tests
 #    (platform migrations/diagnostics, edge integration runner, etc.).
-python3 -m pip install --user -r platform/requirements.txt -r edge/requirements.txt
+python3 -m pip install --user \
+  -r platform/requirements.txt -c platform/requirements.lock \
+  -r edge/requirements.txt -c edge/requirements.lock
 
 echo "[install] Done. Per-boot startup (daemon + bridge fix + compose up) runs in start-cloud-agent.sh."

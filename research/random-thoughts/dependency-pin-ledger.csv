@@ -1,2 +1,3 @@
 month,reviewed,dso_images,sse_app,collision,notes
 2026-08,2026-08-29,cimg/android:2024.01 OpenJDK17; other CI python:3.12 / docker:27.1.1,Android jvmTarget 21 AGP 8.7.2 Gradle 8.10.2,yes,!341 unit tests UnsupportedClassVersionError; cadence created; JDK21 image bump is a separate MR
+2026-09,2026-09-05,cimg/android:2024.04 OpenJDK21; other CI python:3.12 / docker:27.1.1,Android jvmTarget 21 AGP 8.7.2 Gradle 8.10.2; platform/edge Python locks (#329),no,#329 committed requirements.lock; !341 image-vs-toolchain collision closed on cimg/android:2024.04
