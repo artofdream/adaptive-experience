@@ -47,7 +47,7 @@ While the sponsor is away and `cts-ai` is unattended:
 
 ## 3. Resume Check upon Sponsor Return
 
-**Evening continuation (same date):** [[2026-09-04-session-memory-log-evening-mrc-rog-wallet-honesty]] — !450/!453/!434/!454/!455 merged; ROG Confirm→Track recut (local mp4 only); Pages must not claim a Need reorder tap.
+**Evening continuation (same date):** [[2026-09-04-session-memory-log-evening-mrc-rog-wallet-honesty]] — !450/!453/!434/!454/!455 merged; ROG Confirm→Track recut (local mp4 only). Pages must keep write vs tap as two facts. Later the same evening !459/#404 shipped the Need reorder card — do not leave Pages saying that tap is still missing.
 
 When returning (~18:55 CEST):
 1. Pull latest `origin/main`: `git pull --ff-only origin main`.

@@ -60,9 +60,9 @@ Here is what has been physically verified in production, and what has not:
 
 > **Direct Write-Through to Order History** — **Verified (4 Sep 2026):** Placing an order writes directly to the central database, guaranteeing that inventory updates immediately across both phone and web.
 
-> **Phone remembers the last order (Edge Wallet)** — **Write verified; tap not shipped:** After Confirm, the phone stores an encrypted receipt on the device (no street address, no card number). That is the on-phone memory for a later reorder. **Need does not yet show a “Reorder previous arrangement” button.** Until that control is probed on a phone, one-tap reorder stays **Unknown** as a customer action — the save is real; the shortcut is not.
+> **Phone remembers the last order (Edge Wallet)** — **Write verified; Need reorder tap now on `main` (!459 / #404):** After Confirm, the phone stores an encrypted receipt on the device (no street address, no card number). That **save** is a separate fact from the shortcut. Need now shows a returning-customer card (`Reorder for {recipient}` / `Reorder previous bouquet` + **Reorder →**) when a receipt exists. The #404 vault note records a sideloaded ROG walk of that tap — treat it as UX/code proof, not Play-install honesty. **This page's 30s demo clip** remains the !455 Need→Pick→Pay take and does not show the reorder card.
 
-> **Open companion honesty (do not treat as shipped):** After some free-text Need + **$100+** budget taps, the app has shown a validation error (issue #401). The **No limit** chip can still look selected while Pick/Pay say budget was skipped (issue #402). Both are open work.
+> **Budget chips after free-text / No limit:** Issues #401 and #402 are closed on `main` (!457, !460). A device re-walk of those specific fixes stays **Unknown** unless a later clip proves them.
 
 > **Demo Operator Inbox is Not the Billing System** — **No:** We keep this honest. The florist order overview is designed for demonstration and fulfillment visibility, not as a replacement for a full commercial billing accounting system.
 

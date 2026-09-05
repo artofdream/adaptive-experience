@@ -77,6 +77,8 @@ Do not edit budget-chip / `setBudgetChoice` in a reorder MR. Do not restyle `/fl
 * Florist staff stay on **mobile web** `/florist` (day filters, load-more, phone-sized targets). A native staff app is a **future** with four gates — [[2026-09-04-future-native-florist-operator-app-gates]].
 * “Verified” still means a probe. A merged MR is not a phone control.
 
+**Later the same evening (do not rewrite the rows above):** !459 closed #404 and wired the Need **Reorder →** card on `main`. Write and tap stay two facts. The evening capture above is the write-only moment; current Pages must not claim the button is still missing.
+
 ---
 
 ## Wikilinks
