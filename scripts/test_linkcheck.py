@@ -78,7 +78,7 @@ class LinkcheckGateTests(unittest.TestCase):
         self.assertNotIn("wiki/**/*.md", PUBLISHED_GLOBS)
 
     def test_header_comment_calls_linkcheck_blocking(self) -> None:
-        header = "\n".join(CI.read_text(encoding="utf-8").splitlines()[:8])
+        header = "\n".join(CI.read_text(encoding="utf-8").splitlines()[:9])
         self.assertIn("linkcheck (blocking, #326)", header)
         self.assertNotIn("linkcheck (advisory)", header)
 

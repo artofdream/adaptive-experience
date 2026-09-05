@@ -77,6 +77,7 @@ def convert_md_to_html(md_text):
 
     return '\n'.join(html_lines)
 
+
 def build_pdf():
     md_file = os.path.abspath('docs/aea-system-documentation.md')
     html_file = os.path.abspath('docs/aea-system-documentation.html')
@@ -210,7 +211,7 @@ hr {{
         f.write(full_html)
 
     edge_exe = r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
-    
+
     # Launch Edge via Playwright using local executable_path
     with sync_playwright() as p:
         browser = p.chromium.launch(executable_path=edge_exe, headless=True)

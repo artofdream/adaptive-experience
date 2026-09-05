@@ -1,0 +1,38 @@
+# #327 blocking Ruff baseline.
+# Lint covers scripts/, platform/, and edge/ (same trees as python-compile-gate).
+# A mass `ruff check --fix` / format rewrite of those trees is out of this
+# slice — that leftover dirty tree was restored. Exclusions stay narrow and
+# documented in scripts/check_ruff.py EXCLUDE_REASONS.
+
+required-version = "==0.16.5"
+target-version = "py312"
+# Existing scoped files already exceed Black's 88 (max 584 in
+# scripts/generate_codex_stakeholder_skills.py). This baseline does not reflow
+# those lines.
+line-length = 600
+
+extend-exclude = [
+  "scripts/fixtures/ruff",
+]
+
+[lint]
+# Syntax and undefined-name classes only. Broader families (ANN, D, I, PLR,
+# S, TRY, unused-import F401) wait for a later quality slice, not this MR.
+select = [
+  "E9",
+  "F63",
+  "F7",
+  "F82",
+]
+
+[format]
+quote-style = "preserve"
+docstring-code-format = false
+# Existing trees would be rewritten (unwrap/reflow). That leftover dirty
+# `ruff --fix` rewrite is out of this slice. `ruff check` still covers
+# scripts/, platform/, and edge/. Gate files are format-checked by path.
+exclude = [
+  "platform/**",
+  "edge/**",
+  "scripts/**",
+]

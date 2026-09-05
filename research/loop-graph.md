@@ -55,6 +55,7 @@ flowchart TD
         PU["platform/edge unit + integration tests"]
         LINT["markdownlint<br/>(blocking, #325)"]
         LINK["linkcheck<br/>(blocking, #326)"]
+        RUFF["ruff<br/>(blocking, #327)"]
         TRACE["check_traceability.py<br/>(FR/NFR -> issue -> milestone -> closure)"]
         EVIDENCE["check_requirement_evidence.py<br/>(FR/NFR -> ADR + code/test citations)"]
     end
@@ -70,7 +71,8 @@ flowchart TD
     PC -- constrain --> MRC
     PU -- constrain --> MRC
     LINT -- constrain --> MRC
-    LINK -. advisory only .-> MRC
+    LINK -- constrain --> MRC
+    RUFF -- constrain --> MRC
     DOCKER -- "Edge CI constrains" --> MRC
     ROADMAP -- feed --> TRACE
     ISSUES -- feed --> TRACE
@@ -174,6 +176,7 @@ flowchart TD
 | `check_requirement_evidence.py` | guard | CI, on requirements/ADR/platform/edge/evidence changes + every MR/main | `aea-senior-software-engineer` | automated, blocking citation evidence (`traceability-guard`, #323) |
 | `markdownlint` | guard | every MR/main (`markdownlint` job) | `aea-knowledge-guardian` / `aea-devsecops-platform` | automated, blocking (`markdownlint`, #325); pinned `markdownlint-cli2@0.23.2`; scoped to published architecture markdown; `scripts/check_markdownlint.py` proves a known-bad fixture fails |
 | `linkcheck` | guard | every MR/main (`linkcheck` job) | `aea-knowledge-guardian` / `aea-devsecops-platform` | automated, blocking (`linkcheck`, #326); pinned `markdown-link-check@3.15.0`; scoped to published architecture markdown; `scripts/check_linkcheck.py` proves a known-bad fixture fails |
+| `ruff` | guard | every MR/main (`ruff` job) | `aea-senior-software-engineer` / `aea-devsecops-platform` | automated, blocking (`ruff`, #327); pinned `ruff==0.16.5`; scoped to `scripts/`, `platform/`, and `edge/`; `scripts/check_ruff.py` proves a known-bad fixture fails |
 | `docker-integration-before-mr.mdc` | guard | local attestation per MR; Edge runner repeated in CI | every specialist role / `aea-devsecops-platform` | **automated for edge** by `edge-docker-integration`; **partially automated for platform** (`platform-foundation-integration` runs equivalent Postgres+Kafka coverage via CI `services:`, not the literal script) |
 | `research/coherence-findings-loop.md` | remediation cycle | on-demand / `aea-coherence-guardian` invocation | `aea-coherence-guardian` | manual trigger, disciplined procedure |
 | `aea-project-manager` | role loop | on-demand / cadence (08:00/12:00/16:00/20:00, **no automated trigger**) | human or AI session acting as PM | manual trigger |
@@ -240,7 +243,20 @@ recurring blind spot outranks an expensive fix for a rare one.
    hrefs map to sibling `.md` files. First-party `aea.artof.link` stays
    checked. No `allow_failure` and no `|| true`. `research/`, `wiki/`,
    and `archive/` stay out of this gate.
-5. **Edge Docker integration evidence — closed by #228.**
+5. **Python Ruff baseline — closed as a blocking CI gate by #327.**
+   `ruff` is required: pinned `ruff==0.16.5`, scoped to `scripts/`,
+   `platform/`, and `edge/` (same trees as `python-compile-gate`), with
+   `scripts/check_ruff.py` proving a known-bad fixture fails. Lint select
+   is the syntax / undefined-name class only (`E9`, `F63`, `F7`, `F82`).
+   Line length stays 600 so this slice does not reflow existing long
+   lines. Fixture path `scripts/fixtures/ruff` is the only extend-exclude.
+   Format excludes `scripts/**`, `platform/**`, and `edge/**` (a mass
+   unwrap/reflow is the leftover dirty `ruff --fix` class of change);
+   `ruff check` still covers all three. Gate files
+   (`scripts/check_ruff.py`, `scripts/test_ruff.py`, the clean fixture)
+   are format-checked by path.
+   No `allow_failure` and no `|| true`.
+6. **Edge Docker integration evidence — closed by #228.**
    `edge-docker-integration` invokes `edge/scripts/run_integration_tests.py`
    against the repository Compose stack in GitLab Docker-in-Docker. It checks
    gateway/BFF/orchestration health, the customer path, and the assistant SLO,
@@ -248,26 +264,26 @@ recurring blind spot outranks an expensive fix for a rare one.
    MR; CI now independently constrains Edge-impacting merges. Platform remains
    equivalent rather than literal runner coverage through
    `platform-foundation-integration` (real PostgreSQL and Kafka services).
-6. **`session-start-briefing.mdc` compliance is unverifiable
+7. **`session-start-briefing.mdc` compliance is unverifiable
    mechanically.** No loop watches whether a session actually read the
    brief before acting — this is inherent to the mechanism (you can't
    automatically prove a model read something), not a fixable gap so
    much as a known soft spot.
-7. **Stakeholder cadence status guard — closed by #234.**
+8. **Stakeholder cadence status guard — closed by #234.**
    `scripts/check_stakeholder_cadence.py` and `stakeholder-cadence-guard`
    CI job continuously monitor role activity windows, active issue owners,
    and daily brief freshness across all AEA stakeholder roles.
-8. **Gemini and Grok adapters — closed by #232 and #237.**
+9. **Gemini and Grok adapters — closed by #232 and #237.**
    `scripts/generate_codex_stakeholder_skills.py` now enforces 6-way skill
    synchronization across Cursor, Codex, Claude, Copilot, Gemini, and Grok.
-9. **A disabled Claude Code cloud routine
+10. **A disabled Claude Code cloud routine
    (`aea-coherence-guardian-daily-brief`) is dead weight.** Superseded by
    `generate_daily_brief.py`'s CI-native approach after the routine's
    GitHub-only repo-source limitation made it unusable for this
    GitLab-hosted repo. Not cleaned up (routines can't be deleted by an
    agent session — only by the account owner at
    `claude.ai/code/routines`).
-10. **`generate_daily_brief.py`'s Anthropic call and `GITLAB_MR_TOKEN`
+11. **`generate_daily_brief.py`'s Anthropic call and `GITLAB_MR_TOKEN`
    auth are unproven end to end** as of this document's writing — see
    Diagram 2.
 

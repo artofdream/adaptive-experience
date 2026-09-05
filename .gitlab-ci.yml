@@ -4,6 +4,7 @@
 # - process-coherence-guard (blocking, #324): MR delivery evidence + named Process-Exception.
 # - markdownlint (blocking, #325): pinned markdownlint-cli2, scoped published docs.
 # - linkcheck (blocking, #326): pinned markdown-link-check, scoped published docs.
+# - ruff (blocking, #327): pinned ruff, scoped scripts/platform/edge.
 
 stages:
   - report
@@ -808,6 +809,19 @@ linkcheck:
   script:
     - python3 scripts/test_linkcheck.py -v
     - python3 scripts/check_linkcheck.py
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+ruff:
+  stage: lint
+  image: python:3.12-alpine
+  # required (#327): do not suppress failures
+  before_script:
+    - pip install --no-cache-dir ruff==0.16.5
+  script:
+    - python3 scripts/test_ruff.py -v
+    - python3 scripts/check_ruff.py
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_COMMIT_BRANCH == "main"'

@@ -12,12 +12,12 @@ def audit_grafana_and_cloudwatch():
     print("==========================================================")
     print("      AEA CLOUD OBSERVIABILITY & GRAFANA AUDIT            ")
     print("==========================================================")
-    
+
     # 1. Test Grafana HTTP API
     ctx = ssl.create_default_context()
     ctx.check_hostname = False
     ctx.verify_mode = ssl.CERT_NONE
-    
+
     grafana_url = "https://aea.artof.link/grafana/api/dashboards/uid/aea-unified-dashboard"
     try:
         req = urllib.request.Request(grafana_url, headers={"User-Agent": "AEA-Audit/1.0"})

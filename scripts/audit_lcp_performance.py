@@ -6,6 +6,7 @@ Measures Time-to-First-Byte (TTFB), Nginx pre-rendered HTML DOM structure presen
 and edge response latency. Distinguishes network TTFB from full browser LCP.
 """
 import urllib.request, ssl, time, json, sys, os
+from pathlib import Path
 
 def audit_lcp(target_url=None):
     if not target_url:
