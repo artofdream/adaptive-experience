@@ -201,6 +201,11 @@ python-compile-gate:
 process-coherence-guard:
   stage: verify
   image: python:3.12-alpine
+  variables:
+    GIT_DEPTH: "0"
+  before_script:
+    # Live path evidence uses git; CI_JOB_TOKEN cannot read MR /diffs (#324).
+    - apk add --no-cache git
   script:
     - python scripts/test_process_coherence.py -v
     - python scripts/check_process_coherence.py --fixture scripts/fixtures/process_coherence/clean_baseline.json
