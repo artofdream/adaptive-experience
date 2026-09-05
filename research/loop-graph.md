@@ -234,10 +234,12 @@ recurring blind spot outranks an expensive fix for a rare one.
    published architecture markdown (`docs/`, `implementations/`, root agent
    files), with `scripts/check_linkcheck.py` proving a known-bad fixture
    fails. Narrow ignore patterns cover localhost Compose URLs, `file://`
-   workstation paths, and in-page heading fragments (same class as
-   markdownlint MD051). Framework `.html` hrefs map to sibling `.md`
-   files. No `allow_failure` and no `|| true`. `research/`, `wiki/`, and
-   `archive/` stay out of this gate.
+   workstation paths, in-page heading fragments (same class as
+   markdownlint MD051), Figma design URLs that 403 to CI, and this
+   project's GitLab HTML (403 to the CI user-agent). Framework `.html`
+   hrefs map to sibling `.md` files. First-party `aea.artof.link` stays
+   checked. No `allow_failure` and no `|| true`. `research/`, `wiki/`,
+   and `archive/` stay out of this gate.
 5. **Edge Docker integration evidence — closed by #228.**
    `edge-docker-integration` invokes `edge/scripts/run_integration_tests.py`
    against the repository Compose stack in GitLab Docker-in-Docker. It checks

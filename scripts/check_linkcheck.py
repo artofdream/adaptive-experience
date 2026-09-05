@@ -43,6 +43,15 @@ IGNORE_REASONS = {
         "framework TOC slugs do not always match generated heading IDs. "
         "File targets are still checked after .html to .md rewrite."
     ),
+    "^https://www\\.figma\\.com/": (
+        "Figma design URLs require an authenticated browser session. "
+        "CI job 16326037080 recorded HTTP 403 for both published Figma links."
+    ),
+    "^https://gitlab\\.com/artof-group/adaptive-experience-architecture": (
+        "Unauthenticated GETs of this project's GitLab HTML return 403 to "
+        "the CI link-checker user-agent (same job). Issue/work-item "
+        "existence stays the job of API-backed guards, not HTTP linkcheck."
+    ),
 }
 
 

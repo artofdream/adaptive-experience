@@ -11,6 +11,12 @@
     },
     {
       "pattern": "^#"
+    },
+    {
+      "pattern": "^https://www\\.figma\\.com/"
+    },
+    {
+      "pattern": "^https://gitlab\\.com/artof-group/adaptive-experience-architecture"
     }
   ],
   "replacementPatterns": [

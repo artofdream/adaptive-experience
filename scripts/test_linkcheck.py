@@ -53,6 +53,17 @@ class LinkcheckGateTests(unittest.TestCase):
                 re.search(pattern, "https://aea.artof.link"),
                 f"{pattern} must not blanket-ignore first-party HTTPS",
             )
+            self.assertFalse(
+                re.search(pattern, "https://architecture.artof.link"),
+                f"{pattern} must not blanket-ignore the Pages hostname",
+            )
+        self.assertFalse(
+            any(
+                re.search(pattern, "https://gitlab.com/other-group/other-project")
+                for pattern in patterns
+            ),
+            "GitLab ignore must stay project-scoped",
+        )
         replacements = config.get("replacementPatterns", [])
         self.assertTrue(replacements, "framework .html pages must map to .md")
         self.assertTrue(any(".html" in item.get("pattern", "") for item in replacements))
