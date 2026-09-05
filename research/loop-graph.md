@@ -337,7 +337,8 @@ recurring blind spot outranks an expensive fix for a rare one.
    backend-free `init`/`validate` on `infra/aws` with no AWS
    credentials. Pinned `checkov==3.2.447` retains findings.
    Unaccepted world-open non-ALB ingress (and Checkov public-ingress
-   IDs `CKV_AWS_24` / `CKV_AWS_25` / `CKV_AWS_260`) fail.
+   IDs `CKV_AWS_24` / `CKV_AWS_25` / `CKV_AWS_260` on non-ALB resources)
+   fail. Public ALB world-open stays Path B policy, not an exception.
    Exceptions in `iac-scan-exceptions.json` require owner, reason,
    and expiry; unused or expired rows fail. `scripts/check_iac_scan.py`
    proves a world-open RDS fixture fails and a public-ALB + private

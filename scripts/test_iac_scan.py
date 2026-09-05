@@ -126,6 +126,13 @@ class IacScanGateTests(unittest.TestCase):
                         "check_name": "Ensure no security groups allow ingress from 0.0.0.0:0 to port 80",
                     },
                     {
+                        "check_id": "CKV_AWS_24",
+                        "resource": "aws_security_group.rds",
+                        "file_path": "infra/aws/security_groups.tf",
+                        "severity": "HIGH",
+                        "check_name": "Ensure no security groups allow ingress from 0.0.0.0:0 to port 22",
+                    },
+                    {
                         "check_id": "CKV_AWS_23",
                         "resource": "aws_security_group.rds",
                         "file_path": "infra/aws/security_groups.tf",
@@ -137,8 +144,10 @@ class IacScanGateTests(unittest.TestCase):
         }
         findings = collect_checkov_findings(report)
         blocked = blocking_findings(findings, [])
-        self.assertEqual([item["id"] for item in blocked], ["CKV_AWS_260"])
+        self.assertEqual([item["id"] for item in blocked], ["CKV_AWS_24"])
         self.assertIn("CKV_AWS_260", BLOCKING_CHECKOV)
+        alb = next(item for item in findings if item["id"] == "CKV_AWS_260")
+        self.assertEqual(alb.get("policy"), "alb-world-open-allowed")
 
     def test_exception_requires_owner_reason_expiry(self) -> None:
         finding = {

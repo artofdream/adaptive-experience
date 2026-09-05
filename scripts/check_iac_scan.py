@@ -271,6 +271,13 @@ def blocking_findings(
         if not is_world_open and not is_checkov_block:
             finding["accepted"] = False
             continue
+        if is_checkov_block and is_alb_resource(
+            str(finding.get("resource") or "").rsplit(".", 1)[-1],
+            str(finding.get("resource") or ""),
+        ):
+            finding["accepted"] = True
+            finding["policy"] = "alb-world-open-allowed"
+            continue
         if matching_exception(finding, exceptions, when):
             finding["accepted"] = True
             continue
