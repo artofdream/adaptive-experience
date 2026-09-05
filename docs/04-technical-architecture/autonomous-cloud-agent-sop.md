@@ -61,14 +61,14 @@ The 24/7 cloud agent service is configured using the following environment varia
 
 The human Project Sponsor maintains absolute governance authority over 24/7 cloud agent execution.
 
-### To Immediately Pause Autonomous Cloud Activity:
+### To Immediately Pause Autonomous Cloud Activity
 1. **Via Cloud Environment Variable**:
    * Set `AEA_AUTONOMOUS_LOOP_ENABLED=false` in ECS Task Definition / Cloud Run environment settings.
    * The gateway will immediately enter `paused` status and reject incoming webhook triggers.
 2. **Via GitLab Issue Tag**:
    * Apply label `status::paused` to any open issue or parent milestone.
 
-### To Resume Autonomous Cloud Activity:
+### To Resume Autonomous Cloud Activity
 * Set `AEA_AUTONOMOUS_LOOP_ENABLED=true` and verify health status via `GET /internal/v1/ai/health`.
 
 ---

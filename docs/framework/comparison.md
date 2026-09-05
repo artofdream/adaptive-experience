@@ -29,7 +29,7 @@ An independent architecture analysis by Art of Group. It maps AEA onto six harne
 
 ![The Core Formula in Everyday Terms: 4-step flow](assets/everyday-formula-flow.svg)
 
-### The Three Golden Rules:
+### The Three Golden Rules
 - **AI Interprets, Domain Services Decide:** The AI suggests flowers, but only the database confirms they are in stock.
 - **Fail-Closed Availability:** If the inventory server is unreachable, the purchase button turns off. It is far better to say "Checking stock..." than to sell bouquets you cannot deliver.
 - **No Self-Approval:** The engineer or AI that writes code is never the one who signs off on pushing it to customers.

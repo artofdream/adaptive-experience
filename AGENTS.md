@@ -19,7 +19,6 @@ Before concluding a session:
 4. Commit and push knowledge notes to Git so all future sessions inherit the updated Second Brain memory.
 Full SOP: `.cursor/rules/session-start-briefing.mdc`.
 
-
 ## Source of truth
 
 - Requirements counts and mapping: `archive/Quantic_Project_Consolidated_Coherence_Validated.xlsx`

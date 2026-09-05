@@ -83,4 +83,3 @@ A short history of Adaptive Experience Architecture: what was difficult, how we 
 - [System Stack](stack.html) — How the cloud infrastructure connects.
 - [Path B Case Study](path-b.html) — Customer journey recordings.
 - [Architecture Glossary](glossary.html) — Plain-English definitions.
-

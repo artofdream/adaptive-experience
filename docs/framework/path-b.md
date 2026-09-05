@@ -92,4 +92,3 @@ For florists working the shop floor, the daily workflow follows 4 focused steps:
 - [Project Journal](journal.html) — Stories of real-world challenges, solutions, and hard-learned lessons.
 - [Architecture Glossary](glossary.html) — Plain-English definitions of terms and concepts.
 - [Framework Home](index.html) — Return to the overview.
-

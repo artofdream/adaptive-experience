@@ -81,7 +81,7 @@ The Edge Wallet makes reordering effortless while keeping you 100% anonymous. Th
 └────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Why this is safer than traditional "1-Click Checkout":
+### Why this is safer than traditional "1-Click Checkout"
 1. **No Account Required:** You don't need to create a username, choose a password, or verify your email.
 2. **Fresh Stock Guaranteed:** The reorder doesn't blindly charge your card. It validates that the florist has fresh roses in the cooler today before presenting the order for your confirmation.
 3. **Zero Tracking:** The florist backend sees an anonymous shopping session checking inventory availability; they have no idea *who* you are reordering for.

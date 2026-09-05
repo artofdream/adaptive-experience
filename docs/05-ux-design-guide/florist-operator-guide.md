@@ -2,7 +2,7 @@
 
 > **Document**: Florist Operator Console Operational Manual  
 > **Audience**: Atelier florists, store managers, fulfillment staff, and support operators  
-> **Console URL**: https://aea.artof.link/florist (or local https://localhost:8443/florist)  
+> **Console URL**: <https://aea.artof.link/florist> (or local <https://localhost:8443/florist>)  
 > **Supported Devices**: Desktop (widescreen), Tablet, and Mobile Handheld (iOS / Android browser)  
 > **Canonical Path**: docs/05-ux-design-guide/florist-operator-guide.md  
 > **Traceability**: FR-013 (Staff Order List & Detail), FR-012 (Contact Florist Escalation), T-09, NFR-017 (Zero-PII / Least-Data)
@@ -54,7 +54,7 @@ The console is organized into four interconnected functional panels:
 To run the atelier efficiently, follow this standard 4-step routine throughout your shift:
 
 ### Step 1: Morning Batching & Arrangement Prep (#prepare)
-1. Open https://aea.artof.link/florist at the start of your shift.
+1. Open <https://aea.artof.link/florist> at the start of your shift.
 2. Tap **Prepare** on the top navigation bar or scroll to **Today's arrangements to prepare**.
 3. Review the total counts for each bouquet type (e.g. *"5× Classic Rose Dozen"*, *"3× Budget Mixed Bunch"*).
 4. Note the scheduled delivery windows (*"Morning: 3, Afternoon: 2"*).
@@ -95,7 +95,7 @@ The operator console adapts intelligently to your screen size:
 | **Arrangement Prep** | 5 columns with card message preview | 5 columns with wrapped card chips | 3 columns: Arrangement, Count, Windows & Details (full cards in bottom sheet) |
 | **Navigation** | Sticky top bar | Sticky top bar with quick nav | Wrapped touch-friendly pills (all >=44px) + floating ↑ and ↓ buttons |
 
-### Touch Controls & Shortcuts:
+### Touch Controls & Shortcuts
 - **Jump Pills:** Tap Orders, Prepare, Inbox, or Session at the top of the screen to jump instantly without tedious thumb scrolling.
 - **Floating Scroll Buttons:** The circular **↑** and **↓** buttons pinned at the bottom-right corner let you jump to the very top or very bottom of the page in one tap.
 - **Escape Key / Close Button:** Any open details dialog can be dismissed by tapping **✕**, clicking the **Close** button, or pressing Esc on a keyboard.

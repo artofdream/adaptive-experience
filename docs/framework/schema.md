@@ -92,4 +92,3 @@ We test the live reference shop at [aea.artof.link](https://aea.artof.link) agai
 - [Comparison & Visual Guide](comparison.html) — The 5-floor building model and industry comparison.
 - [Architecture Glossary](glossary.html) — Plain-English definitions of terms and concepts.
 - [Framework Home](index.html) — Return to the overview.
-

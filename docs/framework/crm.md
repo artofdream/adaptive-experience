@@ -11,11 +11,11 @@ The Adaptive Experience Architecture (AEA) avoids centralized Personally Identif
 Layers stack from operator view (top) down to where raw PII may briefly live (bottom). Each layer is a readable card on any screen width:
 
 > **1. Operator Insights** — Aggregated intelligence · behavior buckets · order fulfillment. Reads pseudonymous projections from Layer 2 (never raw PII).
-
+>
 > **2. Platform Pseudonymous Subject Intelligence** — Opaque subject tokens (`subject_reference = HMAC(client_id)`); transaction aggregates (order count, lifetime spend bands); occasion vector (e.g. 70% Birthday / Mother, 30% Anniversary); preferred channel (`Companion App` vs `Web Browser`).
-
+>
 > **3A. Client-Side Edge Wallet** (Companion on-device DB) — Full local order receipts; favorite recipient records; custom occasion reminders. Presents a zero-PII claim up into Layer 2.
-
+>
 > **3B. Ephemeral Fulfillment Vault** (14-day auto-shred) — Raw delivery street address; unlocked only during packing; KMS-encrypted and purged after TTL. Tokenized destination pointer up into Layer 2.
 
 ---
@@ -60,4 +60,3 @@ Reminders on the Adaptive Workspace are strictly **deterministic pull signals**:
 - [Architecture Glossary](glossary.html) — Plain-English definitions of least-data terms.
 - [Framework Home](index.html) — Return to the overview.
 - Repository ADR references: `ADR-020` (Privacy CRM), `ADR-013` (Confirmation-Driven), `NFR-017` (Zero-PII Perimeter), and `FR-008` (Reorder Hint).
-
