@@ -5,9 +5,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import link.artof.aea.companion.data.model.Arrangement
 import link.artof.aea.companion.data.model.ChatMessage
 import link.artof.aea.companion.data.model.SharedUnderstanding
+import link.artof.aea.companion.data.wallet.WalletReceipt
 import link.artof.aea.companion.ui.screens.NeedScreen
 import link.artof.aea.companion.ui.screens.PayScreen
 import link.artof.aea.companion.ui.screens.PickScreen
+import link.artof.aea.companion.ui.screens.WalletReviewScreen
 import link.artof.aea.companion.ui.theme.LilyCompanionTheme
 
 /**
@@ -81,6 +83,26 @@ fun PickScreenPreview() {
             onContinueToPay = {},
             onBack = {},
             onStartOver = {},
+        )
+    }
+}
+
+@Preview(name = "Privacy — wallet receipts", showBackground = true)
+@Composable
+fun WalletReviewPreview() {
+    LilyCompanionTheme(darkTheme = false) {
+        WalletReviewScreen(
+            receipts = listOf(
+                WalletReceipt(
+                    orderReference = "ord-preview",
+                    productId = "classic-rose-dozen",
+                    recipientLabel = "Mom",
+                    savedAtEpochMs = 1_725_000_000_000L,
+                )
+            ),
+            onClose = {},
+            onClearHistory = {},
+            nowEpochMs = 1_725_003_600_000L,
         )
     }
 }

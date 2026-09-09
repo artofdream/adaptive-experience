@@ -5,9 +5,11 @@ import app.cash.paparazzi.Paparazzi
 import link.artof.aea.companion.data.model.Arrangement
 import link.artof.aea.companion.data.model.ChatMessage
 import link.artof.aea.companion.data.model.SharedUnderstanding
+import link.artof.aea.companion.data.wallet.WalletReceipt
 import link.artof.aea.companion.ui.screens.NeedScreen
 import link.artof.aea.companion.ui.screens.PayScreen
 import link.artof.aea.companion.ui.screens.PickScreen
+import link.artof.aea.companion.ui.screens.WalletReviewScreen
 import link.artof.aea.companion.ui.theme.LilyCompanionTheme
 import org.junit.Rule
 import org.junit.Test
@@ -39,6 +41,34 @@ class CompanionScreenPaparazziTest {
                     onContinueToPick = {},
                     onStartOver = {},
                     isLoading = false,
+                )
+            }
+        }
+    }
+
+    @Test
+    fun walletReview_withReceipts() {
+        paparazzi.snapshot(name = "wallet_review_receipts") {
+            LilyCompanionTheme(darkTheme = false) {
+                WalletReviewScreen(
+                    receipts = sampleWalletReceipts,
+                    onClose = {},
+                    onClearHistory = {},
+                    nowEpochMs = 1_725_000_000_000L,
+                )
+            }
+        }
+    }
+
+    @Test
+    fun walletReview_empty() {
+        paparazzi.snapshot(name = "wallet_review_empty") {
+            LilyCompanionTheme(darkTheme = false) {
+                WalletReviewScreen(
+                    receipts = emptyList(),
+                    onClose = {},
+                    onClearHistory = {},
+                    nowEpochMs = 1_725_000_000_000L,
                 )
             }
         }
@@ -104,6 +134,21 @@ class CompanionScreenPaparazziTest {
             deliveryDate = "Today (Same-Day)",
             contextVersion = 2,
             stage = "need",
+        )
+
+        private val sampleWalletReceipts = listOf(
+            WalletReceipt(
+                orderReference = "ord-new",
+                productId = "classic-rose-dozen",
+                recipientLabel = "Mom",
+                savedAtEpochMs = 1_725_000_000_000L - 3_600_000L,
+            ),
+            WalletReceipt(
+                orderReference = "ord-old",
+                productId = "lilac-bouquet",
+                recipientLabel = "Mum",
+                savedAtEpochMs = 1_725_000_000_000L - 86_400_000L,
+            ),
         )
 
         private val sampleArrangements = listOf(

@@ -26,6 +26,7 @@ import link.artof.aea.companion.data.model.OrderResult
 import link.artof.aea.companion.data.model.SharedUnderstanding
 import link.artof.aea.companion.data.repository.SessionRepository
 import link.artof.aea.companion.data.wallet.WalletReceipt
+import link.artof.aea.companion.data.wallet.WalletReview
 import link.artof.aea.companion.ui.components.*
 
 @Composable
@@ -722,6 +723,145 @@ fun TrackingScreen(
         ) {
             Text("Start New Arrangement")
         }
+    }
+}
+
+@Composable
+fun WalletReviewScreen(
+    receipts: List<WalletReceipt>,
+    onClose: () -> Unit,
+    onClearHistory: () -> Unit,
+    nowEpochMs: Long = System.currentTimeMillis(),
+    modifier: Modifier = Modifier
+) {
+    var confirmClear by remember { mutableStateOf(false) }
+    val rows = WalletReview.rows(receipts, nowEpochMs)
+
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(bottom = 16.dp)
+    ) {
+        Text(
+            text = "On this phone",
+            style = MaterialTheme.typography.headlineMedium,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+        )
+        Text(
+            text = "Encrypted receipts stay on this device. This is not a Lily's Florist account. Street address and card numbers are never stored here.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp)
+        )
+
+        if (rows.isEmpty()) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                )
+            ) {
+                Column(modifier = Modifier.padding(20.dp)) {
+                    Text(
+                        text = WalletReview.EMPTY_TITLE,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = WalletReview.EMPTY_BODY,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.weight(1f))
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+            ) {
+                items(rows) { row ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 6.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surface
+                        )
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text(
+                                text = "For ${row.recipientLabel}",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = row.arrangementNickname,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                            Text(
+                                text = "Order ${row.orderReference}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                text = row.relativeDate,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        if (rows.isNotEmpty()) {
+            Button(
+                onClick = { confirmClear = true },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 4.dp)
+                    .height(52.dp)
+            ) {
+                Text("Clear History")
+            }
+        }
+
+        TextButton(
+            onClick = onClose,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+        ) {
+            Text("Close")
+        }
+    }
+
+    if (confirmClear) {
+        AlertDialog(
+            onDismissRequest = { confirmClear = false },
+            title = { Text(WalletReview.CLEAR_CONFIRM_TITLE) },
+            text = { Text(WalletReview.CLEAR_CONFIRM_BODY) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        confirmClear = false
+                        onClearHistory()
+                    }
+                ) {
+                    Text("Clear History")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { confirmClear = false }) {
+                    Text("Keep receipts")
+                }
+            }
+        )
     }
 }
 

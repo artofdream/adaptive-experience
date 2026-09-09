@@ -7,6 +7,7 @@ import link.artof.aea.companion.data.repository.JourneyStage
 import link.artof.aea.companion.data.repository.SessionRepository
 import link.artof.aea.companion.data.wallet.EdgeWallet
 import link.artof.aea.companion.data.wallet.InMemoryWalletStore
+import link.artof.aea.companion.data.wallet.WalletReceipt
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -126,6 +127,7 @@ class EdgeWalletReorderIntegrationTests {
         assertEquals("Partner", receipt?.recipientLabel)
         assertEquals("With all my love", receipt?.cardMessageDraft)
         assertEquals("anniversary", receipt?.occasionType)
+        assertEquals(listOf(receipt), repository.walletReceipts.value)
 
         // Survives startOver()
         repository.startOver()
@@ -135,5 +137,45 @@ class EdgeWalletReorderIntegrationTests {
         // Clear wallet clears reactive state
         repository.clearWallet()
         assertNull(repository.latestWalletReceipt.value)
+    }
+
+    @Test
+    fun walletReceiptsListAndClearWalletEmptyNeedReorderState() = runBlocking {
+        // FakeBffClient reuses orderId "ord-test"; two checkouts would dedup.
+        // Preload distinct receipts so list + clear are what we assert (#410).
+        val older = WalletReceipt(
+            orderReference = "ord-old",
+            productId = "classic-rose-dozen",
+            recipientLabel = "Mom",
+            cardMessageDraft = "Happy Birthday!",
+            savedAtEpochMs = 1_000L,
+        )
+        val newer = WalletReceipt(
+            orderReference = "ord-new",
+            productId = "lilac-bouquet",
+            recipientLabel = "Mum",
+            cardMessageDraft = "Thinking of you",
+            savedAtEpochMs = 2_000L,
+        )
+        store = InMemoryWalletStore(listOf(older, newer))
+        wallet = EdgeWallet(store)
+        repository = SessionRepository(api = fakeApi, wallet = wallet)
+
+        val listed = repository.walletReceipts.value
+        assertEquals(2, listed.size)
+        assertEquals(listed, repository.walletReceipts())
+        assertEquals("lilac-bouquet", listed.first().productId)
+        assertEquals("classic-rose-dozen", listed.last().productId)
+        assertEquals("Mom", listed.last().recipientLabel)
+        assertEquals(listed.first(), repository.latestWalletReceipt.value)
+        assertTrue(listed.none { it.cardMessageDraft?.contains("4111") == true })
+
+        repository.clearWallet()
+        assertTrue(repository.walletReceipts.value.isEmpty())
+        assertEquals(0, repository.walletReceiptCount())
+        assertNull(repository.latestWalletReceipt.value)
+        assertNull(repository.latestWalletReceipt())
+        assertNull(repository.walletReorderReference())
+        assertFalse(repository.reorderFromWallet())
     }
 }
