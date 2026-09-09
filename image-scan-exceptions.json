@@ -65,30 +65,6 @@
       "expires": "2026-10-05"
     },
     {
-      "id": "CVE-2025-59375",
-      "image": "gateway",
-      "package": "libexpat",
-      "owner": "@aea-devsecops-platform",
-      "reason": "Digest-pinned nginx:1.27-alpine OS package from #331. Upgrade belongs in a pin-refresh MR; do not weaken image-scan.",
-      "expires": "2026-10-05"
-    },
-    {
-      "id": "CVE-2026-25210",
-      "image": "gateway",
-      "package": "libexpat",
-      "owner": "@aea-devsecops-platform",
-      "reason": "Digest-pinned nginx:1.27-alpine OS package from #331. Upgrade belongs in a pin-refresh MR; do not weaken image-scan.",
-      "expires": "2026-10-05"
-    },
-    {
-      "id": "CVE-2026-45186",
-      "image": "gateway",
-      "package": "libexpat",
-      "owner": "@aea-devsecops-platform",
-      "reason": "Digest-pinned nginx:1.27-alpine OS package from #331. Upgrade belongs in a pin-refresh MR; do not weaken image-scan.",
-      "expires": "2026-10-05"
-    },
-    {
       "id": "CVE-2025-64720",
       "image": "gateway",
       "package": "libpng",
@@ -180,14 +156,6 @@
       "id": "CVE-2026-6732",
       "image": "gateway",
       "package": "libxml2",
-      "owner": "@aea-devsecops-platform",
-      "reason": "Digest-pinned nginx:1.27-alpine OS package from #331. Upgrade belongs in a pin-refresh MR; do not weaken image-scan.",
-      "expires": "2026-10-05"
-    },
-    {
-      "id": "CVE-2026-40200",
-      "image": "gateway",
-      "package": "musl",
       "owner": "@aea-devsecops-platform",
       "reason": "Digest-pinned nginx:1.27-alpine OS package from #331. Upgrade belongs in a pin-refresh MR; do not weaken image-scan.",
       "expires": "2026-10-05"
