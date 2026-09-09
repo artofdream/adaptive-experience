@@ -141,7 +141,8 @@ one-tap reorder **without** a server-side PII CRM (ADR-013 / NFR-017). Sponsor
 - **Privacy UI:** app-bar **Privacy** (not a cloud account) lists recipient
   label, arrangement nickname, order ref, and relative date. Confirm
   **Clear History** then `EdgeWallet.clear()`. Honest empty state when the
-  wallet is empty. Play-honest device prove is **pending / Unknown**.
+  wallet is empty (`No receipts on this phone`). Play-honest device prove is
+  **Verified** on ROG Play Internal v9 (9 Sep 2026). A36 v9 was not walked.
 
 **Tests / toolchain honesty:** the pure-domain, review-row, and reorder-wiring
 JUnit tests live in `app/src/test/.../EdgeWalletTests.kt`,
