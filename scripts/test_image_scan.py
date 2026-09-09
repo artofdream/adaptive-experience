@@ -172,6 +172,24 @@ class ImageScanGateTests(unittest.TestCase):
         }
         self.assertEqual(unused_exceptions([], [leftover], today), [leftover])
 
+    def test_gateway_rebuilds_libexpat_instead_of_excepting_409(self) -> None:
+        dockerfile = (ROOT / "edge" / "gateway" / "Dockerfile").read_text(encoding="utf-8")
+        self.assertRegex(
+            dockerfile,
+            r"FROM nginx:1\.27-alpine@sha256:[0-9a-f]{64}",
+        )
+        self.assertIn("2.8.4-r0", dockerfile)
+        self.assertRegex(dockerfile, r"libexpat|expat")
+        self.assertIn("apk add --no-cache --upgrade", dockerfile)
+        items = load_exceptions()
+        blocked_ids = {"CVE-2026-76956", "CVE-2026-76957"}
+        leftover = [
+            item
+            for item in items
+            if item["id"] in blocked_ids and item["image"] in {"gateway", "*"}
+        ]
+        self.assertEqual(leftover, [], "do not time-box #409; rebuild gateway libexpat")
+
     def test_exceptions_file_is_strict_with_owner_reason_expiry(self) -> None:
         items = load_exceptions()
         payload = json.loads(EXCEPTIONS.read_text(encoding="utf-8"))
