@@ -133,19 +133,25 @@ one-tap reorder **without** a server-side PII CRM (ADR-013 / NFR-017). Sponsor
   (`androidx.security:security-crypto`). Device-only fields are encrypted at
   rest and never leave the device.
 - **Wiring (`SessionRepository`):** a confirmed checkout writes one receipt;
-  `reorderFromWallet()` re-selects the stored opaque `product_id` with
-  authoritative NFR-009 inventory revalidation at selection. `MainActivity`
-  injects the encrypted store via `applicationContext`.
+  `walletReceipts` / `walletReceipts()` expose the on-device list; `clearWallet()`
+  wipes it and clears Need Reorder state. `reorderFromWallet()` re-selects the
+  stored opaque `product_id` with authoritative NFR-009 inventory revalidation
+  at selection. `MainActivity` injects the encrypted store via
+  `applicationContext` and opens **Privacy** → wallet review (#410).
+- **Privacy UI:** app-bar **Privacy** (not a cloud account) lists recipient
+  label, arrangement nickname, order ref, and relative date. Confirm
+  **Clear History** then `EdgeWallet.clear()`. Honest empty state when the
+  wallet is empty. Play-honest device prove is **pending / Unknown**.
 
-**Tests / toolchain honesty:** the pure-domain and reorder-wiring JUnit tests
-live in `app/src/test/.../EdgeWalletTests.kt` and
-`EdgeWalletReorderIntegrationTests.kt` and run via `testDebugUnitTest` in CI
-(needs the Android SDK). This environment has no Android SDK, so the module
-Gradle test task cannot run here; the Android-free `EdgeWallet` domain
-(receipt round-trip/dedup, latest ordering, and the opaque-only zero-PII
-invariant) was instead compiled and run on the plain JVM (18 assertions, all
-passing). The `EncryptedPrefsWalletStore` Keystore path is Android-runtime
-bound (androidTest scope).
+**Tests / toolchain honesty:** the pure-domain, review-row, and reorder-wiring
+JUnit tests live in `app/src/test/.../EdgeWalletTests.kt`,
+`WalletReviewTests.kt`, and `EdgeWalletReorderIntegrationTests.kt` and run via
+`testDebugUnitTest` in CI (needs the Android SDK). List + clear are covered
+there (`walletReceiptsListAndClearWalletEmptyNeedReorderState`). The
+`EncryptedPrefsWalletStore` Keystore path is Android-runtime bound
+(`androidTest` / `EdgeWalletInstrumentationTest`) and is **not** Play-honest
+prove. This environment has no Android SDK, so the module Gradle test task
+cannot run here; privacy-safe review rows (`WalletReview`) are plain JVM.
 
 ## Native↔web parity (gap-closing loop)
 

@@ -136,4 +136,47 @@ class EdgeWalletReorderIntegrationTests {
         repository.clearWallet()
         assertNull(repository.latestWalletReceipt.value)
     }
+
+    @Test
+    fun walletReceiptsListAndClearWalletEmptyNeedReorderState() = runBlocking {
+        assertTrue(repository.walletReceipts.value.isEmpty())
+        assertEquals(0, repository.walletReceipts().size)
+
+        fakeApi.sharedUnderstanding = SharedUnderstandingResponse(
+            contextVersion = 2,
+            structuredIntent = StructuredIntent(occasion = "birthday", recipient = "Mom"),
+        )
+        repository.moveToPickStage()
+        repository.selectArrangement(rose)
+        repository.moveToPayStage()
+        repository.completeCheckout("Happy Birthday!")
+
+        val lilac = Arrangement(
+            sku = "lilac-bouquet",
+            name = "Lilac Bouquet",
+            price = 95.0,
+            available = true,
+        )
+        repository.moveToPickStage()
+        repository.selectArrangement(lilac)
+        repository.moveToPayStage()
+        repository.completeCheckout("Thinking of you")
+
+        val listed = repository.walletReceipts.value
+        assertEquals(2, listed.size)
+        assertEquals(listed, repository.walletReceipts())
+        assertEquals("lilac-bouquet", listed.first().productId)
+        assertEquals("classic-rose-dozen", listed.last().productId)
+        assertEquals("Mom", listed.last().recipientLabel)
+        assertEquals(listed.first(), repository.latestWalletReceipt.value)
+        assertTrue(listed.none { it.cardMessageDraft?.contains("4111") == true })
+
+        repository.clearWallet()
+        assertTrue(repository.walletReceipts.value.isEmpty())
+        assertEquals(0, repository.walletReceiptCount())
+        assertNull(repository.latestWalletReceipt.value)
+        assertNull(repository.latestWalletReceipt())
+        assertNull(repository.walletReorderReference())
+        assertFalse(repository.reorderFromWallet())
+    }
 }

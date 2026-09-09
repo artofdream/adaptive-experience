@@ -37,6 +37,7 @@ import link.artof.aea.companion.ui.screens.NeedScreen
 import link.artof.aea.companion.ui.screens.PayScreen
 import link.artof.aea.companion.ui.screens.PickScreen
 import link.artof.aea.companion.ui.screens.TrackingScreen
+import link.artof.aea.companion.ui.screens.WalletReviewScreen
 import link.artof.aea.companion.ui.theme.LilyCompanionTheme
 
 class MainActivity : ComponentActivity() {
@@ -87,7 +88,9 @@ fun LilyCompanionApp(repository: SessionRepository) {
     val deliveryDate by repository.deliveryDate.collectAsState()
     val escalationAck by repository.escalationAck.collectAsState()
     val latestWalletReceipt by repository.latestWalletReceipt.collectAsState()
+    val walletReceipts by repository.walletReceipts.collectAsState()
     var showContactFlorist by remember { mutableStateOf(false) }
+    var showWalletReview by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
@@ -104,6 +107,9 @@ fun LilyCompanionApp(repository: SessionRepository) {
                     )
                 },
                 actions = {
+                    TextButton(onClick = { showWalletReview = true }) {
+                        Text("Privacy")
+                    }
                     TextButton(onClick = { showContactFlorist = true }) {
                         Text("Contact Florist")
                     }
@@ -120,7 +126,7 @@ fun LilyCompanionApp(repository: SessionRepository) {
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            if (stage != JourneyStage.TRACKING) {
+            if (!showWalletReview && stage != JourneyStage.TRACKING) {
                 StageProgressBar(currentStage = stage)
             }
 
@@ -148,7 +154,13 @@ fun LilyCompanionApp(repository: SessionRepository) {
                 }
             }
 
-            when (stage) {
+            if (showWalletReview) {
+                WalletReviewScreen(
+                    receipts = walletReceipts,
+                    onClose = { showWalletReview = false },
+                    onClearHistory = { repository.clearWallet() }
+                )
+            } else when (stage) {
                 JourneyStage.NEED -> {
                     NeedScreen(
                         messages = messages,

@@ -17,4 +17,12 @@ class CatalogArtTest {
         assertEquals("", CatalogArt.imageUrlFor("not-a-sku"))
         assertEquals("", CatalogArt.imageUrlFor(null))
     }
+
+    @Test
+    fun displayNameUsesShopperNicknameNotRawSkuWhenKnown() {
+        assertEquals("Classic Rose Dozen", CatalogArt.displayNameFor("classic-rose-dozen"))
+        assertEquals("Budget Mixed Bunch", CatalogArt.displayNameFor("budget-mixed-bunch"))
+        assertEquals("Arrangement", CatalogArt.displayNameFor("  "))
+        assertEquals("unknown-sku", CatalogArt.displayNameFor("unknown-sku"))
+    }
 }

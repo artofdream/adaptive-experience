@@ -143,6 +143,10 @@ class SessionRepository(
     private val _latestWalletReceipt = MutableStateFlow<WalletReceipt?>(wallet.latestReceipt())
     val latestWalletReceipt: StateFlow<WalletReceipt?> = _latestWalletReceipt.asStateFlow()
 
+    /** ADR-020 / #410: full on-device receipt list for Privacy review (most recent first). */
+    private val _walletReceipts = MutableStateFlow(wallet.receipts())
+    val walletReceipts: StateFlow<List<WalletReceipt>> = _walletReceipts.asStateFlow()
+
     private val _sessionReady = MutableStateFlow(false)
     val sessionReady: StateFlow<Boolean> = _sessionReady.asStateFlow()
 
@@ -585,14 +589,14 @@ class SessionRepository(
             // ever surfaced back to the platform (see EdgeWallet.reorderReference).
             if (status != "DECLINED" && orderId.isNotBlank() && orderId != "pending") {
                 val intent = _sharedUnderstanding.value
-                val receipt = wallet.saveReceipt(
+                wallet.saveReceipt(
                     orderReference = orderId,
                     productId = selected.sku,
                     recipientLabel = intent.recipient,
                     cardMessageDraft = cardMessage,
                     occasionType = intent.occasion,
                 )
-                _latestWalletReceipt.value = receipt
+                publishWalletState()
             }
 
             _currentStage.value = JourneyStage.TRACKING
@@ -612,10 +616,19 @@ class SessionRepository(
     /** ADR-020 Layer 2: device-held latest wallet receipt (contains device-only recipient label / occasion). */
     fun latestWalletReceipt(): WalletReceipt? = wallet.latestReceipt()
 
-    /** Clear device-held wallet history (Right-to-be-forgotten / customer sign-out). */
+    /** ADR-020 / #410: all device-held receipts, most recent first. */
+    fun walletReceipts(): List<WalletReceipt> = wallet.receipts()
+
+    /** Clear device-held wallet history (Right-to-be-forgotten / Privacy → Clear History). */
     fun clearWallet() {
         wallet.clear()
-        _latestWalletReceipt.value = null
+        publishWalletState()
+    }
+
+    private fun publishWalletState() {
+        val receipts = wallet.receipts()
+        _walletReceipts.value = receipts
+        _latestWalletReceipt.value = receipts.firstOrNull()
     }
 
     /**
@@ -673,7 +686,7 @@ class SessionRepository(
         budgetFloor = null
         budgetCeiling = null
         budgetChipLabel = null
-        _latestWalletReceipt.value = wallet.latestReceipt()
+        publishWalletState()
         _messages.value = listOf(
             ChatMessage(
                 id = "welcome",

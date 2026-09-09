@@ -15,6 +15,21 @@ object CatalogArt {
         "premium-orchid" to "$BASE/sku-premium-orchid.jpg",
     )
 
+    private val displayNames = mapOf(
+        "classic-rose-dozen" to "Classic Rose Dozen",
+        "lilac-bouquet" to "Lilac Bouquet",
+        "budget-mixed-bunch" to "Budget Mixed Bunch",
+        "pink-flower-vase" to "Pink Flower Vase",
+        "premium-orchid" to "Premium Orchid",
+    )
+
     fun imageUrlFor(sku: String?): String =
         bySku[sku?.trim().orEmpty()].orEmpty()
+
+    /** Shopper-facing arrangement nickname for wallet review (not a street or PAN). */
+    fun displayNameFor(sku: String?): String {
+        val id = sku?.trim().orEmpty()
+        if (id.isEmpty()) return "Arrangement"
+        return displayNames[id] ?: id
+    }
 }
