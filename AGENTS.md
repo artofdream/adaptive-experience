@@ -17,6 +17,9 @@ Before concluding a session:
 2. Run `python scripts/generate_daily_brief.py` to regenerate `research/daily-briefs/YYYY-MM-DD.md` (`@aea-coherence-guardian`).
 3. Run `python scripts/run_all_guards.py` to verify 14/14 pre-flight quality guards pass cleanly.
 4. Commit and push knowledge notes to Git so all future sessions inherit the updated Second Brain memory.
+After a meaningful agent/CI run, draft a lesson candidate under
+`research/inbox/` (`research/after-run-lesson-candidate.md`). Do not
+self-promote or edit skills/docs from that extract.
 Full SOP: `.cursor/rules/session-start-briefing.mdc`.
 
 ## Source of truth

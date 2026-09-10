@@ -173,6 +173,37 @@ flowchart TD
     PM -. "process-coherence check<br/>(manual, not scheduled)" .-> SSE
 ```
 
+## Diagram 4 — After-run lesson-candidate loop (#412)
+
+Task loop does the work. Reviewer loop writes a small inbox candidate
+(what failed / changed / worked). `@aea-knowledge-guardian` promotes to
+`research/random-thoughts/`. The reviewer extract must not edit
+`.cursor/skills/` or canonical `docs/`. SOP:
+`research/after-run-lesson-candidate.md`. Cite, do not duplicate,
+`research/random-thoughts/2026-09-10-aea-vs-x-scan-gipp-beam-avid.md`
+(X1 adapt; X6 reject).
+
+```mermaid
+flowchart TD
+    TASK["task loop<br/>(agent / CI run)"]
+    REV["reviewer extract"]
+    INBOX[("research/inbox/<br/>lesson candidate")]
+    KG["aea-knowledge-guardian"]
+    VAULT[("research/random-thoughts/")]
+    SKILLS[".cursor/skills/ + docs/"]
+    SES["session-start-briefing.mdc"]
+
+    TASK -- feed --> REV
+    REV -- "candidate only" --> INBOX
+    INBOX -- feed --> KG
+    KG -- promote --> VAULT
+    VAULT -- feed --> SES
+    REV -. "never auto-edit" .-> SKILLS
+```
+
+Manual trigger after a meaningful run. Same class as session-start
+compliance: no sensor proves a candidate was written.
+
 ## Node catalog
 
 | Node | Type | Trigger | Owner | Status |
@@ -211,6 +242,7 @@ flowchart TD
 | `stakeholder-skills-sync-sop.mdc` | governance SOP | on any skill-role change | `aea-senior-software-engineer` / whoever edits | manual discipline, backed by automated `--check` |
 | `coherence-findings-sop.mdc` | governance SOP | on any coherence finding | `aea-coherence-guardian` | manual discipline |
 | `claude-obsidian-loop.mdc` | content lifecycle | on any capture/promotion | human (Obsidian) + AI (triage) | manual |
+| `research/after-run-lesson-candidate.md` | extract SOP | after a meaningful agent/CI run | task+reviewer draft; `aea-knowledge-guardian` promotes | **manual**; inbox candidate only; no skill/docs auto-edit (#412) |
 | `figma-shop-ui-sync.mdc` | sync SOP | on any `edge/gateway/ui/` change | `aea-ux-designer` | manual, not CI-enforced |
 | `build-ecr` / `deploy-ecs` | deploy loop | CI, on `main` + `platform/`/`edge/`/`.gitlab-ci.yml` changes | `aea-devsecops-platform` | automated; `deploy-ecs` and `deploy-ecs-agent-runner` `needs` required `image-scan` (#332); `build-ecr` keeps stage order so the scan finishes before ECR push |
 | `android-bundle-release` | mobile deliverable | CI manual on android/`.gitlab-ci.yml` changes when `ANDROID_UPLOAD_KEYSTORE` set | `aea-devsecops-platform` | manual trigger; signed `.aab` artifact only |
@@ -354,10 +386,11 @@ recurring blind spot outranks an expensive fix for a rare one.
    equivalent rather than literal runner coverage through
    `platform-foundation-integration` (real PostgreSQL and Kafka services).
 13. **`session-start-briefing.mdc` compliance is unverifiable
-   mechanically.** No loop watches whether a session actually read the
-   brief before acting — this is inherent to the mechanism (you can't
-   automatically prove a model read something), not a fixable gap so
-   much as a known soft spot.
+    mechanically.** No loop watches whether a session actually read the
+    brief before acting — this is inherent to the mechanism (you can't
+    automatically prove a model read something), not a fixable gap so
+    much as a known soft spot. The #412 after-run lesson-candidate SOP
+    is the same class: expected after a meaningful run, not CI-enforced.
 14. **Stakeholder cadence status guard — closed by #234.**
    `scripts/check_stakeholder_cadence.py` and `stakeholder-cadence-guard`
    CI job continuously monitor role activity windows, active issue owners,
