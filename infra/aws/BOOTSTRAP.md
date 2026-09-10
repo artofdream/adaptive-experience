@@ -3,6 +3,26 @@
 One-time (and after schema/topic changes) from a network path that can reach
 **private** RDS and MSK (ECS RunTask, bastion, or CI job in the VPC).
 
+## FinOps #414 — not a rebuild
+
+A `db.t4g.medium` → `db.t4g.small` apply is a **same-instance modify**.
+Do not treat it as first-time bootstrap. Do not `terraform destroy`.
+Do not drop MSK. Do not re-run migrations or topic provision unless
+the modify actually failed and you restored from snapshot.
+
+DSO apply order (laptop amd64 Terraform; never a Cloud Agent):
+
+1. Wait until snapshot `aea-pilot-postgres-pre-t4g-small-20260910-2151`
+   is `available`.
+2. Confirm `terraform.tfvars` `db_instance_class` is `db.t4g.small` (or
+   omitted). `variables.tf` already defaults small — no second variable.
+3. `terraform apply` in `infra/aws`.
+4. Force-new-deploy ECS services so ARM64 task defs for `litellm` and
+   `grafana` (and siblings) actually roll.
+5. Verify `https://aea.artof.link/healthz`, `/florist`, and `/grafana/`.
+
+See [README.md](README.md) § FinOps #414 apply checklist.
+
 ## 1. Load secrets
 
 Export from Secrets Manager `${prefix}/app` (see Terraform `app_secret_arn`):

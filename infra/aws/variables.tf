@@ -66,8 +66,9 @@ variable "pilot_ingress_cidrs" {
 }
 
 variable "db_instance_class" {
-  type    = string
-  default = "db.t4g.small"
+  type        = string
+  description = "RDS instance class. Default db.t4g.small (FinOps #414). Same-instance modify keeps data; do not add a second sizing variable. Live aea-pilot may still be db.t4g.medium until DSO applies."
+  default     = "db.t4g.small"
 }
 
 variable "msk_broker_nodes" {

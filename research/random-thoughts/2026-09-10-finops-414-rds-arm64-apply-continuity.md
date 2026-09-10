@@ -1,0 +1,48 @@
+# FinOps #414: data-safe RDS t4g.small + ARM64 ECS apply
+
+> **Tags**: #aea #second-brain #finops #rds #fargate #arm64 #devsecops
+> **Captured**: 2026-09-10
+> **GitLab**: Closes #414 (MRC merges; do not self-merge; no Cloud Agent apply)
+> **Owners to inherit**: @aea-devsecops-platform, @aea-cost-guardian, @aea-mr-coordinator
+
+## What is already true in git
+
+- `infra/aws/variables.tf` already defaults `db_instance_class = db.t4g.small`.
+  Live `aea-pilot` RDS is still `db.t4g.medium` — **apply drift**, not a
+  missing second variable. Do not invent another sizing input.
+- Most ECS task defs already set `runtime_platform { LINUX, ARM64 }`.
+  #414 adds the same block to `litellm` and `grafana`.
+- MSK stays. RDS is not destroyed. No Lightsail migration.
+
+## Data continuity
+
+Same-instance `aws_db_instance.main` class change keeps the identifier,
+storage, and data. Durability is unchanged (same encrypted volume).
+`multi_az = false`, so expect a **brief Single-AZ outage** while RDS
+modifies. Performance risk on `db.t4g.small` is **memory headroom**
+(2 GB vs 4 GB), not data loss — after cutover watch `FreeableMemory`
+and session/inventory working set. This is not a restore and not a
+rebuild.
+
+Sponsor required a manual snapshot **before** apply:
+
+- Snapshot id: `aea-pilot-postgres-pre-t4g-small-20260910-2151`
+- Wait until status is `available`. Do not apply while `creating`.
+
+## DSO apply (laptop amd64 Terraform only)
+
+Never `terraform apply` from a Cursor Cloud VM.
+
+1. Snapshot `available`.
+2. Local `terraform.tfvars` `db_instance_class = db.t4g.small` (or omit).
+3. `terraform apply` in `infra/aws`.
+4. Force-new-deploy ECS so ARM64 revisions roll (`litellm`, `grafana`,
+   and siblings). Rebuild Grafana ECR as `linux/arm64` if `:latest` is
+   still amd64-only.
+5. Verify `https://aea.artof.link/healthz`,
+   `https://aea.artof.link/florist`,
+   `https://aea.artof.link/grafana/`.
+
+Operator checklist: `infra/aws/README.md` § FinOps #414.
+
+Existing IDs: [[2026-09-10-finops-cw-metric-prune-grafana]], [[2026-08-29-finops-arm64-and-rds-sizing]], [[2026-08-29-finops-cost-optimization-rationale-and-enforcement]], [[2026-08-22-cloud-grafana-cloudwatch-troubleshooting-sop]].

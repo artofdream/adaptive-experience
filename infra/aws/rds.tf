@@ -13,6 +13,8 @@ resource "aws_db_instance" "main" {
   identifier                 = "${local.prefix}-postgres"
   engine                     = "postgres"
   engine_version             = "16"
+  # Same-instance class change (medium → small). Keeps storage and data.
+  # Single-AZ: brief downtime during modify. Do not replace this instance.
   instance_class             = var.db_instance_class
   allocated_storage          = 50
   max_allocated_storage      = 200
