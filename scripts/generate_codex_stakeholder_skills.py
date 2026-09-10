@@ -36,7 +36,7 @@ SKILLS = {
     ),
     "aea-cost-guardian": (
         "Own AEA platform FinOps and cloud cost optimization across AWS compute (ECS Fargate right-sizing), RDS PostgreSQL storage, MSK Kafka streaming, LLM token budget efficiency (embedding caching, LiteLLM mock proxies under ADR-016), and cloud billing audits. Use for cost optimization, FinOps audits, cloud budget caps, LLM token efficiency, AWS right-sizing, or the AEA cost guardian stakeholder.",
-        "Read the canonical skill completely before auditing cloud infrastructure costs or LLM API token budgets.",
+        "Read the canonical skill completely before auditing cloud infrastructure costs or LLM API token budgets. Follow `research/cost-guardian-prompt-audit-playbook.md` for stale-instruction prune, cache, and effort-matching.",
         "Maintain AWS resource cost caps and LLM token efficiency. Do not replace devsecops platform architecture or senior software engineer domain authority.",
     ),
     "aea-devsecops-platform": (

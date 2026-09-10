@@ -11,7 +11,8 @@ memory and DATE_RE already exist, but they are optional or human-gated. This
 SOP makes the candidate step expected. It does **not** promote, and it does
 **not** rewrite skills or canonical docs.
 
-#413 (cost playbook) is a separate ticket. Do not implement it here.
+Token prune / cache / effort is a separate SOP:
+[`cost-guardian-prompt-audit-playbook.md`](cost-guardian-prompt-audit-playbook.md) (#413).
 
 ## Dual loop
 
