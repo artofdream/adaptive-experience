@@ -83,6 +83,40 @@ terraform plan
 terraform apply
 ```
 
+### FinOps #414 apply checklist (data-safe; DSO laptop, not Cloud Agent)
+
+`variables.tf` already defaults `db_instance_class = db.t4g.small`. Live
+`aea-pilot` RDS may still be `db.t4g.medium` (apply drift). Confirm local
+`terraform.tfvars` uses `db.t4g.small` or omits the key so the default
+wins. Do **not** add a second sizing variable. Do **not** destroy RDS.
+Do **not** remove MSK. Do **not** apply from a Cursor Cloud VM.
+
+1. **Wait for the pre-apply snapshot**
+   `aea-pilot-postgres-pre-t4g-small-20260910-2151` to reach
+   `available` (`aws rds describe-db-snapshots`). Do not apply while it
+   is still `creating`.
+2. **Plan then apply** from `infra/aws` (amd64 Terraform). Expect
+   in-place RDS `instance_class` modify (same identifier, data stays),
+   ECS task-def ARM64 for `litellm` + `grafana`, and ECS log-group
+   retention 30 → 14. Single-AZ RDS has a brief outage during modify.
+3. **Force new ECS deployments** so Fargate picks ARM64 revisions
+   (task-def registration alone does not roll running tasks):
+   ```bash
+   for svc in gateway bff orchestration relay consumer-workspace \
+     litellm lily-reference-live-test agent-runner grafana; do
+     aws ecs update-service --cluster aea-pilot --service "$svc" \
+       --force-new-deployment --query service.serviceName --output text
+   done
+   ```
+   Rebuild/push an ARM64 Grafana ECR image before rolling `grafana` if
+   the current `:latest` is amd64-only (`platform/docker/Dockerfile.grafana`
+   pins an amd64 digest). LiteLLM uses the public multi-arch tag.
+4. **Verify** after RDS is `available` and services are `STABLE`:
+   `https://aea.artof.link/healthz`, `https://aea.artof.link/florist`,
+   `https://aea.artof.link/grafana/`. Confirm Grafana `AWS/ECS` panels
+   still have data (do not disable those metrics). Vault:
+   `research/random-thoughts/2026-09-10-finops-414-rds-arm64-apply-continuity.md`.
+
 Do **not** apply orchestration `AEA_AI_*` `valueFrom` until `aea-pilot/app`
 has `AEA_AI_ENDPOINT`, `AEA_AI_API_KEY`, `AEA_AI_MODEL`, and
 `LITELLM_MASTER_KEY` (boolean `has(...)` only). Missing JSON key →

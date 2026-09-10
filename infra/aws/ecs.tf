@@ -78,10 +78,12 @@ resource "aws_service_discovery_service" "grafana" {
   }
 }
 
+# FinOps #414: 14d is secondary to CW:MetricMonitorUsage. Grafana Logs
+# Insights panels on /aea/aea-pilot/bff still work at this retention.
 resource "aws_cloudwatch_log_group" "ecs" {
   for_each          = toset(["gateway", "bff", "orchestration", "relay", "consumer", "litellm", "lily-reference-live-test", "agent-runner", "grafana"])
   name              = "/aea/${local.prefix}/${each.key}"
-  retention_in_days = 30
+  retention_in_days = 14
 }
 
 
@@ -402,6 +404,10 @@ resource "aws_ecs_task_definition" "litellm" {
   memory                   = "1024"
   execution_role_arn       = aws_iam_role.ecs_execution.arn
   task_role_arn            = aws_iam_role.ecs_task.arn
+  runtime_platform {
+    operating_system_family = "LINUX"
+    cpu_architecture        = "ARM64"
+  }
   container_definitions = jsonencode([{
     name         = "litellm"
     image        = var.litellm_image
@@ -611,6 +617,10 @@ resource "aws_ecs_task_definition" "grafana" {
   memory                   = "512"
   execution_role_arn       = aws_iam_role.ecs_execution.arn
   task_role_arn            = aws_iam_role.ecs_task.arn
+  runtime_platform {
+    operating_system_family = "LINUX"
+    cpu_architecture        = "ARM64"
+  }
   container_definitions = jsonencode([{
     name         = "grafana"
     image        = "${aws_ecr_repository.grafana.repository_url}:latest"

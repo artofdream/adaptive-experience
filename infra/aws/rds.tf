@@ -9,6 +9,8 @@ resource "aws_db_subnet_group" "main" {
   tags       = { Name = "${local.prefix}-db" }
 }
 
+# Same-instance class change (medium to small). Keeps storage and data.
+# Single-AZ: brief downtime during modify. Do not replace this instance.
 resource "aws_db_instance" "main" {
   identifier                 = "${local.prefix}-postgres"
   engine                     = "postgres"
