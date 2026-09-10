@@ -62,6 +62,11 @@ on disk is enough.
 
 - New idea → note in `research/inbox/` using
   [`templates/inbox-note.md`](templates/inbox-note.md).
+- After a meaningful agent or CI run → lesson *candidate* in `research/inbox/`
+  using [`templates/lesson-candidate.md`](templates/lesson-candidate.md) and
+  [`after-run-lesson-candidate.md`](after-run-lesson-candidate.md). Promote
+  that note to `research/random-thoughts/` only as `@aea-knowledge-guardian`.
+  The reviewer extract must not edit `.cursor/skills/` or canonical `docs/`.
 - Prefer wikilinks (`[[note]]`) and tags (`#aea`, `#promote`, `#risk`) over
   long unstructured dumps.
 - Keep FR/US/BG IDs only when citing existing docs; mark unverified IDs clearly.

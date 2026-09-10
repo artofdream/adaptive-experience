@@ -33,7 +33,9 @@ Codex, Claude, Copilot, Gemini, and Grok remain semantically portable.
 
 Full SOP: `research/claude-obsidian-loop.md`
 
-1. Capture in Obsidian → `research/inbox/` (or private vault notes).
+1. Capture in Obsidian → `research/inbox/` (or private vault notes). After a
+   meaningful run, draft a lesson candidate
+   (`research/after-run-lesson-candidate.md`); do not self-promote.
 2. Triage/synthesize here → promotion candidates under `research/`.
 3. Promote tightly into `docs/` / `implementations/` when asked.
 4. Coherence inconsistencies/gaps → `.cursor/rules/coherence-findings-sop.mdc`

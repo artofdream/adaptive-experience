@@ -68,6 +68,12 @@ if a stale brief were current.
 
 ## Session end & memory extraction SOP
 
+After a meaningful agent or CI run, draft a lesson *candidate* under
+`research/inbox/` (`research/after-run-lesson-candidate.md`). That file is
+not a promotion. `@aea-knowledge-guardian` alone promotes to
+`research/random-thoughts/`. Do not auto-edit `.cursor/skills/` or
+canonical `docs/` from the extract.
+
 Before concluding any session:
 1. Extract session building memory, key decisions, trade-offs, and performance benchmarks to `research/random-thoughts/YYYY-MM-DD-session-memory-log-*.md` (`@aea-knowledge-guardian`).
 2. Run `python scripts/generate_daily_brief.py` to regenerate `research/daily-briefs/YYYY-MM-DD.md`.

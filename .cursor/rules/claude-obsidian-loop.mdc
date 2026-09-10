@@ -15,6 +15,8 @@ follow `research/claude-obsidian-loop.md`.
 ## Boundaries
 
 - **Obsidian / inbox** (`research/inbox/`, or a private vault): fleeting notes.
+  After-run lesson candidates also land here
+  (`research/after-run-lesson-candidate.md`); promote only as Knowledge Guardian.
 - **`research/`**: shared pre-canonical scratch; safe to draft and iterate.
 - **`docs/` + `implementations/`**: canonical; change only with a clear promote
   intent and a tight diff.
