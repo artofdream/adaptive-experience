@@ -62,4 +62,13 @@ Never `terraform apply` from a Cursor Cloud VM.
 
 Operator checklist: `infra/aws/README.md` § FinOps #414.
 
-Existing IDs: [[2026-09-10-finops-cw-metric-prune-grafana]], [[2026-08-29-finops-arm64-and-rds-sizing]], [[2026-08-29-finops-cost-optimization-rationale-and-enforcement]], [[2026-08-22-cloud-grafana-cloudwatch-troubleshooting-sop]].
+Existing IDs: [[2026-09-10-finops-cw-metric-prune-grafana]], [[2026-08-29-finops-arm64-and-rds-sizing]], [[2026-08-29-finops-cost-optimization-rationale-and-enforcement]], [[2026-08-22-cloud-grafana-cloudwatch-troubleshooting-sop]], [[2026-09-10-finops-414-partial-apply-honesty]].
+
+## Apply honesty (2026-09-10 Berlin evening)
+
+The “live RDS still `db.t4g.medium` / apply next” reading of this note is
+**stale**. Partial apply landed on cts-ai via AWS CLI (RDS `db.t4g.small` +
+CW 14d). Fargate ARM64 task-def replacements were **not** applied (amd64-only
+ECR; full ARM apply would brick Path B). Canonical status:
+[[2026-09-10-finops-414-partial-apply-honesty]]. Leftover ARM: #416. Do not
+full-`terraform apply` the 13 add / 20 change / 9 destroy plan.

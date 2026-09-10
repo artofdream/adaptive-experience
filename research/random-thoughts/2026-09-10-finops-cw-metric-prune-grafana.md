@@ -31,4 +31,4 @@ metric namespace that duplicates those series.
   namespace. DSO may disable Insights **after** confirming no live
   panel depends on it. This MR does **not** flip that setting.
 
-Existing IDs: [[2026-08-29-finops-arm64-and-rds-sizing]], [[2026-08-29-finops-cost-optimization-rationale-and-enforcement]], [[2026-08-22-cloud-grafana-cloudwatch-troubleshooting-sop]], [[2026-09-02-x-aea-client-grafana-label]].
+Existing IDs: [[2026-08-29-finops-arm64-and-rds-sizing]], [[2026-08-29-finops-cost-optimization-rationale-and-enforcement]], [[2026-08-22-cloud-grafana-cloudwatch-troubleshooting-sop]], [[2026-09-02-x-aea-client-grafana-label]], [[2026-09-10-finops-414-partial-apply-honesty]].
