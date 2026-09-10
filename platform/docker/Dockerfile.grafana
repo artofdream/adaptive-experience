@@ -1,4 +1,9 @@
-FROM grafana/grafana:10.4.0@sha256:f9811e4e687ffecf1a43adb9b64096c50bc0d7a782f8608530f478b6542de7d5
+# #331 default pin is the amd64 image GitLab pulled (image-digest-pins.csv).
+# Path B multi-arch ECR (#416) overrides AEA_GRAFANA_BASE to grafana/grafana:10.4.0
+# (official tag publishes linux/amd64 + linux/arm64). Do not invent an index digest
+# from a Cloud Agent that cannot reach Docker Hub.
+ARG AEA_GRAFANA_BASE=grafana/grafana:10.4.0@sha256:f9811e4e687ffecf1a43adb9b64096c50bc0d7a782f8608530f478b6542de7d5
+FROM ${AEA_GRAFANA_BASE}
 
 COPY platform/docker/grafana/grafana.ini /etc/grafana/grafana.ini
 COPY platform/docker/grafana/provisioning/datasources/datasources.yml /etc/grafana/provisioning/datasources/datasources.yml

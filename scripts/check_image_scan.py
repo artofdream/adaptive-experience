@@ -279,6 +279,10 @@ def ci_job_errors() -> list[str]:
         errors.append("build-ecr must keep stage ordering so image-scan finishes before ECR push")
     if re.search(r"^  needs:", build_agent, re.M):
         errors.append("build-ecr-agent-runner must keep stage ordering so image-scan finishes before ECR push")
+    if "ecr_multiarch_push.sh shop" not in build:
+        errors.append("build-ecr must push multi-arch images via scripts/ecr_multiarch_push.sh shop")
+    if "ecr_multiarch_push.sh agent-runner" not in build_agent:
+        errors.append("build-ecr-agent-runner must push multi-arch via scripts/ecr_multiarch_push.sh agent-runner")
     return errors
 
 

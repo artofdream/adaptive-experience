@@ -18,6 +18,11 @@ output "ecr_agent_runner_url" {
   value = aws_ecr_repository.agent_runner.repository_url
 }
 
+output "ecr_grafana_url" {
+  description = "Optional GitLab CI var AEA_ECR_GRAFANA. build-ecr can also derive this from AEA_ECR_GATEWAY."
+  value       = aws_ecr_repository.grafana.repository_url
+}
+
 output "gitlab_ci_role_arn" {
   description = "Set GitLab CI variable AWS_ROLE_ARN to this value (OIDC)."
   value       = aws_iam_role.gitlab_ci.arn
