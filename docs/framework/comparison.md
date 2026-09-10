@@ -151,6 +151,7 @@ Primary AEA sources (probed on GitLab `main`, not chat):
 - The evidence. This page does not copy third-party bench deltas as if Path B had run them.
 - The merge gate. AEA treats merge as an independent job. The hat that produced the change is not the judge of “verified.”
 - Honesty as a sensor. Closing a ticket, merging CSS, or publishing Pages is not a journey clip.
+- Coding-agent memory posts (10 Sep X-scan) are a **map**. They do not change the live shop. See the [journal](journal.html#related-posts-are-not-the-shop).
 
 ## What AEA claims here
 
@@ -165,5 +166,6 @@ Only what has a probe, or Unknown:
 
 - Live Stripe, a finished dual-viewport, a 14/14 skill score, GAIA, Terminal Bench, or a million generated lines.
 - Endorsement by any organization named in related work.
+- That AEA installed a second Second Brain product, or that a paid token hillclimb is running.
 
 Back to the [framework](index.html), the [schema](schema.html), the [glossary](glossary.html), the [Path B case study](path-b.html), or the [journal](journal.html).
