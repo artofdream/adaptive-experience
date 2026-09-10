@@ -78,11 +78,11 @@ resource "aws_service_discovery_service" "grafana" {
   }
 }
 
+# FinOps #414: 14d is secondary to CW:MetricMonitorUsage. Grafana Logs
+# Insights panels on /aea/aea-pilot/bff still work at this retention.
 resource "aws_cloudwatch_log_group" "ecs" {
   for_each          = toset(["gateway", "bff", "orchestration", "relay", "consumer", "litellm", "lily-reference-live-test", "agent-runner", "grafana"])
   name              = "/aea/${local.prefix}/${each.key}"
-  # FinOps #414: 14d is secondary to CW:MetricMonitorUsage. Grafana Logs
-  # Insights panels on /aea/aea-pilot/bff still work at this retention.
   retention_in_days = 14
 }
 
