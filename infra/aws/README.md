@@ -11,9 +11,12 @@ T-03 Select. Do not open `/florist` in the same browser as the shop (CSRF).
 
 **This directory is IaC + operator docs.** `@aea-devsecops-platform` operates
 `plan`/`apply`/bootstrap. The scrum master does not run terraform.
-GitLab CI `build-ecr` (OIDC, `main` only) pushes images to ECR.
-`deploy-ecs` force-deploys ECS after a successful image build and smokes
-`GET $AEA_PUBLIC_URL/healthz`.
+GitLab CI `build-ecr` (OIDC, `main` only) pushes **multi-arch** images
+(`linux/amd64` + `linux/arm64` manifest lists) to ECR via
+`scripts/ecr_multiarch_push.sh` (#416). `deploy-ecs` force-deploys ECS after
+a successful image build and smokes `GET $AEA_PUBLIC_URL/healthz`.
+Do **not** apply ARM64 task defs until the verify commands below show both
+platforms on the live `:latest` tags.
 
 Canonical public origin: `https://aea.artof.link` (no `www`, no `:443`, no
 trailing slash). `AEA_ALLOWED_ORIGIN` must be that exact value.
@@ -88,10 +91,12 @@ terraform apply
 **Partial apply 2026-09-10 Berlin evening (cts-ai AWS CLI, not full
 `terraform apply`):** RDS `aea-pilot-postgres` is `db.t4g.small`; CW
 retention on the listed `/aea/aea-pilot/*` groups is 14d. Fargate ARM64
-task-def replacements are **not** applied — live ECR is linux/amd64 only
-(`bff`/`gateway`/`orchestration` amd64; grafana index amd64-only). Full
-ARM apply would brick Path B. Leftover: GitLab #416. Vault:
-`research/random-thoughts/2026-09-10-finops-414-partial-apply-honesty.md`.
+task-def replacements are **not** applied — live ECR was linux/amd64 only
+when #414 was partially applied (`bff`/`gateway`/`orchestration` amd64;
+grafana index amd64-only). Full ARM apply would brick Path B until #416
+multi-arch images are on ECR **and** inspected. Vault:
+`research/random-thoughts/2026-09-10-finops-414-partial-apply-honesty.md`
+and `research/random-thoughts/2026-09-10-path-b-multiarch-ecr-416.md`.
 Do **not** apply the 13 add / 20 change / 9 destroy plan.
 
 `variables.tf` already defaults `db_instance_class = db.t4g.small`. Confirm
@@ -116,9 +121,11 @@ RDS. Do **not** remove MSK. Do **not** apply from a Cursor Cloud VM.
        --force-new-deployment --query service.serviceName --output text
    done
    ```
-   Rebuild/push an ARM64 Grafana ECR image before rolling `grafana` if
-   the current `:latest` is amd64-only (`platform/docker/Dockerfile.grafana`
-   pins an amd64 digest). LiteLLM uses the public multi-arch tag.
+   Rebuild/push Grafana via `build-ecr` (`scripts/ecr_multiarch_push.sh`)
+   and inspect both platforms before rolling `grafana`. The #331 compose
+   pin stays the amd64 digest; CI overrides `AEA_GRAFANA_BASE` to the
+   official `grafana/grafana:10.4.0` tag (amd64+arm64). LiteLLM uses the
+   public tag — inspect it before ARM cutover (see Image builds).
 4. **Verify** after RDS is `available` and services are `STABLE`:
    `https://aea.artof.link/healthz`, `https://aea.artof.link/florist`,
    `https://aea.artof.link/grafana/`. Confirm Grafana `AWS/ECS` panels
@@ -141,6 +148,7 @@ deploy jobs exist:
 | `AEA_ECR_BFF` | `ecr_bff_url` |
 | `AEA_ECR_GATEWAY` | `ecr_gateway_url` |
 | `AEA_ECR_AGENT_RUNNER` | `ecr_agent_runner_url` |
+| `AEA_ECR_GRAFANA` | `ecr_grafana_url` (optional; `build-ecr` can derive from `AEA_ECR_GATEWAY`) |
 | `AEA_ECS_CLUSTER` | `ecs_cluster_name` |
 | `AEA_PUBLIC_URL` | `public_url` |
 
@@ -151,6 +159,43 @@ Optional: set `AEA_OIDC_AUD` if the OIDC audience is not `https://gitlab.com`.
 ECS images must be built in GitLab CI and pushed to ECR via OIDC. Local
 `docker build` is for compose/dev; do **not** push those images to the pilot
 ECR unless break-glass is documented.
+
+`build-ecr` / `build-ecr-agent-runner` run `scripts/ecr_multiarch_push.sh`
+(`docker buildx`, platforms `linux/amd64,linux/arm64`, `--push` of `:latest`
+and `$CI_COMMIT_SHA`). That is the #416 **build** track. It does **not**
+flip live Fargate to ARM64 and does **not** `terraform apply`.
+
+### Verify arch before ARM cutover (#416)
+
+Run from a host that can reach ECR (DSO laptop / GitLab job), not from a
+Cloud Agent with Docker Hub/GHCR egress blocked:
+
+```bash
+# After main has built+pushed. Replace the registry prefix with terraform output.
+for img in orchestration bff gateway agent-runner grafana; do
+  docker buildx imagetools inspect \
+    "${AEA_ECR_PREFIX}/aea-pilot/${img}:latest"
+done
+
+# Public LiteLLM used by the litellm task (not an ECR build).
+docker buildx imagetools inspect ghcr.io/berriai/litellm:main-latest
+```
+
+Each inspect must list **linux/amd64** and **linux/arm64**. ECR
+`batch-get-image` / `describe-images` showing a single-manifest amd64
+config is the old blocker — do not apply ARM64 task defs yet.
+
+LiteLLM: this Cloud Agent cannot reach `ghcr.io`. Official
+`ghcr.io/berriai/litellm` tags are published multi-arch; **confirm with
+the inspect above** before ARM apply. If `main-latest` lacks `linux/arm64`,
+do **not** pin a guessed tag. Either pick a release tag whose inspect
+shows both platforms, or add an `aea-pilot/litellm` ECR repo and build it
+with the same `ecr_multiarch_push.sh` path. Missing arm64 on LiteLLM is a
+cutover **blocker** (the proxy would fail to pull/start on ARM64 Fargate).
+
+image-scan (#332) still builds native amd64 commit-SHA tags and does not
+push. #331 digest pins stay on the GitLab-recorded amd64 evidence; CI may
+fall back to the same tag when a pin is not an index.
 
 Gateway task defs set `AEA_GATEWAY_MODE=alb`. The gateway image uses
 `nginx-alb.conf` (HTTP :8080 behind the ALB). Compose keeps ephemeral TLS on

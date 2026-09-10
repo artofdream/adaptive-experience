@@ -18,7 +18,10 @@ DSO apply order (laptop amd64 Terraform; never a Cloud Agent):
    omitted). `variables.tf` already defaults small — no second variable.
 3. `terraform apply` in `infra/aws`.
 4. Force-new-deploy ECS services so ARM64 task defs for `litellm` and
-   `grafana` (and siblings) actually roll.
+   `grafana` (and siblings) actually roll — **only after** #416 ECR
+   inspect shows `linux/amd64` + `linux/arm64` on
+   `bff`/`gateway`/`orchestration`/`agent-runner`/`grafana` and on
+   `ghcr.io/berriai/litellm:main-latest` (see README § Image builds).
 5. Verify `https://aea.artof.link/healthz`, `/florist`, and `/grafana/`.
 
 See [README.md](README.md) § FinOps #414 apply checklist.

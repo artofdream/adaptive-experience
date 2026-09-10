@@ -44,6 +44,8 @@ Fargate ARM64 task-def replacements were **not** applied.
 Reason: live ECR images are **linux/amd64 only** (`bff`/`gateway`/`orchestration` config arch=`amd64`; grafana index amd64-only). Full ARM apply would brick Path B.
 
 Follow-up issue **#416**: multi-arch (ARM64) ECR builds before Fargate ARM cutover.
+Build-track SOP: [[2026-09-10-path-b-multiarch-ecr-416]]. Live ARM prove +
+task-def apply remain on #414.
 
 ## Full terraform plan (intentionally not applied)
 
