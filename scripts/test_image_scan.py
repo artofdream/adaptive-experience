@@ -83,6 +83,9 @@ class ImageScanGateTests(unittest.TestCase):
         self.assertIn("job: image-scan", deploy_agent)
         self.assertNotRegex(job_block("build-ecr"), r"^  needs:", msg="build-ecr keeps stage order")
         self.assertNotRegex(job_block("build-ecr-agent-runner"), r"^  needs:")
+        self.assertIn("ecr_multiarch_push.sh shop", job_block("build-ecr"))
+        self.assertIn("ecr_multiarch_push.sh agent-runner", job_block("build-ecr-agent-runner"))
+        self.assertIn("linux/amd64,linux/arm64", job_block("build-ecr"))
 
     def test_header_comment_calls_image_scan_blocking(self) -> None:
         header = "\n".join(CI.read_text(encoding="utf-8").splitlines()[:14])
