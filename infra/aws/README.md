@@ -85,11 +85,19 @@ terraform apply
 
 ### FinOps #414 apply checklist (data-safe; DSO laptop, not Cloud Agent)
 
-`variables.tf` already defaults `db_instance_class = db.t4g.small`. Live
-`aea-pilot` RDS may still be `db.t4g.medium` (apply drift). Confirm local
-`terraform.tfvars` uses `db.t4g.small` or omits the key so the default
-wins. Do **not** add a second sizing variable. Do **not** destroy RDS.
-Do **not** remove MSK. Do **not** apply from a Cursor Cloud VM.
+**Partial apply 2026-09-10 Berlin evening (cts-ai AWS CLI, not full
+`terraform apply`):** RDS `aea-pilot-postgres` is `db.t4g.small`; CW
+retention on the listed `/aea/aea-pilot/*` groups is 14d. Fargate ARM64
+task-def replacements are **not** applied — live ECR is linux/amd64 only
+(`bff`/`gateway`/`orchestration` amd64; grafana index amd64-only). Full
+ARM apply would brick Path B. Leftover: GitLab #416. Vault:
+`research/random-thoughts/2026-09-10-finops-414-partial-apply-honesty.md`.
+Do **not** apply the 13 add / 20 change / 9 destroy plan.
+
+`variables.tf` already defaults `db_instance_class = db.t4g.small`. Confirm
+local `terraform.tfvars` uses `db.t4g.small` or omits the key so the
+default wins. Do **not** add a second sizing variable. Do **not** destroy
+RDS. Do **not** remove MSK. Do **not** apply from a Cursor Cloud VM.
 
 1. **Wait for the pre-apply snapshot**
    `aea-pilot-postgres-pre-t4g-small-20260910-2151` to reach
