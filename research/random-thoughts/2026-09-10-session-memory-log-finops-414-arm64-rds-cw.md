@@ -3,7 +3,7 @@
 > **Tags**: #aea #session-memory #second-brain #finops #414
 > **Captured**: 2026-09-10
 > **Author**: `@aea-devsecops-platform` with `@aea-knowledge-guardian`
-> **Related**: [[2026-09-10-finops-414-rds-arm64-apply-continuity]] · [[2026-09-10-finops-cw-metric-prune-grafana]] · #414
+> **Related**: [[2026-09-10-finops-414-rds-arm64-apply-continuity]] · [[2026-09-10-finops-cw-metric-prune-grafana]] · #414 · #415
 
 ## Why
 
@@ -21,6 +21,12 @@ log retention. Snapshot
 - ARM64 `runtime_platform` on `litellm` + `grafana` to match siblings.
 - ECS log retention 14 days (secondary). Metric prune is a vault note
   so Grafana `AWS/ECS` + Logs Insights panels stay intact.
+- Sponsor 2026-09-10: stay **us-east-1** (Stockholm Fargate ~+10%,
+  RDS small ~+3%, NAT ~+2% — not cheaper). Prior `$0.04/hr` Compute
+  SPs **retired**; re-evaluate a plan only after apply + 1-week cost
+  check (coordinator schedules the re-eval; do not buy in this MR).
+  Snapshot `aea-pilot-postgres-pre-t4g-small-20260910-2151` is
+  **available**. Keep MSK. No Cloud Agent apply.
 
 ## Artifacts
 

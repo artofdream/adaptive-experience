@@ -2,7 +2,7 @@
 
 > **Tags**: #aea #second-brain #finops #rds #fargate #arm64 #devsecops
 > **Captured**: 2026-09-10
-> **GitLab**: Closes #414 (MRC merges; do not self-merge; no Cloud Agent apply)
+> **GitLab**: #414 / !492 merged (code/docs). Vault addendum Closes #415.
 > **Owners to inherit**: @aea-devsecops-platform, @aea-cost-guardian, @aea-mr-coordinator
 
 ## What is already true in git
@@ -27,13 +27,30 @@ rebuild.
 Sponsor required a manual snapshot **before** apply:
 
 - Snapshot id: `aea-pilot-postgres-pre-t4g-small-20260910-2151`
-- Wait until status is `available`. Do not apply while `creating`.
+- Status (sponsor, 2026-09-10): **available**. Apply may proceed on
+  the DSO laptop. Still no Cloud Agent apply.
+
+## Sponsor 2026-09-10 — region, Savings Plan, re-eval
+
+Stay on the current FinOps path (ARM64 Fargate + RDS `db.t4g.small` +
+CW metric prune). Keep MSK. Do not migrate region. Do not buy a plan
+in the #414 / #415 MRs.
+
+1. **eu-north-1 vs us-east-1.** Stockholm list is not cheaper: Fargate
+   ~+10%, RDS small ~+3%, NAT ~+2%. **Stay `us-east-1` for now.** Do
+   not move the pilot stack to `eu-north-1`.
+2. **Compute Savings Plan.** Prior tiny `$0.04/hr` Compute SPs are
+   **retired**. Re-evaluate buying a plan **after** the FinOps apply
+   and a **1-week cost re-check**. Do not purchase in this MR.
+3. **1-week re-eval** is scheduled by the coordinator. This note does
+   not create that routine.
 
 ## DSO apply (laptop amd64 Terraform only)
 
 Never `terraform apply` from a Cursor Cloud VM.
 
-1. Snapshot `available`.
+1. Snapshot `aea-pilot-postgres-pre-t4g-small-20260910-2151` is
+   **available** (sponsor 2026-09-10).
 2. Local `terraform.tfvars` `db_instance_class = db.t4g.small` (or omit).
 3. `terraform apply` in `infra/aws`.
 4. Force-new-deploy ECS so ARM64 revisions roll (`litellm`, `grafana`,
