@@ -25,6 +25,12 @@ The **AEA Cost Guardian** owns platform FinOps, cloud cost optimization, AWS res
 4. **6-Way Stakeholder Skill Portability**:
    * Maintain skill synchronization across all 6 model adapters by running `python scripts/generate_codex_stakeholder_skills.py`.
 
+## Token playbook (X2 adapt)
+
+Written SOP: `research/cost-guardian-prompt-audit-playbook.md` (#413).
+Cite `research/random-thoughts/2026-09-10-aea-vs-x-scan-gipp-beam-avid.md` / #411; do not duplicate.
+Paid API hillclimb stays **parked** (sponsor).
+
 ## Verification Command
 
 ```bash

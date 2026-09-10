@@ -204,6 +204,37 @@ flowchart TD
 Manual trigger after a meaningful run. Same class as session-start
 compliance: no sensor proves a candidate was written.
 
+## Diagram 5 — Cost-guardian prompt-audit / cache / effort (#413)
+
+`@aea-cost-guardian` with `@aea-ai-engineer` prune stale instructions,
+use existing cache/mock routes, and match effort. Config changes run
+existing evals (guards, assistant SLO, Docker integration). Paid API
+hillclimb stays parked (sponsor). SOP:
+`research/cost-guardian-prompt-audit-playbook.md`. Cite, do not
+duplicate,
+`research/random-thoughts/2026-09-10-aea-vs-x-scan-gipp-beam-avid.md`
+(X2 adapt; X3 park).
+
+```mermaid
+flowchart TD
+    AUDIT["prompt-audit<br/>stale-instruction prune"]
+    CACHE["cache / mock<br/>LOAD-003 + local embed"]
+    EFFORT["effort-match<br/>path vs model"]
+    EVAL["existing eval<br/>guards / SLO / Docker"]
+    PARK["paid hillclimb"]
+    SOP["cost-guardian-prompt-audit-playbook.md"]
+
+    SOP --> AUDIT
+    SOP --> CACHE
+    SOP --> EFFORT
+    AUDIT --> EVAL
+    CACHE --> EVAL
+    EFFORT --> EVAL
+    PARK -. "parked sponsor" .-> SOP
+```
+
+Manual FinOps loop. Guards are the eval. Not a paid model-tier sweep.
+
 ## Node catalog
 
 | Node | Type | Trigger | Owner | Status |
@@ -243,6 +274,7 @@ compliance: no sensor proves a candidate was written.
 | `coherence-findings-sop.mdc` | governance SOP | on any coherence finding | `aea-coherence-guardian` | manual discipline |
 | `claude-obsidian-loop.mdc` | content lifecycle | on any capture/promotion | human (Obsidian) + AI (triage) | manual |
 | `research/after-run-lesson-candidate.md` | extract SOP | after a meaningful agent/CI run | task+reviewer draft; `aea-knowledge-guardian` promotes | **manual**; inbox candidate only; no skill/docs auto-edit (#412) |
+| `research/cost-guardian-prompt-audit-playbook.md` | FinOps SOP | on token / prompt / model-tier config work | `aea-cost-guardian` with `aea-ai-engineer` | **manual**; eval-gated; paid hillclimb parked (#413) |
 | `figma-shop-ui-sync.mdc` | sync SOP | on any `edge/gateway/ui/` change | `aea-ux-designer` | manual, not CI-enforced |
 | `build-ecr` / `deploy-ecs` | deploy loop | CI, on `main` + `platform/`/`edge/`/`.gitlab-ci.yml` changes | `aea-devsecops-platform` | automated; `deploy-ecs` and `deploy-ecs-agent-runner` `needs` required `image-scan` (#332); `build-ecr` keeps stage order so the scan finishes before ECR push |
 | `android-bundle-release` | mobile deliverable | CI manual on android/`.gitlab-ci.yml` changes when `ANDROID_UPLOAD_KEYSTORE` set | `aea-devsecops-platform` | manual trigger; signed `.aab` artifact only |
@@ -390,7 +422,8 @@ recurring blind spot outranks an expensive fix for a rare one.
     brief before acting — this is inherent to the mechanism (you can't
     automatically prove a model read something), not a fixable gap so
     much as a known soft spot. The #412 after-run lesson-candidate SOP
-    is the same class: expected after a meaningful run, not CI-enforced.
+    and the #413 cost-guardian playbook are the same class: expected
+    when their trigger fires, not CI-enforced.
 14. **Stakeholder cadence status guard — closed by #234.**
    `scripts/check_stakeholder_cadence.py` and `stakeholder-cadence-guard`
    CI job continuously monitor role activity windows, active issue owners,
