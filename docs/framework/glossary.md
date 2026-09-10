@@ -76,6 +76,16 @@ A governance rule: once a requirement (FR/NFR) or business goal ID is assigned i
 The 14 specialized quality perspectives AEA uses to inspect code and architecture (e.g. UX Designer, AppSec Auditor, Cost Guardian, Performance Guardian). They represent areas of review, not a 14-person bureaucracy.
 - **Where to see it:** Listed on the [Schema](schema.html#team-roles-and-responsibilities).
 
+### Taxonomy Map Only
+A related-work idea we recorded so later sessions do not forget it. It is **not** a live shop feature and not a new requirement ID.
+- **Why it matters:** Public posts about agent memory or cost playbooks can look like product changes. The honest-status ledger says when they are only a map.
+- **Where to see it:** [Comparison ledger](comparison.html#honest-status-ledger) (10 Sep X-scan row) and [Related posts are not the shop](journal.html#related-posts-are-not-the-shop).
+
+### Lesson Candidate
+A short inbox note after a run: what failed, what changed, which fix worked. It is not an automatic rewrite of skills or canonical docs.
+- **Why it matters:** Reusing a correction beats growing one giant prompt. Promoting it still needs a Knowledge Guardian pass.
+- **Where to see it:** [Comparison](comparison.html#honest-status-ledger). Follow-up ticket #412; not shipped as a live shop feature.
+
 ---
 
 ## Related Documentation

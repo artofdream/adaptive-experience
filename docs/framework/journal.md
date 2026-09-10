@@ -67,6 +67,15 @@ A short history of Adaptive Experience Architecture: what was difficult, how we 
 
 ---
 
+## Related posts are not the shop
+
+- **The Challenge:** Public posts about dual-loop agents, token playbooks, and shared wikis read as if the florist should install a second memory product or let agents rewrite their own rules.
+- **The Solution:** Treat those posts as a **taxonomy map** on the [comparison](comparison.html#honest-status-ledger) page. Keep AEA memory in git (`research/` + DATE_RE). Domain services still decide stock and price.
+- **What Shipped:** A 10 Sep compare note and paper/PDF revision (GitLab #411). Lesson-candidate SOP and cost playbook stay follow-up tickets. No Agentic Stack install. No paid hillclimb.
+- **The Lesson Learned:** A useful idea from X is not a Path B probe. Cite it; do not round it up to “the shop now does that.”
+
+---
+
 ## How This Journal Stays Honest
 
 - **Curated Milestones Only:** Focuses on substantive architectural decisions, not routine bug fixes.

@@ -107,6 +107,7 @@ To avoid confusing architecture mental models with live production software, eve
 | **Second Brain Memory Vaults** | **Live / Operational** | 4-vault curated Obsidian structure (Skills, Constraints, Graph, Daily Briefs) in Git. |
 | **5 Concentric Wrapping Floors** | **Taxonomy Map Only** | Conceptual framing (Kocer) adapted to explain how AEA layers nest; not a separate library. |
 | **rvaniaaaa 6-Role Second Brain** | **Taxonomy Map Only** | Pattern evaluated for pre-irreversible gates; 6 generic role collapse is rejected. |
+| **10 Sep X-scan (gipp / beam / avid)** | **Taxonomy Map Only** | Dual-loop lessons, token playbook, shared-wiki prompt. Not AEA evidence. Vault: `research/random-thoughts/2026-09-10-aea-vs-x-scan-gipp-beam-avid.md`. |
 | **CF-054 Dual-Viewport Live Re-record** | **Unknown / Regressed** | CSS merged to repo, but dual-viewport side-by-side video clip re-recording remains unprobed. |
 | **Live Stripe Card Gateway** | **Simulated Extension** | Runs deterministic payment simulation engine under ADR-016; live Stripe is not active. |
 | **Third-Party Benchmark Scores** | **Not AEA Evidence** | GAIA, Terminal Bench, and 1M-line metrics belong strictly to cited papers [2], [6], [7]. |
@@ -127,6 +128,9 @@ Related work (cited, not inherited as AEA evidence):
 10. 0xWast3 (wast3), “Memory Engineering for Kimi,” Aug 2026. Context window is a workspace, not memory; splits procedure, correction, and relationship memory.
 11. Kocer (@kocer_eth), “Five Layers of Agent Engineering: Each One Wraps the One Below It,” Aug 2026. Resolves harness vs loop vs graph as five concentric floors (prompt, context, harness, loop, graph).
 12. rvaniaaa (@rvaniaaaa), “The Second Brain That Acts. The Agent Team That Remembers,” Aug 2026. Six non-overlapping roles around a compiled second brain; guardian blocks irreversible acts before executor.
+13. gippp69 (@gippp69), X post 2097659069456654812, retrieved 10 Sep 2026 (x.com 403; text via fxtwitter). Dual-loop after-run lessons as small memory files. Not AEA evidence.
+14. beamnxw (@beamnxw), X post 2097746415632155110, retrieved 10 Sep 2026. Claude cost playbook (audit / cache / effort) plus agent-memory commentary. Not AEA evidence. Paid hillclimb parked.
+15. Av1dlive (@Av1dlive), X post 2097639365644279857, retrieved 10 Sep 2026. Shared-wiki / Agentic Stack prompt (provenance, knowledge ≠ authority). Not an instruction to install a second Second Brain product.
 
 Primary AEA sources (probed on GitLab `main`, not chat):
 
@@ -147,6 +151,7 @@ Primary AEA sources (probed on GitLab `main`, not chat):
 - The evidence. This page does not copy third-party bench deltas as if Path B had run them.
 - The merge gate. AEA treats merge as an independent job. The hat that produced the change is not the judge of “verified.”
 - Honesty as a sensor. Closing a ticket, merging CSS, or publishing Pages is not a journey clip.
+- Coding-agent memory posts (10 Sep X-scan) are a **map**. They do not change the live shop. See the [journal](journal.html#related-posts-are-not-the-shop).
 
 ## What AEA claims here
 
@@ -161,5 +166,6 @@ Only what has a probe, or Unknown:
 
 - Live Stripe, a finished dual-viewport, a 14/14 skill score, GAIA, Terminal Bench, or a million generated lines.
 - Endorsement by any organization named in related work.
+- That AEA installed a second Second Brain product, or that a paid token hillclimb is running.
 
 Back to the [framework](index.html), the [schema](schema.html), the [glossary](glossary.html), the [Path B case study](path-b.html), or the [journal](journal.html).
