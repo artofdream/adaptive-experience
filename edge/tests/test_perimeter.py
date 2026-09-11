@@ -158,7 +158,9 @@ class FakeOrchestration:
                     "reminders": {"items": [{
                         "occasion_type": "birthday", "days_until_event": 14,
                         "reminder_text": "Upcoming: Mother's Birthday in 14 days.",
-                        "recipient_relation": "mother", "secret": "omit"}]}},
+                        "recipient_relation": "mother", "secret": "omit"}]},
+                    "prior_order": {"product_id": "classic-rose-dozen",
+                                    "secret": "omit", "recipient": "Mum"}},
                 "ai_generated": True, "assistant_mode": "primary",
                 "disclosure": "AI-generated; review it."}
 
@@ -361,7 +363,8 @@ class PerimeterTests(unittest.TestCase):
                 "reminders": {"items": [{
                     "occasion_type": "birthday", "days_until_event": 14,
                     "reminder_text": "Upcoming: Mother's Birthday in 14 days.",
-                    "recipient_relation": "mother"}]}},
+                    "recipient_relation": "mother"}]},
+                "prior_order": {"product_id": "classic-rose-dozen"}},
             "ai_generated": True, "assistant_mode": "primary",
             "disclosure": "AI-generated; review it.",
         }, json.loads(body))
@@ -594,6 +597,27 @@ class PerimeterTests(unittest.TestCase):
         self.assertEqual(200, self.call("GET", "/api/v1/workspace", {**self.auth, "cookie": cookie})[0])
         self.assertEqual(429, self.call("GET", "/api/v1/workspace", {**self.auth, "cookie": cookie})[0])
 
+    def test_workspace_keeps_prior_order_facet_and_drops_secrets(self):
+        shaped = BffApp._least_data_workspace({
+            "context_version": 2,
+            "facets": {"prior_order": {
+                "product_id": "classic-rose-dozen", "secret": "omit",
+                "recipient": "Mum", "order_id": "should-drop"}},
+            "ai_generated": False, "assistant_mode": "reference",
+            "disclosure": "Automated interpretation; review and correct before ordering."})
+        prior = shaped["facets"]["prior_order"]
+        self.assertEqual({"product_id": "classic-rose-dozen"}, prior)
+        self.assertNotIn("secret", prior)
+        self.assertNotIn("recipient", prior)
+        self.assertNotIn("order_id", prior)
+
+    def test_workspace_omits_empty_prior_order_facet(self):
+        shaped = BffApp._least_data_workspace({
+            "context_version": 1,
+            "facets": {"prior_order": {"product_id": "  ", "secret": "omit"}},
+            "ai_generated": False})
+        self.assertNotIn("prior_order", shaped["facets"])
+
     def test_workspace_keeps_prior_order_hint_and_drops_secrets(self):
         shaped = BffApp._least_data_workspace({
             "context_version": 2,
@@ -820,7 +844,10 @@ class PerimeterTests(unittest.TestCase):
             "occasion_type": "birthday", "days_until_event": 14,
             "reminder_text": "Upcoming: Mother's Birthday in 14 days.",
             "recipient_relation": "mother"}], reminders)
+        self.assertEqual({"product_id": "classic-rose-dozen"},
+                         json.loads(body)["facets"]["prior_order"])
         self.assertNotIn(b"secret", body)
+        self.assertNotIn(b"Mum", body)
 
     def test_crm_occasions_delete_forwards_customer_opt_out(self):
         cookie, csrf = self.session()

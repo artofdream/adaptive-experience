@@ -349,6 +349,14 @@ class BrowserUiTests(unittest.TestCase):
         self.assertIn("prior_order_hint", self.script)
         self.assertIn("Ordered earlier in this browser", self.script)
         self.assertIn('item.prior_order_hint ? "Reorder" : "Select"', self.script)  # FR-008
+        self.assertIn('id="need-reorder"', self.html)
+        self.assertIn("Reorder previous bouquet", self.html)
+        self.assertIn("this browser's private recall", self.html)
+        self.assertIn("renderNeedReorder", self.script)
+        self.assertIn("hasCustomerMessages", self.script)
+        self.assertIn("hasOccasion", self.script)
+        self.assertIn("need-reorder-cta", self.script)
+        self.assertIn(".need-reorder", self.css)
         self.assertIn("state.step = 4;", self.script)
         select_fn = self.script.split("async function selectProduct", 1)[1].split("function openHelp", 1)[0]
         self.assertLess(select_fn.find("state.step = 4;"), select_fn.find("await refreshWorkspace()"))

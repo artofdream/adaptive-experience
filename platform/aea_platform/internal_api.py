@@ -369,6 +369,10 @@ class InternalOrchestrationApp:
         reminders = self._occasion_reminders(session_id)
         if reminders:
             facets["reminders"] = {"items": reminders}
+        prior_id = self.order.prior_product_id(session_id)
+        if prior_id:
+            # Least-data FR-008 Need affordance: opaque catalog SKU only.
+            facets["prior_order"] = {"product_id": prior_id}
         return {
             "context_version": int(loaded["context_version"]),
             "facets": facets,

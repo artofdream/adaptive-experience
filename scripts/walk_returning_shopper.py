@@ -55,11 +55,11 @@ def classify_same_session_hint(
             "same-session hint needs an accepted order; payment excluded this run",
         )
     if hint_visible:
-        return "pass", "Ordered earlier in this session visible on T-03"
+        return "pass", "Ordered earlier in this browser visible on T-03"
     return "fail", "accepted order in this session but T-03 prior-order hint missing"
 
 
-def classify_durable_recall(*, recalled: bool, issue_193_open: bool = True) -> tuple[str, str]:
+def classify_durable_recall(*, recalled: bool, issue_193_open: bool = False) -> tuple[str, str]:
     if recalled:
         return "pass", "prior order visible in a new browser without login"
     if issue_193_open:
@@ -68,6 +68,18 @@ def classify_durable_recall(*, recalled: bool, issue_193_open: bool = True) -> t
             "durable prior-order recall is not implemented until #193",
         )
     return "fail", "durable recall expected after #193 but not visible"
+
+
+def classify_need_reorder_card(*, card_visible: bool, payment_included: bool) -> tuple[str, str]:
+    """Path B / Path A Need-phase FR-008 card (#419). Requires an accepted order."""
+    if not payment_included:
+        return (
+            "blocked",
+            "Need reorder card needs an accepted order; payment excluded this run",
+        )
+    if card_visible:
+        return "pass", "Need-phase Reorder card visible from durable browser recall"
+    return "fail", "accepted order recalled but Need-phase Reorder card missing"
 
 
 def classify_reorder(*, recall_result: str, reordered: bool) -> tuple[str, str]:
@@ -222,6 +234,7 @@ def run_walk(args: argparse.Namespace) -> dict:
                     "context_version": body.get("context_version"),
                     "rec_count": len(items or []),
                     "prior_order_hints": hints,
+                    "prior_order": (body.get("facets") or {}).get("prior_order"),
                     "order": (body.get("facets") or {}).get("order"),
                 }
         if response.request.method in ("POST", "PATCH", "PUT"):
@@ -377,7 +390,7 @@ def run_walk(args: argparse.Namespace) -> dict:
                     ),
                     (
                         "M8 same-session recall",
-                        "Ordered earlier in this session on T-03 after accepted order",
+                        "Ordered earlier in this browser on T-03 after accepted order",
                     ),
                 ):
                     _step(report, tile, expected, select_reason, "blocked")
@@ -464,7 +477,7 @@ def run_walk(args: argparse.Namespace) -> dict:
                     _step(
                         report,
                         "M8 same-session recall",
-                        "Ordered earlier in this session on T-03 after accepted order",
+                        "Ordered earlier in this browser on T-03 after accepted order",
                         hint_reason,
                         hint_result,
                     )
@@ -516,7 +529,7 @@ def run_walk(args: argparse.Namespace) -> dict:
                     )
                     hinted = page.locator(
                         "#recommendation-cards .hint",
-                        has_text="Ordered earlier in this session",
+                        has_text="Ordered earlier in this browser",
                     )
                     hint_result, hint_reason = classify_same_session_hint(
                         payment_included=True, hint_visible=hinted.count() > 0
@@ -524,7 +537,7 @@ def run_walk(args: argparse.Namespace) -> dict:
                     _step(
                         report,
                         "M8 same-session recall",
-                        "Ordered earlier in this session on T-03 after accepted order",
+                        "Ordered earlier in this browser on T-03 after accepted order",
                         f"{hint_reason}. cards={dump().get('cards')}",
                         hint_result,
                     )
@@ -533,7 +546,7 @@ def run_walk(args: argparse.Namespace) -> dict:
                     if hint_result == "pass":
                         hinted_card = page.locator("#recommendation-cards .card").filter(
                             has=page.locator(
-                                ".hint", has_text="Ordered earlier in this session"
+                                ".hint", has_text="Ordered earlier in this browser"
                             )
                         )
                         hinted_select = hinted_card.locator(
@@ -595,13 +608,33 @@ def run_walk(args: argparse.Namespace) -> dict:
             page.screenshot(path=str(shots / "13-final.png"), full_page=True)
 
             recalled = False
+            need_card_visible = False
             recall_note = ""
             fresh = None
             try:
+                stored = context.cookies()
+                recall_cookies = [
+                    cookie for cookie in stored
+                    if cookie.get("name") == "__Host-aea_recall"
+                ]
                 fresh = browser.new_context(
                     ignore_https_errors=not path_b,
                     viewport={"width": 1440, "height": 1100},
                 )
+                if recall_cookies:
+                    replay = []
+                    for cookie in recall_cookies:
+                        item = {
+                            key: cookie[key]
+                            for key in ("name", "value", "path", "expires",
+                                        "httpOnly", "secure", "sameSite")
+                            if key in cookie
+                        }
+                        item["url"] = url
+                        replay.append(item)
+                    fresh.add_cookies(replay)
+                else:
+                    recall_note = " no __Host-aea_recall cookie to replay"
                 fresh_page = fresh.new_page()
                 last_error = None
                 for _attempt in range(3):
@@ -616,16 +649,28 @@ def run_walk(args: argparse.Namespace) -> dict:
                     raise last_error
                 fresh_page.wait_for_selector("#message-form", timeout=20000)
                 fresh_page.wait_for_timeout(1500)
+                need_card = fresh_page.locator("#need-reorder")
+                need_card_visible = need_card.count() > 0 and need_card.is_visible()
                 body_text = (fresh_page.inner_text("body") or "").lower()
                 recalled = (
-                    fresh_page.locator(
+                    need_card_visible
+                    or fresh_page.locator(
                         "#recommendation-cards .hint",
-                        has_text="Ordered earlier in this session",
+                        has_text="Ordered earlier in this browser",
                     ).count()
                     > 0
-                    or "reorder" in body_text
+                    or "reorder previous bouquet" in body_text
                     or "ordered earlier" in body_text
                 )
+                if need_card_visible:
+                    fresh_page.screenshot(
+                        path=str(shots / "14-need-reorder.png"), full_page=True
+                    )
+                    fresh_page.locator("#need-reorder-cta").click()
+                    fresh_page.wait_for_timeout(1500)
+                    arrangement = fresh_page.locator("#arrangement")
+                    if arrangement.count() and (arrangement.input_value() or "").strip():
+                        recalled = True
             except Exception as exc:
                 recall_note = f" new-browser navigation: {type(exc).__name__}: {exc}"
                 report["notes"].append(recall_note.strip())
@@ -639,9 +684,20 @@ def run_walk(args: argparse.Namespace) -> dict:
             _step(
                 report,
                 "M8 durable recall",
-                "Prior order offered in a new browser without login (#193)",
+                "Prior order offered in a new session with the recall cookie (#193/#419)",
                 recall_reason + recall_note,
                 recall_result,
+            )
+            need_result, need_reason = classify_need_reorder_card(
+                card_visible=need_card_visible,
+                payment_included=report.get("payment_included", False),
+            )
+            _step(
+                report,
+                "M8 Need reorder card",
+                "Need-phase Reorder card from durable browser recall (#419)",
+                need_reason + recall_note,
+                need_result,
             )
             if "M8 reorder" not in {row["tile"] for row in report["steps"]}:
                 reorder_result, reorder_reason = classify_reorder(

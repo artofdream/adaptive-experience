@@ -853,6 +853,8 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         items = workspace["facets"]["recommendations"]["items"]
         self.assertEqual("classic-rose-dozen", items[0]["product_id"])
         self.assertTrue(items[0]["prior_order_hint"])
+        self.assertEqual({"product_id": "classic-rose-dozen"},
+                         workspace["facets"]["prior_order"])
         self.assertEqual(70.0, items[0]["price"])  # current catalog price, not history
         self.assertIsNone(app.order.session_prior_product_id(str(second)))
         self.assertEqual("classic-rose-dozen", app.order.prior_product_id(str(second)))
@@ -900,6 +902,7 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
             app, "GET", f"/internal/v1/sessions/{isolated}/workspace"))
         self.assertFalse(any(item.get("prior_order_hint") for item in
                              isolated_workspace["facets"]["recommendations"]["items"]))
+        self.assertNotIn("prior_order", isolated_workspace["facets"])
 
         # Expired server-side history fails closed even if a stale cookie is replayed.
         self.connection.execute(
@@ -910,6 +913,50 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
             app, "GET", f"/internal/v1/sessions/{second}/workspace"))
         self.assertFalse(any(item.get("prior_order_hint") for item in
                              expired_workspace["facets"]["recommendations"]["items"]))
+        self.assertNotIn("prior_order", expired_workspace["facets"])
+
+    def test_workspace_exposes_prior_order_on_need_without_intent(self):
+        """FR-008 Need card can render before conversation: SKU only, no recs."""
+        import asyncio
+        from aea_platform.adapters import PsycopgInventoryAvailabilityStore
+        from aea_platform.internal_api import InternalOrchestrationApp
+        from aea_platform.inventory import AvailabilitySnapshot, InventoryAvailabilityService
+        from aea_platform.pricing import REFERENCE_DELIVERY_FEE
+
+        app = InternalOrchestrationApp(self.connection, "internal-token")
+        first = self._order_ready_for_checkout(app)
+        recall_id = str(uuid.uuid4())
+        self.assertEqual(204, asyncio.run(self._invoke_internal(
+            app, "PUT", f"/internal/v1/sessions/{first}",
+            json.dumps({"recall_id": recall_id}).encode()))[0])
+
+        now = datetime.now(timezone.utc)
+        inventory = InventoryAvailabilityService(
+            PsycopgInventoryAvailabilityStore(self.connection), now=lambda: now)
+        for product_id, qty in (("classic-rose-dozen", 5), ("lilac-bouquet", 2),
+                                ("budget-mixed-bunch", 4)):
+            inventory.record(AvailabilitySnapshot(product_id, qty, 1, now))
+
+        total = round(70.0 + REFERENCE_DELIVERY_FEE, 2)
+        status, _result = asyncio.run(self._invoke_internal(
+            app, "POST", f"/internal/v1/sessions/{first}/checkout",
+            json.dumps({"payment_reference": "tok_need", "observed_total": total,
+                        "correlation_id": "need-recall"}).encode()))
+        self.assertEqual(202, status)
+
+        second = uuid.uuid4()
+        self.assertEqual(204, asyncio.run(self._invoke_internal(
+            app, "PUT", f"/internal/v1/sessions/{second}",
+            json.dumps({"recall_id": recall_id}).encode()))[0])
+        _, workspace = asyncio.run(self._invoke_internal(
+            app, "GET", f"/internal/v1/sessions/{second}/workspace"))
+        self.assertEqual({"product_id": "classic-rose-dozen"},
+                         workspace["facets"]["prior_order"])
+        self.assertEqual([], workspace["facets"]["recommendations"]["items"])
+        self.assertFalse(
+            ((workspace["facets"].get("shared_understanding") or {})
+             .get("structured_intent") or {}).get("occasion"))
+        self.assertEqual(["product_id"], list(workspace["facets"]["prior_order"]))
 
     def test_browser_session_get_binds_to_experience_session(self):
         import asyncio

@@ -1,8 +1,13 @@
 # Journey: Returning shopper (recall → reorder)
 
-M8 sample for FR-008 / US-008. Not an MVP first-time path. Does **not**
-implement recall. Durable cross-session recall is #193. Same-session T-03
-hint (#190) is already on the shop after an accepted order.
+M8 sample for FR-008 / US-008. Not an MVP first-time path. Durable
+cross-session recall (#193) is on the shop: an opaque `__Host-aea_recall`
+cookie maps to the last accepted SKU. Same-session T-03 hint (#190) is
+already on the shop after an accepted order. Path B Need-phase Reorder
+card (#419) is the next customer-visible slice: a returning browser with
+that cookie and a fresh Need (no chat, no occasion) sees **Reorder
+previous bouquet**. Parent #27 stays open — last-SKU recall is not full
+purchase-history CRM.
 
 Payment / T-07 is optional. Same-session hint needs an accepted order, so a
 walk that wants to observe that hint includes T-07 via the **session payment
@@ -36,14 +41,15 @@ Do not open `/florist` in the same browser as the shop.
 8. T-07 (optional): confirm session payment reference, ack, Create order. No
    PAN fields. Skip unless the walk includes payment.
 9. **Recall (same session):** after an accepted order, return to T-03. Expect
-   `Ordered earlier in this session` on the prior SKU. Select it to reorder.
+   `Ordered earlier in this browser` on the prior SKU. Select it to reorder.
    Confirm the destination reference again — do not silent auto-apply.
-10. **Recall (durable, no login):** new browser / cleared cookies. Expect the
-    last accepted product (and destination reference) to be offered for
-    reorder without an account. Until #193 this step is **blocked**, not a
-    product fail.
-11. Modify-before-reorder (M8 slice 4) is out of scope for this script until
-    that slice exists.
+10. **Recall (durable, no login):** new experience session that still presents
+    `__Host-aea_recall` (do **not** wipe all cookies). Expect the Need-phase
+    **Reorder previous bouquet** card (#419) before any chat. Tap **Reorder →**
+    to land on Pick with the recalled SKU selected. A brand-new browser with
+    no recall cookie is empty-wallet hide — not a product fail.
+11. Modify-before-reorder (M8 slice 4) and multi-order purchase history remain
+    leftover on parent #27. Do not treat this script as closing FR-008.
 12. Help (`?`) once — automated answers, not a person.
 
 ## How to run the walker

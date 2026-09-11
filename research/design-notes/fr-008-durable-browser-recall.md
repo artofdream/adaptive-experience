@@ -1,6 +1,6 @@
 # Design note — FR-008 durable prior-order recall (#193)
 
-status: implementing (thin path)
+status: implemented (thin path)
 for_issues: "#193 (child of #27 / FR-008 Recommendations)"
 affects: "T-03 ranking behind FR-007; does not replace FR-007"
 date: 2026-08-17

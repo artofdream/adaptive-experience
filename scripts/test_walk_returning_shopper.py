@@ -51,9 +51,34 @@ class ReturningShopperClassifyTests(unittest.TestCase):
         self.assertEqual("fail", result)
 
     def test_durable_recall_blocked_while_193_open(self) -> None:
-        result, reason = walk.classify_durable_recall(recalled=False)
+        result, reason = walk.classify_durable_recall(
+            recalled=False, issue_193_open=True
+        )
         self.assertEqual("blocked", result)
         self.assertIn("#193", reason)
+
+    def test_durable_recall_fails_when_193_closed_and_missing(self) -> None:
+        result, reason = walk.classify_durable_recall(recalled=False)
+        self.assertEqual("fail", result)
+        self.assertIn("#193", reason)
+
+    def test_need_reorder_card_blocked_without_payment(self) -> None:
+        result, _reason = walk.classify_need_reorder_card(
+            card_visible=False, payment_included=False
+        )
+        self.assertEqual("blocked", result)
+
+    def test_need_reorder_card_fails_after_pay_if_missing(self) -> None:
+        result, _reason = walk.classify_need_reorder_card(
+            card_visible=False, payment_included=True
+        )
+        self.assertEqual("fail", result)
+
+    def test_need_reorder_card_passes_when_visible(self) -> None:
+        result, _reason = walk.classify_need_reorder_card(
+            card_visible=True, payment_included=True
+        )
+        self.assertEqual("pass", result)
 
     def test_reorder_blocked_when_recall_blocked(self) -> None:
         result, _reason = walk.classify_reorder(recall_result="blocked", reordered=False)
@@ -72,6 +97,7 @@ class ReturningShopperJourneyDocTests(unittest.TestCase):
         self.assertIn("https://localhost:8443/", text)
         self.assertIn("https://aea.artof.link/", text)
         self.assertIn("#193", text)
+        self.assertIn("#419", text)
         self.assertIn("xfail", text)
         self.assertIn("NFR-007", text)
         self.assertIn("walk_returning_shopper.py", text)

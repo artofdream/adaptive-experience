@@ -812,6 +812,10 @@ class BffApp:
                                   ("occasion_type", "days_until_event", "reminder_text",
                                    "recipient_relation") if key in item})
             facets["reminders"] = {"items": items}
+        if isinstance(facets_in.get("prior_order"), dict):
+            product_id = facets_in["prior_order"].get("product_id")
+            if isinstance(product_id, str) and product_id.strip():
+                facets["prior_order"] = {"product_id": product_id.strip()}
         return {"context_version": int(raw.get("context_version", 0)),
                 "facets": facets,
                 "ai_generated": bool(raw.get("ai_generated", False)),

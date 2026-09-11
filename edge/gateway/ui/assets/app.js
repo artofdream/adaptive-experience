@@ -826,6 +826,32 @@ function renderOrder(order) {
   });
 }
 
+function hasCustomerMessages(f) {
+  const msgs = ((f.conversation || {}).messages) || [];
+  return msgs.some((m) => m && m.role === "customer");
+}
+
+function hasOccasion(f) {
+  const intent = (f.shared_understanding && f.shared_understanding.structured_intent)
+    || f.shared_understanding || {};
+  return Boolean(intent.occasion && String(intent.occasion).trim());
+}
+
+function renderNeedReorder(workspace) {
+  const card = document.querySelector("#need-reorder");
+  if (!card) return;
+  const f = (workspace && workspace.facets) || {};
+  const prior = f.prior_order || {};
+  const productId = typeof prior.product_id === "string" ? prior.product_id.trim() : "";
+  const show = Boolean(productId) && !hasCustomerMessages(f) && !hasOccasion(f);
+  card.hidden = !show;
+  if (!show) return;
+  const hint = document.querySelector("#need-reorder-hint");
+  if (hint) {
+    hint.textContent = `1-tap repeat ${productLabel(productId)} from this browser's private recall`;
+  }
+}
+
 function renderWorkspace(workspace) {
   state.workspace = workspace;
   state.contextVersion = workspace.context_version || 0;
@@ -835,6 +861,7 @@ function renderWorkspace(workspace) {
   renderMessages((f.conversation || {}).messages);
   renderUnderstanding(shared.structured_intent || shared);
   renderSuggestions(shared.suggestions);
+  renderNeedReorder(workspace);
   renderRecommendations((f.recommendations || {}).items || f.recommendations);
   renderSelection(f.selection);
   renderSummary(f.order_summary);
@@ -1257,6 +1284,15 @@ document.querySelectorAll("[data-goto-step]").forEach((button) => {
 document.querySelector("#step-empty-cta").addEventListener("click", (event) => {
   setJourneyStep(event.currentTarget.dataset.gotoStep);
 });
+const needReorderCta = document.querySelector("#need-reorder-cta");
+if (needReorderCta) {
+  needReorderCta.addEventListener("click", () => {
+    const productId = ((facets().prior_order) || {}).product_id;
+    if (typeof productId === "string" && productId.trim()) {
+      selectProduct(productId.trim());
+    }
+  });
+}
 window.addEventListener("hashchange", () => {
   const match = window.location.hash.match(/^#step-([1-7])$/);
   if (match) setJourneyStep(match[1], { focus: false });
