@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 import sys
 import unittest
@@ -229,6 +230,27 @@ class IacScanGateTests(unittest.TestCase):
 
     def test_report_path_is_repo_root(self) -> None:
         self.assertEqual(REPORT, ROOT / "iac-scan-report.json")
+
+    def test_ecr_push_covers_all_repos_and_layer_download(self) -> None:
+        """#418: OIDC EcrPush must include grafana + GetDownloadUrlForLayer."""
+        oidc = (STACK / "oidc.tf").read_text(encoding="utf-8")
+        ecr = (STACK / "ecr.tf").read_text(encoding="utf-8")
+        start = oidc.find('sid = "EcrPush"')
+        self.assertGreater(start, -1, "EcrPush statement missing from oidc.tf")
+        rest = oidc[start:]
+        next_sid = rest.find("sid = ", 1)
+        block = rest if next_sid < 0 else rest[:next_sid]
+        repos = re.findall(r'^resource "aws_ecr_repository" "([^"]+)"', ecr, re.M)
+        self.assertIn("grafana", repos)
+        self.assertGreaterEqual(len(repos), 5)
+        for name in repos:
+            self.assertIn(
+                f"aws_ecr_repository.{name}.arn",
+                block,
+                f"EcrPush must include aws_ecr_repository.{name}.arn",
+            )
+        self.assertIn("ecr:GetDownloadUrlForLayer", block)
+        self.assertNotIn("repository/*", block)
 
 
 if __name__ == "__main__":

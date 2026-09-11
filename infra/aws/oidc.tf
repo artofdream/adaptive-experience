@@ -44,9 +44,13 @@ data "aws_iam_policy_document" "gitlab_ci" {
   }
   statement {
     sid = "EcrPush"
+    # GetDownloadUrlForLayer is required for docker/buildx multi-arch push
+    # when layers already exist in the dest repo (#418). Least privilege:
+    # every aws_ecr_repository in ecr.tf, no wildcard repo ARN.
     actions = [
       "ecr:BatchCheckLayerAvailability",
       "ecr:CompleteLayerUpload",
+      "ecr:GetDownloadUrlForLayer",
       "ecr:InitiateLayerUpload",
       "ecr:PutImage",
       "ecr:UploadLayerPart",
@@ -59,6 +63,7 @@ data "aws_iam_policy_document" "gitlab_ci" {
       aws_ecr_repository.bff.arn,
       aws_ecr_repository.gateway.arn,
       aws_ecr_repository.agent_runner.arn,
+      aws_ecr_repository.grafana.arn,
     ]
   }
   statement {
