@@ -82,6 +82,42 @@ def classify_need_reorder_card(*, card_visible: bool, payment_included: bool) ->
     return "fail", "accepted order recalled but Need-phase Reorder card missing"
 
 
+def need_reorder_should_show(
+    *,
+    product_id: str | None,
+    customer_messages: bool,
+    occasion: bool,
+    selection_product_id: str | None,
+    step: int,
+) -> bool:
+    """Mirror of app.js needReorderShouldShow (#422). Hide after selection / past Need."""
+    prior = (product_id or "").strip()
+    selected = (selection_product_id or "").strip()
+    return bool(prior) and not customer_messages and not occasion and not selected and step <= 2
+
+
+def classify_need_reorder_hidden_after_pick(
+    *,
+    card_visible_before: bool,
+    card_hidden_after: bool | None,
+    payment_included: bool,
+) -> tuple[str, str]:
+    """#422: after Reorder → Pick, #need-reorder must be absent."""
+    if not payment_included:
+        return (
+            "blocked",
+            "Need reorder hide-after-pick needs an accepted order; payment excluded this run",
+        )
+    if not card_visible_before:
+        return (
+            "blocked",
+            "Need reorder card was not visible so hide-after-pick was not observed",
+        )
+    if card_hidden_after:
+        return "pass", "Need-phase Reorder card hidden after Reorder → Pick"
+    return "fail", "Need-phase Reorder card still visible after Reorder → Pick (#422)"
+
+
 def classify_need_reminder_card(*, card_visible: bool, payment_included: bool) -> tuple[str, str]:
     """Path B / Path A Need-phase FR-016 pull reminder (#420). Requires an accepted order."""
     if not payment_included:
@@ -623,6 +659,7 @@ def run_walk(args: argparse.Namespace) -> dict:
             recalled = False
             need_card_visible = False
             reminder_card_visible = False
+            need_card_hidden_after_pick = None
             recall_note = ""
             fresh = None
             try:
@@ -684,6 +721,7 @@ def run_walk(args: argparse.Namespace) -> dict:
                     fresh_page.screenshot(
                         path=str(shots / "14-need-reminder.png"), full_page=True
                     )
+                need_card_hidden_after_pick = None
                 if need_card_visible:
                     fresh_page.screenshot(
                         path=str(shots / "14-need-reorder.png"), full_page=True
@@ -693,6 +731,11 @@ def run_walk(args: argparse.Namespace) -> dict:
                     arrangement = fresh_page.locator("#arrangement")
                     if arrangement.count() and (arrangement.input_value() or "").strip():
                         recalled = True
+                    need_card_hidden_after_pick = not need_card.is_visible()
+                    fresh_page.screenshot(
+                        path=str(shots / "15-need-reorder-after-pick.png"),
+                        full_page=True,
+                    )
             except Exception as exc:
                 recall_note = f" new-browser navigation: {type(exc).__name__}: {exc}"
                 report["notes"].append(recall_note.strip())
@@ -720,6 +763,18 @@ def run_walk(args: argparse.Namespace) -> dict:
                 "Need-phase Reorder card from durable browser recall (#419)",
                 need_reason + recall_note,
                 need_result,
+            )
+            hide_result, hide_reason = classify_need_reorder_hidden_after_pick(
+                card_visible_before=need_card_visible,
+                card_hidden_after=need_card_hidden_after_pick,
+                payment_included=report.get("payment_included", False),
+            )
+            _step(
+                report,
+                "M8 Need reorder hidden after Pick",
+                "Need-phase Reorder card hidden after Reorder → Pick (#422)",
+                hide_reason + recall_note,
+                hide_result,
             )
             reminder_result, reminder_reason = classify_need_reminder_card(
                 card_visible=reminder_card_visible,
