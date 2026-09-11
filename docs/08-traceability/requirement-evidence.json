@@ -356,6 +356,7 @@
       "implementation": {
         "disposition": "evidenced",
         "paths": [
+          "edge/gateway/ui/assets/app.js",
           "edge/gateway/ui/florist.html",
           "platform/aea_platform/adapters.py",
           "platform/aea_platform/crm.py",

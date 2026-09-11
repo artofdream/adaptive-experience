@@ -4,10 +4,13 @@ M8 sample for FR-008 / US-008. Not an MVP first-time path. Durable
 cross-session recall (#193) is on the shop: an opaque `__Host-aea_recall`
 cookie maps to the last accepted SKU. Same-session T-03 hint (#190) is
 already on the shop after an accepted order. Path B Need-phase Reorder
-card (#419) is the next customer-visible slice: a returning browser with
+card (#419) is the customer-visible reorder slice: a returning browser with
 that cookie and a fresh Need (no chat, no occasion) sees **Reorder
 previous bouquet**. Parent #27 stays open — last-SKU recall is not full
-purchase-history CRM.
+purchase-history CRM. After an accepted order, the same fresh Need also
+surfaces a deterministic FR-016 occasion reminder (#420) from zero-PII
+memory when the delivery anniversary is inside the 30-day lookahead.
+Parent #35 stays open — in-session pull is not AI-generated outbound send.
 
 Payment / T-07 is optional. Same-session hint needs an accepted order, so a
 walk that wants to observe that hint includes T-07 via the **session payment
@@ -46,10 +49,13 @@ Do not open `/florist` in the same browser as the shop.
 10. **Recall (durable, no login):** new experience session that still presents
     `__Host-aea_recall` (do **not** wipe all cookies). Expect the Need-phase
     **Reorder previous bouquet** card (#419) before any chat. Tap **Reorder →**
-    to land on Pick with the recalled SKU selected. A brand-new browser with
-    no recall cookie is empty-wallet hide — not a product fail.
+    to land on Pick with the recalled SKU selected. The same fresh Need also
+    shows **Shop this occasion →** (#420) when `reminders.items` is present.
+    A brand-new browser with no recall cookie is empty-wallet hide — not a
+    product fail.
 11. Modify-before-reorder (M8 slice 4) and multi-order purchase history remain
     leftover on parent #27. Do not treat this script as closing FR-008.
+    AI-generated outbound reminders remain leftover on parent #35.
 12. Help (`?`) once — automated answers, not a person.
 
 ## How to run the walker

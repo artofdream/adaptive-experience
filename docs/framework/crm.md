@@ -34,7 +34,7 @@ Every capability is classified by its verified code and hardware probe status:
 
 | Layer / Feature | Status | Implementation Evidence |
 | :--- | :--- | :--- |
-| **Layer 1: Occasion Memory & Pull Reminders** | **Live on `main` / Tested** | Migration `018_engagement_crm.sql`. Order-triggered occasion capture records categorical event month/day and relation. Workspace projection exposes deterministic `reminders` facet. |
+| **Layer 1: Occasion Memory & Pull Reminders** | **Live on `main` / Tested** | Migration `018_engagement_crm.sql`. Order-triggered occasion capture records categorical event month/day and relation. Workspace projection exposes deterministic `reminders` facet. Path B Need (`#need-reminder`) shows the soonest item on a fresh session — pull only, not ADR-019 push. Parent #35 stays open for AI outbound send. |
 | **Layer 1: Pseudonymous Subject Profiles** | **Live on `main` / Tested** | Migrations `024_operator_crm_subject_profile.sql` and `026_crm_lifetime_spend.sql`. Cumulative running spend bands (`band_50_100`, `band_250_plus`), order counter, preferred channel. 274 integration tests pass. |
 | **Layer 1: Privacy Lifecycle & Retention Purge** | **Live on `main` / Tested** | Migration `025_crm_retention_indexes.sql`. Customer erasure (`DELETE /api/v1/crm/occasions` / `forget`), 400-day annual retention purge job (`purge_crm_retention.py`), and idempotent deletions. |
 | **Layer 2: Client-Side Edge Wallet** | **Save live / Need *code* on `main` (!459); Play v8 tap Unknown** | Pure Kotlin on Android companion. Verified on physical ASUS ROG handset (`ASUS_I001DC`): Android Keystore Tink authenticated envelope encryption (`AesSivKey` + `AesGcmKey`). Receipt write on Confirm probed. Need-screen one-tap reorder control is on `main` (#404) and shows only when a device-held receipt exists. Play Internal v8 cold-start Need on ROG and A36 (5 Sep 2026) showed **no** CTA — #407. The #404 vault note records a sideloaded ROG walk (not Play-install honesty; not the !455 clip). |
@@ -47,6 +47,7 @@ Every capability is classified by its verified code and hardware probe status:
 
 Reminders on the Adaptive Workspace are strictly **deterministic pull signals**:
 - They trigger solely when a shopper initiates a session and the session's browser hash matches a previously recorded delivery anniversary.
+- Path B Need (`#need-reminder`) renders the soonest item when Need is still fresh (no chat, no occasion). **Shop this occasion →** posts a categorical conversation message.
 - No unsolicited push notifications, marketing emails, SMS blasts, or third-party ad retargeting pixels.
 - The reminder payload carries least-data fields only (`occasion_type`, `days_until_event`, `reminder_text`, `recipient_relation`) without customer names or delivery addresses.
 
