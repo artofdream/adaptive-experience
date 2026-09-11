@@ -11,6 +11,7 @@ import hashlib
 import hmac
 import os
 import uuid
+from collections import Counter
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from typing import Any, Callable, Sequence
@@ -39,7 +40,11 @@ class OccasionReminder:
 
 
 class EngagementCrmService:
-    """Zero-PII occasion memory and annual recurring reminder engine (FR-016 / FR-017)."""
+    """Zero-PII occasion memory, pull reminders, and aggregate analytics (FR-016 / FR-017).
+
+    FR-016 leftover is AI outbound send. FR-017 here is manager-visible
+    categorical counts — not staff live chat and not a PII customer list.
+    """
 
     def __init__(self, store, *, now: Callable[[], datetime] | None = None,
                  new_id: Callable[[], uuid.UUID] | None = None):
@@ -95,13 +100,25 @@ class EngagementCrmService:
             "recipient_relation": cleaned_relation,
         }
 
+    def _days_until_event(self, month: int, day: int) -> int:
+        """Days until the next annual occurrence of month/day (Feb 29 → 28)."""
+        today = self.now().astimezone(timezone.utc).date()
+        current_year = today.year
+        try:
+            event_date = datetime(current_year, month, day, tzinfo=timezone.utc).date()
+        except ValueError:
+            event_date = datetime(current_year, month, 28, tzinfo=timezone.utc).date()
+        if event_date < today:
+            try:
+                event_date = datetime(current_year + 1, month, day, tzinfo=timezone.utc).date()
+            except ValueError:
+                event_date = datetime(current_year + 1, month, 28, tzinfo=timezone.utc).date()
+        return (event_date - today).days
+
     def get_reminders(self, *, browser_hash: str, lookahead_days: int = 30) -> list[OccasionReminder]:
         """Compute upcoming annual recurring occasion reminders (FR-016)."""
         if not isinstance(browser_hash, str) or len(browser_hash.strip()) != 64:
             raise CrmValidationError("valid 64-char browser hash is required")
-
-        today = self.now().astimezone(timezone.utc).date()
-        current_year = today.year
 
         rows = self.store.list_occasion_memories(browser_hash=browser_hash.strip())
         reminders: list[OccasionReminder] = []
@@ -109,21 +126,7 @@ class EngagementCrmService:
         for row in rows:
             month = row["event_month"]
             day = row["event_day"]
-
-            # Compute next occurrence date
-            try:
-                event_date = datetime(current_year, month, day, tzinfo=timezone.utc).date()
-            except ValueError:
-                # Leap year handling (Feb 29 fallback to Feb 28)
-                event_date = datetime(current_year, month, 28, tzinfo=timezone.utc).date()
-
-            if event_date < today:
-                try:
-                    event_date = datetime(current_year + 1, month, day, tzinfo=timezone.utc).date()
-                except ValueError:
-                    event_date = datetime(current_year + 1, month, 28, tzinfo=timezone.utc).date()
-
-            days_until = (event_date - today).days
+            days_until = self._days_until_event(month, day)
 
             if 0 <= days_until <= lookahead_days:
                 occasion_title = row["occasion_type"].title()
@@ -147,6 +150,54 @@ class EngagementCrmService:
 
         reminders.sort(key=lambda r: r.days_until_event)
         return reminders
+
+    def get_engagement_analytics(self, *, lookahead_days: int = 30) -> dict[str, Any]:
+        """Zero-PII occasion cohorts for the florist operator console (FR-017).
+
+        Returns counts and categorical keys only. Never includes browser hashes,
+        session ids, subject references, names, or addresses (ADR-020 / NFR-017).
+        """
+        if (not isinstance(lookahead_days, int) or isinstance(lookahead_days, bool)
+                or lookahead_days < 1 or lookahead_days > 366):
+            raise CrmValidationError("lookahead_days must be an integer between 1 and 366")
+
+        rows = self.store.list_all_occasion_memories()
+        browsers: set[str] = set()
+        occasion_counts: Counter[str] = Counter()
+        relation_counts: Counter[str] = Counter()
+        month_counts: Counter[int] = Counter()
+        upcoming = 0
+        for row in rows:
+            browsers.add(str(row.get("browser_hash") or ""))
+            occasion = str(row.get("occasion_type") or "").strip()
+            relation = str(row.get("recipient_relation") or "").strip()
+            month = int(row["event_month"])
+            day = int(row["event_day"])
+            if occasion:
+                occasion_counts[occasion] += 1
+            if relation:
+                relation_counts[relation] += 1
+            month_counts[month] += 1
+            if 0 <= self._days_until_event(month, day) <= lookahead_days:
+                upcoming += 1
+        browsers.discard("")
+
+        def _named_cohorts(counter: Counter[str], key: str) -> list[dict[str, Any]]:
+            return [{key: name, "count": count}
+                    for name, count in sorted(counter.items(), key=lambda item: (-item[1], item[0]))]
+
+        return {
+            "memory_count": len(rows),
+            "unique_browsers": len(browsers),
+            "upcoming_within_days": upcoming,
+            "lookahead_days": lookahead_days,
+            "occasion_cohorts": _named_cohorts(occasion_counts, "occasion_type"),
+            "relation_cohorts": _named_cohorts(relation_counts, "recipient_relation"),
+            "event_month_cohorts": [
+                {"event_month": month, "count": count}
+                for month, count in sorted(month_counts.items())
+            ],
+        }
 
     def forget(self, *, browser_hash: str) -> int:
         """Erase all occasion memory for a browser (customer opt-out; NFR-017).

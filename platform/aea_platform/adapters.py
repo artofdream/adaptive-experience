@@ -1136,14 +1136,27 @@ class PsycopgCrmStore:
             "ORDER BY event_month ASC, event_day ASC",
             (browser_hash,)
         ).fetchall()
-        return [{
+        return [self._occasion_memory_row(row) for row in rows]
+
+    def list_all_occasion_memories(self) -> list[dict]:
+        """Categorical occasion rows for FR-017 aggregates (hashes stay in-process)."""
+        rows = self.connection.execute(
+            "SELECT memory_id, browser_hash, occasion_type, event_month, event_day, recipient_relation "
+            "FROM crm.customer_occasion_memory "
+            "ORDER BY event_month ASC, event_day ASC"
+        ).fetchall()
+        return [self._occasion_memory_row(row) for row in rows]
+
+    @staticmethod
+    def _occasion_memory_row(row) -> dict:
+        return {
             "memory_id": str(row[0]),
             "browser_hash": str(row[1]),
             "occasion_type": str(row[2]),
             "event_month": int(row[3]),
             "event_day": int(row[4]),
             "recipient_relation": str(row[5]),
-        } for row in rows]
+        }
 
     def delete_occasion_memories(self, *, browser_hash: str) -> int:
         """Erase all occasion memory for a browser hash (customer opt-out; NFR-017)."""

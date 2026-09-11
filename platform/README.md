@@ -151,10 +151,12 @@ payment evolution (#148) build on these workers.
   then publishes `support.escalation.requested` (publisher: Support Service).
   Extra fields and raw PII are rejected. The response acknowledges the customer;
   it is not a CRM ticket (FR-016 / FR-017).
-- Florist operator reads (#170): `GET /internal/v1/operator/escalations` lists
+- Florist operator reads (#170 / #421): `GET /internal/v1/operator/escalations` lists
   recent `support.escalation.requested` commands (reason + opaque session
   reference). `GET /internal/v1/operator/sessions/{id}` returns a least-data
-  summary (conversation, order status, availability). Not FR-016 / FR-017 CRM.
+  summary (conversation, order status, availability).
+  `GET /internal/v1/operator/engagement` returns zero-PII FR-017 occasion-cohort
+  counts. Not FR-016 outbound reminders and not a per-customer CRM list.
 - Inventory forecast (#31 / M11, FR-012, NFR-010): validated snapshot history
   is appended to `inventory.availability_observation`.
   `InventoryForecastService` in `forecast.py` returns deterministic

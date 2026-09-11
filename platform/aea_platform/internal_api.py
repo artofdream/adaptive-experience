@@ -106,6 +106,11 @@ class InternalOrchestrationApp:
             if items:
                 result["next_cursor"] = items[-1].get("updated_at")
             return await self._send(send, 200, result)
+        if scope["path"] == "/internal/v1/operator/engagement" and scope["method"] == "GET":
+            try:
+                return await self._send(send, 200, self.crm.get_engagement_analytics())
+            except CrmValidationError:
+                return await self._send(send, 422, {"code": "validation_failed"})
         if scope["path"] == "/internal/v1/operator/forecasts" and scope["method"] == "GET":
             query = parse_qs(scope.get("query_string", b"").decode())
             session_id = (query.get("session_id") or [""])[0]

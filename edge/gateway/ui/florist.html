@@ -3,11 +3,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Local florist operator console sample. Not the customer journey and not FR-016/017 CRM.">
+  <meta name="description" content="Local florist operator console sample. Not the customer journey. Zero-PII FR-017 aggregates only.">
   <title>Florist operator — Lily's Florist (local sample)</title>
   <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/assets/styles.css?v=398b">
-  <script src="/assets/florist.js?v=398b" defer></script>
+  <link rel="stylesheet" href="/assets/styles.css?v=421">
+  <script src="/assets/florist.js?v=421" defer></script>
 </head>
 <body class="operator">
   <a class="skip-link" href="#orders">Skip to staff orders</a>
@@ -19,8 +19,8 @@
   <main class="operator-shell">
     <p class="operator-banner" role="note">
       <strong>Local florist operator sample.</strong>
-      Staff order list (FR-013), today's prepare grouping, and read-only T-09 inbox. Least-data opaque refs only.
-      Not live chat, not billing CRM, and not FR-016 / FR-017 engagement.
+      Staff order list (FR-013), today's prepare grouping, read-only T-09 inbox, and zero-PII engagement counts (FR-017).
+      Not live chat, not billing CRM, and not FR-016 outbound reminders.
       Inventory here does not enable T-03 Select.
       <details>
         <summary>Flags and least-data rules</summary>
@@ -39,6 +39,7 @@
       <a href="#inbox" class="operator-nav-item">Inbox</a>
       <a href="#session" class="operator-nav-item">Session</a>
       <a href="#forecast" class="operator-nav-item">Forecast</a>
+      <a href="#engagement" class="operator-nav-item">Engagement</a>
       <button type="button" class="operator-nav-item operator-nav-help" data-open-help-dialog aria-label="Open operator guide and shift routine">? Help</button>
     </nav>
 
@@ -158,6 +159,52 @@
         </div>
       </section>
 
+      <section id="engagement" class="panel operator-secondary" aria-labelledby="engagement-title">
+        <header>
+          <div>
+            <p class="eyebrow">US-017 · FR-017</p>
+            <h2 id="engagement-title">Engagement analytics</h2>
+            <p class="subtitle">Zero-PII occasion cohorts from saved memory. Counts only. Not a customer list and not FR-016 outbound reminders.</p>
+          </div>
+        </header>
+        <dl id="engagement-totals" class="operator-facts"></dl>
+        <div class="operator-split">
+          <div class="operator-table-wrap">
+            <table class="operator-table">
+              <thead>
+                <tr>
+                  <th scope="col">Occasion</th>
+                  <th scope="col">Count</th>
+                </tr>
+              </thead>
+              <tbody id="engagement-occasion-rows"></tbody>
+            </table>
+          </div>
+          <div class="operator-table-wrap">
+            <table class="operator-table">
+              <thead>
+                <tr>
+                  <th scope="col">Relation</th>
+                  <th scope="col">Count</th>
+                </tr>
+              </thead>
+              <tbody id="engagement-relation-rows"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="operator-table-wrap">
+          <table class="operator-table">
+            <thead>
+              <tr>
+                <th scope="col">Month</th>
+                <th scope="col">Count</th>
+              </tr>
+            </thead>
+            <tbody id="engagement-month-rows"></tbody>
+          </table>
+        </div>
+      </section>
+
       <section id="forecast" class="panel operator-secondary" aria-labelledby="forecast-title">
         <header>
           <div>
@@ -200,8 +247,9 @@
       <h2 id="out-title">Out of scope in this slice</h2>
       <ul>
         <li>Live chat and ticketing</li>
-        <li>FR-016 / FR-017 CRM reminders and engagement analytics (#35 / #36)</li>
-        <li>Billing CRM, payment fields, raw addresses</li>
+        <li>FR-016 AI outbound reminders (#35 leftover)</li>
+        <li>Full purchase-history CRM (#27 leftover) and parent #36 campaign export / ML</li>
+        <li>Billing CRM, payment fields, raw addresses, per-customer lists</li>
         <li>Production inventory feed, ML demand models, PSP, agentic runtime, customer T-03 Select</li>
       </ul>
     </section>
@@ -263,7 +311,7 @@
           <li><strong>Morning Batching (#prepare):</strong> Review bouquet counts and delivery windows (Morning, Afternoon, Evening). Tap <code>Details ↗</code> on any arrangement to read and transcribe customer enclosure card notes.</li>
           <li><strong>Order Assembly (#orders):</strong> Work through the <code>Today</code> queue. Verify channel tags (<code>web</code> vs <code>companion-android</code>) and attach the matching handwritten card.</li>
           <li><strong>Customer Inquiries (#inbox):</strong> Watch for incoming Contact Florist requests (T-09). Tap any inquiry to inspect the customer's shared session context.</li>
-          <li><strong>End-of-Day Review:</strong> Filter by <code>Delayed</code> to confirm zero missed orders, then review <code>3 days</code> / <code>7 days</code> to plan cooler replenishment.</li>
+          <li><strong>End-of-Day Review:</strong> Filter by <code>Delayed</code> to confirm zero missed orders, then review <code>3 days</code> / <code>7 days</code> to plan cooler replenishment. Optional: check <code>#engagement</code> for occasion-cohort counts (campaign planning, not fulfillment).</li>
         </ol>
       </div>
       <div class="dialog-section">

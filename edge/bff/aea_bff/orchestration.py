@@ -209,6 +209,10 @@ class HttpOrchestration:
             f"/internal/v1/operator/forecasts?session_id={kwargs['session_id']}",
             subject=kwargs["subject"])
 
+    def list_operator_engagement(self, **kwargs):
+        return self._call("GET", "/internal/v1/operator/engagement",
+                          subject=kwargs["subject"])
+
     def operator_session_summary(self, **kwargs):
         return self._call("GET", f"/internal/v1/operator/sessions/{kwargs['session_id']}",
                           subject=kwargs["subject"])

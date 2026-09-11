@@ -531,6 +531,19 @@ class BffApp:
             return await self._json(send, 200, self._least_data_operator_forecasts(raw),
                                     correlation_id)
 
+        if path == "/api/v1/operator/engagement" and method == "GET":
+            if not self.florist_operator_enabled:
+                return await self._error(send, 404, "not_found", correlation_id)
+            try:
+                raw = self.orchestration.list_operator_engagement(subject=subject)
+            except OrchestrationUnavailable:
+                return await self._error(send, 503, "orchestration_unavailable", correlation_id)
+            status = int(raw.get("status") or 200)
+            if status >= 500:
+                return await self._error(send, 503, "orchestration_unavailable", correlation_id)
+            return await self._json(send, 200, self._least_data_operator_engagement(raw),
+                                    correlation_id)
+
         operator_prefix = "/api/v1/operator/sessions/"
         if path.startswith(operator_prefix) and method == "GET":
             if not self.florist_operator_enabled:
@@ -933,6 +946,47 @@ class BffApp:
         if shaped["lifetime_spend_band"] not in allowed_bands:
             shaped["lifetime_spend_band"] = "band_0_50"
         return shaped
+
+    @staticmethod
+    def _least_data_operator_engagement(raw: dict) -> dict:
+        """Zero-PII FR-017 aggregates: counts and categorical cohort keys only."""
+
+        def _int(value, default=0):
+            if isinstance(value, bool) or not isinstance(value, (int, float)):
+                return default
+            return int(value)
+
+        def _cohorts(items, name_key, *, month=False):
+            shaped = []
+            for item in (items or [])[:32]:
+                if not isinstance(item, dict):
+                    continue
+                count = _int(item.get("count"))
+                if count < 1:
+                    continue
+                if month:
+                    month_value = _int(item.get("event_month"))
+                    if 1 <= month_value <= 12:
+                        shaped.append({"event_month": month_value, "count": count})
+                    continue
+                name = item.get(name_key)
+                if not isinstance(name, str) or not name.strip() or len(name) > 64:
+                    continue
+                shaped.append({name_key: name.strip().lower(), "count": count})
+            return shaped
+
+        lookahead = _int(raw.get("lookahead_days"), 30)
+        if lookahead < 1 or lookahead > 366:
+            lookahead = 30
+        return {
+            "memory_count": max(0, _int(raw.get("memory_count"))),
+            "unique_browsers": max(0, _int(raw.get("unique_browsers"))),
+            "upcoming_within_days": max(0, _int(raw.get("upcoming_within_days"))),
+            "lookahead_days": lookahead,
+            "occasion_cohorts": _cohorts(raw.get("occasion_cohorts"), "occasion_type"),
+            "relation_cohorts": _cohorts(raw.get("relation_cohorts"), "recipient_relation"),
+            "event_month_cohorts": _cohorts(raw.get("event_month_cohorts"), "event_month", month=True),
+        }
 
     @staticmethod
     def _least_data_operator_forecasts(raw: dict) -> dict:

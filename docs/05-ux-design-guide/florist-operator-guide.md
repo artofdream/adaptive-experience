@@ -5,7 +5,7 @@
 > **Console URL**: <https://aea.artof.link/florist> (or local <https://localhost:8443/florist>)  
 > **Supported Devices**: Desktop (widescreen), Tablet, and Mobile Handheld (iOS / Android browser)  
 > **Canonical Path**: docs/05-ux-design-guide/florist-operator-guide.md  
-> **Traceability**: FR-013 (Staff Order List & Detail), FR-012 (Contact Florist Escalation), T-09, NFR-017 (Zero-PII / Least-Data)
+> **Traceability**: FR-013 (Staff Order List & Detail), FR-012 (Contact Florist Escalation), FR-017 (zero-PII engagement aggregates), T-09, NFR-017 (Zero-PII / Least-Data)
 
 ---
 
@@ -21,7 +21,7 @@ The console provides full operational visibility into live orders, batch bouquet
 
 ## 2. Console Layout & Workspace Panels
 
-The console is organized into four interconnected functional panels:
+The console is organized into five interconnected functional panels:
 
 `
 ┌────────────────────────────────────────────────────────────────────────┐
@@ -44,6 +44,11 @@ The console is organized into four interconnected functional panels:
 │ 4. ORDER & SESSION INSPECTOR (#session)                                │
 │    • Detailed fact list (channel, status, paid total, delivery handle) │
 │    • Shared Understanding intent transcript audit                      │
+├────────────────────────────────────────────────────────────────────────┤
+│ 5. ENGAGEMENT ANALYTICS (#engagement)                                  │
+│    • Zero-PII occasion / relation / month cohort counts (FR-017)       │
+│    • Memories, unique browsers, upcoming-in-30-days totals             │
+│    • Campaign planning only — not a customer list                      │
 └────────────────────────────────────────────────────────────────────────┘
 `
 
@@ -81,6 +86,7 @@ To run the atelier efficiently, follow this standard 4-step routine throughout y
 ### Step 4: End-of-Day Review & Forecast
 1. Switch the order filter to **Delayed** to ensure no order was missed or unfulfilled.
 2. Switch to **3 days** or **7 days** to review upcoming scheduled deliveries and plan flower cooler replenishment with wholesale suppliers.
+3. Optional: open **Engagement** for zero-PII occasion-cohort counts (campaign planning). This is not a fulfillment step and is not a customer list.
 
 ---
 
@@ -96,7 +102,7 @@ The operator console adapts intelligently to your screen size:
 | **Navigation** | Sticky top bar | Sticky top bar with quick nav | Wrapped touch-friendly pills (all >=44px) + floating ↑ and ↓ buttons |
 
 ### Touch Controls & Shortcuts
-- **Jump Pills:** Tap Orders, Prepare, Inbox, or Session at the top of the screen to jump instantly without tedious thumb scrolling.
+- **Jump Pills:** Tap Orders, Prepare, Inbox, Session, Forecast, or Engagement at the top of the screen to jump instantly without tedious thumb scrolling.
 - **Floating Scroll Buttons:** The circular **↑** and **↓** buttons pinned at the bottom-right corner let you jump to the very top or very bottom of the page in one tap.
 - **Escape Key / Close Button:** Any open details dialog can be dismissed by tapping **✕**, clicking the **Close** button, or pressing Esc on a keyboard.
 
