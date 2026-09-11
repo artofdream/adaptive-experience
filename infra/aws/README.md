@@ -165,6 +165,16 @@ ECR unless break-glass is documented.
 and `$CI_COMMIT_SHA`). That is the #416 **build** track. It does **not**
 flip live Fargate to ARM64 and does **not** `terraform apply`.
 
+GitLab OIDC role `aea-pilot-gitlab-ci` inline policy `EcrPush` must list
+every Path B ECR repo in `ecr.tf` (orchestration, bff, gateway,
+agent-runner, **grafana**) and include `ecr:GetDownloadUrlForLayer`.
+#418: live IAM omitted grafana; `build-ecr` on main then failed
+`GetDownloadUrlForLayer` on `aea-pilot/grafana` (jobs 16438215440,
+16435589756). **Merge this IAM first, then DSO `terraform apply` on
+cts-ai** (Cloud Agents must not apply). Re-run `build-ecr` on main
+only after that apply. Do **not** apply #414 ARM64 task defs until
+imagetools inspect shows both platforms (see below).
+
 ### Verify arch before ARM cutover (#416)
 
 Run from a host that can reach ECR (DSO laptop / GitLab job), not from a
