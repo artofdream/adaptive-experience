@@ -69,6 +69,30 @@ class FakeOrchestration:
             "email": "private@example.invalid",
         }]}
 
+    def list_operator_engagement(self, **kwargs):
+        return {
+            "status": 200,
+            "memory_count": 3,
+            "unique_browsers": 2,
+            "upcoming_within_days": 1,
+            "lookahead_days": 30,
+            "occasion_cohorts": [
+                {"occasion_type": "birthday", "count": 2},
+                {"occasion_type": "anniversary", "count": 1},
+            ],
+            "relation_cohorts": [
+                {"recipient_relation": "mother", "count": 2},
+                {"recipient_relation": "partner", "count": 1},
+            ],
+            "event_month_cohorts": [
+                {"event_month": 6, "count": 1},
+                {"event_month": 9, "count": 2},
+            ],
+            "browser_hash": "a" * 64,
+            "secret": "omit",
+            "email": "private@example.invalid",
+        }
+
     def list_operator_escalations(self, **kwargs):
         return {"status": 200, "items": [{
             "message_id": "esc-1",
@@ -709,6 +733,7 @@ class PerimeterTests(unittest.TestCase):
         self.assertEqual(404, self.call("GET", "/api/v1/operator/escalations", headers)[0])
         self.assertEqual(404, self.call("GET", "/api/v1/operator/orders", headers)[0])
         self.assertEqual(404, self.call("GET", "/api/v1/operator/forecasts", headers)[0])
+        self.assertEqual(404, self.call("GET", "/api/v1/operator/engagement", headers)[0])
         self.assertEqual(404, self.call(
             "GET", "/api/v1/operator/sessions/11111111-1111-4111-8111-111111111111",
             headers)[0])
@@ -769,6 +794,47 @@ class PerimeterTests(unittest.TestCase):
         self.assertEqual("declining", forecasts["items"][0]["trend"])
         self.assertNotIn("secret", forecasts["items"][0])
         self.assertNotIn(b"email", body)
+        status, _, body = call("GET", "/api/v1/operator/engagement", auth)
+        self.assertEqual(200, status)
+        engagement = json.loads(body)
+        self.assertEqual(3, engagement["memory_count"])
+        self.assertEqual(2, engagement["unique_browsers"])
+        self.assertEqual(1, engagement["upcoming_within_days"])
+        self.assertEqual(30, engagement["lookahead_days"])
+        self.assertEqual("birthday", engagement["occasion_cohorts"][0]["occasion_type"])
+        self.assertEqual(2, engagement["occasion_cohorts"][0]["count"])
+        self.assertNotIn("secret", engagement)
+        self.assertNotIn("browser_hash", engagement)
+        self.assertNotIn(b"secret", body)
+        self.assertNotIn(b"email", body)
+        stripped = BffApp._least_data_operator_engagement({
+            "memory_count": "nope",
+            "unique_browsers": -4,
+            "upcoming_within_days": True,
+            "lookahead_days": 900,
+            "occasion_cohorts": [
+                {"occasion_type": "Birthday", "count": 2},
+                {"occasion_type": "x" * 80, "count": 9},
+                {"occasion_type": "anniversary", "count": 0},
+            ],
+            "relation_cohorts": [{"recipient_relation": "Mother", "count": 1}],
+            "event_month_cohorts": [{"event_month": 13, "count": 1},
+                                    {"event_month": 9, "count": 2}],
+            "browser_hash": "a" * 64,
+            "email": "private@example.invalid",
+        })
+        self.assertEqual(0, stripped["memory_count"])
+        self.assertEqual(0, stripped["unique_browsers"])
+        self.assertEqual(0, stripped["upcoming_within_days"])
+        self.assertEqual(30, stripped["lookahead_days"])
+        self.assertEqual([{"occasion_type": "birthday", "count": 2}],
+                         stripped["occasion_cohorts"])
+        self.assertEqual([{"recipient_relation": "mother", "count": 1}],
+                         stripped["relation_cohorts"])
+        self.assertEqual([{"event_month": 9, "count": 2}],
+                         stripped["event_month_cohorts"])
+        self.assertNotIn("browser_hash", stripped)
+        self.assertNotIn("email", stripped)
         status, _, body = call(
             "GET", "/api/v1/operator/sessions/11111111-1111-4111-8111-111111111111", auth)
         self.assertEqual(200, status)

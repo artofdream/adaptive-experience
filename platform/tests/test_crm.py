@@ -39,6 +39,9 @@ class InMemoryCrmStore:
     def list_occasion_memories(self, *, browser_hash):
         return [m for m in self.memories if m["browser_hash"] == browser_hash]
 
+    def list_all_occasion_memories(self):
+        return list(self.memories)
+
     def delete_occasion_memories(self, *, browser_hash):
         before = len(self.memories)
         self.memories = [m for m in self.memories if m["browser_hash"] != browser_hash]
@@ -179,6 +182,58 @@ class TestEngagementCrmService(unittest.TestCase):
     def test_purge_expired_rejects_bad_retention(self):
         with self.assertRaises(CrmValidationError):
             self.service.purge_expired(retention_days=0)
+
+    def test_engagement_analytics_empty_is_zero_counts(self):
+        analytics = self.service.get_engagement_analytics()
+        self.assertEqual(0, analytics["memory_count"])
+        self.assertEqual(0, analytics["unique_browsers"])
+        self.assertEqual(0, analytics["upcoming_within_days"])
+        self.assertEqual(30, analytics["lookahead_days"])
+        self.assertEqual([], analytics["occasion_cohorts"])
+        self.assertEqual([], analytics["relation_cohorts"])
+        self.assertEqual([], analytics["event_month_cohorts"])
+        self.assertNotIn("browser_hash", analytics)
+        self.assertNotIn("session_id", analytics)
+
+    def test_engagement_analytics_cohorts_are_zero_pii_counts(self):
+        self.service.record_occasion(
+            browser_hash=self.browser_hash, session_id="sess-001",
+            occasion_type="Birthday", event_month=9, event_day=5,
+            recipient_relation="Mother")
+        self.service.record_occasion(
+            browser_hash=self.browser_hash, session_id="sess-001",
+            occasion_type="Anniversary", event_month=6, event_day=1,
+            recipient_relation="Partner")
+        other = self.service.hash_browser("someone-else")
+        self.service.record_occasion(
+            browser_hash=other, session_id="sess-002",
+            occasion_type="Birthday", event_month=9, event_day=15,
+            recipient_relation="Mother")
+
+        analytics = self.service.get_engagement_analytics(lookahead_days=30)
+        self.assertEqual(3, analytics["memory_count"])
+        self.assertEqual(2, analytics["unique_browsers"])
+        # 22 Aug 2026 → 5 Sep (14d) and 15 Sep (24d) are inside 30d; June is not.
+        self.assertEqual(2, analytics["upcoming_within_days"])
+        self.assertEqual(
+            [{"occasion_type": "birthday", "count": 2},
+             {"occasion_type": "anniversary", "count": 1}],
+            analytics["occasion_cohorts"])
+        self.assertEqual(
+            [{"recipient_relation": "mother", "count": 2},
+             {"recipient_relation": "partner", "count": 1}],
+            analytics["relation_cohorts"])
+        self.assertEqual(
+            [{"event_month": 6, "count": 1}, {"event_month": 9, "count": 2}],
+            analytics["event_month_cohorts"])
+        blob = str(analytics)
+        self.assertNotIn(self.browser_hash, blob)
+        self.assertNotIn(other, blob)
+        self.assertNotIn("sess-001", blob)
+
+    def test_engagement_analytics_rejects_bad_lookahead(self):
+        with self.assertRaises(CrmValidationError):
+            self.service.get_engagement_analytics(lookahead_days=0)
 
 
 if __name__ == "__main__":

@@ -174,12 +174,46 @@ const TREND_LABELS = {
   stable: "Stable",
   insufficient: "Not enough history",
 };
+const MONTH_LABELS = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const SAMPLE_ENGAGEMENT = {
+  memory_count: 3,
+  unique_browsers: 2,
+  upcoming_within_days: 1,
+  lookahead_days: 30,
+  occasion_cohorts: [
+    { occasion_type: "birthday", count: 2 },
+    { occasion_type: "anniversary", count: 1 },
+  ],
+  relation_cohorts: [
+    { recipient_relation: "mother", count: 2 },
+    { recipient_relation: "partner", count: 1 },
+  ],
+  event_month_cohorts: [
+    { event_month: 9, count: 2 },
+    { event_month: 6, count: 1 },
+  ],
+  sample: true,
+};
+const EMPTY_ENGAGEMENT = {
+  memory_count: 0,
+  unique_browsers: 0,
+  upcoming_within_days: 0,
+  lookahead_days: 30,
+  occasion_cohorts: [],
+  relation_cohorts: [],
+  event_month_cohorts: [],
+};
 
 const mode = document.querySelector("#operator-mode");
 const orderRows = document.querySelector("#order-rows");
 const prepareRows = document.querySelector("#prepare-rows");
 const inboxRows = document.querySelector("#inbox-rows");
 const forecastRows = document.querySelector("#forecast-rows");
+const engagementTotals = document.querySelector("#engagement-totals");
+const engagementOccasionRows = document.querySelector("#engagement-occasion-rows");
+const engagementRelationRows = document.querySelector("#engagement-relation-rows");
+const engagementMonthRows = document.querySelector("#engagement-month-rows");
 const transcript = document.querySelector("#transcript");
 const supportAnswers = document.querySelector("#support-answers");
 const orderFacts = document.querySelector("#order-facts");
@@ -320,6 +354,9 @@ const TABLE_HEADER_ICONS = {
   Product: `<svg class="th-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>`,
   Trend: `<svg class="th-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>`,
   Recommendation: `<svg class="th-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="9" y1="18" x2="15" y2="18"/><line x1="10" y1="22" x2="14" y2="22"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg>`,
+  Occasion: `<svg class="th-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
+  Relation: `<svg class="th-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+  Month: `<svg class="th-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
 };
 
 function decorateHeaderIcons() {
@@ -339,6 +376,55 @@ function emptyRow(columns, copy) {
   cell.textContent = copy;
   row.append(cell);
   return row;
+}
+
+function renderEngagement(payload) {
+  if (!engagementTotals || !engagementOccasionRows || !engagementRelationRows || !engagementMonthRows) {
+    return;
+  }
+  const data = payload && typeof payload === "object" ? payload : EMPTY_ENGAGEMENT;
+  engagementTotals.replaceChildren();
+  const facts = [
+    ["Occasion memories", String(data.memory_count ?? 0)],
+    ["Unique browsers", String(data.unique_browsers ?? 0)],
+    [`Upcoming (${data.lookahead_days || 30} days)`, String(data.upcoming_within_days ?? 0)],
+  ];
+  if (data.sample) {
+    facts.push(["Source", "Labeled sample until operator APIs are confirmed"]);
+  }
+  for (const [term, value] of facts) {
+    const dt = document.createElement("dt");
+    dt.textContent = term;
+    const dd = document.createElement("dd");
+    dd.textContent = value;
+    engagementTotals.append(dt, dd);
+  }
+  function fillCohort(tbody, items, nameKey, emptyCopy, labeler) {
+    tbody.replaceChildren();
+    const rows = Array.isArray(items) ? items : [];
+    if (!rows.length) {
+      tbody.append(emptyRow(2, emptyCopy));
+      return;
+    }
+    for (const item of rows) {
+      const row = document.createElement("tr");
+      const nameCell = document.createElement("td");
+      nameCell.textContent = labeler(item[nameKey]);
+      const countCell = document.createElement("td");
+      countCell.textContent = String(item.count ?? 0);
+      row.append(nameCell, countCell);
+      tbody.append(row);
+    }
+  }
+  fillCohort(engagementOccasionRows, data.occasion_cohorts, "occasion_type",
+    "No occasion cohorts yet. Counts stay empty until memory exists.",
+    (value) => String(value || "—").replaceAll("_", " "));
+  fillCohort(engagementRelationRows, data.relation_cohorts, "recipient_relation",
+    "No relation cohorts yet.",
+    (value) => String(value || "—").replaceAll("_", " "));
+  fillCohort(engagementMonthRows, data.event_month_cohorts, "event_month",
+    "No month cohorts yet.",
+    (value) => MONTH_LABELS[Number(value)] || String(value || "—"));
 }
 
 function renderForecasts(items) {
@@ -1156,6 +1242,7 @@ function showSampleLayout(modeCopy) {
   renderOrders(SAMPLE_ORDERS);
   renderInbox(SAMPLE_INBOX);
   renderForecasts(SAMPLE_FORECASTS);
+  renderEngagement(SAMPLE_ENGAGEMENT);
   renderSession(SAMPLE_SESSIONS[SAMPLE_INBOX[0].session_id], "Sample session (labeled)");
   mode.textContent = modeCopy;
 }
@@ -1225,10 +1312,11 @@ async function boot() {
   try {
     await ensureSession();
     // Parallelize independent operator data fetches for faster boot.
-    const [inboxResult, ordersResult, forecastsResult] = await Promise.allSettled([
+    const [inboxResult, ordersResult, forecastsResult, engagementResult] = await Promise.allSettled([
       api("/api/v1/operator/escalations"),
       api("/api/v1/operator/orders"),
       api("/api/v1/operator/forecasts"),
+      api("/api/v1/operator/engagement"),
     ]);
     // Fail-closed: if the primary inbox fetch fails, fall back to sample.
     if (inboxResult.status === "rejected") {
@@ -1247,6 +1335,11 @@ async function boot() {
       forecasts = forecastsResult.value.items || [];
     }
     renderForecasts(forecasts);
+    if (engagementResult.status === "fulfilled") {
+      renderEngagement(engagementResult.value);
+    } else {
+      renderEngagement(EMPTY_ENGAGEMENT);
+    }
     let orders = [];
     state.ordersError = false;
     if (ordersResult.status === "fulfilled") {

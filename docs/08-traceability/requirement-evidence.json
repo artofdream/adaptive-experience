@@ -386,6 +386,7 @@
       "implementation": {
         "disposition": "evidenced",
         "paths": [
+          "edge/bff/aea_bff/app.py",
           "edge/gateway/ui/florist.html",
           "platform/aea_platform/adapters.py",
           "platform/aea_platform/crm.py",
@@ -396,6 +397,7 @@
       "test": {
         "disposition": "evidenced",
         "paths": [
+          "edge/tests/test_browser_ui.py",
           "platform/tests/test_crm.py"
         ]
       }

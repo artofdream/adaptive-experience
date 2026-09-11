@@ -430,6 +430,42 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         self.assertEqual(0, self.connection.execute(
             "SELECT count(*) FROM crm.customer_occasion_memory").fetchone()[0])
 
+    def test_operator_engagement_analytics_are_zero_pii_cohorts(self):
+        import asyncio
+        from aea_platform.internal_api import InternalOrchestrationApp
+
+        app = InternalOrchestrationApp(self.connection, "internal-token")
+        svc = app.crm
+        now = datetime(2026, 8, 22, 12, 0, tzinfo=timezone.utc)
+        svc.now = lambda: now
+        first = svc.hash_browser(f"itest-a-{uuid.uuid4()}")
+        second = svc.hash_browser(f"itest-b-{uuid.uuid4()}")
+        svc.record_occasion(browser_hash=first, session_id=str(uuid.uuid4()),
+                            occasion_type="Birthday", event_month=9, event_day=5,
+                            recipient_relation="Mother")
+        svc.record_occasion(browser_hash=first, session_id=str(uuid.uuid4()),
+                            occasion_type="Anniversary", event_month=6, event_day=1,
+                            recipient_relation="Partner")
+        svc.record_occasion(browser_hash=second, session_id=str(uuid.uuid4()),
+                            occasion_type="Birthday", event_month=9, event_day=15,
+                            recipient_relation="Mother")
+
+        status, body = asyncio.run(self._invoke_internal(
+            app, "GET", "/internal/v1/operator/engagement"))
+        self.assertEqual(200, status)
+        self.assertEqual(3, body["memory_count"])
+        self.assertEqual(2, body["unique_browsers"])
+        self.assertEqual(2, body["upcoming_within_days"])
+        self.assertEqual(
+            [{"occasion_type": "birthday", "count": 2},
+             {"occasion_type": "anniversary", "count": 1}],
+            body["occasion_cohorts"])
+        blob = json.dumps(body)
+        self.assertNotIn(first, blob)
+        self.assertNotIn(second, blob)
+        self.assertNotIn("browser_hash", blob)
+        self.assertNotIn("session_id", blob)
+
     def test_subject_profile_store_running_band_get_and_retention(self):
         from datetime import datetime as dt
         from aea_platform.adapters import PsycopgCrmStore

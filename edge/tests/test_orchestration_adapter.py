@@ -226,18 +226,23 @@ class HttpOrchestrationTests(unittest.TestCase):
                 return 200, '{"items":[{"order_id":"order-9","session_id":"s1"}]}'
             if "/operator/forecasts" in url:
                 return 200, '{"items":[{"product_id":"classic-rose-dozen","trend":"stable"}]}'
+            if url.endswith("/operator/engagement"):
+                return 200, '{"memory_count":3,"unique_browsers":2,"occasion_cohorts":[]}'
             return 200, '{"session_id":"s1","context_version":1,"conversation":{"messages":[]}}'
         adapter = HttpOrchestration("http://orchestration:8081", "internal", transport=transport)
         inbox = adapter.list_operator_escalations(subject="staff-1")
         orders = adapter.list_operator_orders(subject="staff-1")
         forecasts = adapter.list_operator_forecasts(session_id="s1", subject="staff-1")
+        engagement = adapter.list_operator_engagement(subject="staff-1")
         summary = adapter.operator_session_summary(session_id="s1", subject="staff-1")
         self.assertEqual("esc-1", inbox["items"][0]["message_id"])
         self.assertEqual("order-9", orders["items"][0]["order_id"])
         self.assertEqual("stable", forecasts["items"][0]["trend"])
+        self.assertEqual(3, engagement["memory_count"])
         self.assertEqual("s1", summary["session_id"])
         self.assertTrue(any(url.endswith("/operator/escalations") for _, url, _, _ in calls))
         self.assertTrue(any(url.endswith("/operator/orders") for _, url, _, _ in calls))
         self.assertTrue(any("/operator/forecasts?session_id=s1" in url for _, url, _, _ in calls))
+        self.assertTrue(any(url.endswith("/operator/engagement") for _, url, _, _ in calls))
         self.assertTrue(any(url.endswith("/operator/sessions/s1") for _, url, _, _ in calls))
         self.assertTrue(all(headers["x-subject-reference"] == "staff-1" for _, _, headers, _ in calls))
