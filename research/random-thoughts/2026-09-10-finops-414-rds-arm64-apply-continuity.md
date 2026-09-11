@@ -68,7 +68,8 @@ Existing IDs: [[2026-09-10-finops-cw-metric-prune-grafana]], [[2026-08-29-finops
 
 The “live RDS still `db.t4g.medium` / apply next” reading of this note is
 **stale**. Partial apply landed on cts-ai via AWS CLI (RDS `db.t4g.small` +
-CW 14d). Fargate ARM64 task-def replacements were **not** applied (amd64-only
-ECR; full ARM apply would brick Path B). Canonical status:
-[[2026-09-10-finops-414-partial-apply-honesty]]. Leftover ARM: #416. Do not
-full-`terraform apply` the 13 add / 20 change / 9 destroy plan.
+CW 14d). The 2026-09-10 “Fargate ARM64 not applied” sentence is also
+**stale** as of 2026-09-11 Berlin evening: live ARM cutover registered
+ARM64 `runtimePlatform` on current task defs + `update-service` (not a
+full terraform apply). Canonical: [[2026-09-11-finops-414-arm-cutover-honesty]].
+Do not full-`terraform apply` the 13 add / 20 change / 9 destroy plan.

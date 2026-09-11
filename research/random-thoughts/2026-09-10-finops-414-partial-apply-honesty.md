@@ -6,9 +6,13 @@
 > **Owners to inherit**: @aea-knowledge-guardian, @aea-cost-guardian, @aea-devsecops-platform, @aea-mr-coordinator
 > **This node is knowledge, not an apply ticket.** Do not `terraform apply` from this note.
 
-Later agents: do not treat !492 merge or a closed #414 as “ARM64 Fargate is live.” Probe ECR arch or write Unknown.
+**2026-09-11 Berlin evening:** the “ARM still blocked / probe ECR or
+write Unknown” line below is **stale**. Live ARM64 cutover landed on
+cts-ai (register `runtimePlatform` + `update-service`, not full
+terraform apply). Canonical: [[2026-09-11-finops-414-arm-cutover-honesty]].
+#414 closed via issue note. Do not reopen or close it from a vault MR.
 
-Inherits [[2026-09-10-finops-414-rds-arm64-apply-continuity]], [[2026-09-10-finops-cw-metric-prune-grafana]], [[2026-09-10-session-memory-log-finops-414-arm64-rds-cw]], [[2026-08-29-finops-arm64-and-rds-sizing]].
+Inherits [[2026-09-10-finops-414-rds-arm64-apply-continuity]], [[2026-09-10-finops-cw-metric-prune-grafana]], [[2026-09-10-session-memory-log-finops-414-arm64-rds-cw]], [[2026-08-29-finops-arm64-and-rds-sizing]], [[2026-09-11-finops-414-arm-cutover-honesty]].
 
 ---
 

@@ -20,7 +20,10 @@ linux/amd64 only. Applying ARM would brick Path B. Sponsor routed the
   Grafana CI uses official `10.4.0` tag via `AEA_GRAFANA_BASE`.
 - Fail-closed inspect for LiteLLM is operator-side; this VM cannot reach
   GHCR. Call out official multi-arch tag vs “build our own ECR” if missing.
-- No `terraform apply`. No live ARM flip. One `Closes #416`. Leave #414 open.
+- No `terraform apply`. No live ARM flip **in the #416 MR**. One
+  `Closes #416`. **2026-09-11 evening:** leftover ARM prove/apply
+  **landed** — [[2026-09-11-finops-414-arm-cutover-honesty]]. #414
+  closed via issue note.
 - image-scan stays native amd64 (do not double QEMU scan time).
 
 ## Artifacts
