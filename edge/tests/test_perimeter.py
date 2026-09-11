@@ -1,3 +1,4 @@
+import ast
 import asyncio
 import json
 import pathlib
@@ -1059,6 +1060,25 @@ class PerimeterTests(unittest.TestCase):
         self.assertIn("AEA_AGENT_UPSTREAM", entrypoint)
         self.assertIn("__AGENT_UPSTREAM__", entrypoint)
         self.assertIn("openssl req", entrypoint)
+
+    def test_method_names_are_valid_identifiers_without_redaction_brackets(self):
+        """!498 Duo note 3823577359 was a review-redaction artifact, not source."""
+        source = pathlib.Path(__file__).read_text(encoding="utf-8")
+        tree = ast.parse(source)
+        names = [
+            node.name
+            for node in tree.body
+            if isinstance(node, ast.ClassDef)
+            for item in node.body
+            if isinstance(item, ast.FunctionDef)
+            for node in [item]
+        ]
+        self.assertTrue(names)
+        for name in names:
+            self.assertTrue(name.isidentifier(), name)
+            self.assertNotIn("[", name)
+            self.assertNotIn("]", name)
+            self.assertNotIn("REDACTED", name)
 
 
 if __name__ == "__main__":

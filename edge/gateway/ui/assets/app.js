@@ -311,6 +311,7 @@ function setJourneyStep(step, { focus = true, force = false } = {}) {
   if (window.location.hash !== `#step-${next}`) {
     history.replaceState(null, "", `#step-${next}`);
   }
+  if (state.workspace) renderNeedReorder(state.workspace);
   if (focus) {
     const target = document.querySelector(
       "#step-empty:not([hidden]), .tile-grid .tile.is-current:not([hidden]), #step-guidance:not([hidden])",
@@ -837,6 +838,19 @@ function hasOccasion(f) {
   return Boolean(intent.occasion && String(intent.occasion).trim());
 }
 
+function hasSelection(f) {
+  const sel = (f && f.selection) || {};
+  return typeof sel.product_id === "string" && Boolean(sel.product_id.trim());
+}
+
+function needReorderShouldShow(f, step) {
+  const prior = (f && f.prior_order) || {};
+  const productId = typeof prior.product_id === "string" ? prior.product_id.trim() : "";
+  const onNeed = Number(step) <= 2;
+  return Boolean(productId) && !hasCustomerMessages(f) && !hasOccasion(f)
+    && !hasSelection(f) && onNeed;
+}
+
 function firstNeedReminder(f) {
   const items = ((f.reminders || {}).items) || [];
   return items.find((item) => item && typeof item.reminder_text === "string"
@@ -849,7 +863,7 @@ function renderNeedReorder(workspace) {
   const f = (workspace && workspace.facets) || {};
   const prior = f.prior_order || {};
   const productId = typeof prior.product_id === "string" ? prior.product_id.trim() : "";
-  const show = Boolean(productId) && !hasCustomerMessages(f) && !hasOccasion(f);
+  const show = needReorderShouldShow(f, state.step);
   card.hidden = !show;
   if (!show) return;
   const hint = document.querySelector("#need-reorder-hint");
@@ -1339,7 +1353,9 @@ document.querySelector("#step-empty-cta").addEventListener("click", (event) => {
 const needReorderCta = document.querySelector("#need-reorder-cta");
 if (needReorderCta) {
   needReorderCta.addEventListener("click", () => {
-    const productId = ((facets().prior_order) || {}).product_id;
+    const f = facets();
+    if (!needReorderShouldShow(f, state.step)) return;
+    const productId = ((f.prior_order) || {}).product_id;
     if (typeof productId === "string" && productId.trim()) {
       selectProduct(productId.trim());
     }

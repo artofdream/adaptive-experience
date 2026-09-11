@@ -116,7 +116,7 @@ order).
 | 8 | T-07 | Optional; session payment reference only | Needed for same-session hint |
 | 9 | T-03 hint | `Ordered earlier in this browser` | Thin FR-008 (#190); blocked if pay skipped |
 | 10 | Durable recall | New session with `__Host-aea_recall` still present | #193 shipped; empty cookie is hide, not fail |
-| 11 | Need Reorder card | `#need-reorder` present on fresh Need; tap → Pick | #419; blocked if pay skipped |
+| 11 | Need Reorder card | `#need-reorder` present on fresh Need; tap → Pick; card then hidden | #419 / #422; blocked if pay skipped |
 | 11b | Need reminder card | `#need-reminder` present on fresh Need when occasion memory is in lookahead | #420; blocked if pay skipped |
 | 12 | Reorder | Select recalled SKU; confirm destination **reference** (ADR-013) | blocked if recall is blocked |
 | — | Path B Select | `https://aea.artof.link/` unknown availability | **xfail / skip** Select; do not invent a seeder |

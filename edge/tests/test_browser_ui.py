@@ -355,6 +355,12 @@ class BrowserUiTests(unittest.TestCase):
         self.assertIn("renderNeedReorder", self.script)
         self.assertIn("hasCustomerMessages", self.script)
         self.assertIn("hasOccasion", self.script)
+        self.assertIn("hasSelection", self.script)
+        self.assertIn("needReorderShouldShow", self.script)
+        self.assertIn("!hasSelection(f) && onNeed", self.script)
+        self.assertIn("Number(step) <= 2", self.script)
+        self.assertIn("if (state.workspace) renderNeedReorder(state.workspace);", self.script)
+        self.assertIn("if (!needReorderShouldShow(f, state.step)) return;", self.script)
         self.assertIn("need-reorder-cta", self.script)
         self.assertIn(".need-reorder", self.css)
         self.assertIn('id="need-reminder"', self.html)
@@ -369,6 +375,16 @@ class BrowserUiTests(unittest.TestCase):
         self.assertIn("state.step = 4;", self.script)
         select_fn = self.script.split("async function selectProduct", 1)[1].split("function openHelp", 1)[0]
         self.assertLess(select_fn.find("state.step = 4;"), select_fn.find("await refreshWorkspace()"))
+
+    def test_need_reorder_gate_hides_after_selection_or_past_need(self):
+        gate = self.script.split("function needReorderShouldShow", 1)[1].split(
+            "function firstNeedReminder", 1)[0]
+        self.assertIn("hasSelection(f)", gate)
+        self.assertIn("Number(step) <= 2", gate)
+        render = self.script.split("function renderNeedReorder", 1)[1].split(
+            "function renderNeedReminder", 1)[0]
+        self.assertIn("needReorderShouldShow(f, state.step)", render)
+        self.assertNotIn("Boolean(productId) && !hasCustomerMessages(f) && !hasOccasion(f);", render)
 
     def test_shell_uses_edge_apis_without_data_plane_secrets(self):
         for path in ("/api/v1/session", "/api/v1/conversation/messages",

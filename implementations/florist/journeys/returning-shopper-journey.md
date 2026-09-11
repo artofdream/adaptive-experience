@@ -49,7 +49,9 @@ Do not open `/florist` in the same browser as the shop.
 10. **Recall (durable, no login):** new experience session that still presents
     `__Host-aea_recall` (do **not** wipe all cookies). Expect the Need-phase
     **Reorder previous bouquet** card (#419) before any chat. Tap **Reorder →**
-    to land on Pick with the recalled SKU selected. The same fresh Need also
+    to land on Pick with the recalled SKU selected. After that tap the card
+    is gone (#422) — it must not stay visible on Pick / Deliver / Pay / Track.
+    The same fresh Need also
     shows **Shop this occasion →** (#420) when `reminders.items` is present.
     A brand-new browser with no recall cookie is empty-wallet hide — not a
     product fail.

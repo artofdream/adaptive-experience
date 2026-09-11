@@ -80,6 +80,65 @@ class ReturningShopperClassifyTests(unittest.TestCase):
         )
         self.assertEqual("pass", result)
 
+    def test_need_reorder_shows_on_fresh_need_without_selection(self) -> None:
+        self.assertTrue(
+            walk.need_reorder_should_show(
+                product_id="classic-rose-dozen",
+                customer_messages=False,
+                occasion=False,
+                selection_product_id=None,
+                step=1,
+            )
+        )
+
+    def test_need_reorder_hides_once_selection_exists(self) -> None:
+        self.assertFalse(
+            walk.need_reorder_should_show(
+                product_id="classic-rose-dozen",
+                customer_messages=False,
+                occasion=False,
+                selection_product_id="classic-rose-dozen",
+                step=1,
+            )
+        )
+
+    def test_need_reorder_hides_past_need_phase(self) -> None:
+        self.assertFalse(
+            walk.need_reorder_should_show(
+                product_id="classic-rose-dozen",
+                customer_messages=False,
+                occasion=False,
+                selection_product_id=None,
+                step=4,
+            )
+        )
+
+    def test_need_reorder_hidden_after_pick_passes_when_absent(self) -> None:
+        result, reason = walk.classify_need_reorder_hidden_after_pick(
+            card_visible_before=True,
+            card_hidden_after=True,
+            payment_included=True,
+        )
+        self.assertEqual("pass", result)
+        self.assertIn("hidden", reason)
+
+    def test_need_reorder_hidden_after_pick_fails_when_still_visible(self) -> None:
+        result, reason = walk.classify_need_reorder_hidden_after_pick(
+            card_visible_before=True,
+            card_hidden_after=False,
+            payment_included=True,
+        )
+        self.assertEqual("fail", result)
+        self.assertIn("#422", reason)
+
+    def test_need_reorder_hidden_after_pick_blocked_without_payment(self) -> None:
+        result, _reason = walk.classify_need_reorder_hidden_after_pick(
+            card_visible_before=False,
+            card_hidden_after=None,
+            payment_included=False,
+        )
+        self.assertEqual("blocked", result)
+
     def test_need_reminder_card_blocked_without_payment(self) -> None:
         result, _reason = walk.classify_need_reminder_card(
             card_visible=False, payment_included=False
@@ -117,6 +176,7 @@ class ReturningShopperJourneyDocTests(unittest.TestCase):
         self.assertIn("#193", text)
         self.assertIn("#419", text)
         self.assertIn("#420", text)
+        self.assertIn("#422", text)
         self.assertIn("xfail", text)
         self.assertIn("NFR-007", text)
         self.assertIn("walk_returning_shopper.py", text)
