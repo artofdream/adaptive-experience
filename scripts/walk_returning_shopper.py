@@ -82,6 +82,18 @@ def classify_need_reorder_card(*, card_visible: bool, payment_included: bool) ->
     return "fail", "accepted order recalled but Need-phase Reorder card missing"
 
 
+def classify_need_reminder_card(*, card_visible: bool, payment_included: bool) -> tuple[str, str]:
+    """Path B / Path A Need-phase FR-016 pull reminder (#420). Requires an accepted order."""
+    if not payment_included:
+        return (
+            "blocked",
+            "Need reminder card needs order-captured occasion memory; payment excluded this run",
+        )
+    if card_visible:
+        return "pass", "Need-phase occasion reminder visible from zero-PII memory"
+    return "fail", "accepted order recalled but Need-phase occasion reminder missing"
+
+
 def classify_reorder(*, recall_result: str, reordered: bool) -> tuple[str, str]:
     if recall_result in {"blocked", "xfail"}:
         return "blocked", "reorder not attempted; recall not available"
@@ -235,6 +247,7 @@ def run_walk(args: argparse.Namespace) -> dict:
                     "rec_count": len(items or []),
                     "prior_order_hints": hints,
                     "prior_order": (body.get("facets") or {}).get("prior_order"),
+                    "reminders": (body.get("facets") or {}).get("reminders"),
                     "order": (body.get("facets") or {}).get("order"),
                 }
         if response.request.method in ("POST", "PATCH", "PUT"):
@@ -609,6 +622,7 @@ def run_walk(args: argparse.Namespace) -> dict:
 
             recalled = False
             need_card_visible = False
+            reminder_card_visible = False
             recall_note = ""
             fresh = None
             try:
@@ -651,6 +665,10 @@ def run_walk(args: argparse.Namespace) -> dict:
                 fresh_page.wait_for_timeout(1500)
                 need_card = fresh_page.locator("#need-reorder")
                 need_card_visible = need_card.count() > 0 and need_card.is_visible()
+                reminder_card = fresh_page.locator("#need-reminder")
+                reminder_card_visible = (
+                    reminder_card.count() > 0 and reminder_card.is_visible()
+                )
                 body_text = (fresh_page.inner_text("body") or "").lower()
                 recalled = (
                     need_card_visible
@@ -662,6 +680,10 @@ def run_walk(args: argparse.Namespace) -> dict:
                     or "reorder previous bouquet" in body_text
                     or "ordered earlier" in body_text
                 )
+                if reminder_card_visible:
+                    fresh_page.screenshot(
+                        path=str(shots / "14-need-reminder.png"), full_page=True
+                    )
                 if need_card_visible:
                     fresh_page.screenshot(
                         path=str(shots / "14-need-reorder.png"), full_page=True
@@ -698,6 +720,17 @@ def run_walk(args: argparse.Namespace) -> dict:
                 "Need-phase Reorder card from durable browser recall (#419)",
                 need_reason + recall_note,
                 need_result,
+            )
+            reminder_result, reminder_reason = classify_need_reminder_card(
+                card_visible=reminder_card_visible,
+                payment_included=report.get("payment_included", False),
+            )
+            _step(
+                report,
+                "M12 Need reminder card",
+                "Need-phase occasion reminder from zero-PII memory (#420)",
+                reminder_reason + recall_note,
+                reminder_result,
             )
             if "M8 reorder" not in {row["tile"] for row in report["steps"]}:
                 reorder_result, reorder_reason = classify_reorder(

@@ -837,6 +837,12 @@ function hasOccasion(f) {
   return Boolean(intent.occasion && String(intent.occasion).trim());
 }
 
+function firstNeedReminder(f) {
+  const items = ((f.reminders || {}).items) || [];
+  return items.find((item) => item && typeof item.reminder_text === "string"
+    && item.reminder_text.trim()) || null;
+}
+
 function renderNeedReorder(workspace) {
   const card = document.querySelector("#need-reorder");
   if (!card) return;
@@ -852,6 +858,51 @@ function renderNeedReorder(workspace) {
   }
 }
 
+// FR-016 Path B Need pull reminder: deterministic occasion memory, not ADR-019 push.
+function renderNeedReminder(workspace) {
+  const card = document.querySelector("#need-reminder");
+  if (!card) return;
+  const f = (workspace && workspace.facets) || {};
+  const first = firstNeedReminder(f);
+  const show = Boolean(first) && !hasCustomerMessages(f) && !hasOccasion(f);
+  card.hidden = !show;
+  if (!show) return;
+  const title = document.querySelector("#need-reminder-title");
+  const hint = document.querySelector("#need-reminder-hint");
+  if (title) title.textContent = first.reminder_text.trim();
+  if (hint) {
+    hint.textContent = "From this browser's private occasion memory — not a push notification";
+  }
+}
+
+async function shopNeedReminder() {
+  const first = firstNeedReminder(facets());
+  if (!first) return;
+  const occasion = String(first.occasion_type || "occasion").trim() || "occasion";
+  const relation = String(first.recipient_relation || "someone").trim() || "someone";
+  const text = `${occasion} flowers for ${relation}`;
+  clearFormError("message-form-error");
+  appendPendingCustomer(text);
+  setUnderstandingPending(true);
+  try {
+    const result = await api("/api/v1/conversation/messages", {
+      method: "POST",
+      body: { message_text: text, observed_context_version: state.contextVersion },
+    });
+    state.contextVersion = result.context_version;
+    await refreshWorkspace();
+    await pullStream();
+    if (state.step < 2) setJourneyStep(2);
+    showNotice("Thanks — your saved occasion is in the conversation. Review Shared Understanding and correct anything that looks wrong.");
+  } catch (error) {
+    document.querySelectorAll("[data-pending='true']").forEach((node) => node.remove());
+    setUnderstandingPending(false);
+    const copy = friendlyError(error, "Conversation could not be sent");
+    showFormError("message-form-error", copy);
+    showNotice(copy, "error");
+  }
+}
+
 function renderWorkspace(workspace) {
   state.workspace = workspace;
   state.contextVersion = workspace.context_version || 0;
@@ -862,6 +913,7 @@ function renderWorkspace(workspace) {
   renderUnderstanding(shared.structured_intent || shared);
   renderSuggestions(shared.suggestions);
   renderNeedReorder(workspace);
+  renderNeedReminder(workspace);
   renderRecommendations((f.recommendations || {}).items || f.recommendations);
   renderSelection(f.selection);
   renderSummary(f.order_summary);
@@ -1292,6 +1344,10 @@ if (needReorderCta) {
       selectProduct(productId.trim());
     }
   });
+}
+const needReminderCta = document.querySelector("#need-reminder-cta");
+if (needReminderCta) {
+  needReminderCta.addEventListener("click", shopNeedReminder);
 }
 window.addEventListener("hashchange", () => {
   const match = window.location.hash.match(/^#step-([1-7])$/);
