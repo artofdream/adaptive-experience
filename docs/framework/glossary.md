@@ -27,9 +27,19 @@ A safety design rule: if a backend service (such as cooler inventory or delivery
 - **Where to see it:** Referenced in the [Comparison](comparison.html#1-the-core-formula-in-everyday-terms).
 
 ### Thin Client
-A lightweight client application (such as our Android app) that handles screen display and user gestures, while delegating all business logic, inventory validation, and pricing calculations to the central backend.
+A lightweight client application (such as our Android app) that handles screen display and user gestures, while delegating all business logic, inventory validation, and pricing calculations to the central backend ([ADR-017](https://gitlab.com/artof-group/adaptive-experience-architecture/-/blob/main/docs/06-adr/ADR-017-native-client-architecture.md)).
 - **Why it matters:** Prevents "split-brain" bugs where prices on a mobile app differ from prices on the website.
 - **Where to see it:** Demonstrated on the [Mobile Companion](companion.html).
+
+### Need → Pick → Pay
+The three-step phone journey: say what you need, pick a real bouquet, then confirm delivery and payment. Used by the Android companion and the Path B mobile-web concierge. Not a new requirement ID — it is the screen map in the native mobile UX spec.
+- **Why it matters:** It keeps the phone focused. Tiles and SSE stay on the web workspace.
+- **Where to see it:** [Mobile Companion](companion.html#need-pick-pay) and [Path B](path-b.html).
+
+### Honesty Loop
+Detect a web-vs-phone mismatch, open one issue, ship the smallest fix, then prove it on a real device — or leave the status **Unknown**.
+- **Why it matters:** A merged ticket is a claim. A probe is proof.
+- **Where to see it:** [Mobile Companion](companion.html#the-honesty-loop) and [Claim vs probe](journal.html#claim-vs-probe).
 
 ### BFF (Backend-for-Frontend)
 A secure gateway server that translates client requests from web browsers or mobile apps into internal domain commands.
@@ -44,7 +54,7 @@ A privacy-first design principle (ADR-020) where sensitive customer information 
 ### Edge Wallet
 An encrypted notebook on the customer’s phone. After a confirmed order, the companion stores a receipt locally (Android Keystore). Names and card wording stay on the device. The store only ever sees an opaque product/order token if a reorder is sent later.
 - **Why it matters:** Repeat shopping does not require a central address book of customers.
-- **Honesty:** The **save** is live and has been probed. The Need-screen reorder **button** is on `main` (!459 / #404). Write and tap remain two facts.
+- **Honesty:** The **save** is live and has been probed. The Need-screen reorder **button** is on `main` (!459 / #404). Write and tap remain two facts. Play empty-wallet vs receipt-present facts stay on the [companion ledger](companion.html#verified-ledger).
 - **Where to see it:** [Mobile Companion](companion.html) and [Privacy CRM](crm.html).
 
 ### Florist Staff Console

@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 320" width="100%" height="auto" role="img" aria-label="Path B web workspace and the Android companion share one store backend">
+  <defs>
+    <style>
+      .bg { fill: #121417; }
+      .card { fill: #181c22; stroke: #2a2e33; stroke-width: 1.5; }
+      .card-accent { fill: #181c22; stroke: #c4b08a; stroke-width: 1.5; }
+      .tag { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; font-size: 11px; fill: #c4b08a; font-weight: 700; letter-spacing: 0.8px; text-anchor: middle; }
+      .title { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; font-weight: 700; font-size: 15px; fill: #e7e4dc; text-anchor: middle; }
+      .desc { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; font-weight: 400; font-size: 12px; fill: #9a9588; }
+      .banner { font-family: Palatino, "Times New Roman", serif; font-size: 17px; fill: #e7e4dc; font-weight: 600; text-anchor: middle; }
+      .foot { font-family: Palatino, "Times New Roman", serif; font-size: 13px; fill: #c4b08a; text-anchor: middle; }
+      .host { font-family: ui-monospace, Menlo, monospace; font-size: 11px; fill: #e7e4dc; text-anchor: middle; }
+    </style>
+    <marker id="pbc-arr" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#c4b08a"/>
+    </marker>
+  </defs>
+  <rect width="800" height="320" class="bg" rx="8"/>
+  <rect x="1" y="1" width="798" height="318" fill="none" stroke="#2a2e33" stroke-width="1" rx="7"/>
+  <text x="400" y="32" class="banner">Two clients, one store</text>
+  <line x1="40" y1="48" x2="760" y2="48" stroke="#2a2e33" stroke-width="1"/>
+
+  <g transform="translate(36, 64)">
+    <rect width="236" height="150" class="card" rx="6"/>
+    <text x="118" y="24" class="tag">PATH B WEB</text>
+    <text x="118" y="48" class="title">Adaptive Workspace</text>
+    <text x="18" y="76" class="desc">
+      <tspan x="18" dy="0">Desktop tiles + phone</tspan>
+      <tspan x="18" dy="16">concierge in the browser.</tspan>
+      <tspan x="18" dy="16">Staff console is /florist</tspan>
+      <tspan x="18" dy="16">on the same shop host.</tspan>
+    </text>
+  </g>
+
+  <g transform="translate(282, 64)">
+    <rect width="236" height="150" class="card" rx="6"/>
+    <text x="118" y="24" class="tag">ANDROID COMPANION</text>
+    <text x="118" y="48" class="title">Thin phone client</text>
+    <text x="18" y="76" class="desc">
+      <tspan x="18" dy="0">Need ’ Pick ’ Pay only.</tspan>
+      <tspan x="18" dy="16">No second inventory.</tspan>
+      <tspan x="18" dy="16">No second price list.</tspan>
+      <tspan x="18" dy="16">Receipts stay on-device.</tspan>
+    </text>
+  </g>
+
+  <g transform="translate(528, 64)">
+    <rect width="236" height="150" class="card-accent" rx="6"/>
+    <text x="118" y="24" class="tag">SHARED BACKEND</text>
+    <text x="118" y="48" class="title">Domain services decide</text>
+    <text x="18" y="76" class="desc">
+      <tspan x="18" dy="0">Same BFF, stock, prices,</tspan>
+      <tspan x="18" dy="16">slots, and orders.</tspan>
+      <tspan x="18" dy="16">AI may interpret.</tspan>
+      <tspan x="18" dy="16">The store always decides.</tspan>
+    </text>
+  </g>
+
+  <line x1="154" y1="222" x2="154" y2="238" stroke="#c4b08a" stroke-width="1.5"/>
+  <line x1="400" y1="222" x2="400" y2="238" stroke="#c4b08a" stroke-width="1.5"/>
+  <line x1="154" y1="238" x2="646" y2="238" stroke="#c4b08a" stroke-width="1.5"/>
+  <line x1="646" y1="222" x2="646" y2="238" stroke="#c4b08a" stroke-width="1.5" marker-end="url(#pbc-arr)"/>
+
+  <text x="400" y="268" class="host">Shop: aea.artof.link   ·   Knowledge: architecture.artof.link</text>
+  <text x="400" y="294" class="foot">Knowledge is not a shop route. /native and /framework are not docs pages on the shop host.</text>
+</svg>
