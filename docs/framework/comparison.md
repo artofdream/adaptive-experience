@@ -10,7 +10,7 @@ This page is the public comparative guide to Adaptive Experience Architecture: m
 
 ## What this is
 
-An independent architecture analysis by Art of Group. It maps AEA onto six harness layers (guides, sensors, loop, memory, permissions, observability) and five concentric floors used in contemporary engineering literature. The AEA formula remains: **Shared Understanding + Domain Services + Outer Harness**. The flower shop at [aea.artof.link](https://aea.artof.link) serves as our live reference case study.
+An independent architecture analysis by Art of Group. It maps AEA onto six harness layers (guides, sensors, loop, memory, permissions, observability) and five concentric floors used in contemporary engineering literature. The AEA formula remains: **Shared Understanding + Domain Services + Outer Harness**. The flower shop at [aea.artof.link](https://aea.artof.link) serves as our live reference case study. Knowledge about that shop lives here; `/native` and `/framework` on the shop host are not documentation pages.
 
 ---
 

@@ -2,17 +2,25 @@
 
 **Adaptive Experience = Shared Understanding + Domain Services + Outer Harness.**
 
-> **In Plain English:** When shopping with AI, a chatbot shouldn't guess prices or invent inventory. Adaptive Experience Architecture pairs conversational AI with real-world databases (inventory, pricing, logistics) and an outer harness of automated quality checks to keep transactions reliable, private, and honest.
+> **In Plain English:** A chatbot should not guess prices or invent inventory. This architecture pairs conversational AI with real store systems (stock, prices, delivery, payment) and an outer harness of checks so orders stay reliable, private, and honest.
 
-This site is the public documentation surface for the architecture. It is not a shop, not a content management system, and not a pitch deck.
+This site is the public **knowledge** surface. It is not a shop, not a CMS, and not a pitch deck.
 
-- **Shared Understanding** is the session's current, reviewable model of customer intent (like a live digital notepad shared between customer and store).
-- **Domain Services** are authoritative: they validate inventory, prices, delivery slots, and payments (the real-world warehouse and cash register).
-- **The Outer Harness** keeps both honest in production — through guides, sensors, an execution loop, persistent memory, strict permissions, and telemetry.
+- **The shop** is [aea.artof.link](https://aea.artof.link) — Lily's Florist, including `/florist` for staff in a browser.
+- **The knowledge** is this site — [architecture.artof.link](https://architecture.artof.link).
+- Routes such as `/native` or `/framework` on the shop host are **not** documentation pages. Read the companion and Path B notes here instead.
+
+If this site and the repository docs disagree, `docs/02-business-analysis/requirements.md` and the ADRs win. This site does not invent requirement IDs.
+
+- **Shared Understanding** is the session's current, reviewable model of what the customer wants (a live digital notepad).
+- **Domain Services** are authoritative: they validate inventory, prices, delivery slots, and payments.
+- **The Outer Harness** keeps both honest in production — guides, sensors, a loop, memory, permissions, and telemetry.
 
 AI may interpret. Domain services decide. Status words are claims; they need a probe.
 
 ![Adaptive Experience formula: Shared Understanding + Domain Services + Outer Harness](assets/formula.svg)
+
+![Path B web workspace and the Android companion share one store backend](assets/path-b-vs-companion.svg)
 
 ---
 
@@ -35,13 +43,13 @@ The outer harness wraps around domain services and shared understanding across s
 
 ## Explore the Framework & Case Studies
 
-The live flower shop at [aea.artof.link](https://aea.artof.link) is our reference case study, proving these principles on real infrastructure:
+The live flower shop at [aea.artof.link](https://aea.artof.link) is the reference case study. The pages below explain the architecture in plain English, with formal IDs where behavior is cited.
 
 - Read the [Comparison & Visual Guide](comparison.html) for the 5-floor building model, 3 eras of AI development, and the honest status ledger.
 - Explore the [Schema](schema.html) for the architectural blueprint, execution loop, and team roles.
-- See the [Stack](stack.html) for high-level system architecture, cloud deployment, and the "two hostnames, two jobs" separation.
-- Review the [Path B Case Study](path-b.html) for customer journey video recordings and dual-viewport presentation.
-- See the [Mobile Companion App](companion.html) for the lightweight Android client, Google Play release, and live florist order feeds.
+- See the [Stack](stack.html) for high-level system architecture, cloud deployment, and the two-hostname split.
+- Review the [Path B Case Study](path-b.html) for customer journey recordings and how the web workspace differs from the phone app.
+- See the [Mobile Companion App](companion.html) for the thin Android client, Need → Pick → Pay, and the verified ledger.
 - Learn about [Privacy-Preserving CRM](crm.html) for zero-PII customer intelligence, edge wallets, and 14-day address shredding.
-- Read the [Journal](journal.html) for curated stories of real-world challenges, solutions, and hard-learned lessons.
+- Read the [Journal](journal.html) for curated stories of challenges, solutions, and lessons.
 - Check the [Glossary](glossary.html) for plain-English definitions of terms used across this site.

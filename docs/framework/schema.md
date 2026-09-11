@@ -16,7 +16,7 @@ This page is the public architectural map of Adaptive Experience Architecture. I
 - **Domain Services:** The authoritative backend systems. They validate stock in the cooler, calculate delivery fees, charge cards, and create real orders.
 - **The Outer Harness:** The automated safety net. It wraps around both the conversational AI and the databases to ensure transactions are reliable and honest.
 
-**The Golden Rule:** AI may interpret customer intent, but domain services always make the decisions. Status claims require empirical proof.
+**The Golden Rule:** AI may interpret customer intent, but domain services always make the decisions. Status claims require empirical proof. Formal IDs (FR/ADR) already exist in `docs/`; this page does not invent them.
 
 ![Adaptive Experience formula](assets/formula.svg)
 

@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 250" width="100%" height="auto" role="img" aria-label="Honesty loop: Detect, Decide, Ship, Prove">
+  <defs>
+    <style>
+      .bg { fill: #121417; }
+      .card { fill: #181c22; stroke: #2a2e33; stroke-width: 1.5; }
+      .step-num { font-family: ui-monospace, Menlo, monospace; font-size: 10px; fill: #c4b08a; font-weight: 700; letter-spacing: 0.6px; }
+      .title { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; font-weight: 700; font-size: 15px; fill: #e7e4dc; }
+      .desc { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; font-weight: 400; font-size: 11px; fill: #9a9588; }
+      .banner { font-family: Palatino, "Times New Roman", serif; font-size: 17px; fill: #e7e4dc; font-weight: 600; text-anchor: middle; }
+      .foot { font-family: Palatino, "Times New Roman", serif; font-size: 13px; fill: #c4b08a; text-anchor: middle; }
+    </style>
+    <marker id="hl-arr" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#c4b08a"/>
+    </marker>
+  </defs>
+  <rect width="800" height="250" class="bg" rx="8"/>
+  <rect x="1" y="1" width="798" height="248" fill="none" stroke="#2a2e33" stroke-width="1" rx="7"/>
+  <text x="400" y="32" class="banner">The honesty loop</text>
+  <line x1="40" y1="48" x2="760" y2="48" stroke="#2a2e33" stroke-width="1"/>
+
+  <g transform="translate(28, 64)">
+    <rect width="170" height="118" class="card" rx="6"/>
+    <rect x="0" y="0" width="170" height="4" fill="#c4b08a" rx="2"/>
+    <text x="14" y="24" class="step-num">1 DETECT</text>
+    <text x="14" y="46" class="title">Find drift</text>
+    <text x="14" y="70" class="desc">
+      <tspan x="14" dy="0">Probe web and phone</tspan>
+      <tspan x="14" dy="16">for the same totals,</tspan>
+      <tspan x="14" dy="16">stock, and fees.</tspan>
+    </text>
+  </g>
+  <line x1="206" y1="123" x2="222" y2="123" stroke="#c4b08a" stroke-width="1.5" marker-end="url(#hl-arr)"/>
+
+  <g transform="translate(226, 64)">
+    <rect width="170" height="118" class="card" rx="6"/>
+    <rect x="0" y="0" width="170" height="4" fill="#c4b08a" rx="2"/>
+    <text x="14" y="24" class="step-num">2 DECIDE</text>
+    <text x="14" y="46" class="title">One issue</text>
+    <text x="14" y="70" class="desc">
+      <tspan x="14" dy="0">Name one finding,</tspan>
+      <tspan x="14" dy="16">one owner, one fix.</tspan>
+      <tspan x="14" dy="16">No hidden backlog.</tspan>
+    </text>
+  </g>
+  <line x1="404" y1="123" x2="420" y2="123" stroke="#c4b08a" stroke-width="1.5" marker-end="url(#hl-arr)"/>
+
+  <g transform="translate(424, 64)">
+    <rect width="170" height="118" class="card" rx="6"/>
+    <rect x="0" y="0" width="170" height="4" fill="#c4b08a" rx="2"/>
+    <text x="14" y="24" class="step-num">3 SHIP</text>
+    <text x="14" y="46" class="title">Small change</text>
+    <text x="14" y="70" class="desc">
+      <tspan x="14" dy="0">Change the smallest</tspan>
+      <tspan x="14" dy="16">surface that removes</tspan>
+      <tspan x="14" dy="16">the mismatch.</tspan>
+    </text>
+  </g>
+  <line x1="602" y1="123" x2="618" y2="123" stroke="#c4b08a" stroke-width="1.5" marker-end="url(#hl-arr)"/>
+
+  <g transform="translate(622, 64)">
+    <rect width="150" height="118" class="card" rx="6"/>
+    <rect x="0" y="0" width="150" height="4" fill="#c4b08a" rx="2"/>
+    <text x="14" y="24" class="step-num">4 PROVE</text>
+    <text x="14" y="46" class="title">Probe again</text>
+    <text x="14" y="70" class="desc">
+      <tspan x="14" dy="0">Walk it on a real</tspan>
+      <tspan x="14" dy="16">phone and the live</tspan>
+      <tspan x="14" dy="16">store  or Unknown.</tspan>
+    </text>
+  </g>
+
+  <text x="400" y="222" class="foot">A merged ticket is a claim. A probe is proof.</text>
+</svg>

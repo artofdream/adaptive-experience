@@ -57,12 +57,20 @@ class TestBuildFrameworkSite(unittest.TestCase):
         self.assertTrue((root / "public" / "path-b.html").exists())
         self.assertTrue((root / "public" / "stack.html").exists())
         self.assertTrue((root / "public" / "companion.html").exists())
+        index_html = (root / "public" / "index.html").read_text(encoding="utf-8")
+        path_b_html = (root / "public" / "path-b.html").read_text(encoding="utf-8")
+        self.assertIn("/assets/path-b-vs-companion.svg", index_html)
+        self.assertIn("/assets/path-b-vs-companion.svg", path_b_html)
+        self.assertIn("/assets/need-pick-pay.svg", path_b_html)
         companion = (root / "docs" / "framework" / "companion.md").read_text(
             encoding="utf-8")
-        self.assertIn("assets/companion-need-30s-2026-09-02.mp4", companion)
+        self.assertIn("assets/companion-need-30s-2026-09-04.mp4", companion)
         html = (root / "public" / "companion.html").read_text(encoding="utf-8")
-        self.assertIn("/assets/companion-need-30s-2026-09-02.mp4", html)
-        self.assertIn('poster="/assets/companion-need-30s-2026-09-02.jpg"', html)
+        self.assertIn("/assets/companion-need-30s-2026-09-04.mp4", html)
+        self.assertIn('poster="/assets/companion-need-30s-2026-09-04.jpg"', html)
+        self.assertIn("/assets/need-pick-pay.svg", html)
+        self.assertIn("/assets/honesty-loop.svg", html)
+        self.assertIn("/assets/path-b-vs-companion.svg", html)
 
     def test_cf056_honesty_incident_cross_links(self):
         """Daily-brief honesty and Claim vs probe name the same incident and link."""

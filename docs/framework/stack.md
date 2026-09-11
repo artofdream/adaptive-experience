@@ -17,6 +17,8 @@ To prevent interference and ensure high reliability, we operate two distinct pub
 
 These two sites do not share a server, database, or load balancer. If the shop receives heavy traffic, the architecture site is completely unaffected, and vice versa.
 
+Knowledge is not a shop path. `/native` and `/framework` on `aea.artof.link` are not published documentation pages. Read companion and Path B notes here.
+
 ![Two hostnames: framework site and florist case study](assets/two-hostnames.svg)
 
 ---
@@ -78,7 +80,7 @@ Every capability mentioned on this site is classified by its verified production
 >
 > **Backend Domain Services** — **Live on AWS ECS:** PostgreSQL, Kafka-compatible event streaming, and Edge BFF are deployed and active on AWS ECS Fargate.
 >
-> **Google Play Mobile Distribution** — **Probed (4 Sep 2026):** Production release build (version `5`, non-debuggable) verified on physical ASUS ROG and Samsung Galaxy hardware via Google Play Internal Track (#390).
+> **Google Play Mobile Distribution** — **Probed (4 Sep 2026, version `5`):** That 4 Sep Play Internal take remains a historical probe (#390). Later Play Internal versions and the named-handset ledger live on the [companion](companion.html#verified-ledger) page. This row does not restate those later dumps.
 >
 > **Mobile Order Write-Through** — **Probed (4 Sep 2026):** Orders placed in the companion app write through to the store's central database and appear in real time on the florist dashboard with `client: companion-android` (Order `34091114-cb91-44de-a5a3-6be78c503912`, #375, #384).
 >

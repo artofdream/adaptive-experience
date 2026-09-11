@@ -6,6 +6,8 @@
 
 Live reference store: [https://aea.artof.link](https://aea.artof.link)
 
+Knowledge about Path B lives on this site. The shop host serves the store (`/` and `/florist`). It does not publish `/native` or `/framework` documentation pages.
+
 ---
 
 ## What Path B Demonstrates
@@ -15,9 +17,13 @@ Path B implements the core AEA formula: **Shared Understanding + Domain Services
 It provides an **Adaptive Workspace** that changes its presentation depending on the device:
 
 - **Desktop (16:9 Widescreen):** An interactive, spatial workspace. The customer chats with the florist assistant on one side, while visual tiles (arrangement preview, greeting card note, delivery calendar, and cart total) dynamically appear and update on the other side.
-- **Mobile (9:16 Handheld):** A streamlined, vertical concierge interface tailored for quick thumb scrolling and tap-to-select choices.
+- **Mobile (9:16 Handheld):** A streamlined, vertical concierge interface (Need → Pick → Pay) tailored for quick thumb scrolling and tap-to-select choices.
 
-Both interfaces share the exact same underlying session, inventory catalog, and business rules.
+Both interfaces share the exact same underlying session, inventory catalog, and business rules. The [Android companion](companion.html) is a **thin third client** of that same store ([ADR-017](https://gitlab.com/artof-group/adaptive-experience-architecture/-/blob/main/docs/06-adr/ADR-017-native-client-architecture.md)) — not a second catalog and not a second florist app.
+
+![Path B web workspace and the Android companion share one store backend](assets/path-b-vs-companion.svg)
+
+![Need, Pick, Pay: three steps on one store backend](assets/need-pick-pay.svg)
 
 ---
 
@@ -74,7 +80,7 @@ For florists working the shop floor, the daily workflow follows 4 focused steps:
 3. **Inquiry Triage (`#inbox`):** Watch for real-time customer escalations from the Contact Florist button. Tap any inquiry to jump to that customer's shared session context.
 4. **End-of-Day Review:** Switch filters to **Delayed** to ensure zero missed orders, then check **3 days** / **7 days** to plan upcoming flower cooler inventory.
 
-*For complete operational procedures, multi-device shortcuts, and least-data guarantees, see the [Florist Operator Guide](../05-ux-design-guide/florist-operator-guide.md).*
+The longer florist operator guide lives in the repository. It is not a Pages route. Staff work stays on the shop host at `/florist`.
 
 ---
 

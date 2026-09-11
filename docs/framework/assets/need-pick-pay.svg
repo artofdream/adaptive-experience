@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 260" width="100%" height="auto" role="img" aria-label="Need, Pick, Pay: three steps on one store backend">
+  <defs>
+    <style>
+      .bg { fill: #121417; }
+      .card { fill: #181c22; stroke: #2a2e33; stroke-width: 1.5; }
+      .step-num { font-family: ui-monospace, Menlo, monospace; font-size: 10px; fill: #c4b08a; font-weight: 700; letter-spacing: 0.6px; }
+      .title { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; font-weight: 700; font-size: 16px; fill: #e7e4dc; }
+      .desc { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; font-weight: 400; font-size: 12px; fill: #9a9588; }
+      .banner { font-family: Palatino, "Times New Roman", serif; font-size: 17px; fill: #e7e4dc; font-weight: 600; text-anchor: middle; }
+      .foot { font-family: Palatino, "Times New Roman", serif; font-size: 13px; fill: #c4b08a; text-anchor: middle; }
+    </style>
+    <marker id="npp-arr" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#c4b08a"/>
+    </marker>
+  </defs>
+  <rect width="800" height="260" class="bg" rx="8"/>
+  <rect x="1" y="1" width="798" height="258" fill="none" stroke="#2a2e33" stroke-width="1" rx="7"/>
+  <text x="400" y="32" class="banner">Need ’ Pick ’ Pay</text>
+  <line x1="40" y1="48" x2="760" y2="48" stroke="#2a2e33" stroke-width="1"/>
+
+  <g transform="translate(36, 66)">
+    <rect width="220" height="132" class="card" rx="6"/>
+    <rect x="0" y="0" width="220" height="4" fill="#c4b08a" rx="2"/>
+    <text x="16" y="26" class="step-num">STEP 1</text>
+    <text x="16" y="50" class="title">Need</text>
+    <text x="16" y="76" class="desc">
+      <tspan x="16" dy="0">Say what you need, or tap</tspan>
+      <tspan x="16" dy="16">a suggestion. The store</tspan>
+      <tspan x="16" dy="16">reads intent  not guesses.</tspan>
+    </text>
+  </g>
+
+  <line x1="266" y1="132" x2="286" y2="132" stroke="#c4b08a" stroke-width="1.5" marker-end="url(#npp-arr)"/>
+
+  <g transform="translate(290, 66)">
+    <rect width="220" height="132" class="card" rx="6"/>
+    <rect x="0" y="0" width="220" height="4" fill="#c4b08a" rx="2"/>
+    <text x="16" y="26" class="step-num">STEP 2</text>
+    <text x="16" y="50" class="title">Pick</text>
+    <text x="16" y="76" class="desc">
+      <tspan x="16" dy="0">Choose a real bouquet from</tspan>
+      <tspan x="16" dy="16">live stock, then set how</tspan>
+      <tspan x="16" dy="16">many (110), like the web.</tspan>
+    </text>
+  </g>
+
+  <line x1="520" y1="132" x2="540" y2="132" stroke="#c4b08a" stroke-width="1.5" marker-end="url(#npp-arr)"/>
+
+  <g transform="translate(544, 66)">
+    <rect width="220" height="132" class="card" rx="6"/>
+    <rect x="0" y="0" width="220" height="4" fill="#c4b08a" rx="2"/>
+    <text x="16" y="26" class="step-num">STEP 3</text>
+    <text x="16" y="50" class="title">Pay</text>
+    <text x="16" y="76" class="desc">
+      <tspan x="16" dy="0">Pick a delivery window and</tspan>
+      <tspan x="16" dy="16">a destination nickname.</tspan>
+      <tspan x="16" dy="16">No card number on the phone.</tspan>
+    </text>
+  </g>
+
+  <text x="400" y="232" class="foot">Same inventory, prices, and orders as the website.</text>
+</svg>
