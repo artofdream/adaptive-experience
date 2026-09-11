@@ -2,9 +2,14 @@
 
 > **Tags**: #aea #second-brain #ecr #iam #oidc #grafana #418
 > **Captured**: 2026-09-11
-> **GitLab**: #418 (this MR) · leftover #414 ARM prove/apply stays open
+> **GitLab**: #418 / !496 merged · leftover #414 ARM prove/apply **done 2026-09-11**
 > **Owners to inherit**: @aea-devsecops-platform, @aea-knowledge-guardian, @aea-mr-coordinator
-> **This node is knowledge, not an apply ticket.** Do not `terraform apply` from this note. Do not flip live ECS to ARM64.
+> **This node is knowledge, not an apply ticket.** Do not `terraform apply` from this note.
+
+**2026-09-11 Berlin evening:** IAM applied on cts-ai; `build-ecr` on
+`main` succeeded; inspect PASS; #414 ARM cutover landed. Canonical:
+[[2026-09-11-finops-414-arm-cutover-honesty]]. The “do not flip live
+ECS / leftover stays open” lines below are **stale**.
 
 Inherits [[2026-09-10-path-b-multiarch-ecr-416]], [[2026-09-10-session-memory-log-path-b-multiarch-ecr-416]], [[2026-08-26-date-re-bus-and-agent-runner-image-roll]].
 
@@ -35,9 +40,12 @@ the IAM role policy after merge, then re-runs `build-ecr` on `main`.
 Do **not** apply #414 ARM64 task defs until imagetools inspect shows
 both platforms (SOP in `infra/aws/README.md` § Image builds).
 
-## Sequence after merge
+## Sequence after merge (completed 2026-09-11)
 
-1. MRC merges this IAM/docs MR (`Closes #418`).
-2. DSO `terraform apply` on cts-ai — IAM only; no ARM cutover.
-3. Re-run `build-ecr` on `main` (grafana + siblings).
-4. Inspect `:latest` for amd64+arm64, then #414 leftover.
+1. MRC merged this IAM/docs MR (`Closes #418` / !496).
+2. DSO applied IAM on cts-ai — `aea-pilot-gitlab-ci` `EcrPush` includes
+   grafana + `GetDownloadUrlForLayer`.
+3. `build-ecr` on `main` succeeded after IAM.
+4. Inspect `:latest` PASS amd64+arm64 (shop + grafana + LiteLLM GHCR);
+   then #414 leftover cutover — see
+   [[2026-09-11-finops-414-arm-cutover-honesty]].

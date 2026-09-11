@@ -3,7 +3,11 @@
 > **Tags**: #aea #session-memory #second-brain #finops #414
 > **Captured**: 2026-09-10
 > **Author**: `@aea-devsecops-platform` with `@aea-knowledge-guardian`
-> **Related**: [[2026-09-10-finops-414-rds-arm64-apply-continuity]] · [[2026-09-10-finops-cw-metric-prune-grafana]] · #414 · #415
+> **Related**: [[2026-09-10-finops-414-rds-arm64-apply-continuity]] · [[2026-09-10-finops-cw-metric-prune-grafana]] · [[2026-09-11-finops-414-arm-cutover-honesty]] · #414 · #415
+
+**2026-09-11:** live ARM leftover landed — see
+[[2026-09-11-finops-414-arm-cutover-honesty]]. This 2026-09-10 log is
+the RDS/CW + code/docs MR memory only.
 
 ## Why
 

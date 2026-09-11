@@ -18,8 +18,10 @@ After !495 / #416, required `build-ecr` failed pushing grafana:
 - Ratchet `scripts/test_iac_scan.py` so every `aws_ecr_repository` in
   `ecr.tf` must appear in `EcrPush`, plus the layer-download action.
 - No `terraform apply` from this Cloud VM. After merge, DSO cts-ai
-  applies IAM, then re-runs `build-ecr`. Do not start #414 ARM cutover.
-- One `Closes #418`. Leave #414 open.
+  applies IAM, then re-runs `build-ecr`. Do not start #414 ARM cutover
+  from **this** IAM MR. **2026-09-11 evening:** that leftover **landed**
+  — [[2026-09-11-finops-414-arm-cutover-honesty]].
+- One `Closes #418`. #414 later closed via issue note (not this MR).
 
 ## Artifacts
 

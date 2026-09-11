@@ -2,9 +2,14 @@
 
 > **Tags**: #aea #second-brain #finops #ecr #arm64 #fargate #honesty #knowledge-first
 > **Captured**: 2026-09-10
-> **GitLab**: #416 (this MR closes the **build** track) · #414 leftover prove/apply stays open
+> **GitLab**: #416 (this MR closed the **build** track) · #414 leftover prove/apply **done 2026-09-11**
 > **Owners to inherit**: @aea-devsecops-platform, @aea-cost-guardian, @aea-knowledge-guardian, @aea-mr-coordinator
-> **This node is knowledge, not an apply ticket.** Do not `terraform apply` from this note. Do not flip live ECS to ARM64.
+> **This node is knowledge, not an apply ticket.** Do not `terraform apply` from this note.
+
+**2026-09-11 Berlin evening:** leftover ARM prove + task-def roll
+**landed**. Canonical: [[2026-09-11-finops-414-arm-cutover-honesty]].
+The “do not flip live ECS to ARM64 / leave #414 open” lines below are
+historical (2026-09-10 build-track MR).
 
 Inherits [[2026-09-10-finops-414-partial-apply-honesty]], [[2026-09-10-finops-414-rds-arm64-apply-continuity]], [[2026-09-05-session-memory-log-331-image-digest-pins]].
 
@@ -81,11 +86,12 @@ If inspect lacks `linux/arm64`:
 
 Missing LiteLLM arm64 is a **cutover blocker**.
 
-## Leftover (do not close #414 from this MR)
+## Leftover (historical — closed 2026-09-11)
 
 #416 issue text also asked to prove one service on ARM64 Fargate and
-then apply the #414 task defs. That is **not** done here. Leave #414
-open. After merge + inspect, DSO proves one service then applies.
-Do not auto-close #414.
+then apply the #414 task defs. That leftover **landed 2026-09-11**
+(grafana `:6` prove first, then siblings; #414 closed via issue note).
+Canonical: [[2026-09-11-finops-414-arm-cutover-honesty]]. Do not
+reopen or close #414 from a vault MR.
 
 Do **not** merge from a Cloud Agent. Do **not** touch secrets/keystores/`.env`.
