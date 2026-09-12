@@ -24,7 +24,8 @@ Not FR-017 engagement analytics (#36). Parent #35 stays open.
 ## Follow-up
 
 AI-authored in-session card copy is #425 (`fr-016-ai-need-reminder-copy.md`).
-Unsolicited outbound send remains leftover on #35.
+Dry-run outbox is #428 (`fr-016-reminder-outbox-dry-run.md`).
+A live outbound channel remains leftover on #35.
 
 ## Not in this slice
 

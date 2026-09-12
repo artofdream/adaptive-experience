@@ -204,6 +204,34 @@ const EMPTY_ENGAGEMENT = {
   relation_cohorts: [],
   event_month_cohorts: [],
 };
+// FR-016 / #428 least-data dry-run reminder outbox (no live outbound channel).
+const SAMPLE_REMINDER_OUTBOX = {
+  pending_dry_run: 1,
+  not_sent: 1,
+  not_implemented: 0,
+  lookahead_days: 30,
+  items: [
+    {
+      outbox_id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      occasion_type: "birthday",
+      recipient_relation: "mother",
+      days_until_event: 14,
+      reminder_text: "Upcoming: Mother's Birthday in 14 days.",
+      copy_source: "template",
+      status: "dry_run",
+      send_disposition: "not_sent",
+      occasion_year: 2026,
+    },
+  ],
+  sample: true,
+};
+const EMPTY_REMINDER_OUTBOX = {
+  pending_dry_run: 0,
+  not_sent: 0,
+  not_implemented: 0,
+  lookahead_days: 30,
+  items: [],
+};
 
 const mode = document.querySelector("#operator-mode");
 const orderRows = document.querySelector("#order-rows");
@@ -217,6 +245,10 @@ const engagementMonthRows = document.querySelector("#engagement-month-rows");
 const engagementExportCsv = document.querySelector("#engagement-export-csv");
 const engagementExportJson = document.querySelector("#engagement-export-json");
 const engagementExportStatus = document.querySelector("#engagement-export-status");
+const reminderOutboxTotals = document.querySelector("#reminder-outbox-totals");
+const reminderOutboxRows = document.querySelector("#reminder-outbox-rows");
+const reminderOutboxNote = document.querySelector("#reminder-outbox-note");
+const reminderOutboxEnqueue = document.querySelector("#reminder-outbox-enqueue");
 const transcript = document.querySelector("#transcript");
 const supportAnswers = document.querySelector("#support-answers");
 const orderFacts = document.querySelector("#order-facts");
@@ -470,11 +502,109 @@ async function downloadEngagementExport(format) {
   }
 }
 
+function renderReminderOutbox(payload) {
+  if (!reminderOutboxTotals || !reminderOutboxRows) {
+    return;
+  }
+  const data = payload && typeof payload === "object" ? payload : EMPTY_REMINDER_OUTBOX;
+  reminderOutboxTotals.replaceChildren();
+  const facts = [
+    ["Dry-run rows", String(data.pending_dry_run ?? 0)],
+    ["Not sent", String(data.not_sent ?? 0)],
+    ["Stubbed not_implemented", String(data.not_implemented ?? 0)],
+  ];
+  if (data.sample) {
+    facts.push(["Source", "Labeled sample until operator APIs are confirmed"]);
+  }
+  for (const [term, value] of facts) {
+    const dt = document.createElement("dt");
+    dt.textContent = term;
+    const dd = document.createElement("dd");
+    dd.textContent = value;
+    reminderOutboxTotals.append(dt, dd);
+  }
+  reminderOutboxRows.replaceChildren();
+  const rows = Array.isArray(data.items) ? data.items : [];
+  if (!rows.length) {
+    reminderOutboxRows.append(emptyRow(8, "No dry-run reminder rows. Enqueue upcoming occasion memory first."));
+    return;
+  }
+  for (const item of rows) {
+    const row = document.createElement("tr");
+    const cells = [
+      String(item.occasion_type || "—").replaceAll("_", " "),
+      String(item.recipient_relation || "—").replaceAll("_", " "),
+      String(item.days_until_event ?? "—"),
+      String(item.reminder_text || "—"),
+      String(item.copy_source || "template"),
+      "dry_run",
+      item.send_disposition === "not_implemented" ? "not_implemented" : "not_sent",
+    ];
+    for (const value of cells) {
+      const cell = document.createElement("td");
+      cell.textContent = value;
+      row.append(cell);
+    }
+    const action = document.createElement("td");
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "operator-filter-btn text-link";
+    button.textContent = "Attempt stub send";
+    button.dataset.outboxId = item.outbox_id || "";
+    button.disabled = !state.live || !item.outbox_id;
+    button.addEventListener("click", () => attemptReminderOutboxSend(item.outbox_id));
+    action.append(button);
+    row.append(action);
+    reminderOutboxRows.append(row);
+  }
+}
+
+async function enqueueReminderOutbox() {
+  if (!state.live) {
+    return;
+  }
+  try {
+    const listed = await api("/api/v1/operator/reminder-outbox/enqueue", {
+      method: "POST",
+      body: {},
+    });
+    renderReminderOutbox(listed);
+    if (reminderOutboxNote) {
+      reminderOutboxNote.textContent = `Enqueue complete. ${listed.pending_dry_run ?? 0} dry-run row(s). Stub send stays not_implemented.`;
+    }
+  } catch (error) {
+    if (reminderOutboxNote) {
+      reminderOutboxNote.textContent = `Enqueue unavailable (${error.message || "error"}). Rows unchanged.`;
+    }
+  }
+}
+
 if (engagementExportCsv) {
   engagementExportCsv.addEventListener("click", () => downloadEngagementExport("csv"));
 }
 if (engagementExportJson) {
   engagementExportJson.addEventListener("click", () => downloadEngagementExport("json"));
+}
+
+async function attemptReminderOutboxSend(outboxId) {
+  if (!state.live || !outboxId) {
+    return;
+  }
+  try {
+    const result = await api(`/api/v1/operator/reminder-outbox/${outboxId}/send`, {
+      method: "POST",
+      body: {},
+    });
+    if (reminderOutboxNote) {
+      reminderOutboxNote.textContent = `Stub send returned ${result.code || "not_implemented"}; sent=${result.sent === true ? "true" : "false"}; status=${result.status || "dry_run"}.`;
+    }
+    const listed = await api("/api/v1/operator/reminder-outbox");
+    renderReminderOutbox(listed);
+  } catch (error) {
+    if (reminderOutboxNote) {
+      reminderOutboxNote.textContent = `Stub send unavailable (${error.message || "error"}). Nothing was delivered.`;
+    }
+  }
 }
 
 function renderForecasts(items) {
@@ -1294,6 +1424,7 @@ function showSampleLayout(modeCopy) {
   renderForecasts(SAMPLE_FORECASTS);
   renderEngagement(SAMPLE_ENGAGEMENT);
   setEngagementExportEnabled(false);
+  renderReminderOutbox(SAMPLE_REMINDER_OUTBOX);
   renderSession(SAMPLE_SESSIONS[SAMPLE_INBOX[0].session_id], "Sample session (labeled)");
   mode.textContent = modeCopy;
 }
@@ -1363,11 +1494,12 @@ async function boot() {
   try {
     await ensureSession();
     // Parallelize independent operator data fetches for faster boot.
-    const [inboxResult, ordersResult, forecastsResult, engagementResult] = await Promise.allSettled([
+    const [inboxResult, ordersResult, forecastsResult, engagementResult, outboxResult] = await Promise.allSettled([
       api("/api/v1/operator/escalations"),
       api("/api/v1/operator/orders"),
       api("/api/v1/operator/forecasts"),
       api("/api/v1/operator/engagement"),
+      api("/api/v1/operator/reminder-outbox"),
     ]);
     // Fail-closed: if the primary inbox fetch fails, fall back to sample.
     if (inboxResult.status === "rejected") {
@@ -1392,6 +1524,11 @@ async function boot() {
     } else {
       renderEngagement(EMPTY_ENGAGEMENT);
       setEngagementExportEnabled(false);
+    }
+    if (outboxResult.status === "fulfilled") {
+      renderReminderOutbox(outboxResult.value);
+    } else {
+      renderReminderOutbox(EMPTY_REMINDER_OUTBOX);
     }
     let orders = [];
     state.ordersError = false;
@@ -1427,6 +1564,12 @@ async function boot() {
       showSampleLayout(`Operator APIs unavailable (${error.message}). Labeled sample layout is shown.`);
     }
   }
+}
+
+if (reminderOutboxEnqueue) {
+  reminderOutboxEnqueue.addEventListener("click", () => {
+    enqueueReminderOutbox();
+  });
 }
 
 boot();

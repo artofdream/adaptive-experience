@@ -17,6 +17,7 @@ class InMemoryCrmStore:
 
     def __init__(self):
         self.memories = []
+        self.outbox = []
 
     def upsert_occasion_memory(self, *, memory_id, browser_hash, session_id,
                                occasion_type, event_month, event_day,
@@ -49,14 +50,86 @@ class InMemoryCrmStore:
     def list_all_occasion_memories(self):
         return list(self.memories)
 
+    def upsert_reminder_outbox(self, *, outbox_id, memory_id, occasion_year,
+                               occasion_type, recipient_relation, days_until_event,
+                               reminder_text, copy_source, status, send_disposition,
+                               created_at):
+        for item in self.outbox:
+            if item["memory_id"] == memory_id and item["occasion_year"] == occasion_year:
+                item["occasion_type"] = occasion_type
+                item["recipient_relation"] = recipient_relation
+                item["days_until_event"] = days_until_event
+                item["reminder_text"] = reminder_text
+                item["copy_source"] = copy_source
+                item["updated_at"] = created_at
+                return item["outbox_id"]
+        self.outbox.append({
+            "outbox_id": outbox_id,
+            "memory_id": memory_id,
+            "occasion_year": occasion_year,
+            "occasion_type": occasion_type,
+            "recipient_relation": recipient_relation,
+            "days_until_event": days_until_event,
+            "reminder_text": reminder_text,
+            "copy_source": copy_source,
+            "status": status,
+            "send_disposition": send_disposition,
+            "created_at": created_at,
+            "updated_at": created_at,
+        })
+        return outbox_id
+
+    def list_reminder_outbox(self):
+        return [{
+            "outbox_id": item["outbox_id"],
+            "occasion_type": item["occasion_type"],
+            "recipient_relation": item["recipient_relation"],
+            "days_until_event": item["days_until_event"],
+            "reminder_text": item["reminder_text"],
+            "copy_source": item["copy_source"],
+            "status": item["status"],
+            "send_disposition": item["send_disposition"],
+            "occasion_year": item["occasion_year"],
+        } for item in self.outbox]
+
+    def get_reminder_outbox(self, *, outbox_id):
+        for item in self.outbox:
+            if item["outbox_id"] == outbox_id:
+                return {
+                    "outbox_id": item["outbox_id"],
+                    "occasion_type": item["occasion_type"],
+                    "recipient_relation": item["recipient_relation"],
+                    "days_until_event": item["days_until_event"],
+                    "reminder_text": item["reminder_text"],
+                    "copy_source": item["copy_source"],
+                    "status": item["status"],
+                    "send_disposition": item["send_disposition"],
+                    "occasion_year": item["occasion_year"],
+                }
+        return None
+
+    def mark_reminder_outbox_not_implemented(self, *, outbox_id, updated_at):
+        for item in self.outbox:
+            if item["outbox_id"] == outbox_id:
+                item["send_disposition"] = "not_implemented"
+                item["status"] = "dry_run"
+                item["updated_at"] = updated_at
+                return 1
+        return 0
+
     def delete_occasion_memories(self, *, browser_hash):
+        removed_ids = {m["memory_id"] for m in self.memories if m["browser_hash"] == browser_hash}
         before = len(self.memories)
         self.memories = [m for m in self.memories if m["browser_hash"] != browser_hash]
+        self.outbox = [item for item in self.outbox if item["memory_id"] not in removed_ids]
         return before - len(self.memories)
 
     def purge_expired_memories(self, *, cutoff):
+        keep = [m for m in self.memories if m.get("updated_at", m["created_at"]) >= cutoff]
+        removed_ids = {m["memory_id"] for m in self.memories if m not in keep}
         before = len(self.memories)
-        self.memories = [m for m in self.memories if m.get("updated_at", m["created_at"]) >= cutoff]
+        self.memories = keep
+        self.outbox = [item for item in self.outbox if item["memory_id"] not in removed_ids]
         return before - len(self.memories)
 
 
@@ -352,6 +425,121 @@ class TestEngagementCrmService(unittest.TestCase):
     def test_engagement_export_rejects_bad_format(self):
         with self.assertRaises(CrmValidationError):
             self.service.export_engagement_analytics(export_format="xlsx")
+
+    def test_record_occasion_enqueues_dry_run_outbox_inside_lookahead(self):
+        self.service.record_occasion(
+            browser_hash=self.browser_hash, session_id="sess-001",
+            occasion_type="Birthday", event_month=9, event_day=5,
+            recipient_relation="Mother")
+        listed = self.service.list_reminder_outbox()
+        self.assertEqual(1, listed["pending_dry_run"])
+        self.assertEqual(1, listed["not_sent"])
+        self.assertEqual(0, listed["not_implemented"])
+        item = listed["items"][0]
+        self.assertEqual("dry_run", item["status"])
+        self.assertEqual("not_sent", item["send_disposition"])
+        self.assertEqual("birthday", item["occasion_type"])
+        self.assertEqual("mother", item["recipient_relation"])
+        self.assertEqual(14, item["days_until_event"])
+        self.assertEqual(2026, item["occasion_year"])
+        self.assertEqual("template", item["copy_source"])
+        self.assertEqual(
+            format_reminder_text(occasion_type="birthday", recipient_relation="mother",
+                                 days_until_event=14),
+            item["reminder_text"])
+        blob = str(listed)
+        self.assertNotIn(self.browser_hash, blob)
+        self.assertNotIn("sess-001", blob)
+        self.assertNotIn("email", blob)
+        self.assertNotIn("phone", blob)
+        self.assertNotIn("browser_hash", listed)
+        self.assertNotIn("memory_id", item)
+
+    def test_outbox_reuses_ai_copy_when_author_is_wired(self):
+        self.service.copy_author = lambda **_: "Mum's birthday is 14 days out — flowers ready?"
+        self.service.record_occasion(
+            browser_hash=self.browser_hash, session_id="sess-001",
+            occasion_type="Birthday", event_month=9, event_day=5,
+            recipient_relation="Mother")
+        item = self.service.list_reminder_outbox()["items"][0]
+        self.assertEqual("ai", item["copy_source"])
+        self.assertEqual("Mum's birthday is 14 days out — flowers ready?", item["reminder_text"])
+
+    def test_outbox_fails_closed_to_template_when_author_errors(self):
+        def boom(**_):
+            raise RuntimeError("provider down")
+        self.service.copy_author = boom
+        self.service.record_occasion(
+            browser_hash=self.browser_hash, session_id="sess-001",
+            occasion_type="Birthday", event_month=9, event_day=5,
+            recipient_relation="Mother")
+        item = self.service.list_reminder_outbox()["items"][0]
+        self.assertEqual("template", item["copy_source"])
+        self.assertEqual(
+            format_reminder_text(occasion_type="birthday", recipient_relation="mother",
+                                 days_until_event=14),
+            item["reminder_text"])
+
+    def test_enqueue_skips_outside_lookahead_and_is_idempotent(self):
+        self.service.record_occasion(
+            browser_hash=self.browser_hash, session_id="sess-001",
+            occasion_type="Anniversary", event_month=1, event_day=10,
+            recipient_relation="Partner")
+        self.assertEqual(0, self.service.list_reminder_outbox()["pending_dry_run"])
+        self.service.record_occasion(
+            browser_hash=self.browser_hash, session_id="sess-001",
+            occasion_type="Birthday", event_month=9, event_day=5,
+            recipient_relation="Mother")
+        first = self.service.enqueue_upcoming_dry_run()
+        second = self.service.enqueue_upcoming_dry_run()
+        self.assertEqual(1, first["pending_dry_run"])
+        self.assertEqual(1, second["pending_dry_run"])
+        self.assertEqual(1, second["enqueued"])
+        self.assertEqual(first["items"][0]["outbox_id"], second["items"][0]["outbox_id"])
+
+    def test_attempt_send_is_fail_closed_and_never_marks_sent(self):
+        self.service.record_occasion(
+            browser_hash=self.browser_hash, session_id="sess-001",
+            occasion_type="Birthday", event_month=9, event_day=5,
+            recipient_relation="Mother")
+        outbox_id = self.service.list_reminder_outbox()["items"][0]["outbox_id"]
+        result = self.service.attempt_send(outbox_id=outbox_id)
+        self.assertEqual("not_implemented", result["code"])
+        self.assertEqual("dry_run", result["status"])
+        self.assertEqual("not_implemented", result["send_disposition"])
+        self.assertFalse(result["sent"])
+        listed = self.service.list_reminder_outbox()
+        self.assertEqual(1, listed["pending_dry_run"])
+        self.assertEqual(0, listed["not_sent"])
+        self.assertEqual(1, listed["not_implemented"])
+        self.assertEqual("dry_run", listed["items"][0]["status"])
+        self.assertEqual("not_implemented", listed["items"][0]["send_disposition"])
+        again = self.service.attempt_send(outbox_id=outbox_id)
+        self.assertFalse(again["sent"])
+        self.assertEqual("dry_run", again["status"])
+
+    def test_attempt_send_rejects_unknown_and_invalid_ids(self):
+        with self.assertRaises(CrmValidationError):
+            self.service.attempt_send(outbox_id="not-a-uuid")
+        with self.assertRaises(CrmValidationError):
+            self.service.attempt_send(outbox_id="11111111-1111-4111-8111-111111111111")
+
+    def test_forget_removes_outbox_rows_for_that_browser(self):
+        self.service.record_occasion(
+            browser_hash=self.browser_hash, session_id="sess-001",
+            occasion_type="Birthday", event_month=9, event_day=5,
+            recipient_relation="Mother")
+        other = self.service.hash_browser("someone-else")
+        self.service.record_occasion(
+            browser_hash=other, session_id="sess-002",
+            occasion_type="Birthday", event_month=9, event_day=15,
+            recipient_relation="Mother")
+        self.assertEqual(2, self.service.list_reminder_outbox()["pending_dry_run"])
+        self.assertEqual(1, self.service.forget(browser_hash=self.browser_hash))
+        leftover = self.service.list_reminder_outbox()
+        self.assertEqual(1, leftover["pending_dry_run"])
+        self.assertEqual("birthday", leftover["items"][0]["occasion_type"])
+        self.assertNotIn(self.browser_hash, str(leftover))
 
 
 if __name__ == "__main__":

@@ -213,6 +213,20 @@ class HttpOrchestration:
         return self._call("GET", "/internal/v1/operator/engagement",
                           subject=kwargs["subject"])
 
+    def list_operator_reminder_outbox(self, **kwargs):
+        return self._call("GET", "/internal/v1/operator/reminder-outbox",
+                          subject=kwargs["subject"])
+
+    def enqueue_operator_reminder_outbox(self, **kwargs):
+        return self._call("POST", "/internal/v1/operator/reminder-outbox/enqueue",
+                          subject=kwargs["subject"], payload={})
+
+    def send_operator_reminder_outbox(self, **kwargs):
+        return self._call(
+            "POST",
+            f"/internal/v1/operator/reminder-outbox/{kwargs['outbox_id']}/send",
+            subject=kwargs["subject"], payload={})
+
     def operator_session_summary(self, **kwargs):
         return self._call("GET", f"/internal/v1/operator/sessions/{kwargs['session_id']}",
                           subject=kwargs["subject"])

@@ -1208,6 +1208,81 @@ class PsycopgCrmStore:
             "recipient_relation": str(row[5]),
         }
 
+    def upsert_reminder_outbox(
+        self, *, outbox_id: str, memory_id: str, occasion_year: int,
+        occasion_type: str, recipient_relation: str, days_until_event: int,
+        reminder_text: str, copy_source: str, status: str, send_disposition: str,
+        created_at: datetime,
+    ) -> str:
+        """Insert or refresh a dry-run reminder outbox row. Never stores contacts."""
+        with self.connection.transaction():
+            row = self.connection.execute(
+                "INSERT INTO crm.reminder_outbox "
+                "(outbox_id, memory_id, occasion_year, occasion_type, recipient_relation, "
+                " days_until_event, reminder_text, copy_source, status, send_disposition, "
+                " created_at, updated_at) "
+                "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) "
+                "ON CONFLICT (memory_id, occasion_year) DO UPDATE SET "
+                "occasion_type = EXCLUDED.occasion_type, "
+                "recipient_relation = EXCLUDED.recipient_relation, "
+                "days_until_event = EXCLUDED.days_until_event, "
+                "reminder_text = EXCLUDED.reminder_text, "
+                "copy_source = EXCLUDED.copy_source, "
+                "status = crm.reminder_outbox.status, "
+                "send_disposition = crm.reminder_outbox.send_disposition, "
+                "updated_at = EXCLUDED.updated_at "
+                "RETURNING outbox_id",
+                (outbox_id, memory_id, occasion_year, occasion_type, recipient_relation,
+                 days_until_event, reminder_text, copy_source, status, send_disposition,
+                 created_at, created_at),
+            ).fetchone()
+        return str(row[0])
+
+    def list_reminder_outbox(self) -> list[dict]:
+        rows = self.connection.execute(
+            "SELECT outbox_id, occasion_type, recipient_relation, days_until_event, "
+            "reminder_text, copy_source, status, send_disposition, occasion_year "
+            "FROM crm.reminder_outbox "
+            "ORDER BY days_until_event ASC, occasion_type ASC, recipient_relation ASC"
+        ).fetchall()
+        return [self._reminder_outbox_row(row) for row in rows]
+
+    def get_reminder_outbox(self, *, outbox_id: str) -> dict | None:
+        row = self.connection.execute(
+            "SELECT outbox_id, occasion_type, recipient_relation, days_until_event, "
+            "reminder_text, copy_source, status, send_disposition, occasion_year "
+            "FROM crm.reminder_outbox WHERE outbox_id = %s",
+            (outbox_id,),
+        ).fetchone()
+        if row is None:
+            return None
+        return self._reminder_outbox_row(row)
+
+    def mark_reminder_outbox_not_implemented(self, *, outbox_id: str,
+                                             updated_at: datetime) -> int:
+        with self.connection.transaction():
+            cursor = self.connection.execute(
+                "UPDATE crm.reminder_outbox "
+                "SET send_disposition = 'not_implemented', status = 'dry_run', "
+                "updated_at = %s WHERE outbox_id = %s",
+                (updated_at, outbox_id),
+            )
+        return int(cursor.rowcount)
+
+    @staticmethod
+    def _reminder_outbox_row(row) -> dict:
+        return {
+            "outbox_id": str(row[0]),
+            "occasion_type": str(row[1]),
+            "recipient_relation": str(row[2]),
+            "days_until_event": int(row[3]),
+            "reminder_text": str(row[4]),
+            "copy_source": str(row[5]),
+            "status": str(row[6]),
+            "send_disposition": str(row[7]),
+            "occasion_year": int(row[8]),
+        }
+
     def delete_occasion_memories(self, *, browser_hash: str) -> int:
         """Erase all occasion memory for a browser hash (customer opt-out; NFR-017)."""
         with self.connection.transaction():

@@ -109,8 +109,8 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
             int(path.name[:3])
             for path in sorted((ROOT / "migrations").glob("[0-9][0-9][0-9]_*.sql"))
         ]
-        self.assertEqual(len(expected), 27)
-        self.assertTrue({19, 20, 21, 22, 23, 24, 25, 26, 27}.issubset(set(expected)))
+        self.assertEqual(len(expected), 28)
+        self.assertTrue({19, 20, 21, 22, 23, 24, 25, 26, 27, 28}.issubset(set(expected)))
         self.assertEqual(expected, versions)
 
     def test_superseded_mutation_function_is_dropped(self):
@@ -549,6 +549,63 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
             app, "GET", "/internal/v1/operator/engagement/export", query=b"format=xlsx"))
         self.assertEqual(422, status)
         self.assertEqual("validation_failed", body["code"])
+
+    def test_operator_reminder_outbox_is_dry_run_and_never_sends(self):
+        import asyncio
+        from aea_platform.internal_api import InternalOrchestrationApp
+
+        app = InternalOrchestrationApp(self.connection, "internal-token")
+        svc = app.crm
+        now = datetime(2026, 8, 22, 12, 0, tzinfo=timezone.utc)
+        svc.now = lambda: now
+        svc.copy_author = lambda **_: "Mum's birthday is 14 days out — flowers ready?"
+        first = svc.hash_browser(f"itest-outbox-{uuid.uuid4()}")
+        svc.record_occasion(browser_hash=first, session_id=str(uuid.uuid4()),
+                            occasion_type="Birthday", event_month=9, event_day=5,
+                            recipient_relation="Mother")
+
+        status, body = asyncio.run(self._invoke_internal(
+            app, "GET", "/internal/v1/operator/reminder-outbox"))
+        self.assertEqual(200, status)
+        self.assertEqual(1, body["pending_dry_run"])
+        self.assertEqual(1, body["not_sent"])
+        self.assertEqual(0, body["not_implemented"])
+        item = body["items"][0]
+        self.assertEqual("dry_run", item["status"])
+        self.assertEqual("not_sent", item["send_disposition"])
+        self.assertEqual("ai", item["copy_source"])
+        self.assertEqual("Mum's birthday is 14 days out — flowers ready?", item["reminder_text"])
+        blob = json.dumps(body)
+        self.assertNotIn(first, blob)
+        self.assertNotIn("browser_hash", blob)
+        self.assertNotIn("email", blob)
+        self.assertNotIn("phone", blob)
+
+        enqueue_status, enqueued = asyncio.run(self._invoke_internal(
+            app, "POST", "/internal/v1/operator/reminder-outbox/enqueue", b"{}"))
+        self.assertEqual(200, enqueue_status)
+        self.assertEqual(1, enqueued["pending_dry_run"])
+        self.assertEqual(item["outbox_id"], enqueued["items"][0]["outbox_id"])
+
+        send_status, sent = asyncio.run(self._invoke_internal(
+            app, "POST",
+            f"/internal/v1/operator/reminder-outbox/{item['outbox_id']}/send",
+            b"{}"))
+        self.assertEqual(200, send_status)
+        self.assertEqual("not_implemented", sent["code"])
+        self.assertEqual("dry_run", sent["status"])
+        self.assertFalse(sent["sent"])
+        self.assertNotIn("email", json.dumps(sent))
+
+        _, after = asyncio.run(self._invoke_internal(
+            app, "GET", "/internal/v1/operator/reminder-outbox"))
+        self.assertEqual("dry_run", after["items"][0]["status"])
+        self.assertEqual("not_implemented", after["items"][0]["send_disposition"])
+        self.assertEqual(1, after["not_implemented"])
+        self.assertEqual(0, self.connection.execute(
+            "SELECT count(*) FROM crm.reminder_outbox "
+            "WHERE send_disposition NOT IN ('not_sent', 'not_implemented') "
+            "OR status <> 'dry_run'").fetchone()[0])
 
     def test_subject_profile_store_running_band_get_and_retention(self):
         from datetime import datetime as dt

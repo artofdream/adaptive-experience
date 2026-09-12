@@ -109,6 +109,9 @@ class OrchestrationPort(Protocol):
     def list_operator_orders(self, *, subject: str) -> dict: ...
     def list_operator_forecasts(self, *, session_id: str, subject: str) -> dict: ...
     def list_operator_engagement(self, *, subject: str) -> dict: ...
+    def list_operator_reminder_outbox(self, *, subject: str) -> dict: ...
+    def enqueue_operator_reminder_outbox(self, *, subject: str) -> dict: ...
+    def send_operator_reminder_outbox(self, *, outbox_id: str, subject: str) -> dict: ...
     def operator_session_summary(self, *, session_id: str, subject: str) -> dict: ...
     def workspace_projection(self, *, session_id: str, subject: str) -> dict: ...
     def stream_events(self, *, session_id: str, subject: str,
@@ -161,6 +164,19 @@ class UnavailableOrchestration:
                 "upcoming_within_days": 0, "lookahead_days": 30,
                 "occasion_cohorts": [], "relation_cohorts": [],
                 "event_month_cohorts": []}
+
+    def list_operator_reminder_outbox(self, **kwargs) -> dict:
+        return {"status": 503, "pending_dry_run": 0, "not_sent": 0,
+                "not_implemented": 0, "lookahead_days": 30, "items": []}
+
+    def enqueue_operator_reminder_outbox(self, **kwargs) -> dict:
+        return {"status": 503, "pending_dry_run": 0, "not_sent": 0,
+                "not_implemented": 0, "lookahead_days": 30, "items": [],
+                "enqueued": 0}
+
+    def send_operator_reminder_outbox(self, **kwargs) -> dict:
+        return {"status": 503, "code": "not_implemented", "status_name": "dry_run",
+                "send_disposition": "not_implemented", "sent": False}
 
     def operator_session_summary(self, **kwargs) -> dict:
         return {"status": 503, "code": "orchestration_unavailable"}

@@ -362,7 +362,9 @@
       "implementation": {
         "disposition": "evidenced",
         "paths": [
+          "edge/bff/aea_bff/app.py",
           "edge/gateway/ui/assets/app.js",
+          "edge/gateway/ui/assets/florist.js",
           "edge/gateway/ui/florist.html",
           "platform/aea_platform/adapters.py",
           "platform/aea_platform/crm.py",
@@ -370,13 +372,16 @@
           "platform/aea_platform/internal_api.py",
           "platform/aea_platform/order.py",
           "platform/migrations/015_browser_order_recall.sql",
-          "platform/migrations/018_engagement_crm.sql"
+          "platform/migrations/018_engagement_crm.sql",
+          "platform/migrations/028_crm_reminder_outbox.sql"
         ]
       },
       "test": {
         "disposition": "evidenced",
         "paths": [
           "edge/tests/test_browser_ui.py",
+          "edge/tests/test_orchestration_adapter.py",
+          "edge/tests/test_perimeter.py",
           "platform/tests/test_crm.py",
           "platform/tests/test_generative_ai.py",
           "platform/tests/test_postgres_integration.py"
@@ -898,6 +903,7 @@
           "platform/migrations/024_operator_crm_subject_profile.sql",
           "platform/migrations/025_crm_retention_indexes.sql",
           "platform/migrations/026_crm_lifetime_spend.sql",
+          "platform/migrations/028_crm_reminder_outbox.sql",
           "platform/scripts/purge_crm_retention.py"
         ]
       },

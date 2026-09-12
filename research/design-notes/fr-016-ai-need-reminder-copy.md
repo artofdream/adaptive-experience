@@ -22,7 +22,8 @@ fail closed to `format_reminder_text` (the #420 template). The card still
 renders. Presence gates are unchanged: fresh Need, 30-day lookahead,
 least-data facet.
 
-Parent #35 stays open. This slice does **not** close FR-016 outbound send.
+Parent #35 stays open. Outbound **outbox dry-run** is #428. This slice does
+**not** close a live outbound channel.
 
 ## Not in this slice
 

@@ -228,21 +228,39 @@ class HttpOrchestrationTests(unittest.TestCase):
                 return 200, '{"items":[{"product_id":"classic-rose-dozen","trend":"stable"}]}'
             if url.endswith("/operator/engagement"):
                 return 200, '{"memory_count":3,"unique_browsers":2,"occasion_cohorts":[]}'
+            # FR-016 dry-run reminder outbox operator paths
+            if url.endswith("/operator/reminder-outbox"):
+                return 200, '{"pending_dry_run":1,"not_sent":1,"items":[]}'
+            if url.endswith("/operator/reminder-outbox/enqueue"):
+                return 200, '{"pending_dry_run":1,"enqueued":1,"items":[]}'
+            if url.endswith("/operator/reminder-outbox/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/send"):
+                return 200, '{"code":"not_implemented","status":"dry_run","sent":false}'
             return 200, '{"session_id":"s1","context_version":1,"conversation":{"messages":[]}}'
         adapter = HttpOrchestration("http://orchestration:8081", "internal", transport=transport)
         inbox = adapter.list_operator_escalations(subject="staff-1")
         orders = adapter.list_operator_orders(subject="staff-1")
         forecasts = adapter.list_operator_forecasts(session_id="s1", subject="staff-1")
         engagement = adapter.list_operator_engagement(subject="staff-1")
+        outbox = adapter.list_operator_reminder_outbox(subject="staff-1")
+        enqueued = adapter.enqueue_operator_reminder_outbox(subject="staff-1")
+        sent = adapter.send_operator_reminder_outbox(
+            outbox_id="aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", subject="staff-1")
         summary = adapter.operator_session_summary(session_id="s1", subject="staff-1")
         self.assertEqual("esc-1", inbox["items"][0]["message_id"])
         self.assertEqual("order-9", orders["items"][0]["order_id"])
         self.assertEqual("stable", forecasts["items"][0]["trend"])
         self.assertEqual(3, engagement["memory_count"])
+        self.assertEqual(1, outbox["pending_dry_run"])
+        self.assertEqual(1, enqueued["enqueued"])
+        self.assertEqual("not_implemented", sent["code"])
+        self.assertFalse(sent["sent"])
         self.assertEqual("s1", summary["session_id"])
         self.assertTrue(any(url.endswith("/operator/escalations") for _, url, _, _ in calls))
         self.assertTrue(any(url.endswith("/operator/orders") for _, url, _, _ in calls))
         self.assertTrue(any("/operator/forecasts?session_id=s1" in url for _, url, _, _ in calls))
         self.assertTrue(any(url.endswith("/operator/engagement") for _, url, _, _ in calls))
+        self.assertTrue(any(url.endswith("/operator/reminder-outbox") for _, url, _, _ in calls))
+        self.assertTrue(any(url.endswith("/operator/reminder-outbox/enqueue") for _, url, _, _ in calls))
+        self.assertTrue(any(url.endswith("/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/send") for _, url, _, _ in calls))
         self.assertTrue(any(url.endswith("/operator/sessions/s1") for _, url, _, _ in calls))
         self.assertTrue(all(headers["x-subject-reference"] == "staff-1" for _, _, headers, _ in calls))
