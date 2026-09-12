@@ -601,6 +601,15 @@ function fillSelect(select, values, selected) {
   select.value = selected && values.includes(selected) ? selected : "";
 }
 
+function renderSelectionReorderHint(selection) {
+  const hint = document.querySelector("#selection-reorder-hint");
+  if (!hint) return;
+  const prior = ((state.workspace && state.workspace.facets) || {}).prior_order || {};
+  const selected = selection && selection.product_id;
+  const recalled = typeof prior.product_id === "string" && prior.product_id.trim();
+  hint.hidden = !(selected && recalled && selected === recalled);
+}
+
 function renderSelection(selection) {
   const empty = document.querySelector("#selection-empty");
   const formEl = document.querySelector("#selection-form");
@@ -613,6 +622,7 @@ function renderSelection(selection) {
       thumb.alt = "";
       thumb.hidden = true;
     }
+    renderSelectionReorderHint(selection);
     return;
   }
   empty.hidden = true;
@@ -641,6 +651,7 @@ function renderSelection(selection) {
   fillSelect(document.querySelector("#colour"), COLOURS, options.colour || "");
   fillSelect(document.querySelector("#ribbon"), RIBBONS, options.ribbon || "");
   document.querySelector("#card-message").value = options.card_message || "";
+  renderSelectionReorderHint(selection);
 }
 
 function renderSummary(summary) {
@@ -1025,6 +1036,42 @@ async function selectProduct(productId) {
   showNotice(noticeMsg);
 }
 
+function priorOrderOptions(prior) {
+  const options = {};
+  if (!prior || typeof prior !== "object") return options;
+  if (typeof prior.size === "string" && prior.size.trim()) options.size = prior.size.trim();
+  const quantity = Number(prior.quantity);
+  if (quantity >= 1 && quantity <= 10) options.quantity = quantity;
+  if (typeof prior.card_message === "string" && prior.card_message.trim()) {
+    options.card_message = prior.card_message.trim();
+  }
+  return options;
+}
+
+// FR-008 Path B: apply recalled SKU + size/qty/card, then land on T-04 to modify.
+async function selectRecalledProduct(prior, { focusModify = false } = {}) {
+  const productId = prior && typeof prior.product_id === "string" ? prior.product_id.trim() : "";
+  if (!productId) return;
+  const options = priorOrderOptions(prior);
+  state.step = 4;
+  setJourneyStep(4);
+  const result = await api("/api/v1/selection", {
+    method: "POST",
+    body: { product_id: productId, options, observed_context_version: state.contextVersion },
+  });
+  state.contextVersion = result.context_version;
+  await refreshWorkspace();
+  await pullStream();
+  setJourneyStep(4);
+  showNotice(focusModify
+    ? `Recalled ${productLabel(productId)}. Change size, quantity, or the card before delivery.`
+    : `Reordered ${productLabel(productId)}. You can still change size, quantity, or the card.`);
+  if (focusModify) {
+    const sizeInput = document.querySelector("#size");
+    if (sizeInput) sizeInput.focus();
+  }
+}
+
 function openHelp() {
   help.showModal();
   helpButton.setAttribute("aria-expanded", "true");
@@ -1351,16 +1398,21 @@ document.querySelectorAll("[data-goto-step]").forEach((button) => {
 document.querySelector("#step-empty-cta").addEventListener("click", (event) => {
   setJourneyStep(event.currentTarget.dataset.gotoStep);
 });
+function shopNeedReorder({ focusModify = false } = {}) {
+  const f = facets();
+  if (!needReorderShouldShow(f, state.step)) return;
+  const prior = f.prior_order || {};
+  if (typeof prior.product_id === "string" && prior.product_id.trim()) {
+    selectRecalledProduct(prior, { focusModify });
+  }
+}
 const needReorderCta = document.querySelector("#need-reorder-cta");
 if (needReorderCta) {
-  needReorderCta.addEventListener("click", () => {
-    const f = facets();
-    if (!needReorderShouldShow(f, state.step)) return;
-    const productId = ((f.prior_order) || {}).product_id;
-    if (typeof productId === "string" && productId.trim()) {
-      selectProduct(productId.trim());
-    }
-  });
+  needReorderCta.addEventListener("click", () => shopNeedReorder());
+}
+const needReorderModify = document.querySelector("#need-reorder-modify");
+if (needReorderModify) {
+  needReorderModify.addEventListener("click", () => shopNeedReorder({ focusModify: true }));
 }
 const needReminderCta = document.querySelector("#need-reminder-cta");
 if (needReminderCta) {

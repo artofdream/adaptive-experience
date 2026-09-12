@@ -4,6 +4,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import Callable
 
+from .reorder import least_data_reorder_options
 from .selection import CARD_MESSAGE_MAX_LENGTH
 
 # Order status lifecycle: creation, checkout submission, payment confirmation
@@ -165,11 +166,11 @@ class OrderService:
             item["total"] = round(float(total), 2)
         return item
 
-    def session_prior_product_id(self, session_id: str) -> str | None:
-        """Same-session accepted-order product for the thin FR-008 T-03 hint.
+    def session_prior_product(self, session_id: str) -> dict | None:
+        """Same-session accepted-order product snapshot (FR-008).
 
-        Returns a catalog product_id only when this session already has an
-        order at confirmed or later. Draft/submitted rows, missing views,
+        Returns the stored product object only when this session already has
+        an order at confirmed or later. Draft/submitted rows, missing views,
         and malformed product payloads return None. Not cross-session CRM.
         """
         if not isinstance(session_id, str) or not session_id.strip():
@@ -185,7 +186,60 @@ class OrderService:
         product_id = product.get("product_id")
         if not isinstance(product_id, str) or not product_id.strip():
             return None
-        return product_id.strip()
+        return product
+
+    def session_prior_product_id(self, session_id: str) -> str | None:
+        """Same-session accepted-order product for the thin FR-008 T-03 hint."""
+        product = self.session_prior_product(session_id)
+        if not product:
+            return None
+        return str(product["product_id"]).strip()
+
+    def _recalled_product_snapshot(self, session_id: str) -> dict | None:
+        """Durable browser recall → last accepted ``customer_order.product``."""
+        if not isinstance(session_id, str) or not session_id.strip():
+            return None
+        sid = session_id.strip()
+        snapshot = getattr(self.store, "recalled_product", None)
+        if callable(snapshot):
+            try:
+                value = snapshot(sid)
+            except Exception:
+                value = None
+            if isinstance(value, dict):
+                product_id = value.get("product_id")
+                if isinstance(product_id, str) and product_id.strip():
+                    return value
+            if isinstance(value, str) and value.strip():
+                return {"product_id": value.strip()}
+        lookup = getattr(self.store, "recalled_product_id", None)
+        if not callable(lookup):
+            return None
+        try:
+            value = lookup(sid)
+        except Exception:
+            return None
+        if not isinstance(value, str) or not value.strip():
+            return None
+        return {"product_id": value.strip()}
+
+    def prior_order_projection(self, session_id: str) -> dict | None:
+        """Least-data FR-008 Need facet: SKU plus size / quantity / card.
+
+        Same-session accepted order wins; otherwise durable recall. Never
+        includes recipient, delivery, payment, or order_id.
+        """
+        product = self.session_prior_product(session_id)
+        if product is None:
+            product = self._recalled_product_snapshot(session_id)
+        if not isinstance(product, dict):
+            return None
+        product_id = product.get("product_id")
+        if not isinstance(product_id, str) or not product_id.strip():
+            return None
+        projected = {"product_id": product_id.strip()}
+        projected.update(least_data_reorder_options(product))
+        return projected
 
     def prior_product_id(self, session_id: str) -> str | None:
         """FR-007 ranking hint: this session's accepted order, else this browser.
@@ -193,19 +247,10 @@ class OrderService:
         Durable recall is an opaque browser token mapped to the last accepted
         catalog product_id. No login. Not CRM (FR-016 / FR-017).
         """
-        same_session = self.session_prior_product_id(session_id)
-        if same_session:
-            return same_session
-        lookup = getattr(self.store, "recalled_product_id", None)
-        if not callable(lookup) or not isinstance(session_id, str) or not session_id.strip():
+        projected = self.prior_order_projection(session_id)
+        if not projected:
             return None
-        try:
-            value = lookup(session_id.strip())
-        except Exception:
-            return None
-        if not isinstance(value, str) or not value.strip():
-            return None
-        return value.strip()
+        return projected["product_id"]
 
     def advance_status(self, *, session_id: str, target_status: str,
                        correlation_id: str, subject_reference: str) -> dict:

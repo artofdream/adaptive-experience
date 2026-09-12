@@ -227,6 +227,7 @@ h2 { font-size: 1.15rem; }
 .need-reorder-copy { display: grid; gap: .15rem; }
 .need-reorder-copy strong { font-size: 1rem; }
 .need-reorder-copy span { color: var(--muted); font-size: .8rem; }
+.need-reorder-actions { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
 .need-reminder {
   display: flex;
   align-items: center;

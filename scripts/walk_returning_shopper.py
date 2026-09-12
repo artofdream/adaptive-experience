@@ -96,6 +96,51 @@ def need_reorder_should_show(
     return bool(prior) and not customer_messages and not occasion and not selected and step <= 2
 
 
+MODIFY_SIZE = "Deluxe"
+MODIFY_QUANTITY = 2
+MODIFY_CARD = "Love you Mum"
+
+
+def classify_modify_before_reorder(
+    *,
+    payment_included: bool,
+    card_visible_before: bool,
+    selection: dict | None,
+    expected_size: str = MODIFY_SIZE,
+    expected_quantity: int = MODIFY_QUANTITY,
+    expected_card: str = MODIFY_CARD,
+) -> tuple[str, str]:
+    """#424: modified size/qty/card must survive into the next checkout step."""
+    if not payment_included:
+        return (
+            "blocked",
+            "modify-before-reorder needs an accepted order; payment excluded this run",
+        )
+    if not card_visible_before:
+        return (
+            "blocked",
+            "Need reorder card was not visible so modify-before-reorder was not observed",
+        )
+    options = (selection or {}).get("options") if isinstance(selection, dict) else None
+    if not isinstance(options, dict):
+        return "fail", "recalled selection missing after modify-before-reorder"
+    qty = options.get("quantity")
+    try:
+        qty_ok = int(qty) == int(expected_quantity)
+    except (TypeError, ValueError):
+        qty_ok = False
+    if (
+        options.get("size") == expected_size
+        and qty_ok
+        and options.get("card_message") == expected_card
+    ):
+        return (
+            "pass",
+            "modified size/quantity/card survived into selection (next checkout step)",
+        )
+    return "fail", f"modified fields missing after T-04 confirm: {options!r}"
+
+
 def classify_need_reorder_hidden_after_pick(
     *,
     card_visible_before: bool,
@@ -233,7 +278,7 @@ def run_walk(args: argparse.Namespace) -> dict:
         "scenario": "returning-shopper",
         "payment_included": payment_included,
         "issue": "#195",
-        "related": ["#27", "#190", "#193"],
+        "related": ["#27", "#190", "#193", "#419", "#422", "#424"],
         "nfr_007_012_proof": False,
         "steps": [],
         "api": {"suggestions": [], "csrf_rejected": False, "posts": [], "errors": []},
@@ -285,6 +330,8 @@ def run_walk(args: argparse.Namespace) -> dict:
                     "prior_order": (body.get("facets") or {}).get("prior_order"),
                     "reminders": (body.get("facets") or {}).get("reminders"),
                     "order": (body.get("facets") or {}).get("order"),
+                    "selection": (body.get("facets") or {}).get("selection"),
+                    "order_summary": (body.get("facets") or {}).get("order_summary"),
                 }
         if response.request.method in ("POST", "PATCH", "PUT"):
             report["api"]["posts"].append(rec)
@@ -660,6 +707,7 @@ def run_walk(args: argparse.Namespace) -> dict:
             need_card_visible = False
             reminder_card_visible = False
             need_card_hidden_after_pick = None
+            modified_selection = None
             recall_note = ""
             fresh = None
             try:
@@ -687,6 +735,9 @@ def run_walk(args: argparse.Namespace) -> dict:
                 else:
                     recall_note = " no __Host-aea_recall cookie to replay"
                 fresh_page = fresh.new_page()
+                fresh_page.on(
+                    "response", lambda response: on_response(response, origin_marker)
+                )
                 last_error = None
                 for _attempt in range(3):
                     try:
@@ -732,8 +783,23 @@ def run_walk(args: argparse.Namespace) -> dict:
                     if arrangement.count() and (arrangement.input_value() or "").strip():
                         recalled = True
                     need_card_hidden_after_pick = not need_card.is_visible()
+                    if fresh_page.locator("#size").count():
+                        fresh_page.fill("#size", MODIFY_SIZE)
+                    if fresh_page.locator("#quantity").count():
+                        fresh_page.fill("#quantity", str(MODIFY_QUANTITY))
+                    if fresh_page.locator("#card-message").count():
+                        fresh_page.fill("#card-message", MODIFY_CARD)
+                    if fresh_page.locator("#selection-form button[type='submit']").count():
+                        fresh_page.click("#selection-form button[type='submit']")
+                        fresh_page.wait_for_timeout(2000)
+                    workspace = report["api"].get("last_workspace") or {}
+                    modified_selection = workspace.get("selection")
                     fresh_page.screenshot(
                         path=str(shots / "15-need-reorder-after-pick.png"),
+                        full_page=True,
+                    )
+                    fresh_page.screenshot(
+                        path=str(shots / "16-modify-before-reorder.png"),
                         full_page=True,
                     )
             except Exception as exc:
@@ -775,6 +841,18 @@ def run_walk(args: argparse.Namespace) -> dict:
                 "Need-phase Reorder card hidden after Reorder → Pick (#422)",
                 hide_reason + recall_note,
                 hide_result,
+            )
+            modify_result, modify_reason = classify_modify_before_reorder(
+                payment_included=report.get("payment_included", False),
+                card_visible_before=need_card_visible,
+                selection=modified_selection,
+            )
+            _step(
+                report,
+                "M8 modify-before-reorder",
+                "After Reorder, change size/qty/card; fields survive into selection (#424)",
+                modify_reason + recall_note,
+                modify_result,
             )
             reminder_result, reminder_reason = classify_need_reminder_card(
                 card_visible=reminder_card_visible,

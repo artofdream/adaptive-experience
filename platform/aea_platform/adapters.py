@@ -470,9 +470,14 @@ class PsycopgOrderStore:
             (session_id,),
         )
 
-    def recalled_product_id(self, session_id: str) -> str | None:
+    def recalled_product(self, session_id: str) -> dict | None:
+        """Last accepted ``customer_order.product`` for this browser recall.
+
+        FR-008 Path B reads size / quantity / card from the real order row.
+        Options are not denormalized onto ``browser_order_recall``.
+        """
         row = self.connection.execute(
-            "SELECT r.product_id FROM orchestration.experience_session s "
+            "SELECT o.product FROM orchestration.experience_session s "
             "JOIN orchestration.browser_order_recall r ON r.recall_id = s.recall_id "
             "JOIN orchestration.customer_order o ON o.order_id = r.order_id "
             "WHERE s.session_id=%s AND s.lifecycle_status='active' "
@@ -481,9 +486,18 @@ class PsycopgOrderStore:
             "'delivered','completed')",
             (session_id,),
         ).fetchone()
-        if row is None or not isinstance(row[0], str) or not row[0].strip():
+        if row is None or not isinstance(row[0], dict):
             return None
-        return row[0].strip()
+        product_id = row[0].get("product_id")
+        if not isinstance(product_id, str) or not product_id.strip():
+            return None
+        return row[0]
+
+    def recalled_product_id(self, session_id: str) -> str | None:
+        product = self.recalled_product(session_id)
+        if not product:
+            return None
+        return str(product["product_id"]).strip()
 
     def load_checkout_intent(self, order_id: str) -> dict | None:
         row = self.connection.execute(
