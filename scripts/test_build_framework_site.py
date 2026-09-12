@@ -109,6 +109,52 @@ class TestBuildFrameworkSite(unittest.TestCase):
         self.assertIn('href="journal.html#claim-vs-probe"', glossary_html)
         self.assertIn('href="comparison.html#what-aea-claims-here"', glossary_html)
 
+    def test_keep_learning_and_apply_principle(self):
+        """#434: principle is Documented in companion pages; not claimed Live."""
+        root = Path(__file__).resolve().parents[1]
+        glossary = (root / "docs" / "framework" / "glossary.md").read_text(
+            encoding="utf-8"
+        )
+        comparison = (root / "docs" / "framework" / "comparison.md").read_text(
+            encoding="utf-8"
+        )
+        index = (root / "docs" / "framework" / "index.md").read_text(encoding="utf-8")
+        journal = (root / "docs" / "framework" / "journal.md").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("### Keep Learning and Apply", glossary)
+        self.assertIn("Knowledge First reads the vault", glossary)
+        self.assertIn("journal.html#claim-vs-probe", glossary)
+        self.assertIn(
+            "write it into the harness (skill, sensor, guide, matrix row, or ADR)",
+            comparison,
+        )
+        self.assertIn("**Documented / Planned**", comparison)
+        self.assertNotRegex(
+            comparison,
+            r"Keep Learning and Apply.*\*\*Live",
+        )
+        self.assertIn("glossary.html#keep-learning-and-apply", index)
+        self.assertIn("glossary.html#keep-learning-and-apply", journal)
+        agents = (root / "AGENTS.md").read_text(encoding="utf-8")
+        self.assertIn("## Keep Learning and Apply", agents)
+        self.assertIn("#434", agents)
+        self.assertIn("#433", agents)
+        self.assertIn("**Documented / Planned**", agents)
+        self.assertRegex(agents, r"do not\s+claim Live on architecture\.artof\.link")
+
+        self.assertEqual(build(), 0)
+        glossary_html = (root / "public" / "glossary.html").read_text(encoding="utf-8")
+        comparison_html = (root / "public" / "comparison.html").read_text(
+            encoding="utf-8"
+        )
+        index_html = (root / "public" / "index.html").read_text(encoding="utf-8")
+        journal_html = (root / "public" / "journal.html").read_text(encoding="utf-8")
+        self.assertIn('id="keep-learning-and-apply"', glossary_html)
+        self.assertIn("Documented / Planned", comparison_html)
+        self.assertIn('href="glossary.html#keep-learning-and-apply"', index_html)
+        self.assertIn('href="glossary.html#keep-learning-and-apply"', journal_html)
+
 
 if __name__ == "__main__":
     unittest.main()

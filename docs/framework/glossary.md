@@ -41,6 +41,11 @@ Detect a web-vs-phone mismatch, open one issue, ship the smallest fix, then prov
 - **Why it matters:** A merged ticket is a claim. A probe is proof.
 - **Where to see it:** [Mobile Companion](companion.html#the-honesty-loop) and [Claim vs probe](journal.html#claim-vs-probe).
 
+### Keep Learning and Apply
+Continuous learning from build history, applied into durable harness artifacts. Knowledge First reads the vault; Keep Learning and Apply grows it. A retrospective or honesty pass that does not change a skill, sensor, or guide is incomplete.
+- **Why it matters:** Without apply, every runner rediscovers the same failure class.
+- **Where to see it:** [Guides + Sensors](comparison.html#6-the-six-layers-of-the-outer-harness-in-practice) layers; [skill-matrix work](https://gitlab.com/artof-group/adaptive-experience-architecture/-/work_items/433) (#433); coherence findings → sensors; journal [Claim vs probe](journal.html#claim-vs-probe).
+
 ### BFF (Backend-for-Frontend)
 A secure gateway server that translates client requests from web browsers or mobile apps into internal domain commands.
 - **Why it matters:** It prevents public browsers from ever connecting directly to databases or internal message queues.
