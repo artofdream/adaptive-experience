@@ -76,3 +76,4 @@ To empirically justify creating a new stakeholder skill, collect the following d
 ## Related Second Brain Notes
 * [[2026-08-22-agile-process-evolution-and-role-autonomy-study]] — Agile Process Evolution & Role Autonomy Study.
 * [[2026-08-22-llm-models-and-agent-stack-evolution]] — LLM Models & Multi-Agent Stack Progression.
+* [[2026-09-12-session-memory-log-aea-grok-skill-matrix]] — Grok shared-library skill matrix (#433); Documented recipes, not Live-probed. Distinct from `.cursor/skills/aea-*` role SOPs.
