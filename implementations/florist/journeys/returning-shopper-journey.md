@@ -51,12 +51,14 @@ Do not open `/florist` in the same browser as the shop.
     **Reorder previous bouquet** card (#419) before any chat. Tap **Reorder →**
     to land on Pick with the recalled SKU selected. After that tap the card
     is gone (#422) — it must not stay visible on Pick / Deliver / Pay / Track.
-    The same fresh Need also
+    Recalled size / quantity / card message prefill T-04. Change them (or tap
+    sibling **Modify →**) and confirm — modified fields must survive into
+    selection / the next checkout step (#424). The same fresh Need also
     shows **Shop this occasion →** (#420) when `reminders.items` is present.
     A brand-new browser with no recall cookie is empty-wallet hide — not a
     product fail.
-11. Modify-before-reorder (M8 slice 4) and multi-order purchase history remain
-    leftover on parent #27. Do not treat this script as closing FR-008.
+11. Multi-order purchase history and cross-device accounts remain leftover on
+    parent #27. Do not treat this script as closing FR-008.
     AI-generated outbound reminders remain leftover on parent #35.
 12. Help (`?`) once — automated answers, not a person.
 
