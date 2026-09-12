@@ -8,7 +8,12 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from aea_platform.reorder import (
-    ReorderService, PriorOrderSummary, PriorOrderItem, least_data_reorder_options,
+    PRIOR_ORDERS_CAP,
+    PriorOrderItem,
+    PriorOrderSummary,
+    ReorderService,
+    least_data_prior_order,
+    least_data_reorder_options,
 )
 
 
@@ -79,6 +84,31 @@ class TestReorderService(unittest.TestCase):
             "options": {"size": "", "quantity": 99, "card_message": "\x01"},
         }))
         self.assertEqual({}, least_data_reorder_options(None))
+
+    def test_least_data_prior_order_drops_pii(self):
+        """FR-008 #426: Path B allowlist is SKU plus size / qty / card only."""
+        projected = least_data_prior_order({
+            "product_id": "lilac-bouquet",
+            "options": {
+                "size": "Deluxe",
+                "quantity": 2,
+                "card_message": "Love you Mum",
+                "recipient": "Mum",
+            },
+            "order_id": "secret",
+            "email": "private@example.invalid",
+        })
+        self.assertEqual({
+            "product_id": "lilac-bouquet",
+            "size": "Deluxe",
+            "quantity": 2,
+            "card_message": "Love you Mum",
+        }, projected)
+        self.assertEqual(5, PRIOR_ORDERS_CAP)
+        self.assertEqual({"size": "Deluxe"}, least_data_reorder_options({
+            "options": {"size": "Deluxe", "card_message": ""},
+        }))
+        self.assertIsNone(least_data_prior_order({"product_id": "  "}))
 
 
 if __name__ == "__main__":

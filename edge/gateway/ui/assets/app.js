@@ -854,11 +854,19 @@ function hasSelection(f) {
   return typeof sel.product_id === "string" && Boolean(sel.product_id.trim());
 }
 
-function needReorderShouldShow(f, step) {
+function priorOrders(f) {
+  const listed = (f && Array.isArray(f.prior_orders)) ? f.prior_orders : [];
+  const items = listed.filter((item) => item && typeof item.product_id === "string"
+    && item.product_id.trim());
+  if (items.length) return items;
   const prior = (f && f.prior_order) || {};
-  const productId = typeof prior.product_id === "string" ? prior.product_id.trim() : "";
+  if (typeof prior.product_id === "string" && prior.product_id.trim()) return [prior];
+  return [];
+}
+
+function needReorderShouldShow(f, step) {
   const onNeed = Number(step) <= 2;
-  return Boolean(productId) && !hasCustomerMessages(f) && !hasOccasion(f)
+  return priorOrders(f).length > 0 && !hasCustomerMessages(f) && !hasOccasion(f)
     && !hasSelection(f) && onNeed;
 }
 
@@ -868,18 +876,75 @@ function firstNeedReminder(f) {
     && item.reminder_text.trim()) || null;
 }
 
+let needReorderSelected = 0;
+
+function priorOrderOptions(prior) {
+  const options = {};
+  if (!prior || typeof prior !== "object") return options;
+  if (typeof prior.size === "string" && prior.size.trim()) options.size = prior.size.trim();
+  const quantity = Number(prior.quantity);
+  if (quantity >= 1 && quantity <= 10) options.quantity = quantity;
+  if (typeof prior.card_message === "string" && prior.card_message.trim()) {
+    options.card_message = prior.card_message.trim();
+  }
+  return options;
+}
+
+function priorOrderChoiceLabel(prior) {
+  const name = productLabel(prior && prior.product_id);
+  const bits = [];
+  if (prior && typeof prior.size === "string" && prior.size.trim()) bits.push(prior.size.trim());
+  if (prior && Number(prior.quantity) > 1) bits.push(`×${Number(prior.quantity)}`);
+  return bits.length ? `${name} (${bits.join(", ")})` : name;
+}
+
 function renderNeedReorder(workspace) {
   const card = document.querySelector("#need-reorder");
   if (!card) return;
   const f = (workspace && workspace.facets) || {};
-  const prior = f.prior_order || {};
-  const productId = typeof prior.product_id === "string" ? prior.product_id.trim() : "";
+  const items = priorOrders(f);
   const show = needReorderShouldShow(f, state.step);
   card.hidden = !show;
-  if (!show) return;
+  const history = document.querySelector("#need-reorder-history");
+  if (!show) {
+    if (history) {
+      history.hidden = true;
+      history.replaceChildren();
+    }
+    return;
+  }
+  if (needReorderSelected >= items.length) needReorderSelected = 0;
+  const title = document.querySelector("#need-reorder-title");
   const hint = document.querySelector("#need-reorder-hint");
+  const multi = items.length > 1;
+  if (title) {
+    title.textContent = multi ? "Choose a previous bouquet" : "Reorder previous bouquet";
+  }
   if (hint) {
-    hint.textContent = `1-tap repeat ${productLabel(productId)} from this browser's private recall`;
+    hint.textContent = multi
+      ? "Pick a bouquet from this browser's private recall — not an account"
+      : `1-tap repeat ${productLabel(items[0].product_id)} from this browser's private recall`;
+  }
+  if (history) {
+    history.hidden = !multi;
+    history.replaceChildren();
+    if (multi) {
+      items.forEach((item, index) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "need-reorder-choice";
+        button.setAttribute("role", "option");
+        button.setAttribute("aria-selected", index === needReorderSelected ? "true" : "false");
+        button.dataset.index = String(index);
+        button.dataset.productId = String(item.product_id || "").trim();
+        button.textContent = priorOrderChoiceLabel(item);
+        button.addEventListener("click", () => {
+          needReorderSelected = index;
+          renderNeedReorder(state.workspace || workspace);
+        });
+        history.appendChild(button);
+      });
+    }
   }
 }
 
@@ -1034,18 +1099,6 @@ async function selectProduct(productId) {
     noticeMsg += ` Cart Total: $${totalProductSum.toFixed(2)} (within $${Number(budget).toFixed(2)} budget).`;
   }
   showNotice(noticeMsg);
-}
-
-function priorOrderOptions(prior) {
-  const options = {};
-  if (!prior || typeof prior !== "object") return options;
-  if (typeof prior.size === "string" && prior.size.trim()) options.size = prior.size.trim();
-  const quantity = Number(prior.quantity);
-  if (quantity >= 1 && quantity <= 10) options.quantity = quantity;
-  if (typeof prior.card_message === "string" && prior.card_message.trim()) {
-    options.card_message = prior.card_message.trim();
-  }
-  return options;
 }
 
 // FR-008 Path B: apply recalled SKU + size/qty/card, then land on T-04 to modify.
@@ -1401,7 +1454,8 @@ document.querySelector("#step-empty-cta").addEventListener("click", (event) => {
 function shopNeedReorder({ focusModify = false } = {}) {
   const f = facets();
   if (!needReorderShouldShow(f, state.step)) return;
-  const prior = f.prior_order || {};
+  const items = priorOrders(f);
+  const prior = items[needReorderSelected] || items[0] || {};
   if (typeof prior.product_id === "string" && prior.product_id.trim()) {
     selectRecalledProduct(prior, { focusModify });
   }

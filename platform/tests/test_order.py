@@ -237,6 +237,51 @@ class OrderServiceTests(unittest.TestCase):
         }, projected)
         self.assertNotIn("email", projected)
 
+    def test_prior_orders_projection_lists_non_latest_sku(self):
+        """FR-008 #426: history lists a non-latest SKU without PII."""
+        class HistoryStore(FakeOrderStore):
+            def recalled_products(self, session_id):
+                self.looked_up = session_id
+                return [
+                    {"product_id": "lilac-bouquet", "options": {"size": "Deluxe", "quantity": 1}},
+                    {"product_id": "classic-rose-dozen",
+                     "options": {"size": "Standard", "card_message": "Love you Mum",
+                                 "recipient": "Mum"}},
+                ]
+
+        store = HistoryStore(current="created")
+        items = self._service(store).prior_orders_projection("s3")
+        self.assertEqual("s3", store.looked_up)
+        self.assertEqual([
+            {"product_id": "lilac-bouquet", "size": "Deluxe", "quantity": 1},
+            {"product_id": "classic-rose-dozen", "size": "Standard",
+             "card_message": "Love you Mum"},
+        ], items)
+        self.assertEqual(items[0], self._service(store).prior_order_projection("s3"))
+        self.assertNotIn("recipient", items[1])
+        self.assertNotIn("order_id", items[1])
+
+    def test_prior_orders_projection_dedupes_same_session_and_caps(self):
+        class LongHistoryStore(FakeOrderStore):
+            def recalled_products(self, session_id):
+                return [
+                    {"product_id": "classic-rose-dozen"},
+                    {"product_id": "lilac-bouquet"},
+                    {"product_id": "budget-mixed-bunch"},
+                    {"product_id": "garden-posy"},
+                    {"product_id": "white-lilies"},
+                    {"product_id": "should-drop"},
+                ]
+
+        store = LongHistoryStore(current="confirmed", product_id="classic-rose-dozen")
+        items = self._service(store).prior_orders_projection("s")
+        self.assertEqual(
+            ["classic-rose-dozen", "lilac-bouquet", "budget-mixed-bunch",
+             "garden-posy", "white-lilies"],
+            [item["product_id"] for item in items],
+        )
+        self.assertEqual(5, len(items))
+
     def test_list_recent_is_least_data_without_email_or_product_dump(self):
         store = FakeOrderStore(current="confirmed")
         items = self._service(store).list_recent(limit=50)

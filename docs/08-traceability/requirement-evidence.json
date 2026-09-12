@@ -180,7 +180,8 @@
           "platform/aea_platform/order.py",
           "platform/aea_platform/recommendation.py",
           "platform/aea_platform/reorder.py",
-          "platform/migrations/017_browser_reorder_history.sql"
+          "platform/migrations/017_browser_reorder_history.sql",
+          "platform/migrations/027_browser_prior_order_history.sql"
         ]
       },
       "test": {

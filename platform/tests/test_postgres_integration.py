@@ -800,13 +800,17 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
                 "DELETE FROM orchestration.ephemeral_fulfillment WHERE destination_reference = %s",
                 (live_ref,))
 
-    def _order_ready_for_checkout(self, app, *, product=None):
+    def _order_ready_for_checkout(self, app, *, product=None,
+                                  product_id="classic-rose-dozen", options=None):
         import asyncio
         from aea_platform.adapters import PsycopgExperienceStateStore
         from aea_platform.state import StatePatch
         session_id = self.create_session()
         store = PsycopgExperienceStateStore(self.connection)
-        product = product or {"product_id": "classic-rose-dozen"}
+        product = product or {"product_id": product_id}
+        if options:
+            product = dict(product)
+            product["options"] = options
         with self.connection.transaction():
             store.apply_patch(str(session_id), 0, 1, StatePatch.create(
                 {"decisions": {"product": product}},
@@ -976,6 +980,8 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         self.assertTrue(items[0]["prior_order_hint"])
         self.assertEqual({"product_id": "classic-rose-dozen"},
                          workspace["facets"]["prior_order"])
+        self.assertEqual([{"product_id": "classic-rose-dozen"}],
+                         workspace["facets"]["prior_orders"])
         self.assertEqual(70.0, items[0]["price"])  # current catalog price, not history
         self.assertIsNone(app.order.session_prior_product_id(str(second)))
         self.assertEqual("classic-rose-dozen", app.order.prior_product_id(str(second)))
@@ -1144,11 +1150,88 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
             app, "GET", f"/internal/v1/sessions/{second}/workspace"))
         self.assertEqual({"product_id": "classic-rose-dozen"},
                          workspace["facets"]["prior_order"])
+        self.assertEqual([{"product_id": "classic-rose-dozen"}],
+                         workspace["facets"]["prior_orders"])
         self.assertEqual([], workspace["facets"]["recommendations"]["items"])
         self.assertFalse(
             ((workspace["facets"].get("shared_understanding") or {})
              .get("structured_intent") or {}).get("occasion"))
         self.assertEqual(["product_id"], list(workspace["facets"]["prior_order"]))
+
+    def test_workspace_projects_multi_order_prior_sku_history(self):
+        """FR-008 #426: returning browser can choose a non-latest prior SKU."""
+        import asyncio
+        from aea_platform.adapters import PsycopgInventoryAvailabilityStore
+        from aea_platform.internal_api import InternalOrchestrationApp
+        from aea_platform.inventory import AvailabilitySnapshot, InventoryAvailabilityService
+        from aea_platform.pricing import REFERENCE_DELIVERY_FEE
+
+        app = InternalOrchestrationApp(self.connection, "internal-token")
+        recall_id = str(uuid.uuid4())
+        now = datetime.now(timezone.utc)
+        inventory = InventoryAvailabilityService(
+            PsycopgInventoryAvailabilityStore(self.connection), now=lambda: now)
+        for product_id, qty in (("classic-rose-dozen", 5), ("lilac-bouquet", 2),
+                                ("budget-mixed-bunch", 4)):
+            inventory.record(AvailabilitySnapshot(product_id, qty, 1, now))
+
+        first = self._order_ready_for_checkout(
+            app, options={"size": "Standard", "card_message": "Love you Mum"})
+        self.assertEqual(204, asyncio.run(self._invoke_internal(
+            app, "PUT", f"/internal/v1/sessions/{first}",
+            json.dumps({"recall_id": recall_id}).encode()))[0])
+        rose_total = round(70.0 + REFERENCE_DELIVERY_FEE, 2)
+        self.assertEqual(202, asyncio.run(self._invoke_internal(
+            app, "POST", f"/internal/v1/sessions/{first}/checkout",
+            json.dumps({"payment_reference": "tok_hist_1", "observed_total": rose_total,
+                        "correlation_id": "hist-1"}).encode()))[0])
+
+        second = self._order_ready_for_checkout(
+            app, product_id="lilac-bouquet",
+            options={"size": "Deluxe", "quantity": 1})
+        self.assertEqual(204, asyncio.run(self._invoke_internal(
+            app, "PUT", f"/internal/v1/sessions/{second}",
+            json.dumps({"recall_id": recall_id}).encode()))[0])
+        lilac_total = round(95.0 + REFERENCE_DELIVERY_FEE, 2)
+        self.assertEqual(202, asyncio.run(self._invoke_internal(
+            app, "POST", f"/internal/v1/sessions/{second}/checkout",
+            json.dumps({"payment_reference": "tok_hist_2", "observed_total": lilac_total,
+                        "correlation_id": "hist-2"}).encode()))[0])
+
+        self.assertEqual(2, self.connection.execute(
+            "SELECT count(*) FROM orchestration.browser_order_recall WHERE recall_id=%s",
+            (recall_id,)).fetchone()[0])
+
+        third = uuid.uuid4()
+        self.assertEqual(204, asyncio.run(self._invoke_internal(
+            app, "PUT", f"/internal/v1/sessions/{third}",
+            json.dumps({"recall_id": recall_id}).encode()))[0])
+        _, workspace = asyncio.run(self._invoke_internal(
+            app, "GET", f"/internal/v1/sessions/{third}/workspace"))
+        prior_orders = workspace["facets"]["prior_orders"]
+        self.assertEqual([
+            {"product_id": "lilac-bouquet", "size": "Deluxe", "quantity": 1},
+            {"product_id": "classic-rose-dozen", "size": "Standard",
+             "card_message": "Love you Mum"},
+        ], prior_orders)
+        self.assertEqual(prior_orders[0], workspace["facets"]["prior_order"])
+        for item in prior_orders:
+            self.assertNotIn("order_id", item)
+            self.assertNotIn("recipient", item)
+
+        status, selected = asyncio.run(self._invoke_internal(
+            app, "POST", f"/internal/v1/sessions/{third}/selection",
+            json.dumps({"product_id": "classic-rose-dozen",
+                        "options": {"size": "Standard", "card_message": "Love you Mum"},
+                        "observed_context_version": workspace["context_version"],
+                        "correlation_id": "hist-choose"}).encode()))
+        self.assertEqual(202, status)
+        _, chosen = asyncio.run(self._invoke_internal(
+            app, "GET", f"/internal/v1/sessions/{third}/workspace"))
+        self.assertEqual("classic-rose-dozen", chosen["facets"]["selection"]["product_id"])
+        self.assertEqual("Standard", chosen["facets"]["selection"]["options"]["size"])
+        self.assertEqual("Love you Mum",
+                         chosen["facets"]["selection"]["options"]["card_message"])
 
     def test_browser_session_get_binds_to_experience_session(self):
         import asyncio

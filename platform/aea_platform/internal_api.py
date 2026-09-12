@@ -385,11 +385,13 @@ class InternalOrchestrationApp:
         reminders = self._occasion_reminders(session_id)
         if reminders:
             facets["reminders"] = {"items": reminders}
-        prior = self.order.prior_order_projection(session_id)
-        if prior:
+        prior_orders = self.order.prior_orders_projection(session_id)
+        if prior_orders:
             # Least-data FR-008 Need affordance: SKU plus size / qty / card.
-            # No recipient, payment, or order_id.
-            facets["prior_order"] = prior
+            # prior_order remains the latest row for #419/#422/#424.
+            # prior_orders is the #426 history chooser (cap ~5). No order_id.
+            facets["prior_order"] = prior_orders[0]
+            facets["prior_orders"] = prior_orders
         return {
             "context_version": int(loaded["context_version"]),
             "facets": facets,

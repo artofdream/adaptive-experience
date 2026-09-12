@@ -452,7 +452,14 @@ class PsycopgOrderStore:
             return True
 
     def remember_browser_product(self, session_id: str) -> None:
-        """Persist the least-data accepted-order projection for FR-008 reorder."""
+        """Persist the least-data accepted-order projection for FR-008 reorder.
+
+        #426 keeps one row per accepted ``order_id`` on the same opaque
+        ``recall_id`` (migration 027). Expired rows and anything past the
+        last five accepted orders are pruned. Options stay on
+        ``customer_order.product`` — they are not copied onto recall.
+        """
+        from .reorder import PRIOR_ORDERS_CAP
         self.connection.execute(
             "INSERT INTO orchestration.browser_order_recall "
             "(recall_id, product_id, order_id, expires_at) "
@@ -464,34 +471,63 @@ class PsycopgOrderStore:
             "AND o.status IN ('confirmed','preparing','dispatched',"
             "'delivered','completed') "
             "AND COALESCE(btrim(o.product->>'product_id'), '') <> '' "
-            "ON CONFLICT (recall_id) DO UPDATE SET "
-            "product_id=EXCLUDED.product_id, order_id=EXCLUDED.order_id, "
+            "ON CONFLICT (recall_id, order_id) DO UPDATE SET "
+            "product_id=EXCLUDED.product_id, "
             "expires_at=EXCLUDED.expires_at, updated_at=clock_timestamp()",
             (session_id,),
         )
-
-    def recalled_product(self, session_id: str) -> dict | None:
-        """Last accepted ``customer_order.product`` for this browser recall.
-
-        FR-008 Path B reads size / quantity / card from the real order row.
-        Options are not denormalized onto ``browser_order_recall``.
-        """
         row = self.connection.execute(
+            "SELECT recall_id FROM orchestration.experience_session "
+            "WHERE session_id=%s AND recall_id IS NOT NULL",
+            (session_id,),
+        ).fetchone()
+        if row is None:
+            return
+        recall_id = row[0]
+        self.connection.execute(
+            "WITH keep AS ("
+            "SELECT order_id FROM orchestration.browser_order_recall "
+            "WHERE recall_id=%s AND expires_at > clock_timestamp() "
+            "ORDER BY updated_at DESC LIMIT %s) "
+            "DELETE FROM orchestration.browser_order_recall "
+            "WHERE recall_id=%s AND ("
+            "expires_at <= clock_timestamp() "
+            "OR order_id NOT IN (SELECT order_id FROM keep))",
+            (recall_id, PRIOR_ORDERS_CAP, recall_id),
+        )
+
+    def recalled_products(self, session_id: str) -> list[dict]:
+        """Accepted ``customer_order.product`` snapshots for this browser.
+
+        Newest first, expiry-respecting, capped. FR-008 Path B reads size /
+        quantity / card from the real order row. Options are not denormalized
+        onto ``browser_order_recall``.
+        """
+        from .reorder import PRIOR_ORDERS_CAP
+        rows = self.connection.execute(
             "SELECT o.product FROM orchestration.experience_session s "
             "JOIN orchestration.browser_order_recall r ON r.recall_id = s.recall_id "
             "JOIN orchestration.customer_order o ON o.order_id = r.order_id "
             "WHERE s.session_id=%s AND s.lifecycle_status='active' "
             "AND r.expires_at > clock_timestamp() "
             "AND o.status IN ('confirmed','preparing','dispatched',"
-            "'delivered','completed')",
-            (session_id,),
-        ).fetchone()
-        if row is None or not isinstance(row[0], dict):
-            return None
-        product_id = row[0].get("product_id")
-        if not isinstance(product_id, str) or not product_id.strip():
-            return None
-        return row[0]
+            "'delivered','completed') "
+            "ORDER BY r.updated_at DESC LIMIT %s",
+            (session_id, PRIOR_ORDERS_CAP),
+        ).fetchall()
+        products = []
+        for row in rows:
+            if row is None or not isinstance(row[0], dict):
+                continue
+            product_id = row[0].get("product_id")
+            if isinstance(product_id, str) and product_id.strip():
+                products.append(row[0])
+        return products
+
+    def recalled_product(self, session_id: str) -> dict | None:
+        """Last accepted ``customer_order.product`` for this browser recall."""
+        products = self.recalled_products(session_id)
+        return products[0] if products else None
 
     def recalled_product_id(self, session_id: str) -> str | None:
         product = self.recalled_product(session_id)

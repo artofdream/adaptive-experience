@@ -163,6 +163,46 @@ def classify_need_reorder_hidden_after_pick(
     return "fail", "Need-phase Reorder card still visible after Reorder → Pick (#422)"
 
 
+def prior_order_skus(prior_orders) -> list[str]:
+    """Least-data SKU list from workspace ``prior_orders`` / ``prior_order``."""
+    items = prior_orders if isinstance(prior_orders, list) else []
+    skus = []
+    for item in items:
+        if isinstance(item, dict):
+            product_id = item.get("product_id")
+            if isinstance(product_id, str) and product_id.strip():
+                skus.append(product_id.strip())
+    return skus
+
+
+def classify_prior_sku_history_chooser(
+    *,
+    prior_skus: list[str],
+    chosen_product_id: str | None,
+    choice_visible: bool | None,
+    payment_included: bool,
+) -> tuple[str, str]:
+    """#426: returning browser with ≥2 recalls can pick a non-latest SKU."""
+    if not payment_included:
+        return (
+            "blocked",
+            "prior SKU history chooser needs accepted orders; payment excluded this run",
+        )
+    latest = prior_skus[0] if prior_skus else ""
+    unique = list(dict.fromkeys(prior_skus))
+    if len(unique) < 2:
+        return (
+            "blocked",
+            "chooser needs ≥2 distinct accepted SKUs on this browser recall",
+        )
+    if not choice_visible:
+        return "fail", "Need history chooser missing for multi-SKU recall (#426)"
+    chosen = (chosen_product_id or "").strip()
+    if chosen and chosen != latest:
+        return "pass", f"chose non-latest prior SKU {chosen} (latest was {latest})"
+    return "fail", "multi-SKU recall did not choose a non-latest prior SKU (#426)"
+
+
 def classify_need_reminder_card(*, card_visible: bool, payment_included: bool) -> tuple[str, str]:
     """Path B / Path A Need-phase FR-016 pull reminder (#420). Requires an accepted order."""
     if not payment_included:
@@ -258,6 +298,9 @@ def _dump_js() -> str:
         checkoutError: document.querySelector('#checkout-form-error:not([hidden])')?.innerText || '',
         orderStatus: document.querySelector('#order-status')?.innerText || '',
         floristPath: location.pathname,
+        needReorderHistory: [...document.querySelectorAll('#need-reorder-history .need-reorder-choice')].map(
+          (b) => ({ text: b.textContent, productId: b.dataset.productId, selected: b.getAttribute('aria-selected') })
+        ),
       };
     }"""
 
@@ -328,6 +371,7 @@ def run_walk(args: argparse.Namespace) -> dict:
                     "rec_count": len(items or []),
                     "prior_order_hints": hints,
                     "prior_order": (body.get("facets") or {}).get("prior_order"),
+                    "prior_orders": (body.get("facets") or {}).get("prior_orders"),
                     "reminders": (body.get("facets") or {}).get("reminders"),
                     "order": (body.get("facets") or {}).get("order"),
                     "selection": (body.get("facets") or {}).get("selection"),
@@ -708,6 +752,8 @@ def run_walk(args: argparse.Namespace) -> dict:
             reminder_card_visible = False
             need_card_hidden_after_pick = None
             modified_selection = None
+            chosen_product_id = None
+            choice_visible = None
             recall_note = ""
             fresh = None
             try:
@@ -773,15 +819,33 @@ def run_walk(args: argparse.Namespace) -> dict:
                         path=str(shots / "14-need-reminder.png"), full_page=True
                     )
                 need_card_hidden_after_pick = None
+                chosen_product_id = None
+                choice_visible = None
                 if need_card_visible:
                     fresh_page.screenshot(
                         path=str(shots / "14-need-reorder.png"), full_page=True
                     )
+                    history = fresh_page.locator(
+                        "#need-reorder-history .need-reorder-choice"
+                    )
+                    if history.count() >= 2:
+                        choice_visible = True
+                        non_latest = history.nth(1)
+                        chosen_product_id = non_latest.get_attribute("data-product-id")
+                        non_latest.click()
+                        fresh_page.screenshot(
+                            path=str(shots / "16-need-reorder-history.png"),
+                            full_page=True,
+                        )
+                    else:
+                        choice_visible = False
                     fresh_page.locator("#need-reorder-cta").click()
                     fresh_page.wait_for_timeout(1500)
                     arrangement = fresh_page.locator("#arrangement")
                     if arrangement.count() and (arrangement.input_value() or "").strip():
                         recalled = True
+                        if chosen_product_id:
+                            chosen_product_id = arrangement.input_value().strip()
                     need_card_hidden_after_pick = not need_card.is_visible()
                     if fresh_page.locator("#size").count():
                         fresh_page.fill("#size", MODIFY_SIZE)
@@ -853,6 +917,25 @@ def run_walk(args: argparse.Namespace) -> dict:
                 "After Reorder, change size/qty/card; fields survive into selection (#424)",
                 modify_reason + recall_note,
                 modify_result,
+            )
+            last_workspace = report.get("api", {}).get("last_workspace") or {}
+            prior_skus = prior_order_skus(last_workspace.get("prior_orders"))
+            if not prior_skus:
+                prior = last_workspace.get("prior_order") or {}
+                if isinstance(prior, dict) and prior.get("product_id"):
+                    prior_skus = [str(prior["product_id"]).strip()]
+            chooser_result, chooser_reason = classify_prior_sku_history_chooser(
+                prior_skus=prior_skus,
+                chosen_product_id=chosen_product_id,
+                choice_visible=choice_visible,
+                payment_included=report.get("payment_included", False),
+            )
+            _step(
+                report,
+                "M8 prior SKU history chooser",
+                "Need-phase chooser picks a non-latest prior SKU (#426)",
+                chooser_reason + recall_note,
+                chooser_result,
             )
             reminder_result, reminder_reason = classify_need_reminder_card(
                 card_visible=reminder_card_visible,
