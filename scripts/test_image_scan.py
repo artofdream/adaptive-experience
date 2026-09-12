@@ -215,6 +215,45 @@ class ImageScanGateTests(unittest.TestCase):
             "do not time-box libpcre2; rebuild orchestration libpcre2-8-0",
         )
 
+    def test_agent_runner_pins_debian_high_cves_instead_of_excepting(self) -> None:
+        dockerfile = (ROOT / "platform" / "docker" / "Dockerfile.agent-runner").read_text(
+            encoding="utf-8")
+        self.assertRegex(
+            dockerfile,
+            r"FROM python:3\.12-slim@sha256:[0-9a-f]{64}",
+        )
+        self.assertIn("gzip=1.13-1+deb13u1", dockerfile)
+        self.assertIn("libpcre2-8-0=10.46-1~deb13u2", dockerfile)
+        self.assertIn("libsqlite3-0=3.46.1-7+deb13u2", dockerfile)
+        self.assertIn("apt-get install", dockerfile)
+        items = load_exceptions()
+        blocked_ids = {
+            "CVE-2026-41992",
+            "CVE-2026-86145",
+            "CVE-2026-89161",
+            "CVE-2026-11822",
+            "CVE-2026-11824",
+        }
+        leftover = [
+            item
+            for item in items
+            if item["id"] in blocked_ids and item["image"] in {"agent-runner", "*"}
+        ]
+        self.assertEqual(
+            leftover, [],
+            "do not time-box #432; pin agent-runner gzip/libpcre2/libsqlite3",
+        )
+        leftover_pkgs = [
+            item
+            for item in items
+            if item["package"] in {"gzip", "libpcre2-8-0", "libsqlite3-0"}
+            and item["image"] in {"agent-runner", "*"}
+        ]
+        self.assertEqual(
+            leftover_pkgs, [],
+            "do not widen image-scan-exceptions.json for agent-runner OS pins",
+        )
+
     def test_exceptions_file_is_strict_with_owner_reason_expiry(self) -> None:
         items = load_exceptions()
         payload = json.loads(EXCEPTIONS.read_text(encoding="utf-8"))
