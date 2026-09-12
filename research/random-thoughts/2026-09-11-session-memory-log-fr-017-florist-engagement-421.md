@@ -29,7 +29,7 @@ This session ships child [#421](https://gitlab.com/artof-group/adaptive-experien
 
 | Still open | Why |
 |---|---|
-| Campaign export / ML | Counts only; no CSV or model |
+| Campaign export / ML | Counts only on this slice; CSV/JSON export is #427. ML still open |
 | Per-customer browse | Aggregates, not a list |
 | Workbook FR-017 Future | Do not promote IDs from this MR |
 | Spend-band dashboards | Subject-profile aggregates left for a later slice |

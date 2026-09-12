@@ -109,6 +109,14 @@ class InternalOrchestrationApp:
             if items:
                 result["next_cursor"] = items[-1].get("updated_at")
             return await self._send(send, 200, result)
+        if scope["path"] == "/internal/v1/operator/engagement/export" and scope["method"] == "GET":
+            query = parse_qs(scope.get("query_string", b"").decode())
+            export_format = (query.get("format") or ["csv"])[0]
+            try:
+                return await self._send(
+                    send, 200, self.crm.export_engagement_analytics(export_format=export_format))
+            except CrmValidationError:
+                return await self._send(send, 422, {"code": "validation_failed"})
         if scope["path"] == "/internal/v1/operator/engagement" and scope["method"] == "GET":
             try:
                 return await self._send(send, 200, self.crm.get_engagement_analytics())

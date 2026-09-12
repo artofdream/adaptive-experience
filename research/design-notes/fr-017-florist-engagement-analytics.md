@@ -28,12 +28,14 @@ No browser hashes, subject references, names, or addresses leave the
 allowlist. CF-051: this is engagement analytics, not staff live chat.
 
 Not #35 outbound AI reminders. Not #27 full purchase-history CRM.
-Parent #36 stays open (no campaign export, ML, or workbook promotion).
+Parent #36 stays open (no ML or workbook promotion). Campaign cohort
+export shipped later as #427.
 
 ## Not in this slice
 
 Unsolicited marketing send, per-customer browse, spend-band dashboards,
-CSV export, staff WebSocket chat, or promoting FR-017 out of Future.
+staff WebSocket chat, or promoting FR-017 out of Future. CSV/JSON
+cohort export is #427.
 
 ## Prove
 

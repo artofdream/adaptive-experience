@@ -156,7 +156,9 @@ payment evolution (#148) build on these workers.
   reference). `GET /internal/v1/operator/sessions/{id}` returns a least-data
   summary (conversation, order status, availability).
   `GET /internal/v1/operator/engagement` returns zero-PII FR-017 occasion-cohort
-  counts. Not FR-016 outbound reminders and not a per-customer CRM list.
+  counts. `GET /internal/v1/operator/engagement/export?format=csv|json`
+  returns the same counts and categorical keys for campaign download.
+  Not FR-016 outbound reminders and not a per-customer CRM list.
 - Inventory forecast (#31 / M11, FR-012, NFR-010): validated snapshot history
   is appended to `inventory.availability_observation`.
   `InventoryForecastService` in `forecast.py` returns deterministic

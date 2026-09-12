@@ -7,8 +7,11 @@ Enforces Zero-PII (ADR-013 / NFR-017) and 14-day ephemeral fulfillment shredding
 
 from __future__ import annotations
 
+import csv
 import hashlib
 import hmac
+import io
+import json
 import os
 import uuid
 from collections import Counter
@@ -21,6 +24,96 @@ from typing import Any, Callable, Sequence
 # plus margin; memory untouched beyond this is purged (privacy lifecycle,
 # NFR-017). Overridable by the operational purge job.
 DEFAULT_RETENTION_DAYS = 400
+ENGAGEMENT_EXPORT_FORMATS = frozenset({"csv", "json"})
+ENGAGEMENT_EXPORT_TOTAL_KEYS = (
+    "memory_count",
+    "unique_browsers",
+    "upcoming_within_days",
+    "lookahead_days",
+)
+
+
+def format_engagement_export(
+    analytics: dict[str, Any], *, export_format: str = "csv"
+) -> dict[str, Any]:
+    """Serialize zero-PII engagement aggregates for operator download.
+
+    Emits counts and categorical cohort keys only. Never includes hashes,
+    session ids, subject references, or contact fields (ADR-020 / NFR-017).
+    """
+    fmt = (export_format or "csv").strip().lower()
+    if fmt not in ENGAGEMENT_EXPORT_FORMATS:
+        raise CrmValidationError("format must be csv or json")
+
+    def _cohorts(items, name_key, *, month=False) -> list[dict[str, Any]]:
+        shaped: list[dict[str, Any]] = []
+        for item in items or []:
+            if not isinstance(item, dict):
+                continue
+            try:
+                count = int(item.get("count") or 0)
+            except (TypeError, ValueError):
+                continue
+            if count < 1:
+                continue
+            if month:
+                try:
+                    month_value = int(item.get("event_month"))
+                except (TypeError, ValueError):
+                    continue
+                if 1 <= month_value <= 12:
+                    shaped.append({"event_month": month_value, "count": count})
+                continue
+            name = item.get(name_key)
+            if not isinstance(name, str) or not name.strip() or len(name) > 64:
+                continue
+            shaped.append({name_key: name.strip().lower(), "count": count})
+        return shaped
+
+    def _int(value, default=0) -> int:
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            return default
+        return int(value)
+
+    lookahead = _int(analytics.get("lookahead_days"), 30)
+    if lookahead < 1 or lookahead > 366:
+        lookahead = 30
+    payload = {
+        "memory_count": max(0, _int(analytics.get("memory_count"))),
+        "unique_browsers": max(0, _int(analytics.get("unique_browsers"))),
+        "upcoming_within_days": max(0, _int(analytics.get("upcoming_within_days"))),
+        "lookahead_days": lookahead,
+        "occasion_cohorts": _cohorts(analytics.get("occasion_cohorts"), "occasion_type"),
+        "relation_cohorts": _cohorts(analytics.get("relation_cohorts"), "recipient_relation"),
+        "event_month_cohorts": _cohorts(
+            analytics.get("event_month_cohorts"), "event_month", month=True),
+    }
+
+    if fmt == "json":
+        return {
+            "format": "json",
+            "filename": "florist-engagement-cohorts.json",
+            "content_type": "application/json",
+            "body": json.dumps(payload, separators=(",", ":"), sort_keys=True),
+        }
+
+    buffer = io.StringIO()
+    writer = csv.writer(buffer)
+    writer.writerow(["section", "key", "count"])
+    for key in ENGAGEMENT_EXPORT_TOTAL_KEYS:
+        writer.writerow(["totals", key, payload[key]])
+    for item in payload["occasion_cohorts"]:
+        writer.writerow(["occasion", item["occasion_type"], item["count"]])
+    for item in payload["relation_cohorts"]:
+        writer.writerow(["relation", item["recipient_relation"], item["count"]])
+    for item in payload["event_month_cohorts"]:
+        writer.writerow(["event_month", item["event_month"], item["count"]])
+    return {
+        "format": "csv",
+        "filename": "florist-engagement-cohorts.csv",
+        "content_type": "text/csv; charset=utf-8",
+        "body": buffer.getvalue(),
+    }
 
 
 class CrmValidationError(ValueError):
@@ -247,6 +340,17 @@ class EngagementCrmService:
                 for month, count in sorted(month_counts.items())
             ],
         }
+
+    def export_engagement_analytics(
+        self, *, export_format: str = "csv", lookahead_days: int = 30
+    ) -> dict[str, Any]:
+        """Operator campaign export of the same zero-PII cohort counts (FR-017).
+
+        CSV or JSON of counts and categorical keys only. Not a per-customer
+        list and not an ML model.
+        """
+        analytics = self.get_engagement_analytics(lookahead_days=lookahead_days)
+        return format_engagement_export(analytics, export_format=export_format)
 
     def forget(self, *, browser_hash: str) -> int:
         """Erase all occasion memory for a browser (customer opt-out; NFR-017).

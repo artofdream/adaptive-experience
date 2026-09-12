@@ -736,6 +736,8 @@ class PerimeterTests(unittest.TestCase):
         self.assertEqual(404, self.call("GET", "/api/v1/operator/forecasts", headers)[0])
         self.assertEqual(404, self.call("GET", "/api/v1/operator/engagement", headers)[0])
         self.assertEqual(404, self.call(
+            "GET", "/api/v1/operator/engagement/export", headers, b"", b"format=csv")[0])
+        self.assertEqual(404, self.call(
             "GET", "/api/v1/operator/sessions/11111111-1111-4111-8111-111111111111",
             headers)[0])
         self.assertTrue(BffApp.florist_operator_enabled_for(environment="local", flag="1"))
@@ -836,6 +838,35 @@ class PerimeterTests(unittest.TestCase):
                          stripped["event_month_cohorts"])
         self.assertNotIn("browser_hash", stripped)
         self.assertNotIn("email", stripped)
+        status, headers, body = call(
+            "GET", "/api/v1/operator/engagement/export", auth, b"", b"format=csv")
+        self.assertEqual(200, status)
+        self.assertIn("text/csv", headers["content-type"])
+        self.assertIn("attachment; filename=\"florist-engagement-cohorts.csv\"",
+                      headers["content-disposition"])
+        csv_text = body.decode()
+        self.assertIn("section,key,count", csv_text)
+        self.assertIn("totals,memory_count,3", csv_text)
+        self.assertIn("occasion,birthday,2", csv_text)
+        self.assertIn("relation,mother,2", csv_text)
+        self.assertNotIn("browser_hash", csv_text)
+        self.assertNotIn("secret", csv_text)
+        self.assertNotIn("private@example.invalid", csv_text)
+        status, headers, body = call(
+            "GET", "/api/v1/operator/engagement/export", auth, b"", b"format=json")
+        self.assertEqual(200, status)
+        self.assertEqual("application/json", headers["content-type"])
+        self.assertIn("florist-engagement-cohorts.json", headers["content-disposition"])
+        exported = json.loads(body)
+        self.assertEqual(3, exported["memory_count"])
+        self.assertEqual("birthday", exported["occasion_cohorts"][0]["occasion_type"])
+        self.assertNotIn("browser_hash", exported)
+        self.assertNotIn("email", exported)
+        self.assertNotIn(b"secret", body)
+        status, _, body = call(
+            "GET", "/api/v1/operator/engagement/export", auth, b"", b"format=xlsx")
+        self.assertEqual(422, status)
+        self.assertEqual("validation_failed", json.loads(body)["error"])
         status, _, body = call(
             "GET", "/api/v1/operator/sessions/11111111-1111-4111-8111-111111111111", auth)
         self.assertEqual(200, status)

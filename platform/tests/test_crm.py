@@ -1,11 +1,13 @@
 """Unit tests for Engagement CRM & Occasion Memory Service (FR-016 / FR-017 / NFR-017, M12)."""
 
+import json
 import unittest
 from datetime import datetime, timezone
 from aea_platform.crm import (
     EngagementCrmService,
     CrmValidationError,
     OccasionReminder,
+    format_engagement_export,
     format_reminder_text,
 )
 
@@ -293,6 +295,63 @@ class TestEngagementCrmService(unittest.TestCase):
     def test_engagement_analytics_rejects_bad_lookahead(self):
         with self.assertRaises(CrmValidationError):
             self.service.get_engagement_analytics(lookahead_days=0)
+
+    def test_engagement_export_is_zero_pii_counts_and_keys(self):
+        self.service.record_occasion(
+            browser_hash=self.browser_hash, session_id="sess-001",
+            occasion_type="Birthday", event_month=9, event_day=5,
+            recipient_relation="Mother")
+        other = self.service.hash_browser("someone-else")
+        self.service.record_occasion(
+            browser_hash=other, session_id="sess-002",
+            occasion_type="Birthday", event_month=9, event_day=15,
+            recipient_relation="Mother")
+
+        csv_export = self.service.export_engagement_analytics(export_format="csv")
+        self.assertEqual("csv", csv_export["format"])
+        self.assertEqual("florist-engagement-cohorts.csv", csv_export["filename"])
+        self.assertIn("text/csv", csv_export["content_type"])
+        self.assertIn("section,key,count", csv_export["body"])
+        self.assertIn("totals,memory_count,2", csv_export["body"])
+        self.assertIn("occasion,birthday,2", csv_export["body"])
+        self.assertIn("relation,mother,2", csv_export["body"])
+        self.assertIn("event_month,9,2", csv_export["body"])
+        self.assertNotIn(self.browser_hash, csv_export["body"])
+        self.assertNotIn(other, csv_export["body"])
+        self.assertNotIn("sess-001", csv_export["body"])
+        self.assertNotIn("browser_hash", csv_export["body"])
+        self.assertNotIn("session_id", csv_export["body"])
+
+        json_export = self.service.export_engagement_analytics(export_format="json")
+        self.assertEqual("json", json_export["format"])
+        self.assertEqual("florist-engagement-cohorts.json", json_export["filename"])
+        payload = json.loads(json_export["body"])
+        self.assertEqual(2, payload["memory_count"])
+        self.assertEqual(2, payload["unique_browsers"])
+        self.assertEqual([{"occasion_type": "birthday", "count": 2}], payload["occasion_cohorts"])
+        self.assertNotIn("browser_hash", payload)
+        self.assertNotIn("session_id", payload)
+        self.assertNotIn(self.browser_hash, json_export["body"])
+        self.assertNotIn("sess-002", json_export["body"])
+
+        dirty = format_engagement_export({
+            "memory_count": 1,
+            "unique_browsers": 1,
+            "upcoming_within_days": 1,
+            "lookahead_days": 30,
+            "occasion_cohorts": [{"occasion_type": "birthday", "count": 1}],
+            "relation_cohorts": [],
+            "event_month_cohorts": [],
+            "browser_hash": "a" * 64,
+            "email": "private@example.invalid",
+        })
+        self.assertNotIn("browser_hash", dirty["body"])
+        self.assertNotIn("private@example.invalid", dirty["body"])
+        self.assertNotIn("email", dirty["body"])
+
+    def test_engagement_export_rejects_bad_format(self):
+        with self.assertRaises(CrmValidationError):
+            self.service.export_engagement_analytics(export_format="xlsx")
 
 
 if __name__ == "__main__":

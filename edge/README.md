@@ -191,13 +191,16 @@ Internal Orchestration (#144; contract in
   recommendations from validated snapshot history.
   `GET /api/v1/operator/engagement` returns zero-PII FR-017 occasion-cohort
   counts (memory_count, unique_browsers, upcoming_within_days, categorical
-  cohorts). They return 404 unless
+  cohorts). `GET /api/v1/operator/engagement/export?format=csv|json`
+  downloads the same allowlisted aggregates (`Content-Disposition` attachment).
+  They return 404 unless
   `AEA_FLORIST_OPERATOR=1` and either `AEA_ENVIRONMENT` is not `production`
   or the named Path B exception `AEA_FLORIST_OPERATOR_EXCEPTION=aea-pilot`
   is set. Generic production stays 404. The inbox is read-only and does not
   unblock T-03 Select. Do not open `/florist` in the same browser as the
-  shop (CSRF). See `research/design-notes/florist-operator-ui.md` and
-  `research/design-notes/fr-017-florist-engagement-analytics.md`. Not
+  shop (CSRF). See `research/design-notes/florist-operator-ui.md`,
+  `research/design-notes/fr-017-florist-engagement-analytics.md`, and
+  `research/design-notes/fr-017-florist-engagement-cohort-export.md`. Not
   FR-016 outbound reminders and not a per-customer CRM list.
 - `POST /api/v1/checkout` performs FR-019 payment and checkout. It accepts only a
   `payment_reference` (an opaque vault token) and the `observed_total`; raw card

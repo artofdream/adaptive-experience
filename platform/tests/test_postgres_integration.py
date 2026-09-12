@@ -507,6 +507,49 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         self.assertNotIn("browser_hash", blob)
         self.assertNotIn("session_id", blob)
 
+    def test_operator_engagement_export_is_zero_pii_cohorts(self):
+        import asyncio
+        from aea_platform.internal_api import InternalOrchestrationApp
+
+        app = InternalOrchestrationApp(self.connection, "internal-token")
+        svc = app.crm
+        now = datetime(2026, 8, 22, 12, 0, tzinfo=timezone.utc)
+        svc.now = lambda: now
+        first = svc.hash_browser(f"itest-export-a-{uuid.uuid4()}")
+        second = svc.hash_browser(f"itest-export-b-{uuid.uuid4()}")
+        svc.record_occasion(browser_hash=first, session_id=str(uuid.uuid4()),
+                            occasion_type="Birthday", event_month=9, event_day=5,
+                            recipient_relation="Mother")
+        svc.record_occasion(browser_hash=second, session_id=str(uuid.uuid4()),
+                            occasion_type="Birthday", event_month=9, event_day=15,
+                            recipient_relation="Mother")
+
+        status, body = asyncio.run(self._invoke_internal(
+            app, "GET", "/internal/v1/operator/engagement/export", query=b"format=csv"))
+        self.assertEqual(200, status)
+        self.assertEqual("csv", body["format"])
+        self.assertIn("section,key,count", body["body"])
+        self.assertIn("occasion,birthday,2", body["body"])
+        self.assertNotIn(first, body["body"])
+        self.assertNotIn(second, body["body"])
+        self.assertNotIn("browser_hash", body["body"])
+        self.assertNotIn("session_id", json.dumps(body))
+
+        status, body = asyncio.run(self._invoke_internal(
+            app, "GET", "/internal/v1/operator/engagement/export", query=b"format=json"))
+        self.assertEqual(200, status)
+        payload = json.loads(body["body"])
+        self.assertEqual(2, payload["memory_count"])
+        self.assertNotIn("browser_hash", payload)
+        blob = json.dumps(body)
+        self.assertNotIn(first, blob)
+        self.assertNotIn(second, blob)
+
+        status, body = asyncio.run(self._invoke_internal(
+            app, "GET", "/internal/v1/operator/engagement/export", query=b"format=xlsx"))
+        self.assertEqual(422, status)
+        self.assertEqual("validation_failed", body["code"])
+
     def test_subject_profile_store_running_band_get_and_retention(self):
         from datetime import datetime as dt
         from aea_platform.adapters import PsycopgCrmStore
