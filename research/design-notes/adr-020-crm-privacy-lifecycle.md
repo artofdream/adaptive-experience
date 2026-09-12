@@ -17,10 +17,11 @@ nothing shredded expired rows. This note records the lifecycle that closes both.
   → `crm.customer_occasion_memory` (only `browser_hash`, `occasion_type`,
   `event_month/day`, `recipient_relation`).
 - **Read (reminders)** — `GET /api/v1/crm/reminders` → `get_reminders` computes a
-  **deterministic** next-occurrence reminder on read. This is a **pull signal**,
-  not proactive delivery: there is no FCM/APNs push and the text is a fixed
-  template, not "AI-generated" (see ADR-019 for the unshipped push vision). Docs
-  and status now state this plainly to avoid overstating FR-016.
+  next-occurrence reminder on read. This is a **pull signal**, not proactive
+  delivery: there is no FCM/APNs push (see ADR-019). The soonest card line may
+  be AI-authored from categorical fields when the Path B LiteLLM path is
+  healthy (#425); timeout or invalid output fail-closes to
+  `format_reminder_text`. Outbound email/SMS send stays leftover on #35.
 - **Erasure (opt-out)** — `EngagementCrmService.forget(browser_hash)` /
   `DELETE /internal/v1/crm/occasions?browser_hash=…` removes all memory for a
   browser (idempotent). Zero-PII customer right-to-forget.

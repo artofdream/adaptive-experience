@@ -12,7 +12,7 @@ import hmac
 import os
 import uuid
 from collections import Counter
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, timedelta, timezone
 from typing import Any, Callable, Sequence
 
@@ -39,18 +39,33 @@ class OccasionReminder:
     reminder_text: str
 
 
+def format_reminder_text(*, occasion_type: str, recipient_relation: str,
+                         days_until_event: int) -> str:
+    """Deterministic FR-016 pull-card template (fail-closed fallback)."""
+    occasion_title = str(occasion_type).strip().title()
+    relation_title = str(recipient_relation).strip().title()
+    if days_until_event == 0:
+        return f"Today is {relation_title}'s {occasion_title}! 1-click same-day flower order."
+    return f"Upcoming: {relation_title}'s {occasion_title} in {days_until_event} days."
+
+
 class EngagementCrmService:
     """Zero-PII occasion memory, pull reminders, and aggregate analytics (FR-016 / FR-017).
 
-    FR-016 leftover is AI outbound send. FR-017 here is manager-visible
-    categorical counts — not staff live chat and not a PII customer list.
+    FR-016 leftover after #425 is unsolicited outbound send. In-session
+    `#need-reminder` copy may be AI-authored when a copy_author is wired;
+    this service always fail-closes to format_reminder_text. FR-017 here is
+    manager-visible categorical counts — not staff live chat and not a PII
+    customer list.
     """
 
     def __init__(self, store, *, now: Callable[[], datetime] | None = None,
-                 new_id: Callable[[], uuid.UUID] | None = None):
+                 new_id: Callable[[], uuid.UUID] | None = None,
+                 copy_author: Any = None):
         self.store = store
         self.now = now or (lambda: datetime.now(timezone.utc))
         self.new_id = new_id or uuid.uuid4
+        self.copy_author = copy_author
 
     @staticmethod
     def hash_browser(raw_identifier: str) -> str:
@@ -115,8 +130,36 @@ class EngagementCrmService:
                 event_date = datetime(current_year + 1, month, 28, tzinfo=timezone.utc).date()
         return (event_date - today).days
 
+    def _authored_or_template(self, *, occasion_type: str, recipient_relation: str,
+                              days_until_event: int) -> str:
+        template = format_reminder_text(
+            occasion_type=occasion_type, recipient_relation=recipient_relation,
+            days_until_event=days_until_event)
+        author = self.copy_author
+        if author is None:
+            return template
+        try:
+            if hasattr(author, "author"):
+                text = author.author(
+                    occasion_type=occasion_type, recipient_relation=recipient_relation,
+                    days_until_event=days_until_event)
+            else:
+                text = author(
+                    occasion_type=occasion_type, recipient_relation=recipient_relation,
+                    days_until_event=days_until_event)
+        except Exception:
+            return template
+        if not isinstance(text, str) or not text.strip():
+            return template
+        return text.strip()
+
     def get_reminders(self, *, browser_hash: str, lookahead_days: int = 30) -> list[OccasionReminder]:
-        """Compute upcoming annual recurring occasion reminders (FR-016)."""
+        """Compute upcoming annual recurring occasion reminders (FR-016).
+
+        Presence is unchanged from #420 (lookahead + least-data). The soonest
+        card line may be AI-authored when copy_author is wired; every other
+        item and every author failure stay on format_reminder_text. Pull only.
+        """
         if not isinstance(browser_hash, str) or len(browser_hash.strip()) != 64:
             raise CrmValidationError("valid 64-char browser hash is required")
 
@@ -129,26 +172,32 @@ class EngagementCrmService:
             days_until = self._days_until_event(month, day)
 
             if 0 <= days_until <= lookahead_days:
-                occasion_title = row["occasion_type"].title()
-                relation_title = row["recipient_relation"].title()
-                
-                if days_until == 0:
-                    text = f"Today is {relation_title}'s {occasion_title}! 1-click same-day flower order."
-                else:
-                    text = f"Upcoming: {relation_title}'s {occasion_title} in {days_until} days."
-
+                occasion = str(row["occasion_type"])
+                relation = str(row["recipient_relation"])
                 reminders.append(OccasionReminder(
                     memory_id=str(row["memory_id"]),
                     browser_hash=str(row["browser_hash"]),
-                    occasion_type=str(row["occasion_type"]),
+                    occasion_type=occasion,
                     event_month=month,
                     event_day=day,
-                    recipient_relation=str(row["recipient_relation"]),
+                    recipient_relation=relation,
                     days_until_event=days_until,
-                    reminder_text=text,
+                    reminder_text=format_reminder_text(
+                        occasion_type=occasion, recipient_relation=relation,
+                        days_until_event=days_until),
                 ))
 
         reminders.sort(key=lambda r: r.days_until_event)
+        if reminders:
+            first = reminders[0]
+            reminders[0] = replace(
+                first,
+                reminder_text=self._authored_or_template(
+                    occasion_type=first.occasion_type,
+                    recipient_relation=first.recipient_relation,
+                    days_until_event=first.days_until_event,
+                ),
+            )
         return reminders
 
     def get_engagement_analytics(self, *, lookahead_days: int = 30) -> dict[str, Any]:

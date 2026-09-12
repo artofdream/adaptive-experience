@@ -21,10 +21,15 @@ as it would from a typed Need message. The card then hides.
 Not AI-generated outbound send. Not email/SMS. Not native push (ADR-019).
 Not FR-017 engagement analytics (#36). Parent #35 stays open.
 
+## Follow-up
+
+AI-authored in-session card copy is #425 (`fr-016-ai-need-reminder-copy.md`).
+Unsolicited outbound send remains leftover on #35.
+
 ## Not in this slice
 
-Unsolicited push (FCM/APNs), AI-authored reminder copy, staff live chat,
-operator ticketing, or workbook promotion of FR-016 from Future.
+Unsolicited push (FCM/APNs), staff live chat, operator ticketing, or
+workbook promotion of FR-016 from Future.
 
 ## Prove
 

@@ -872,7 +872,8 @@ function renderNeedReorder(workspace) {
   }
 }
 
-// FR-016 Path B Need pull reminder: deterministic occasion memory, not ADR-019 push.
+// FR-016 Path B Need pull reminder: AI-authored copy when LiteLLM is healthy,
+// else the deterministic template. Not ADR-019 push / outbound send.
 function renderNeedReminder(workspace) {
   const card = document.querySelector("#need-reminder");
   if (!card) return;

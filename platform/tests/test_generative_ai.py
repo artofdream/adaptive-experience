@@ -14,12 +14,15 @@ sys.path.insert(0, str(ROOT))
 
 from aea_platform.generative_ai import (
     AvailableIntentInterpreter,
+    AvailableReminderCopyAuthor,
     GenerativeAIUnavailable,
     NON_AI_DISCLOSURE,
     OpenAICompatibleIntentInterpreter,
+    OpenAICompatibleReminderCopyAuthor,
     PRIMARY_DISCLOSURE,
     disclosure_for_mode,
 )
+from aea_platform.crm import format_reminder_text
 from aea_platform.intent import (
     IntentAnalysisService,
     IntentInterpretation,
@@ -126,6 +129,79 @@ class GenerativeAITests(unittest.TestCase):
         with self.assertRaises(ValueError):
             OpenAICompatibleIntentInterpreter("https://ai.example", "secret", "model",
                                               timeout_seconds=3)
+
+    def test_reminder_author_requests_categorical_json_only(self):
+        # FR-016: Path B Need reminder copy reuses the LiteLLM chat-completions path.
+        captured = {}
+        def transport(endpoint, api_key, payload, timeout):
+            captured.update(endpoint=endpoint, api_key=api_key, payload=payload, timeout=timeout)
+            content = json.dumps({"reminder_text": "Mother's birthday is in 14 days — shop flowers?"})
+            return 200, json.dumps({"choices": [{"message": {"content": content}}]})
+        author = OpenAICompatibleReminderCopyAuthor(
+            "https://ai.example/v1/chat/completions", "secret", "model", transport=transport)
+        text = author.author(occasion_type="Birthday", recipient_relation="Mother",
+                             days_until_event=14)
+        self.assertEqual("Mother's birthday is in 14 days — shop flowers?", text)
+        user = json.loads(captured["payload"]["messages"][1]["content"])
+        self.assertEqual(
+            {"occasion_type": "birthday", "recipient_relation": "mother",
+             "days_until_event": 14},
+            user)
+        self.assertEqual({"type": "json_object"}, captured["payload"]["response_format"])
+        self.assertLessEqual(captured["timeout"], 2.5)
+        blob = json.dumps(captured["payload"])
+        self.assertNotIn("secret", blob)
+        self.assertNotIn("@", user["occasion_type"])
+        self.assertIn("Do not mention email, SMS, or push",
+                      captured["payload"]["messages"][0]["content"])
+
+    def test_reminder_author_rejects_pii_and_overlong_copy(self):
+        def transport_for(text):
+            return lambda *_: (200, json.dumps({
+                "choices": [{"message": {"content": json.dumps({"reminder_text": text})}}]}))
+        for bad in (
+            "Email mum@example.com about birthday flowers",
+            "See https://example.com/flowers",
+            "Call 5551234567 for today's bouquet",
+            "x" * 200,
+        ):
+            author = OpenAICompatibleReminderCopyAuthor(
+                "https://ai.example", "secret", "model", transport=transport_for(bad))
+            with self.assertRaises(Exception):
+                author.author(occasion_type="birthday", recipient_relation="mother",
+                              days_until_event=14)
+
+    def test_available_reminder_author_falls_back_to_template(self):
+        class Down:
+            def author(self, **_):
+                raise GenerativeAIUnavailable("down")
+        available = AvailableReminderCopyAuthor(Down(), failure_threshold=1, recovery_seconds=30)
+        text = available.author(occasion_type="birthday", recipient_relation="mother",
+                                days_until_event=14)
+        self.assertEqual(
+            format_reminder_text(occasion_type="birthday", recipient_relation="mother",
+                                 days_until_event=14),
+            text)
+        self.assertEqual("fallback", available.health()["mode"])
+        self.assertEqual("open", available.health()["circuit"])
+        # Open circuit skips the provider and still returns the #420 template.
+        again = available.author(occasion_type="birthday", recipient_relation="mother",
+                                 days_until_event=0)
+        self.assertEqual(
+            format_reminder_text(occasion_type="birthday", recipient_relation="mother",
+                                 days_until_event=0),
+            again)
+
+    def test_available_reminder_author_uses_primary_when_healthy(self):
+        class Up:
+            def author(self, **_):
+                return "Partner anniversary is tomorrow — want us to prep a bouquet?"
+        available = AvailableReminderCopyAuthor(Up())
+        text = available.author(occasion_type="anniversary", recipient_relation="partner",
+                                days_until_event=1)
+        self.assertEqual("Partner anniversary is tomorrow — want us to prep a bouquet?", text)
+        self.assertEqual("primary", available.health()["mode"])
+        self.assertEqual("closed", available.health()["circuit"])
 
     def test_disclosure_claims_ai_only_for_primary_mode(self):
         primary = disclosure_for_mode("primary")
@@ -257,7 +333,17 @@ class AdapterReplacementArchitectureTests(unittest.TestCase):
     def test_runtime_constructs_adapter_outside_domain_modules(self):
         runtime = (ROOT / "aea_platform" / "internal_runtime.py").read_text(encoding="utf-8")
         self.assertIn("AvailableIntentInterpreter(OpenAICompatibleIntentInterpreter(", runtime)
+        self.assertIn("AvailableReminderCopyAuthor(", runtime)
+        self.assertIn("OpenAICompatibleReminderCopyAuthor(", runtime)
         self.assertIn("InternalOrchestrationApp(", runtime)
+        self.assertNotIn("smtp", runtime.lower())
+        self.assertNotIn("fcm", runtime.lower())
+        self.assertNotIn("apns", runtime.lower())
+        crm = (ROOT / "aea_platform" / "crm.py").read_text(encoding="utf-8")
+        self.assertNotIn("OpenAICompatibleIntentInterpreter", crm)
+        self.assertNotIn("AEA_AI_ENDPOINT", crm)
+        self.assertNotIn("AEA_AI_API_KEY", crm)
+        self.assertNotIn("AEA_AI_MODEL", crm)
         for name in self.DOMAIN_MODULES:
             source = (ROOT / "aea_platform" / name).read_text(encoding="utf-8")
             self.assertNotIn("OpenAICompatibleIntentInterpreter", source)

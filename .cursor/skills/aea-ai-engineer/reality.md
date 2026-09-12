@@ -3,7 +3,11 @@
 Re-read these files if the claim might be stale. Do not describe scaffolds as
 live customer behavior.
 
-## Intent (the only optional LLM path)
+## Optional LLM paths (same LiteLLM / `AEA_AI_*` wiring)
+
+Intent remains the live conversational path. FR-016 `#need-reminder` copy
+reuses the same OpenAI-compatible chat-completions adapter when those env
+vars are set together; it is not a second provider stack.
 
 - `platform/aea_platform/generative_ai.py` —
   `OpenAICompatibleIntentInterpreter` (JSON facet extract, timeout ≤ 2.5s)
@@ -21,6 +25,11 @@ live customer behavior.
   Fallback and reference use `"Automated interpretation; review and correct
   before ordering."` and `ai_generated` is false (NFR-005). Do not remove
   disclosure from primary LLM output.
+
+Need reminder copy (FR-016 / #425): `OpenAICompatibleReminderCopyAuthor`
+uses `complete_chat_json` (same timeout ≤ 2.5s, same `AEA_AI_*`).
+`AvailableReminderCopyAuthor` fail-closes to `format_reminder_text`.
+Only the soonest lookahead item is authored. Pull-only; no email/SMS/FCM.
 
 Health: `GET /internal/v1/ai/health`. Edge SLO:
 `edge/scripts/check_assistant_slo.py`.
