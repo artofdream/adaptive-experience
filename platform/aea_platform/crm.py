@@ -31,6 +31,11 @@ ENGAGEMENT_EXPORT_TOTAL_KEYS = (
     "upcoming_within_days",
     "lookahead_days",
 )
+OUTBOX_STATUS_DRY_RUN = "dry_run"
+OUTBOX_SEND_NOT_SENT = "not_sent"
+OUTBOX_SEND_NOT_IMPLEMENTED = "not_implemented"
+OUTBOX_COPY_AI = "ai"
+OUTBOX_COPY_TEMPLATE = "template"
 
 
 def format_engagement_export(
@@ -132,6 +137,21 @@ class OccasionReminder:
     reminder_text: str
 
 
+@dataclass(frozen=True)
+class ReminderOutboxItem:
+    """Least-data FR-016 dry-run outbox row. No contact fields."""
+
+    outbox_id: str
+    occasion_type: str
+    recipient_relation: str
+    days_until_event: int
+    reminder_text: str
+    copy_source: str
+    status: str
+    send_disposition: str
+    occasion_year: int
+
+
 def format_reminder_text(*, occasion_type: str, recipient_relation: str,
                          days_until_event: int) -> str:
     """Deterministic FR-016 pull-card template (fail-closed fallback)."""
@@ -145,11 +165,13 @@ def format_reminder_text(*, occasion_type: str, recipient_relation: str,
 class EngagementCrmService:
     """Zero-PII occasion memory, pull reminders, and aggregate analytics (FR-016 / FR-017).
 
-    FR-016 leftover after #425 is unsolicited outbound send. In-session
+    FR-016 leftover after #428 is a live outbound channel. In-session
     `#need-reminder` copy may be AI-authored when a copy_author is wired;
-    this service always fail-closes to format_reminder_text. FR-017 here is
-    manager-visible categorical counts — not staff live chat and not a PII
-    customer list.
+    this service always fail-closes to format_reminder_text. Upcoming
+    occasions enqueue least-data dry-run outbox rows (status=dry_run /
+    not_sent). attempt_send is stubbed fail-closed and never delivers.
+    FR-017 here is manager-visible categorical counts — not staff live chat
+    and not a PII customer list.
     """
 
     def __init__(self, store, *, now: Callable[[], datetime] | None = None,
@@ -199,7 +221,7 @@ class EngagementCrmService:
             created_at=created_at,
         )
 
-        return {
+        recorded = {
             "memory_id": memory_id,
             "browser_hash": browser_hash.strip(),
             "occasion_type": cleaned_occasion,
@@ -207,6 +229,15 @@ class EngagementCrmService:
             "event_day": event_day,
             "recipient_relation": cleaned_relation,
         }
+        stored = self._stored_occasion_row(
+            browser_hash=recorded["browser_hash"],
+            occasion_type=cleaned_occasion,
+            recipient_relation=cleaned_relation,
+        )
+        if stored is not None:
+            self._enqueue_row_if_upcoming(stored)
+            recorded["memory_id"] = str(stored["memory_id"])
+        return recorded
 
     def _days_until_event(self, month: int, day: int) -> int:
         """Days until the next annual occurrence of month/day (Feb 29 → 28)."""
@@ -225,12 +256,20 @@ class EngagementCrmService:
 
     def _authored_or_template(self, *, occasion_type: str, recipient_relation: str,
                               days_until_event: int) -> str:
+        text, _source = self._authored_copy(
+            occasion_type=occasion_type, recipient_relation=recipient_relation,
+            days_until_event=days_until_event)
+        return text
+
+    def _authored_copy(self, *, occasion_type: str, recipient_relation: str,
+                       days_until_event: int) -> tuple[str, str]:
+        """Return (copy, source). Author success is ai; every failure is template."""
         template = format_reminder_text(
             occasion_type=occasion_type, recipient_relation=recipient_relation,
             days_until_event=days_until_event)
         author = self.copy_author
         if author is None:
-            return template
+            return template, OUTBOX_COPY_TEMPLATE
         try:
             if hasattr(author, "author"):
                 text = author.author(
@@ -241,10 +280,152 @@ class EngagementCrmService:
                     occasion_type=occasion_type, recipient_relation=recipient_relation,
                     days_until_event=days_until_event)
         except Exception:
-            return template
+            return template, OUTBOX_COPY_TEMPLATE
         if not isinstance(text, str) or not text.strip():
-            return template
-        return text.strip()
+            return template, OUTBOX_COPY_TEMPLATE
+        return text.strip(), OUTBOX_COPY_AI
+
+    def _next_occurrence_year(self, month: int, day: int) -> int:
+        today = self.now().astimezone(timezone.utc).date()
+        try:
+            event_date = datetime(today.year, month, day, tzinfo=timezone.utc).date()
+        except ValueError:
+            event_date = datetime(today.year, month, 28, tzinfo=timezone.utc).date()
+        if event_date < today:
+            return today.year + 1
+        return today.year
+
+    def _stored_occasion_row(self, *, browser_hash: str, occasion_type: str,
+                             recipient_relation: str) -> dict | None:
+        for row in self.store.list_occasion_memories(browser_hash=browser_hash):
+            if (str(row.get("occasion_type")) == occasion_type
+                    and str(row.get("recipient_relation")) == recipient_relation):
+                return row
+        return None
+
+    def _enqueue_row_if_upcoming(self, row: dict, *, lookahead_days: int = 30) -> str | None:
+        """Persist a dry-run outbox row when the annual occurrence is in lookahead."""
+        month = int(row["event_month"])
+        day = int(row["event_day"])
+        days_until = self._days_until_event(month, day)
+        if not (0 <= days_until <= lookahead_days):
+            return None
+        occasion = str(row["occasion_type"])
+        relation = str(row["recipient_relation"])
+        reminder_text, copy_source = self._authored_copy(
+            occasion_type=occasion, recipient_relation=relation,
+            days_until_event=days_until)
+        created_at = self.now().astimezone(timezone.utc)
+        return self.store.upsert_reminder_outbox(
+            outbox_id=str(self.new_id()),
+            memory_id=str(row["memory_id"]),
+            occasion_year=self._next_occurrence_year(month, day),
+            occasion_type=occasion,
+            recipient_relation=relation,
+            days_until_event=days_until,
+            reminder_text=reminder_text,
+            copy_source=copy_source,
+            status=OUTBOX_STATUS_DRY_RUN,
+            send_disposition=OUTBOX_SEND_NOT_SENT,
+            created_at=created_at,
+        )
+
+    def enqueue_upcoming_dry_run(self, *, lookahead_days: int = 30) -> dict[str, Any]:
+        """Scan occasion memory and enqueue least-data dry-run outbox rows.
+
+        Operator-triggered. Not a cron that delivers. No contact fields.
+        """
+        if (not isinstance(lookahead_days, int) or isinstance(lookahead_days, bool)
+                or lookahead_days < 1 or lookahead_days > 366):
+            raise CrmValidationError("lookahead_days must be an integer between 1 and 366")
+        processed = 0
+        for row in self.store.list_all_occasion_memories():
+            if self._enqueue_row_if_upcoming(row, lookahead_days=lookahead_days):
+                processed += 1
+        listed = self.list_reminder_outbox(lookahead_days=lookahead_days)
+        listed["enqueued"] = processed
+        return listed
+
+    def list_reminder_outbox_items(self) -> list[ReminderOutboxItem]:
+        rows = self.store.list_reminder_outbox()
+        items: list[ReminderOutboxItem] = []
+        for row in rows:
+            items.append(ReminderOutboxItem(
+                outbox_id=str(row["outbox_id"]),
+                occasion_type=str(row["occasion_type"]),
+                recipient_relation=str(row["recipient_relation"]),
+                days_until_event=int(row["days_until_event"]),
+                reminder_text=str(row["reminder_text"]),
+                copy_source=str(row["copy_source"]),
+                status=str(row["status"]),
+                send_disposition=str(row["send_disposition"]),
+                occasion_year=int(row["occasion_year"]),
+            ))
+        items.sort(key=lambda item: (item.days_until_event, item.occasion_type,
+                                     item.recipient_relation, item.outbox_id))
+        return items
+
+    def list_reminder_outbox(self, *, lookahead_days: int = 30) -> dict[str, Any]:
+        """Operator-visible dry-run counts and list. No contact PII."""
+        if (not isinstance(lookahead_days, int) or isinstance(lookahead_days, bool)
+                or lookahead_days < 1 or lookahead_days > 366):
+            raise CrmValidationError("lookahead_days must be an integer between 1 and 366")
+        items = self.list_reminder_outbox_items()
+        not_sent = sum(1 for item in items if item.send_disposition == OUTBOX_SEND_NOT_SENT)
+        not_implemented = sum(
+            1 for item in items if item.send_disposition == OUTBOX_SEND_NOT_IMPLEMENTED)
+        return {
+            "pending_dry_run": len(items),
+            "not_sent": not_sent,
+            "not_implemented": not_implemented,
+            "lookahead_days": lookahead_days,
+            "items": [self._operator_outbox_item(item) for item in items],
+        }
+
+    @staticmethod
+    def _operator_outbox_item(item: ReminderOutboxItem) -> dict[str, Any]:
+        return {
+            "outbox_id": item.outbox_id,
+            "occasion_type": item.occasion_type,
+            "recipient_relation": item.recipient_relation,
+            "days_until_event": item.days_until_event,
+            "reminder_text": item.reminder_text,
+            "copy_source": item.copy_source,
+            "status": item.status,
+            "send_disposition": item.send_disposition,
+            "occasion_year": item.occasion_year,
+        }
+
+    def attempt_send(self, *, outbox_id: str) -> dict[str, Any]:
+        """Stub fail-closed send. Never delivers. Marks not_implemented.
+
+        Parent #35 leftover is a live outbound channel. This method is the
+        documented send path and must stay dry_run / not_implemented.
+        """
+        clean_id = (outbox_id or "").strip()
+        try:
+            clean_id = str(uuid.UUID(clean_id))
+        except (ValueError, TypeError, AttributeError) as exc:
+            raise CrmValidationError("valid outbox_id is required") from exc
+        row = self.store.get_reminder_outbox(outbox_id=clean_id)
+        if row is None:
+            raise CrmValidationError("reminder outbox row not found")
+        updated_at = self.now().astimezone(timezone.utc)
+        self.store.mark_reminder_outbox_not_implemented(
+            outbox_id=clean_id, updated_at=updated_at)
+        refreshed = self.store.get_reminder_outbox(outbox_id=clean_id) or row
+        return {
+            "code": "not_implemented",
+            "status": OUTBOX_STATUS_DRY_RUN,
+            "send_disposition": OUTBOX_SEND_NOT_IMPLEMENTED,
+            "sent": False,
+            "outbox_id": str(refreshed["outbox_id"]),
+            "occasion_type": str(refreshed["occasion_type"]),
+            "recipient_relation": str(refreshed["recipient_relation"]),
+            "days_until_event": int(refreshed["days_until_event"]),
+            "reminder_text": str(refreshed["reminder_text"]),
+            "copy_source": str(refreshed["copy_source"]),
+        }
 
     def get_reminders(self, *, browser_hash: str, lookahead_days: int = 30) -> list[OccasionReminder]:
         """Compute upcoming annual recurring occasion reminders (FR-016).

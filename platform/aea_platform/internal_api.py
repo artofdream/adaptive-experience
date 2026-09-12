@@ -122,6 +122,26 @@ class InternalOrchestrationApp:
                 return await self._send(send, 200, self.crm.get_engagement_analytics())
             except CrmValidationError:
                 return await self._send(send, 422, {"code": "validation_failed"})
+        if scope["path"] == "/internal/v1/operator/reminder-outbox" and scope["method"] == "GET":
+            try:
+                return await self._send(send, 200, self.crm.list_reminder_outbox())
+            except CrmValidationError:
+                return await self._send(send, 422, {"code": "validation_failed"})
+        if scope["path"] == "/internal/v1/operator/reminder-outbox/enqueue" and scope["method"] == "POST":
+            try:
+                return await self._send(send, 200, self.crm.enqueue_upcoming_dry_run())
+            except CrmValidationError:
+                return await self._send(send, 422, {"code": "validation_failed"})
+        if (len(parts) == 6 and parts[:4] == ["internal", "v1", "operator", "reminder-outbox"]
+                and parts[5] == "send" and scope["method"] == "POST"):
+            try:
+                return await self._send(send, 200, self.crm.attempt_send(outbox_id=parts[4]))
+            except CrmValidationError as exc:
+                if "not found" in str(exc):
+                    return await self._send(send, 404, {
+                        "code": "not_found", "sent": False, "status": "dry_run"})
+                return await self._send(send, 422, {
+                    "code": "validation_failed", "sent": False, "status": "dry_run"})
         if scope["path"] == "/internal/v1/operator/forecasts" and scope["method"] == "GET":
             query = parse_qs(scope.get("query_string", b"").decode())
             session_id = (query.get("session_id") or [""])[0]

@@ -568,6 +568,55 @@ class BffApp:
             return await self._json(send, 200, self._least_data_operator_engagement(raw),
                                     correlation_id)
 
+        if path == "/api/v1/operator/reminder-outbox" and method == "GET":
+            if not self.florist_operator_enabled:
+                return await self._error(send, 404, "not_found", correlation_id)
+            try:
+                raw = self.orchestration.list_operator_reminder_outbox(subject=subject)
+            except OrchestrationUnavailable:
+                return await self._error(send, 503, "orchestration_unavailable", correlation_id)
+            status = raw.get("status")
+            if isinstance(status, int) and status >= 500:
+                return await self._error(send, 503, "orchestration_unavailable", correlation_id)
+            return await self._json(send, 200, self._least_data_operator_reminder_outbox(raw),
+                                    correlation_id)
+
+        if path == "/api/v1/operator/reminder-outbox/enqueue" and method == "POST":
+            if not self.florist_operator_enabled:
+                return await self._error(send, 404, "not_found", correlation_id)
+            try:
+                raw = self.orchestration.enqueue_operator_reminder_outbox(subject=subject)
+            except OrchestrationUnavailable:
+                return await self._error(send, 503, "orchestration_unavailable", correlation_id)
+            status = raw.get("status")
+            if isinstance(status, int) and status >= 500:
+                return await self._error(send, 503, "orchestration_unavailable", correlation_id)
+            return await self._json(send, 200, self._least_data_operator_reminder_outbox(raw),
+                                    correlation_id)
+
+        reminder_send_prefix = "/api/v1/operator/reminder-outbox/"
+        if (path.startswith(reminder_send_prefix) and path.endswith("/send")
+                and method == "POST"):
+            if not self.florist_operator_enabled:
+                return await self._error(send, 404, "not_found", correlation_id)
+            outbox_id = path[len(reminder_send_prefix):-len("/send")]
+            try:
+                outbox_id = str(uuid.UUID(outbox_id))
+            except ValueError:
+                return await self._error(send, 422, "validation_failed", correlation_id)
+            try:
+                raw = self.orchestration.send_operator_reminder_outbox(
+                    outbox_id=outbox_id, subject=subject)
+            except OrchestrationUnavailable:
+                return await self._error(send, 503, "orchestration_unavailable", correlation_id)
+            status = raw.get("status")
+            if isinstance(status, int) and status >= 500:
+                return await self._error(send, 503, "orchestration_unavailable", correlation_id)
+            if raw.get("code") == "not_found":
+                return await self._error(send, 404, "not_found", correlation_id)
+            return await self._json(send, 200, self._least_data_operator_reminder_send(raw),
+                                    correlation_id)
+
         operator_prefix = "/api/v1/operator/sessions/"
         if path.startswith(operator_prefix) and method == "GET":
             if not self.florist_operator_enabled:
@@ -1066,6 +1115,99 @@ class BffApp:
             "filename": "florist-engagement-cohorts.csv",
             "content_type": "text/csv; charset=utf-8",
             "body": buffer.getvalue(),
+        }
+
+    @staticmethod
+    def _least_data_operator_reminder_outbox(raw: dict) -> dict:
+        """Zero-PII FR-016 dry-run outbox: counts and categorical rows only."""
+
+        def _int(value, default=0):
+            if isinstance(value, bool) or not isinstance(value, (int, float)):
+                return default
+            return int(value)
+
+        allowed_copy = {"ai", "template"}
+        items = []
+        for item in (raw.get("items") or [])[:100]:
+            if not isinstance(item, dict):
+                continue
+            occasion = item.get("occasion_type")
+            relation = item.get("recipient_relation")
+            text = item.get("reminder_text")
+            copy_source = item.get("copy_source")
+            if not isinstance(occasion, str) or not occasion.strip() or len(occasion) > 64:
+                continue
+            if not isinstance(relation, str) or not relation.strip() or len(relation) > 64:
+                continue
+            if not isinstance(text, str) or not text.strip() or len(text) > 240:
+                continue
+            if copy_source not in allowed_copy:
+                copy_source = "template"
+            outbox_id = item.get("outbox_id")
+            try:
+                outbox_id = str(uuid.UUID(str(outbox_id)))
+            except (ValueError, TypeError):
+                continue
+            days = _int(item.get("days_until_event"), -1)
+            year = _int(item.get("occasion_year"))
+            if days < 0 or days > 366:
+                continue
+            if year < 2000 or year > 2100:
+                continue
+            items.append({
+                "outbox_id": outbox_id,
+                "occasion_type": occasion.strip().lower(),
+                "recipient_relation": relation.strip().lower(),
+                "days_until_event": days,
+                "reminder_text": text.strip(),
+                "copy_source": copy_source,
+                "status": "dry_run",
+                "send_disposition": (
+                    "not_implemented" if item.get("send_disposition") == "not_implemented"
+                    else "not_sent"),
+                "occasion_year": year,
+            })
+        lookahead = _int(raw.get("lookahead_days"), 30)
+        if lookahead < 1 or lookahead > 366:
+            lookahead = 30
+        shaped = {
+            "pending_dry_run": max(0, _int(raw.get("pending_dry_run"))),
+            "not_sent": max(0, _int(raw.get("not_sent"))),
+            "not_implemented": max(0, _int(raw.get("not_implemented"))),
+            "lookahead_days": lookahead,
+            "items": items,
+        }
+        if "enqueued" in raw:
+            shaped["enqueued"] = max(0, _int(raw.get("enqueued")))
+        return shaped
+
+    @staticmethod
+    def _least_data_operator_reminder_send(raw: dict) -> dict:
+        """Stub send projection. Always sent=false and dry_run."""
+        outbox_id = raw.get("outbox_id")
+        try:
+            outbox_id = str(uuid.UUID(str(outbox_id)))
+        except (ValueError, TypeError):
+            outbox_id = None
+        text = raw.get("reminder_text")
+        if not isinstance(text, str) or len(text) > 240:
+            text = None
+        return {
+            "code": "not_implemented",
+            "status": "dry_run",
+            "send_disposition": "not_implemented",
+            "sent": False,
+            "outbox_id": outbox_id,
+            "occasion_type": (
+                raw.get("occasion_type").strip().lower()
+                if isinstance(raw.get("occasion_type"), str) else None),
+            "recipient_relation": (
+                raw.get("recipient_relation").strip().lower()
+                if isinstance(raw.get("recipient_relation"), str) else None),
+            "copy_source": (
+                raw.get("copy_source") if raw.get("copy_source") in {"ai", "template"}
+                else "template"),
+            "reminder_text": text.strip() if isinstance(text, str) and text.strip() else None,
         }
 
     @staticmethod

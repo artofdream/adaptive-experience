@@ -94,6 +94,49 @@ class FakeOrchestration:
             "email": "private@example.invalid",
         }
 
+    def list_operator_reminder_outbox(self, **kwargs):
+        return {
+            "status": 200,
+            "pending_dry_run": 1,
+            "not_sent": 1,
+            "not_implemented": 0,
+            "lookahead_days": 30,
+            "items": [{
+                "outbox_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+                "occasion_type": "birthday",
+                "recipient_relation": "mother",
+                "days_until_event": 14,
+                "reminder_text": "Upcoming: Mother's Birthday in 14 days.",
+                "copy_source": "template",
+                "status": "dry_run",
+                "send_disposition": "not_sent",
+                "occasion_year": 2026,
+                "email": "private@example.invalid",
+                "browser_hash": "a" * 64,
+            }],
+            "email": "private@example.invalid",
+            "browser_hash": "a" * 64,
+        }
+
+    def enqueue_operator_reminder_outbox(self, **kwargs):
+        listed = self.list_operator_reminder_outbox(**kwargs)
+        listed["enqueued"] = 1
+        return listed
+
+    def send_operator_reminder_outbox(self, **kwargs):
+        return {
+            "status": 200,
+            "code": "not_implemented",
+            "send_disposition": "not_implemented",
+            "sent": False,
+            "outbox_id": kwargs["outbox_id"],
+            "occasion_type": "birthday",
+            "recipient_relation": "mother",
+            "copy_source": "template",
+            "reminder_text": "Upcoming: Mother's Birthday in 14 days.",
+            "email": "private@example.invalid",
+        }
+
     def list_operator_escalations(self, **kwargs):
         return {"status": 200, "items": [{
             "message_id": "esc-1",
@@ -766,6 +809,7 @@ class PerimeterTests(unittest.TestCase):
         self.assertEqual(404, self.call("GET", "/api/v1/operator/orders", headers)[0])
         self.assertEqual(404, self.call("GET", "/api/v1/operator/forecasts", headers)[0])
         self.assertEqual(404, self.call("GET", "/api/v1/operator/engagement", headers)[0])
+        self.assertEqual(404, self.call("GET", "/api/v1/operator/reminder-outbox", headers)[0])
         self.assertEqual(404, self.call(
             "GET", "/api/v1/operator/engagement/export", headers, b"", b"format=csv")[0])
         self.assertEqual(404, self.call(
@@ -898,6 +942,61 @@ class PerimeterTests(unittest.TestCase):
             "GET", "/api/v1/operator/engagement/export", auth, b"", b"format=xlsx")
         self.assertEqual(422, status)
         self.assertEqual("validation_failed", json.loads(body)["error"])
+        status, _, body = call("GET", "/api/v1/operator/reminder-outbox", auth)
+        self.assertEqual(200, status)
+        outbox = json.loads(body)
+        self.assertEqual(1, outbox["pending_dry_run"])
+        self.assertEqual(1, outbox["not_sent"])
+        self.assertEqual("dry_run", outbox["items"][0]["status"])
+        self.assertEqual("not_sent", outbox["items"][0]["send_disposition"])
+        self.assertEqual("birthday", outbox["items"][0]["occasion_type"])
+        self.assertNotIn("email", outbox)
+        self.assertNotIn("browser_hash", outbox)
+        self.assertNotIn("email", outbox["items"][0])
+        self.assertNotIn(b"email", body)
+        stripped_outbox = BffApp._least_data_operator_reminder_outbox({
+            "pending_dry_run": 1,
+            "not_sent": 1,
+            "not_implemented": 0,
+            "lookahead_days": 30,
+            "items": [{
+                "outbox_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+                "occasion_type": "Birthday",
+                "recipient_relation": "Mother",
+                "days_until_event": 14,
+                "reminder_text": "Upcoming: Mother's Birthday in 14 days.",
+                "copy_source": "template",
+                "status": "dry_run",
+                "send_disposition": "not_sent",
+                "occasion_year": 2026,
+                "email": "private@example.invalid",
+                "browser_hash": "a" * 64,
+            }],
+            "email": "private@example.invalid",
+        })
+        self.assertNotIn("email", stripped_outbox)
+        self.assertNotIn("email", stripped_outbox["items"][0])
+        self.assertEqual("dry_run", stripped_outbox["items"][0]["status"])
+        csrf = json.loads(call("POST", "/api/v1/session", auth)[2])["csrf_token"]
+        mutating = {**auth, "x-csrf-token": csrf, "content-type": "application/json"}
+        status, _, body = call(
+            "POST", "/api/v1/operator/reminder-outbox/enqueue", mutating, b"{}")
+        self.assertEqual(200, status)
+        enqueued = json.loads(body)
+        self.assertEqual(1, enqueued["enqueued"])
+        self.assertEqual("dry_run", enqueued["items"][0]["status"])
+        self.assertNotIn(b"email", body)
+        status, _, body = call(
+            "POST",
+            "/api/v1/operator/reminder-outbox/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/send",
+            mutating, b"{}")
+        self.assertEqual(200, status)
+        sent = json.loads(body)
+        self.assertEqual("not_implemented", sent["code"])
+        self.assertEqual("dry_run", sent["status"])
+        self.assertFalse(sent["sent"])
+        self.assertNotIn("email", sent)
+        self.assertNotIn(b"email", body)
         status, _, body = call(
             "GET", "/api/v1/operator/sessions/11111111-1111-4111-8111-111111111111", auth)
         self.assertEqual(200, status)
