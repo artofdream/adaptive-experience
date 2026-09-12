@@ -64,7 +64,7 @@ workspace.
 12. Support Escalation (T-09 / FR-006) is the Contact Florist overlay: the customer
     confirms an allowlisted reason and the system records a governed escalation.
     Staff live chat and ticketing remain Future (M16). FR-016 is occasion
-    reminders (outbound leftover on #35). FR-017 is customer engagement
+    reminders (in-session AI pull copy on #425; outbound leftover on #35). FR-017 is customer engagement
     analytics. A local florist operator console (`/florist`) is a defined
     read-only surface for those escalations, prior ASO answers, and
     zero-PII FR-017 occasion-cohort counts; it is not staff live chat and

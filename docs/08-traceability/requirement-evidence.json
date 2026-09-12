@@ -360,6 +360,7 @@
           "edge/gateway/ui/florist.html",
           "platform/aea_platform/adapters.py",
           "platform/aea_platform/crm.py",
+          "platform/aea_platform/generative_ai.py",
           "platform/aea_platform/internal_api.py",
           "platform/aea_platform/order.py",
           "platform/migrations/015_browser_order_recall.sql",
@@ -370,7 +371,9 @@
         "disposition": "evidenced",
         "paths": [
           "edge/tests/test_browser_ui.py",
-          "platform/tests/test_crm.py"
+          "platform/tests/test_crm.py",
+          "platform/tests/test_generative_ai.py",
+          "platform/tests/test_postgres_integration.py"
         ]
       }
     },

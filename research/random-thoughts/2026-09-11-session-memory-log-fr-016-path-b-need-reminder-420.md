@@ -29,7 +29,7 @@ This session ships child [#420](https://gitlab.com/artof-group/adaptive-experien
 
 | Still open | Why |
 |---|---|
-| AI-generated reminder copy | Current text is a deterministic template in `get_reminders` |
+| AI-generated reminder copy | **Superseded 2026-09-12 by #425** — see [[2026-09-12-session-memory-log-fr-016-ai-need-reminder-copy-425]] |
 | Unsolicited outbound send | No email/SMS; FCM/APNs must not be implemented from ADR-019 |
 | Workbook FR-016 Future | Do not promote IDs from this MR |
 

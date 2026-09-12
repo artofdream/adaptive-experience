@@ -34,7 +34,7 @@ Every capability is classified by its verified code and hardware probe status:
 
 | Layer / Feature | Status | Implementation Evidence |
 | :--- | :--- | :--- |
-| **Layer 1: Occasion Memory & Pull Reminders** | **Live on `main` / Tested** | Migration `018_engagement_crm.sql`. Order-triggered occasion capture records categorical event month/day and relation. Workspace projection exposes deterministic `reminders` facet. Path B Need (`#need-reminder`) shows the soonest item on a fresh session — pull only, not ADR-019 push. Parent #35 stays open for AI outbound send. |
+| **Layer 1: Occasion Memory & Pull Reminders** | **Live on `main` / Tested** | Migration `018_engagement_crm.sql`. Order-triggered occasion capture records categorical event month/day and relation. Workspace projection exposes the `reminders` facet. Path B Need (`#need-reminder`) shows the soonest item on a fresh session — pull only, not ADR-019 push. Card `reminder_text` is AI-authored on the existing LiteLLM path when healthy (#425); timeout/error fail-closes to the deterministic template. Parent #35 stays open for unsolicited outbound send. |
 | **Layer 1: Operator Engagement Aggregates** | **Code on this slice (#421)** | `GET /api/v1/operator/engagement` and `/florist` `#engagement` show zero-PII counts: memory_count, unique_browsers, upcoming_within_days, occasion / relation / event-month cohorts. No hashes, names, or addresses. Parent #36 stays open for campaign export / ML. |
 | **Layer 1: Pseudonymous Subject Profiles** | **Live on `main` / Tested** | Migrations `024_operator_crm_subject_profile.sql` and `026_crm_lifetime_spend.sql`. Cumulative running spend bands (`band_50_100`, `band_250_plus`), order counter, preferred channel. 274 integration tests pass. |
 | **Layer 1: Privacy Lifecycle & Retention Purge** | **Live on `main` / Tested** | Migration `025_crm_retention_indexes.sql`. Customer erasure (`DELETE /api/v1/crm/occasions` / `forget`), 400-day annual retention purge job (`purge_crm_retention.py`), and idempotent deletions. |
@@ -44,12 +44,13 @@ Every capability is classified by its verified code and hardware probe status:
 
 ---
 
-## 4. Deterministic Pull Reminders (Not Creepy AI Push)
+## 4. Pull Reminders (Not Outbound AI Push)
 
-Reminders on the Adaptive Workspace are strictly **deterministic pull signals**:
+Reminders on the Adaptive Workspace are strictly **in-session pull signals**:
 - They trigger solely when a shopper initiates a session and the session's browser hash matches a previously recorded delivery anniversary.
 - Path B Need (`#need-reminder`) renders the soonest item when Need is still fresh (no chat, no occasion). **Shop this occasion →** posts a categorical conversation message.
-- No unsolicited push notifications, marketing emails, SMS blasts, or third-party ad retargeting pixels.
+- Card copy may be AI-authored from categorical fields only (`occasion_type`, `recipient_relation`, `days_until_event`) on the same LiteLLM path as intent. Provider timeout or invalid output fail-closes to the deterministic template so the card still works.
+- No unsolicited push notifications, marketing emails, SMS blasts, or third-party ad retargeting pixels. Outbound send remains leftover on parent #35.
 - The reminder payload carries least-data fields only (`occasion_type`, `days_until_event`, `reminder_text`, `recipient_relation`) without customer names or delivery addresses.
 
 ---
