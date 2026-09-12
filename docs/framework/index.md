@@ -16,7 +16,7 @@ If this site and the repository docs disagree, `docs/02-business-analysis/requir
 - **Domain Services** are authoritative: they validate inventory, prices, delivery slots, and payments.
 - **The Outer Harness** keeps both honest in production — guides, sensors, a loop, memory, permissions, and telemetry.
 
-AI may interpret. Domain services decide. Status words are claims; they need a probe.
+AI may interpret. Domain services decide. Status words are claims; they need a probe. When the build teaches something, [Keep Learning and Apply](glossary.html#keep-learning-and-apply) writes it into the harness before the next loop.
 
 ![Adaptive Experience formula: Shared Understanding + Domain Services + Outer Harness](assets/formula.svg)
 

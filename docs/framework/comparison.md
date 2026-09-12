@@ -30,9 +30,12 @@ An independent architecture analysis by Art of Group. It maps AEA onto six harne
 ![The Core Formula in Everyday Terms: 4-step flow](assets/everyday-formula-flow.svg)
 
 ### The Three Golden Rules
+The first three are safety rules. **Keep Learning and Apply** is an operating principle alongside them: when the build teaches something, write it into the harness before the next loop.
+
 - **AI Interprets, Domain Services Decide:** The AI suggests flowers, but only the database confirms they are in stock.
 - **Fail-Closed Availability:** If the inventory server is unreachable, the purchase button turns off. It is far better to say "Checking stock..." than to sell bouquets you cannot deliver.
 - **No Self-Approval:** The engineer or AI that writes code is never the one who signs off on pushing it to customers.
+- **Keep Learning and Apply:** When the build teaches something, write it into the harness (skill, sensor, guide, matrix row, or ADR) before the next loop — so the next agent inherits it instead of rediscovering the failure.
 
 ---
 
@@ -108,6 +111,7 @@ To avoid confusing architecture mental models with live production software, eve
 | **5 Concentric Wrapping Floors** | **Taxonomy Map Only** | Conceptual framing (Kocer) adapted to explain how AEA layers nest; not a separate library. |
 | **rvaniaaaa 6-Role Second Brain** | **Taxonomy Map Only** | Pattern evaluated for pre-irreversible gates; 6 generic role collapse is rejected. |
 | **10 Sep X-scan (gipp / beam / avid)** | **Taxonomy Map Only** | Dual-loop lessons, token playbook, shared-wiki prompt. Not AEA evidence. Vault: `research/random-thoughts/2026-09-10-aea-vs-x-scan-gipp-beam-avid.md`. |
+| **Keep Learning and Apply** | **Documented / Planned** | Principle text is in repo (`docs/framework/`). Live Pages at architecture.artof.link is **Unknown** until a fetch after deploy. Not a shop feature. |
 | **CF-054 Dual-Viewport Live Re-record** | **Unknown / Regressed** | CSS merged to repo, but dual-viewport side-by-side video clip re-recording remains unprobed. |
 | **Live Stripe Card Gateway** | **Simulated Extension** | Runs deterministic payment simulation engine under ADR-016; live Stripe is not active. |
 | **Third-Party Benchmark Scores** | **Not AEA Evidence** | GAIA, Terminal Bench, and 1M-line metrics belong strictly to cited papers [2], [6], [7]. |

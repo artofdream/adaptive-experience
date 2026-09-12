@@ -24,7 +24,7 @@ A short history of Adaptive Experience Architecture: what was difficult, how we 
 - **The Challenge:** Words like "verified", "tested", and "complete" were being treated as facts simply because a developer closed an issue tracker ticket or merged a pull request.
 - **The Solution:** We instituted the **Honesty Gate**: any status word is treated merely as an unverified claim until supported by automated test logs or a hardware recording. If a test has not been executed, the status remains explicitly labeled **Unknown**.
 - **What Shipped:** Automated pre-flight guards (14 independent check scripts) that block code merges if documentation, schemas, or tests drift.
-- **The Lesson Learned:** Closing a ticket in Git is not proof that the software works. Probe the feature on physical devices and live servers, or honestly leave it labeled Unknown.
+- **The Lesson Learned:** Closing a ticket in Git is not proof that the software works. Probe the feature on physical devices and live servers, or honestly leave it labeled Unknown. When a probe teaches a failure class, apply it into a skill, sensor, or guide — a retrospective that only restates the lesson is incomplete ([Keep Learning and Apply](glossary.html#keep-learning-and-apply)).
 
 ![Claim vs probe: a merged ticket is not verified until the same journey is probed on phone and desktop](assets/claim-vs-probe.svg)
 
