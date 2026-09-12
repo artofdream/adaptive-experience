@@ -3,6 +3,7 @@
 
 import sys
 import unittest
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 SCRIPTS_DIR = Path(__file__).resolve().parent
@@ -154,6 +155,17 @@ class TestBuildFrameworkSite(unittest.TestCase):
         self.assertIn("Documented / Planned", comparison_html)
         self.assertIn('href="glossary.html#keep-learning-and-apply"', index_html)
         self.assertIn('href="glossary.html#keep-learning-and-apply"', journal_html)
+
+    def test_framework_asset_svgs_are_utf8_xml(self):
+        """Every docs/framework/assets/*.svg must decode as UTF-8 and parse as XML."""
+        root = Path(__file__).resolve().parents[1]
+        assets = sorted((root / "docs" / "framework" / "assets").glob("*.svg"))
+        self.assertTrue(assets, "expected framework SVG assets")
+        for path in assets:
+            with self.subTest(svg=path.name):
+                raw = path.read_bytes()
+                raw.decode("utf-8")
+                ET.fromstring(raw)
 
 
 if __name__ == "__main__":
