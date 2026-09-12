@@ -103,6 +103,8 @@ After bootstrap:
 
 ## ECS RunTask example
 
+Path B `deploy-ecs` on `main` runs `scripts/ecs_apply_migrations.sh` (fail-closed ECS RunTask of `apply_migrations.py`) after service force-redeploy and before `/healthz` (#436). The manual recipe below remains for break-glass / bootstrap.
+
 Use the same task definition family as orchestration (or a one-off override
 command). Example with AWS CLI after OIDC login:
 
