@@ -37,7 +37,7 @@
     <text x="118" y="24" class="tag">ANDROID COMPANION</text>
     <text x="118" y="48" class="title">Thin phone client</text>
     <text x="18" y="76" class="desc">
-      <tspan x="18" dy="0">Need ’ Pick ’ Pay only.</tspan>
+      <tspan x="18" dy="0">Need â†’ Pick â†’ Pay only.</tspan>
       <tspan x="18" dy="16">No second inventory.</tspan>
       <tspan x="18" dy="16">No second price list.</tspan>
       <tspan x="18" dy="16">Receipts stay on-device.</tspan>
@@ -61,6 +61,6 @@
   <line x1="154" y1="238" x2="646" y2="238" stroke="#c4b08a" stroke-width="1.5"/>
   <line x1="646" y1="222" x2="646" y2="238" stroke="#c4b08a" stroke-width="1.5" marker-end="url(#pbc-arr)"/>
 
-  <text x="400" y="268" class="host">Shop: aea.artof.link   ·   Knowledge: architecture.artof.link</text>
+  <text x="400" y="268" class="host">Shop: aea.artof.link  |  Knowledge: architecture.artof.link</text>
   <text x="400" y="294" class="foot">Knowledge is not a shop route. /native and /framework are not docs pages on the shop host.</text>
 </svg>
