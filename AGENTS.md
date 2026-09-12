@@ -22,6 +22,14 @@ After a meaningful agent/CI run, draft a lesson candidate under
 self-promote or edit skills/docs from that extract.
 Full SOP: `.cursor/rules/session-start-briefing.mdc`.
 
+## Keep Learning and Apply
+
+When the build teaches something, write it into the harness (skill, sensor,
+guide, matrix row, or ADR) before the next loop — so the next agent inherits
+it instead of rediscovering the failure. Formal ID: GitLab `#434`. Related
+skill matrix: `#433`. Status: **Documented / Planned** until probed; do not
+claim Live on architecture.artof.link.
+
 ## Source of truth
 
 - Requirements counts and mapping: `archive/Quantic_Project_Consolidated_Coherence_Validated.xlsx`

@@ -136,6 +136,12 @@ class TestBuildFrameworkSite(unittest.TestCase):
         )
         self.assertIn("glossary.html#keep-learning-and-apply", index)
         self.assertIn("glossary.html#keep-learning-and-apply", journal)
+        agents = (root / "AGENTS.md").read_text(encoding="utf-8")
+        self.assertIn("## Keep Learning and Apply", agents)
+        self.assertIn("#434", agents)
+        self.assertIn("#433", agents)
+        self.assertIn("**Documented / Planned**", agents)
+        self.assertRegex(agents, r"do not\s+claim Live on architecture\.artof\.link")
 
         self.assertEqual(build(), 0)
         glossary_html = (root / "public" / "glossary.html").read_text(encoding="utf-8")

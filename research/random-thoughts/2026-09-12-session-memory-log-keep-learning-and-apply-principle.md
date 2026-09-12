@@ -25,7 +25,7 @@ Sponsor ask 2026-09-12 (via zorg-dungeon): add AEA core principle **Keep Learnin
 - Why it matters: Without apply, every runner rediscovers the same failure class.
 - Where to see it: Guides + Sensors layers; skill-matrix work (#433); coherence findings → sensors; journal Claim vs probe.
 
-Companion surface: `docs/framework/glossary.md`, `comparison.md` (fourth operating-principle bullet under The Three Golden Rules), `index.md`, `journal.md` Claim vs probe.
+Companion surface: `docs/framework/glossary.md`, `comparison.md` (fourth operating-principle bullet under The Three Golden Rules), `index.md`, `journal.md` Claim vs probe. Sponsor addendum: root `AGENTS.md` (Documented / Planned; formal ID `#434`; skill matrix `#433`).
 
 ---
 
