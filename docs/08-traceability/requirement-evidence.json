@@ -173,6 +173,8 @@
       "implementation": {
         "disposition": "evidenced",
         "paths": [
+          "edge/bff/aea_bff/app.py",
+          "edge/gateway/ui/assets/app.js",
           "platform/aea_platform/adapters.py",
           "platform/aea_platform/internal_api.py",
           "platform/aea_platform/order.py",
@@ -185,7 +187,10 @@
         "disposition": "evidenced",
         "paths": [
           "edge/tests/test_browser_ui.py",
-          "platform/tests/test_postgres_integration.py"
+          "edge/tests/test_perimeter.py",
+          "platform/tests/test_order.py",
+          "platform/tests/test_postgres_integration.py",
+          "platform/tests/test_reorder.py"
         ]
       }
     },

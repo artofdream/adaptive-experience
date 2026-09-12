@@ -716,15 +716,16 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
                 "DELETE FROM orchestration.ephemeral_fulfillment WHERE destination_reference = %s",
                 (live_ref,))
 
-    def _order_ready_for_checkout(self, app):
+    def _order_ready_for_checkout(self, app, *, product=None):
         import asyncio
         from aea_platform.adapters import PsycopgExperienceStateStore
         from aea_platform.state import StatePatch
         session_id = self.create_session()
         store = PsycopgExperienceStateStore(self.connection)
+        product = product or {"product_id": "classic-rose-dozen"}
         with self.connection.transaction():
             store.apply_patch(str(session_id), 0, 1, StatePatch.create(
-                {"decisions": {"product": {"product_id": "classic-rose-dozen"}}},
+                {"decisions": {"product": product}},
                 ["decisions.product"]), [])
         with self.connection.transaction():
             store.apply_patch(str(session_id), 1, 1, StatePatch.create(
@@ -907,7 +908,9 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
             {"recall_id", "product_id", "order_id", "expires_at", "updated_at"}, columns)
 
         # Reorder initiation is the normal selection command: inventory is
-        # revalidated and no historical options, delivery, card, or payment return.
+        # revalidated now. Historical delivery and payment still do not return.
+        # #424 projects size/qty/card on prior_order only when the accepted
+        # order stored them; this first-order fixture has none.
         status, selected = asyncio.run(self._invoke_internal(
             app, "POST", f"/internal/v1/sessions/{second}/selection",
             json.dumps({"product_id": "classic-rose-dozen", "options": {},
@@ -950,6 +953,75 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         self.assertFalse(any(item.get("prior_order_hint") for item in
                              expired_workspace["facets"]["recommendations"]["items"]))
         self.assertNotIn("prior_order", expired_workspace["facets"])
+
+    def test_workspace_projects_recalled_options_and_keeps_modified_selection(self):
+        """FR-008 #424: real-order size/qty/card project; mods survive selection."""
+        import asyncio
+        from aea_platform.adapters import PsycopgInventoryAvailabilityStore
+        from aea_platform.internal_api import InternalOrchestrationApp
+        from aea_platform.inventory import AvailabilitySnapshot, InventoryAvailabilityService
+        from aea_platform.pricing import REFERENCE_DELIVERY_FEE
+
+        app = InternalOrchestrationApp(self.connection, "internal-token")
+        first = self._order_ready_for_checkout(app, product={
+            "product_id": "classic-rose-dozen",
+            "options": {"size": "Standard", "quantity": 1,
+                        "card_message": "Happy Birthday Mum"},
+        })
+        recall_id = str(uuid.uuid4())
+        self.assertEqual(204, asyncio.run(self._invoke_internal(
+            app, "PUT", f"/internal/v1/sessions/{first}",
+            json.dumps({"recall_id": recall_id}).encode()))[0])
+
+        now = datetime.now(timezone.utc)
+        inventory = InventoryAvailabilityService(
+            PsycopgInventoryAvailabilityStore(self.connection), now=lambda: now)
+        inventory.record(AvailabilitySnapshot("classic-rose-dozen", 5, 1, now))
+
+        total = round(70.0 + REFERENCE_DELIVERY_FEE, 2)
+        status, _result = asyncio.run(self._invoke_internal(
+            app, "POST", f"/internal/v1/sessions/{first}/checkout",
+            json.dumps({"payment_reference": "tok_modify", "observed_total": total,
+                        "correlation_id": "modify-recall"}).encode()))
+        self.assertEqual(202, status)
+
+        second = uuid.uuid4()
+        self.assertEqual(204, asyncio.run(self._invoke_internal(
+            app, "PUT", f"/internal/v1/sessions/{second}",
+            json.dumps({"recall_id": recall_id}).encode()))[0])
+        _, workspace = asyncio.run(self._invoke_internal(
+            app, "GET", f"/internal/v1/sessions/{second}/workspace"))
+        self.assertEqual({
+            "product_id": "classic-rose-dozen",
+            "size": "Standard",
+            "quantity": 1,
+            "card_message": "Happy Birthday Mum",
+        }, workspace["facets"]["prior_order"])
+        self.assertNotIn("recipient", workspace["facets"]["prior_order"])
+        self.assertNotIn("order_id", workspace["facets"]["prior_order"])
+        self.assertNotIn("payment_reference", workspace["facets"]["prior_order"])
+
+        status, selected = asyncio.run(self._invoke_internal(
+            app, "POST", f"/internal/v1/sessions/{second}/selection",
+            json.dumps({
+                "product_id": "classic-rose-dozen",
+                "options": {"size": "Deluxe", "quantity": 2,
+                            "card_message": "Love you Mum"},
+                "observed_context_version": workspace["context_version"],
+                "correlation_id": "modify-select",
+            }).encode()))
+        self.assertEqual(202, status)
+        _, selected_workspace = asyncio.run(self._invoke_internal(
+            app, "GET", f"/internal/v1/sessions/{second}/workspace"))
+        self.assertEqual({
+            "product_id": "classic-rose-dozen",
+            "options": {"size": "Deluxe", "quantity": 2,
+                        "card_message": "Love you Mum"},
+        }, selected_workspace["facets"]["selection"])
+        summary = selected_workspace["facets"].get("order_summary") or {}
+        charges = summary.get("itemized_charges") or []
+        self.assertTrue(any(charge.get("quantity") == 2 for charge in charges))
+        self.assertNotIn("delivery", selected_workspace["facets"])
 
     def test_workspace_exposes_prior_order_on_need_without_intent(self):
         """FR-008 Need card can render before conversation: SKU only, no recs."""

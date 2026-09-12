@@ -12,12 +12,14 @@ from aea_platform.order import (OrderIncompleteError, OrderNotFound, OrderServic
 
 
 class FakeOrderStore:
-    def __init__(self, *, current="created", exists=True, product_id="classic-rose-dozen"):
+    def __init__(self, *, current="created", exists=True, product_id="classic-rose-dozen",
+                 product_options=None):
         self.created = None
         self.advanced = None
         self.current = current
         self.exists = exists
         self.product_id = product_id
+        self.product_options = product_options
 
     def create_or_get(self, **kwargs):
         self.created = kwargs
@@ -43,10 +45,15 @@ class FakeOrderStore:
     def checkout_view(self, session_id):
         if not self.exists:
             return None
+        product = {"product_id": self.product_id} if self.product_id else {}
+        if self.product_options:
+            product["options"] = dict(self.product_options)
+            product["recipient"] = "Mum"
+            product["payment_reference"] = "tok_secret"
         return {
             "order_id": "order-1",
             "status": self.current,
-            "product": {"product_id": self.product_id} if self.product_id else {},
+            "product": product,
             "delivery": {},
             "context_version": 1,
         }
@@ -189,6 +196,46 @@ class OrderServiceTests(unittest.TestCase):
                 raise RuntimeError("lookup")
 
         self.assertIsNone(OrderService(BrokenStore(current="created")).prior_product_id("s"))
+
+    def test_prior_order_projection_keeps_size_qty_card_and_drops_pii(self):
+        """FR-008 #424: prior_order is SKU plus size/qty/card, never recipient/payment."""
+        store = FakeOrderStore(
+            current="confirmed",
+            product_options={"size": "Standard", "quantity": 2,
+                             "card_message": "Happy Birthday Mum"},
+        )
+        projected = self._service(store).prior_order_projection("s")
+        self.assertEqual({
+            "product_id": "classic-rose-dozen",
+            "size": "Standard",
+            "quantity": 2,
+            "card_message": "Happy Birthday Mum",
+        }, projected)
+        self.assertNotIn("recipient", projected)
+        self.assertNotIn("payment_reference", projected)
+        self.assertNotIn("order_id", projected)
+
+    def test_prior_order_projection_falls_back_to_recalled_product(self):
+        class RecallingStore(FakeOrderStore):
+            def recalled_product(self, session_id):
+                self.looked_up = session_id
+                return {
+                    "product_id": "lilac-bouquet",
+                    "options": {"size": "deluxe", "quantity": 1,
+                                "card_message": "Thinking of you"},
+                    "email": "private@example.invalid",
+                }
+
+        store = RecallingStore(current="created")
+        projected = self._service(store).prior_order_projection("s2")
+        self.assertEqual("s2", store.looked_up)
+        self.assertEqual({
+            "product_id": "lilac-bouquet",
+            "size": "deluxe",
+            "quantity": 1,
+            "card_message": "Thinking of you",
+        }, projected)
+        self.assertNotIn("email", projected)
 
     def test_list_recent_is_least_data_without_email_or_product_dump(self):
         store = FakeOrderStore(current="confirmed")

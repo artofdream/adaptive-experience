@@ -1,7 +1,11 @@
 """Reorder & Prior Order Recall Service (FR-008 / Milestone M8).
 
-Implements durable same-browser prior-order retrieval, reorder item resolution,
-and modify-before-reorder payload preparation without requiring customer login.
+Live Path B uses :func:`least_data_reorder_options` against a real
+``customer_order.product`` snapshot (same-session accepted order or the
+durable ``order_id`` join from migration 017). The in-memory
+``ReorderService`` below remains a unit-test helper — it is not the Path B
+store.
+
 Coherent with ADR-005, ADR-009, ADR-013, and FR-008.
 """
 
@@ -9,6 +13,40 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
+
+from .selection import normalize_card_message, normalize_quantity, normalize_size
+
+
+def least_data_reorder_options(product: Any) -> Dict[str, Any]:
+    """Extract size / quantity / card from a real order product snapshot.
+
+    FR-008 Path B modify-before-reorder. Drops recipient, delivery, payment,
+    order_id, and any other keys. Invalid tokens are omitted, not raised —
+    a corrupt historical snapshot must not break workspace projection.
+    """
+    if not isinstance(product, dict):
+        return {}
+    options = product.get("options") if isinstance(product.get("options"), dict) else {}
+    projected: Dict[str, Any] = {}
+    try:
+        size = normalize_size(options.get("size"))
+    except Exception:
+        size = None
+    if size:
+        projected["size"] = size
+    try:
+        card = normalize_card_message(options.get("card_message"))
+    except Exception:
+        card = None
+    if card:
+        projected["card_message"] = card
+    raw_qty = options.get("quantity", product.get("quantity"))
+    if raw_qty is not None:
+        try:
+            projected["quantity"] = normalize_quantity(raw_qty)
+        except Exception:
+            pass
+    return projected
 
 
 @dataclass

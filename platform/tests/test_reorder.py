@@ -7,7 +7,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from aea_platform.reorder import ReorderService, PriorOrderSummary, PriorOrderItem
+from aea_platform.reorder import (
+    ReorderService, PriorOrderSummary, PriorOrderItem, least_data_reorder_options,
+)
 
 
 class TestReorderService(unittest.TestCase):
@@ -53,6 +55,30 @@ class TestReorderService(unittest.TestCase):
         self.assertTrue(payload["modified"])
         self.assertEqual(payload["reorder_items"][0]["card_message"], "With Lots of Love, Sarah")
         self.assertEqual(payload["reorder_items"][0]["size"], "deluxe")
+
+    def test_least_data_reorder_options_from_real_order_product(self):
+        """FR-008 #424: live Path B extracts options from a real order product."""
+        projected = least_data_reorder_options({
+            "product_id": "classic-rose-dozen",
+            "options": {"size": "Standard", "quantity": 2,
+                        "card_message": "Happy Birthday Mum"},
+            "recipient": "Mum",
+            "payment_reference": "tok_secret",
+        })
+        self.assertEqual({
+            "size": "Standard",
+            "quantity": 2,
+            "card_message": "Happy Birthday Mum",
+        }, projected)
+        self.assertNotIn("recipient", projected)
+        self.assertNotIn("payment_reference", projected)
+
+    def test_least_data_reorder_options_omits_invalid_tokens(self):
+        self.assertEqual({}, least_data_reorder_options({
+            "product_id": "classic-rose-dozen",
+            "options": {"size": "", "quantity": 99, "card_message": "\x01"},
+        }))
+        self.assertEqual({}, least_data_reorder_options(None))
 
 
 if __name__ == "__main__":

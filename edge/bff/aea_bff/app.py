@@ -826,14 +826,32 @@ class BffApp:
                                    "recipient_relation") if key in item})
             facets["reminders"] = {"items": items}
         if isinstance(facets_in.get("prior_order"), dict):
-            product_id = facets_in["prior_order"].get("product_id")
-            if isinstance(product_id, str) and product_id.strip():
-                facets["prior_order"] = {"product_id": product_id.strip()}
+            prior = BffApp._least_data_prior_order(facets_in["prior_order"])
+            if prior:
+                facets["prior_order"] = prior
         return {"context_version": int(raw.get("context_version", 0)),
                 "facets": facets,
                 "ai_generated": bool(raw.get("ai_generated", False)),
                 "assistant_mode": raw.get("assistant_mode"),
                 "disclosure": raw.get("disclosure")}
+
+    @staticmethod
+    def _least_data_prior_order(raw: dict) -> dict | None:
+        """FR-008 Path B: SKU plus size / quantity / card. Drop secrets and PII."""
+        product_id = raw.get("product_id")
+        if not isinstance(product_id, str) or not product_id.strip():
+            return None
+        prior = {"product_id": product_id.strip()}
+        size = raw.get("size")
+        if isinstance(size, str) and size.strip():
+            prior["size"] = size.strip()[:40]
+        quantity = raw.get("quantity")
+        if isinstance(quantity, int) and not isinstance(quantity, bool) and 1 <= quantity <= 10:
+            prior["quantity"] = quantity
+        card = raw.get("card_message")
+        if isinstance(card, str) and card.strip():
+            prior["card_message"] = card.strip()[:280]
+        return prior
 
     @staticmethod
     def _least_data_stream_event(event: dict) -> dict:

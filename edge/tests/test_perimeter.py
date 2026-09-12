@@ -623,18 +623,28 @@ class PerimeterTests(unittest.TestCase):
         self.assertEqual(429, self.call("GET", "/api/v1/workspace", {**self.auth, "cookie": cookie})[0])
 
     def test_workspace_keeps_prior_order_facet_and_drops_secrets(self):
+        """FR-008 #424: BFF keeps size/qty/card and drops recipient/order_id/payment."""
         shaped = BffApp._least_data_workspace({
             "context_version": 2,
             "facets": {"prior_order": {
                 "product_id": "classic-rose-dozen", "secret": "omit",
-                "recipient": "Mum", "order_id": "should-drop"}},
+                "recipient": "Mum", "order_id": "should-drop",
+                "size": "Standard", "quantity": 2,
+                "card_message": "Happy Birthday",
+                "payment_reference": "tok_secret"}},
             "ai_generated": False, "assistant_mode": "reference",
             "disclosure": "Automated interpretation; review and correct before ordering."})
         prior = shaped["facets"]["prior_order"]
-        self.assertEqual({"product_id": "classic-rose-dozen"}, prior)
+        self.assertEqual({
+            "product_id": "classic-rose-dozen",
+            "size": "Standard",
+            "quantity": 2,
+            "card_message": "Happy Birthday",
+        }, prior)
         self.assertNotIn("secret", prior)
         self.assertNotIn("recipient", prior)
         self.assertNotIn("order_id", prior)
+        self.assertNotIn("payment_reference", prior)
 
     def test_workspace_omits_empty_prior_order_facet(self):
         shaped = BffApp._least_data_workspace({

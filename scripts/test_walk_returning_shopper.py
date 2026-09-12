@@ -131,6 +131,39 @@ class ReturningShopperClassifyTests(unittest.TestCase):
         self.assertEqual("fail", result)
         self.assertIn("#422", reason)
 
+    def test_modify_before_reorder_passes_when_fields_survive(self) -> None:
+        result, reason = walk.classify_modify_before_reorder(
+            payment_included=True,
+            card_visible_before=True,
+            selection={
+                "product_id": "classic-rose-dozen",
+                "options": {
+                    "size": walk.MODIFY_SIZE,
+                    "quantity": walk.MODIFY_QUANTITY,
+                    "card_message": walk.MODIFY_CARD,
+                },
+            },
+        )
+        self.assertEqual("pass", result)
+        self.assertIn("survived", reason)
+
+    def test_modify_before_reorder_fails_when_fields_missing(self) -> None:
+        result, reason = walk.classify_modify_before_reorder(
+            payment_included=True,
+            card_visible_before=True,
+            selection={"product_id": "classic-rose-dozen", "options": {}},
+        )
+        self.assertEqual("fail", result)
+        self.assertIn("missing", reason)
+
+    def test_modify_before_reorder_blocked_without_payment(self) -> None:
+        result, _reason = walk.classify_modify_before_reorder(
+            payment_included=False,
+            card_visible_before=False,
+            selection=None,
+        )
+        self.assertEqual("blocked", result)
+
     def test_need_reorder_hidden_after_pick_blocked_without_payment(self) -> None:
         result, _reason = walk.classify_need_reorder_hidden_after_pick(
             card_visible_before=False,
@@ -177,6 +210,7 @@ class ReturningShopperJourneyDocTests(unittest.TestCase):
         self.assertIn("#419", text)
         self.assertIn("#420", text)
         self.assertIn("#422", text)
+        self.assertIn("#424", text)
         self.assertIn("xfail", text)
         self.assertIn("NFR-007", text)
         self.assertIn("walk_returning_shopper.py", text)
