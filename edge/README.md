@@ -201,7 +201,9 @@ Internal Orchestration (#144; contract in
   shop (CSRF). See `research/design-notes/florist-operator-ui.md`,
   `research/design-notes/fr-017-florist-engagement-analytics.md`, and
   `research/design-notes/fr-017-florist-engagement-cohort-export.md`. Not
-  FR-016 outbound reminders and not a per-customer CRM list.
+  FR-016 live outbound send and not a per-customer CRM list.
+  `GET /api/v1/operator/reminder-outbox` lists dry-run FR-016 rows
+  (`#reminder-outbox`); stub send returns `not_implemented` and never delivers.
 - `POST /api/v1/checkout` performs FR-019 payment and checkout. It accepts only a
   `payment_reference` (an opaque vault token) and the `observed_total`; raw card
   fields (`card_number`, `cvv`, ...) are rejected at the edge (NFR-013). If no

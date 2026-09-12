@@ -12,7 +12,8 @@ opaque recall is not cross-device login or CRM (#35 / #36). After an
 accepted order, the same fresh Need also
 surfaces a deterministic FR-016 occasion reminder (#420) from zero-PII
 memory when the delivery anniversary is inside the 30-day lookahead.
-Parent #35 stays open — in-session pull is not AI-generated outbound send.
+Parent #35 stays open — in-session pull is not a live outbound channel
+(#428 is dry-run outbox only).
 
 Payment / T-07 is optional. Same-session hint needs an accepted order, so a
 walk that wants to observe that hint includes T-07 via the **session payment
@@ -63,7 +64,7 @@ Do not open `/florist` in the same browser as the shop.
     bouquet. Least-data only — no login, no PII.
 11. Cross-device login remains leftover on parent #27. Do not treat this
     script as closing FR-008. Workbook FR-008 stays Future.
-    AI-generated outbound reminders remain leftover on parent #35.
+    A live outbound channel remains leftover on parent #35 (#428 is dry-run only).
 12. Help (`?`) once — automated answers, not a person.
 
 ## How to run the walker

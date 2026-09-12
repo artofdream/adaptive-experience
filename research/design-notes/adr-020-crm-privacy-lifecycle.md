@@ -21,7 +21,8 @@ nothing shredded expired rows. This note records the lifecycle that closes both.
   delivery: there is no FCM/APNs push (see ADR-019). The soonest card line may
   be AI-authored from categorical fields when the Path B LiteLLM path is
   healthy (#425); timeout or invalid output fail-closes to
-  `format_reminder_text`. Outbound email/SMS send stays leftover on #35.
+  `format_reminder_text`. Dry-run outbox is #428. A live outbound channel
+  stays leftover on #35.
 - **Erasure (opt-out)** — `EngagementCrmService.forget(browser_hash)` /
   `DELETE /internal/v1/crm/occasions?browser_hash=…` removes all memory for a
   browser (idempotent). Zero-PII customer right-to-forget.

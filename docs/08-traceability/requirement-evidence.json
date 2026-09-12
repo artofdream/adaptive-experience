@@ -363,6 +363,7 @@
         "disposition": "evidenced",
         "paths": [
           "edge/gateway/ui/assets/app.js",
+          "edge/gateway/ui/assets/florist.js",
           "edge/gateway/ui/florist.html",
           "platform/aea_platform/adapters.py",
           "platform/aea_platform/crm.py",
@@ -370,13 +371,16 @@
           "platform/aea_platform/internal_api.py",
           "platform/aea_platform/order.py",
           "platform/migrations/015_browser_order_recall.sql",
-          "platform/migrations/018_engagement_crm.sql"
+          "platform/migrations/018_engagement_crm.sql",
+          "platform/migrations/027_crm_reminder_outbox.sql"
         ]
       },
       "test": {
         "disposition": "evidenced",
         "paths": [
           "edge/tests/test_browser_ui.py",
+          "edge/tests/test_orchestration_adapter.py",
+          "edge/tests/test_perimeter.py",
           "platform/tests/test_crm.py",
           "platform/tests/test_generative_ai.py",
           "platform/tests/test_postgres_integration.py"

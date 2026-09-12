@@ -158,7 +158,9 @@ payment evolution (#148) build on these workers.
   `GET /internal/v1/operator/engagement` returns zero-PII FR-017 occasion-cohort
   counts. `GET /internal/v1/operator/engagement/export?format=csv|json`
   returns the same counts and categorical keys for campaign download.
-  Not FR-016 outbound reminders and not a per-customer CRM list.
+  `GET /internal/v1/operator/reminder-outbox` lists FR-016 dry-run
+  rows (`status=dry_run` / `not_sent`); stub send never delivers. Not a live
+  outbound channel and not a per-customer CRM list.
 - Inventory forecast (#31 / M11, FR-012, NFR-010): validated snapshot history
   is appended to `inventory.availability_observation`.
   `InventoryForecastService` in `forecast.py` returns deterministic
@@ -212,7 +214,8 @@ payment evolution (#148) build on these workers.
   (FR-004). The same `AEA_AI_*` LiteLLM path can author Path B
   `#need-reminder` copy (`OpenAICompatibleReminderCopyAuthor`); timeout or
   invalid output fail-closes to `format_reminder_text` (FR-016 / #425). That
-  is pull-card copy only — not email, SMS, or FCM/APNs. `QualityMonitor` records fail-closed, payload-free intent and FAQ
+  is pull-card copy only. Dry-run outbox (#428) reuses the same copy and never
+  delivers — not email, SMS, or FCM/APNs. `QualityMonitor` records fail-closed, payload-free intent and FAQ
   quality/error events in `orchestration.ai_quality_event`;
   `/internal/v1/ai/quality` returns counts and recent failures (NFR-008 first
   slice; see `docs/04-technical-architecture/nfr-008-quality-monitoring.md`).
