@@ -314,5 +314,23 @@ class ImageScanGateTests(unittest.TestCase):
         self.assertEqual(REPORT, ROOT / "image-scan-report.json")
 
 
+
+    def test_deploy_ecs_applies_migrations_fail_closed(self) -> None:
+        """#436: deploy-ecs must RunTask apply_migrations before /healthz."""
+        helper = ROOT / "scripts" / "ecs_apply_migrations.sh"
+        self.assertTrue(helper.is_file(), helper)
+        body = helper.read_text(encoding="utf-8")
+        self.assertIn("aws ecs run-task", body)
+        self.assertIn("apply_migrations.py", body)
+        self.assertIn("assignPublicIp=DISABLED", body)
+        self.assertIn("exit 1", body)
+        deploy = job_block("deploy-ecs")
+        self.assertIn("scripts/ecs_apply_migrations.sh", deploy)
+        self.assertLess(
+            deploy.find("ecs_apply_migrations.sh"),
+            deploy.find("/healthz"),
+            "migrate must run before public healthz gate",
+        )
+
 if __name__ == "__main__":
     unittest.main()

@@ -1044,6 +1044,7 @@ deploy-ecs:
       for svc in orchestration bff gateway relay consumer-workspace; do
         aws ecs update-service --cluster "$AEA_ECS_CLUSTER" --service "$svc" --force-new-deployment --query service.serviceName --output text
       done
+    - chmod +x scripts/ecs_apply_migrations.sh && scripts/ecs_apply_migrations.sh
     - aws ecs wait services-stable --cluster "$AEA_ECS_CLUSTER" --services gateway bff
     - curl -fsS --retry 20 --retry-delay 15 --retry-all-errors "${AEA_PUBLIC_URL}/healthz"
   rules:
