@@ -377,6 +377,47 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         self.assertEqual(1, self.connection.execute(
             "SELECT count(*) FROM crm.customer_occasion_memory").fetchone()[0])
 
+    def test_workspace_reminder_copy_is_ai_authored_then_template_on_failure(self):
+        # FR-016 #425: same workspace facet; AI copy when author is healthy, template if not.
+        import asyncio
+        from aea_platform.internal_api import InternalOrchestrationApp
+
+        session_id = self.create_session()
+        self._assemble_order_decisions(session_id)
+
+        class Healthy:
+            def author(self, **_):
+                return "Mum's birthday is coming — want the usual roses waiting?"
+
+        class Down:
+            def author(self, **_):
+                raise RuntimeError("LiteLLM timeout")
+
+        healthy = InternalOrchestrationApp(
+            self.connection, "internal-token", reminder_copy_author=Healthy())
+        status, created = asyncio.run(self._invoke_internal(
+            healthy, "POST", f"/internal/v1/sessions/{session_id}/order",
+            json.dumps({"correlation_id": "ord-ai"}).encode()))
+        self.assertEqual(202, status)
+        _, workspace = asyncio.run(self._invoke_internal(
+            healthy, "GET", f"/internal/v1/sessions/{session_id}/workspace"))
+        reminder = workspace["facets"]["reminders"]["items"][0]
+        self.assertEqual("Mum's birthday is coming — want the usual roses waiting?",
+                         reminder["reminder_text"])
+        self.assertEqual({"occasion_type", "days_until_event", "reminder_text",
+                          "recipient_relation"}, set(reminder))
+
+        down = InternalOrchestrationApp(
+            self.connection, "internal-token", reminder_copy_author=Down())
+        _, fallback = asyncio.run(self._invoke_internal(
+            down, "GET", f"/internal/v1/sessions/{session_id}/workspace"))
+        text = fallback["facets"]["reminders"]["items"][0]["reminder_text"]
+        self.assertIn("Upcoming:", text)
+        self.assertIn("Birthday", text)
+        self.assertNotIn("smtp", json.dumps(fallback).lower())
+        self.assertNotIn("fcm", json.dumps(fallback).lower())
+        self.assertNotIn("apns", json.dumps(fallback).lower())
+
     def test_crm_capture_is_fail_closed_when_intent_incomplete(self):
         import asyncio
         from aea_platform.adapters import PsycopgExperienceStateStore

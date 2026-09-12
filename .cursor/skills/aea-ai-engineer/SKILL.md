@@ -90,6 +90,7 @@ Verify what customers actually hit:
 | Path | Honest status |
 |---|---|
 | Intent | Optional LLM when `AEA_AI_ENDPOINT`, `AEA_AI_API_KEY`, `AEA_AI_MODEL` are set together; else `ReferenceIntentInterpreter` (regex). `AvailableIntentInterpreter` circuit breaker + fallback. |
+| T-01 `#need-reminder` copy | Optional LLM on the same LiteLLM path; fail-closed to `format_reminder_text`. Pull-only FR-016 card. Not outbound send. |
 | T-02 disclosure | Payload disclosure matches `assistant_mode`: primary claims AI-generated; fallback/reference does not. Static `#disclosure` HTML default is UX-owned. |
 | T-03 | Deterministic 5-SKU ranking + availability. **Not AI-ranked.** Empty cards after intent is usually inventory/ranking, not an LLM gap. |
 | T-01 stream | Customer messages only. Static hello is UI chrome, not a generative assistant. |

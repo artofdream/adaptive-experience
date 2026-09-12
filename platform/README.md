@@ -207,7 +207,10 @@ payment evolution (#148) build on these workers.
   and thought completion remain available outside provider or business hours.
   Configure `AEA_AI_ENDPOINT`, `AEA_AI_API_KEY`, and `AEA_AI_MODEL` together;
   `/internal/v1/ai/health` reports primary/fallback mode without exposing secrets
-  (FR-004). `QualityMonitor` records fail-closed, payload-free intent and FAQ
+  (FR-004). The same `AEA_AI_*` LiteLLM path can author Path B
+  `#need-reminder` copy (`OpenAICompatibleReminderCopyAuthor`); timeout or
+  invalid output fail-closes to `format_reminder_text` (FR-016 / #425). That
+  is pull-card copy only — not email, SMS, or FCM/APNs. `QualityMonitor` records fail-closed, payload-free intent and FAQ
   quality/error events in `orchestration.ai_quality_event`;
   `/internal/v1/ai/quality` returns counts and recent failures (NFR-008 first
   slice; see `docs/04-technical-architecture/nfr-008-quality-monitoring.md`).

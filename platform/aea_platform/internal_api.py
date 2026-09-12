@@ -42,7 +42,8 @@ class _InProcessFailures:
 class InternalOrchestrationApp:
     """Authenticated internal HTTP surface; authority remains in platform services."""
 
-    def __init__(self, connection, token: str, interpreter=None):
+    def __init__(self, connection, token: str, interpreter=None,
+                 reminder_copy_author=None):
         if not token:
             raise ValueError("internal token is required")
         from .adapters import (PsycopgExperienceStateStore, PsycopgInventoryAvailabilityStore,
@@ -71,7 +72,9 @@ class InternalOrchestrationApp:
         self.payment_handler = PaymentCheckoutHandler(order_store, ReferencePaymentAuthority())
         self.support = SupportService(PsycopgSupportStore(connection), quality=self.quality)
         self.crm_store = PsycopgCrmStore(connection)
-        self.crm = EngagementCrmService(self.crm_store)
+        self.reminder_copy_author = reminder_copy_author
+        self.crm = EngagementCrmService(
+            self.crm_store, copy_author=reminder_copy_author)
         self.subject_crm = CrmService(self.crm_store)
 
     async def __call__(self, scope, receive, send):
@@ -387,9 +390,11 @@ class InternalOrchestrationApp:
     def _occasion_reminders(self, session_id: str) -> list[dict]:
         """Least-data upcoming occasion reminders for this session's browser hash.
 
-        Deterministic pull signal (FR-016): the customer is shown reminders the
-        shop already holds for their own opaque browser hash. Never AI push, and
-        best-effort so a CRM read never breaks the workspace projection.
+        Pull signal (FR-016): the customer is shown reminders the shop already
+        holds for their own opaque browser hash. Card copy may be AI-authored
+        when LiteLLM is wired; otherwise the deterministic template. Never
+        outbound send / AI push, and best-effort so a CRM read never breaks
+        the workspace projection.
         """
         browser_hash = self._session_browser_hash(session_id)
         if not browser_hash:

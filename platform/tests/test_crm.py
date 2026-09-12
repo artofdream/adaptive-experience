@@ -2,7 +2,12 @@
 
 import unittest
 from datetime import datetime, timezone
-from aea_platform.crm import EngagementCrmService, CrmValidationError, OccasionReminder
+from aea_platform.crm import (
+    EngagementCrmService,
+    CrmValidationError,
+    OccasionReminder,
+    format_reminder_text,
+)
 
 
 class InMemoryCrmStore:
@@ -117,6 +122,60 @@ class TestEngagementCrmService(unittest.TestCase):
         self.assertEqual(14, r.days_until_event)
         self.assertEqual("birthday", r.occasion_type)
         self.assertIn("Upcoming: Mother's Birthday in 14 days", r.reminder_text)
+        self.assertEqual(
+            format_reminder_text(occasion_type="birthday", recipient_relation="mother",
+                                 days_until_event=14),
+            r.reminder_text)
+
+    def test_format_reminder_text_today_is_same_day_template(self):
+        self.assertEqual(
+            "Today is Mother's Birthday! 1-click same-day flower order.",
+            format_reminder_text(occasion_type="birthday", recipient_relation="mother",
+                                 days_until_event=0))
+
+    def test_get_reminders_uses_copy_author_for_soonest_item_only(self):
+        # FR-016 #425: AI/author path may rewrite the card line; later items stay template.
+        self.service.copy_author = lambda **_: "Mum's birthday is 14 days out — flowers ready?"
+        self.service.record_occasion(
+            browser_hash=self.browser_hash, session_id="sess-001",
+            occasion_type="Birthday", event_month=9, event_day=5,
+            recipient_relation="Mother")
+        self.service.record_occasion(
+            browser_hash=self.browser_hash, session_id="sess-001",
+            occasion_type="Anniversary", event_month=9, event_day=10,
+            recipient_relation="Partner")
+        reminders = self.service.get_reminders(browser_hash=self.browser_hash, lookahead_days=30)
+        self.assertEqual(2, len(reminders))
+        self.assertEqual(14, reminders[0].days_until_event)
+        self.assertEqual("Mum's birthday is 14 days out — flowers ready?", reminders[0].reminder_text)
+        self.assertEqual(
+            format_reminder_text(occasion_type="anniversary", recipient_relation="partner",
+                                 days_until_event=19),
+            reminders[1].reminder_text)
+
+    def test_get_reminders_fails_closed_to_template_when_author_errors(self):
+        def boom(**_):
+            raise RuntimeError("provider down")
+        self.service.copy_author = boom
+        self.service.record_occasion(
+            browser_hash=self.browser_hash, session_id="sess-001",
+            occasion_type="Birthday", event_month=9, event_day=5,
+            recipient_relation="Mother")
+        reminders = self.service.get_reminders(browser_hash=self.browser_hash, lookahead_days=30)
+        self.assertEqual(1, len(reminders))
+        self.assertEqual(
+            format_reminder_text(occasion_type="birthday", recipient_relation="mother",
+                                 days_until_event=14),
+            reminders[0].reminder_text)
+
+    def test_get_reminders_fails_closed_when_author_returns_blank(self):
+        self.service.copy_author = lambda **_: "   "
+        self.service.record_occasion(
+            browser_hash=self.browser_hash, session_id="sess-001",
+            occasion_type="Birthday", event_month=9, event_day=5,
+            recipient_relation="Mother")
+        reminders = self.service.get_reminders(browser_hash=self.browser_hash, lookahead_days=30)
+        self.assertIn("Upcoming: Mother's Birthday in 14 days", reminders[0].reminder_text)
 
     def test_get_reminders_ignores_past_events_outside_window(self):
         # Current date: Aug 22. Event on Jan 10 (over 30 days away)
