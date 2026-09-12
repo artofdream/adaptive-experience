@@ -176,11 +176,18 @@ const TREND_LABELS = {
 };
 const MONTH_LABELS = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun",
   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const SPEND_BAND_LABELS = {
+  band_0_50: "Under $50",
+  band_50_100: "$50–$100",
+  band_100_250: "$100–$250",
+  band_250_plus: "$250+",
+};
 const SAMPLE_ENGAGEMENT = {
   memory_count: 3,
   unique_browsers: 2,
   upcoming_within_days: 1,
   lookahead_days: 30,
+  subject_count: 4,
   occasion_cohorts: [
     { occasion_type: "birthday", count: 2 },
     { occasion_type: "anniversary", count: 1 },
@@ -193,6 +200,12 @@ const SAMPLE_ENGAGEMENT = {
     { event_month: 9, count: 2 },
     { event_month: 6, count: 1 },
   ],
+  spend_band_cohorts: [
+    { spend_band: "band_0_50", count: 1 },
+    { spend_band: "band_50_100", count: 2 },
+    { spend_band: "band_100_250", count: 1 },
+    { spend_band: "band_250_plus", count: 0 },
+  ],
   sample: true,
 };
 const EMPTY_ENGAGEMENT = {
@@ -200,9 +213,16 @@ const EMPTY_ENGAGEMENT = {
   unique_browsers: 0,
   upcoming_within_days: 0,
   lookahead_days: 30,
+  subject_count: 0,
   occasion_cohorts: [],
   relation_cohorts: [],
   event_month_cohorts: [],
+  spend_band_cohorts: [
+    { spend_band: "band_0_50", count: 0 },
+    { spend_band: "band_50_100", count: 0 },
+    { spend_band: "band_100_250", count: 0 },
+    { spend_band: "band_250_plus", count: 0 },
+  ],
 };
 // FR-016 / #428 least-data dry-run reminder outbox (no live outbound channel).
 const SAMPLE_REMINDER_OUTBOX = {
@@ -242,6 +262,7 @@ const engagementTotals = document.querySelector("#engagement-totals");
 const engagementOccasionRows = document.querySelector("#engagement-occasion-rows");
 const engagementRelationRows = document.querySelector("#engagement-relation-rows");
 const engagementMonthRows = document.querySelector("#engagement-month-rows");
+const engagementSpendRows = document.querySelector("#engagement-spend-rows");
 const engagementExportCsv = document.querySelector("#engagement-export-csv");
 const engagementExportJson = document.querySelector("#engagement-export-json");
 const engagementExportStatus = document.querySelector("#engagement-export-status");
@@ -392,6 +413,7 @@ const TABLE_HEADER_ICONS = {
   Occasion: `<svg class="th-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
   Relation: `<svg class="th-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
   Month: `<svg class="th-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
+  "Spend band": `<svg class="th-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>`,
 };
 
 function decorateHeaderIcons() {
@@ -414,7 +436,8 @@ function emptyRow(columns, copy) {
 }
 
 function renderEngagement(payload) {
-  if (!engagementTotals || !engagementOccasionRows || !engagementRelationRows || !engagementMonthRows) {
+  if (!engagementTotals || !engagementOccasionRows || !engagementRelationRows
+      || !engagementMonthRows || !engagementSpendRows) {
     return;
   }
   const data = payload && typeof payload === "object" ? payload : EMPTY_ENGAGEMENT;
@@ -423,6 +446,7 @@ function renderEngagement(payload) {
     ["Occasion memories", String(data.memory_count ?? 0)],
     ["Unique browsers", String(data.unique_browsers ?? 0)],
     [`Upcoming (${data.lookahead_days || 30} days)`, String(data.upcoming_within_days ?? 0)],
+    ["Completed-order subjects", String(data.subject_count ?? 0)],
   ];
   if (data.sample) {
     facts.push(["Source", "Labeled sample until operator APIs are confirmed"]);
@@ -460,6 +484,9 @@ function renderEngagement(payload) {
   fillCohort(engagementMonthRows, data.event_month_cohorts, "event_month",
     "No month cohorts yet.",
     (value) => MONTH_LABELS[Number(value)] || String(value || "—"));
+  fillCohort(engagementSpendRows, data.spend_band_cohorts, "spend_band",
+    "No spend-band counts yet. Counts stay empty until completed orders exist.",
+    (value) => SPEND_BAND_LABELS[value] || String(value || "—").replaceAll("_", " "));
 }
 
 function setEngagementExportEnabled(enabled) {

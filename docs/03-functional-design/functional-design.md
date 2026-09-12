@@ -68,5 +68,5 @@ workspace.
     live outbound leftover on #35). FR-017 is customer engagement
     analytics. A local florist operator console (`/florist`) is a defined
     read-only surface for those escalations, prior ASO answers,
-    zero-PII FR-017 occasion-cohort counts, and FR-016 dry-run outbox
-    counts; it is not staff live chat and not a live outbound channel.
+    zero-PII FR-017 occasion and spend-band counts, and FR-016 dry-run
+    outbox counts; it is not staff live chat and not a live outbound channel.

@@ -30,6 +30,15 @@ ENGAGEMENT_EXPORT_TOTAL_KEYS = (
     "unique_browsers",
     "upcoming_within_days",
     "lookahead_days",
+    "subject_count",
+)
+# Existing ADR-020 subject_profile bands (compute_spend_band). Operator
+# dashboards reuse these — do not invent a second 100–200 / 200+ taxonomy.
+SPEND_BAND_KEYS = (
+    "band_0_50",
+    "band_50_100",
+    "band_100_250",
+    "band_250_plus",
 )
 OUTBOX_STATUS_DRY_RUN = "dry_run"
 OUTBOX_SEND_NOT_SENT = "not_sent"
@@ -88,10 +97,13 @@ def format_engagement_export(
         "unique_browsers": max(0, _int(analytics.get("unique_browsers"))),
         "upcoming_within_days": max(0, _int(analytics.get("upcoming_within_days"))),
         "lookahead_days": lookahead,
+        "subject_count": max(0, _int(analytics.get("subject_count"))),
         "occasion_cohorts": _cohorts(analytics.get("occasion_cohorts"), "occasion_type"),
         "relation_cohorts": _cohorts(analytics.get("relation_cohorts"), "recipient_relation"),
         "event_month_cohorts": _cohorts(
             analytics.get("event_month_cohorts"), "event_month", month=True),
+        "spend_band_cohorts": normalize_spend_band_cohorts(
+            analytics.get("spend_band_cohorts")),
     }
 
     if fmt == "json":
@@ -113,12 +125,37 @@ def format_engagement_export(
         writer.writerow(["relation", item["recipient_relation"], item["count"]])
     for item in payload["event_month_cohorts"]:
         writer.writerow(["event_month", item["event_month"], item["count"]])
+    for item in payload["spend_band_cohorts"]:
+        writer.writerow(["spend_band", item["spend_band"], item["count"]])
     return {
         "format": "csv",
         "filename": "florist-engagement-cohorts.csv",
         "content_type": "text/csv; charset=utf-8",
         "body": buffer.getvalue(),
     }
+
+
+def normalize_spend_band_cohorts(items) -> list[dict[str, Any]]:
+    """Allowlist existing lifetime spend bands as counts only (ADR-020).
+
+    Always emits the four known bands in canonical order, including zeros,
+    so florist dashboards stay falsifiable. Unknown keys and subject
+    references are dropped.
+    """
+    counts = {band: 0 for band in SPEND_BAND_KEYS}
+    for item in items or []:
+        if not isinstance(item, dict):
+            continue
+        band = item.get("spend_band") or item.get("lifetime_spend_band")
+        if band not in counts:
+            continue
+        try:
+            count = int(item.get("count") or 0)
+        except (TypeError, ValueError):
+            continue
+        if count > 0:
+            counts[band] += count
+    return [{"spend_band": band, "count": counts[band]} for band in SPEND_BAND_KEYS]
 
 
 class CrmValidationError(ValueError):
@@ -170,8 +207,9 @@ class EngagementCrmService:
     this service always fail-closes to format_reminder_text. Upcoming
     occasions enqueue least-data dry-run outbox rows (status=dry_run /
     not_sent). attempt_send is stubbed fail-closed and never delivers.
-    FR-017 here is manager-visible categorical counts — not staff live chat
-    and not a PII customer list.
+    FR-017 here is manager-visible categorical counts plus coarse spend-band
+    totals from subject_profile — not staff live chat and not a PII
+    customer list.
     """
 
     def __init__(self, store, *, now: Callable[[], datetime] | None = None,
@@ -479,6 +517,8 @@ class EngagementCrmService:
 
         Returns counts and categorical keys only. Never includes browser hashes,
         session ids, subject references, names, or addresses (ADR-020 / NFR-017).
+        Spend-band cohorts are counts of existing lifetime_spend_band values
+        on completed-order subject profiles — not a per-customer list.
         """
         if (not isinstance(lookahead_days, int) or isinstance(lookahead_days, bool)
                 or lookahead_days < 1 or lookahead_days > 366):
@@ -509,17 +549,21 @@ class EngagementCrmService:
             return [{key: name, "count": count}
                     for name, count in sorted(counter.items(), key=lambda item: (-item[1], item[0]))]
 
+        spend_band_cohorts = normalize_spend_band_cohorts(
+            self.store.count_spend_bands())
         return {
             "memory_count": len(rows),
             "unique_browsers": len(browsers),
             "upcoming_within_days": upcoming,
             "lookahead_days": lookahead_days,
+            "subject_count": sum(item["count"] for item in spend_band_cohorts),
             "occasion_cohorts": _named_cohorts(occasion_counts, "occasion_type"),
             "relation_cohorts": _named_cohorts(relation_counts, "recipient_relation"),
             "event_month_cohorts": [
                 {"event_month": month, "count": count}
                 for month, count in sorted(month_counts.items())
             ],
+            "spend_band_cohorts": spend_band_cohorts,
         }
 
     def export_engagement_analytics(

@@ -1081,14 +1081,30 @@ class BffApp:
         lookahead = _int(raw.get("lookahead_days"), 30)
         if lookahead < 1 or lookahead > 366:
             lookahead = 30
+        allowed_bands = ("band_0_50", "band_50_100", "band_100_250", "band_250_plus")
+        band_counts = {band: 0 for band in allowed_bands}
+        for item in raw.get("spend_band_cohorts") or []:
+            if not isinstance(item, dict):
+                continue
+            band = item.get("spend_band") or item.get("lifetime_spend_band")
+            if band not in band_counts:
+                continue
+            count = _int(item.get("count"))
+            if count > 0:
+                band_counts[band] += count
+        spend_band_cohorts = [
+            {"spend_band": band, "count": band_counts[band]} for band in allowed_bands]
         return {
             "memory_count": max(0, _int(raw.get("memory_count"))),
             "unique_browsers": max(0, _int(raw.get("unique_browsers"))),
             "upcoming_within_days": max(0, _int(raw.get("upcoming_within_days"))),
             "lookahead_days": lookahead,
+            "subject_count": max(0, _int(raw.get("subject_count"),
+                                         sum(band_counts.values()))),
             "occasion_cohorts": _cohorts(raw.get("occasion_cohorts"), "occasion_type"),
             "relation_cohorts": _cohorts(raw.get("relation_cohorts"), "recipient_relation"),
             "event_month_cohorts": _cohorts(raw.get("event_month_cohorts"), "event_month", month=True),
+            "spend_band_cohorts": spend_band_cohorts,
         }
 
     @staticmethod
@@ -1103,7 +1119,8 @@ class BffApp:
         buffer = io.StringIO()
         writer = csv.writer(buffer)
         writer.writerow(["section", "key", "count"])
-        for key in ("memory_count", "unique_browsers", "upcoming_within_days", "lookahead_days"):
+        for key in ("memory_count", "unique_browsers", "upcoming_within_days",
+                    "lookahead_days", "subject_count"):
             writer.writerow(["totals", key, analytics.get(key, 0)])
         for item in analytics.get("occasion_cohorts") or []:
             writer.writerow(["occasion", item["occasion_type"], item["count"]])
@@ -1111,6 +1128,8 @@ class BffApp:
             writer.writerow(["relation", item["recipient_relation"], item["count"]])
         for item in analytics.get("event_month_cohorts") or []:
             writer.writerow(["event_month", item["event_month"], item["count"]])
+        for item in analytics.get("spend_band_cohorts") or []:
+            writer.writerow(["spend_band", item["spend_band"], item["count"]])
         return {
             "filename": "florist-engagement-cohorts.csv",
             "content_type": "text/csv; charset=utf-8",

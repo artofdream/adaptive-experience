@@ -46,8 +46,8 @@ The console is organized into five interconnected functional panels:
 │    • Shared Understanding intent transcript audit                      │
 ├────────────────────────────────────────────────────────────────────────┤
 │ 5. ENGAGEMENT ANALYTICS (#engagement)                                  │
-│    • Zero-PII occasion / relation / month cohort counts (FR-017)       │
-│    • Memories, unique browsers, upcoming-in-30-days totals             │
+│    • Zero-PII occasion / relation / month / spend-band counts (FR-017) │
+│    • Memories, unique browsers, upcoming-in-30-days, subject totals    │
 │    • CSV / JSON download of those counts and keys only                 │
 │    • Campaign planning only — not a customer list                      │
 └────────────────────────────────────────────────────────────────────────┘
@@ -87,7 +87,7 @@ To run the atelier efficiently, follow this standard 4-step routine throughout y
 ### Step 4: End-of-Day Review & Forecast
 1. Switch the order filter to **Delayed** to ensure no order was missed or unfulfilled.
 2. Switch to **3 days** or **7 days** to review upcoming scheduled deliveries and plan flower cooler replenishment with wholesale suppliers.
-3. Optional: open **Engagement** for zero-PII occasion-cohort counts (campaign planning). Download CSV or JSON when operator APIs are live — counts and categorical keys only. This is not a fulfillment step and is not a customer list.
+3. Optional: open **Engagement** for zero-PII occasion and spend-band counts (campaign planning). Download CSV or JSON when operator APIs are live — counts and categorical keys only. This is not a fulfillment step and is not a customer list.
 
 ---
 
