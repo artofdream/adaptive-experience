@@ -4,7 +4,9 @@
 > **Captured**: 2026-09-12
 > **Author**: `@aea-knowledge-guardian` with `@aea-senior-software-engineer`
 > **Repository**: `artof-group/adaptive-experience-architecture`
-> **Related**: [[fr-017-florist-engagement-cohort-export]] · [[ADR-020]] · [[FR-017]] · #36 · #421 · #427
+> **Related**: [[fr-017-florist-engagement-cohort-export]] · [[ADR-020]] · [[FR-017]] · #36 · #421 · #427 · [[2026-09-12-session-memory-log-fr-017-florist-engagement-export-live-prove]]
+
+**2026-09-12 Path B live prove:** after ECS RunTask migrations 024–028, engagement export 200 on `aea-pilot`. Canonical: [[2026-09-12-session-memory-log-fr-017-florist-engagement-export-live-prove]] (!506). Do not close #427 or #36 from a vault MR.
 
 ---
 
