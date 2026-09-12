@@ -692,6 +692,16 @@ body.operator { background: var(--page); }
 .operator-table .text-link { color: var(--purple); font-weight: 650; }
 .operator-empty { color: var(--muted); padding: 1rem .55rem; }
 .operator-split { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+.engagement-export {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0.75rem 0 0.35rem;
+}
+.engagement-export .secondary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
 .operator-facts { margin: 0; display: grid; grid-template-columns: 8.5rem 1fr; gap: .45rem .75rem; }
 .operator-facts dt { color: var(--muted); font-size: .8rem; }
 .operator-facts dd { margin: 0; font-weight: 650; overflow-wrap: anywhere; }

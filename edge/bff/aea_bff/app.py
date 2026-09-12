@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import csv
+import io
 import json
 import time
 import uuid
@@ -531,6 +533,28 @@ class BffApp:
             return await self._json(send, 200, self._least_data_operator_forecasts(raw),
                                     correlation_id)
 
+        if path == "/api/v1/operator/engagement/export" and method == "GET":
+            if not self.florist_operator_enabled:
+                return await self._error(send, 404, "not_found", correlation_id)
+            query = parse_qs(scope.get("query_string", b"").decode())
+            export_format = ((query.get("format") or ["csv"])[0] or "csv").strip().lower()
+            if export_format not in {"csv", "json"}:
+                return await self._error(send, 422, "validation_failed", correlation_id)
+            try:
+                raw = self.orchestration.list_operator_engagement(subject=subject)
+            except OrchestrationUnavailable:
+                return await self._error(send, 503, "orchestration_unavailable", correlation_id)
+            status = int(raw.get("status") or 200)
+            if status >= 500:
+                return await self._error(send, 503, "orchestration_unavailable", correlation_id)
+            shaped = self._least_data_operator_engagement(raw)
+            exported = self._format_engagement_export(shaped, export_format=export_format)
+            return await self._send(
+                send, 200, exported["body"].encode("utf-8"), exported["content_type"],
+                correlation_id,
+                {"content-disposition": f'attachment; filename="{exported["filename"]}"'},
+            )
+
         if path == "/api/v1/operator/engagement" and method == "GET":
             if not self.florist_operator_enabled:
                 return await self._error(send, 404, "not_found", correlation_id)
@@ -1004,6 +1028,32 @@ class BffApp:
             "occasion_cohorts": _cohorts(raw.get("occasion_cohorts"), "occasion_type"),
             "relation_cohorts": _cohorts(raw.get("relation_cohorts"), "recipient_relation"),
             "event_month_cohorts": _cohorts(raw.get("event_month_cohorts"), "event_month", month=True),
+        }
+
+    @staticmethod
+    def _format_engagement_export(analytics: dict, *, export_format: str = "csv") -> dict:
+        """CSV/JSON download of allowlisted cohort counts only (FR-017)."""
+        if export_format == "json":
+            return {
+                "filename": "florist-engagement-cohorts.json",
+                "content_type": "application/json",
+                "body": json.dumps(analytics, separators=(",", ":"), sort_keys=True),
+            }
+        buffer = io.StringIO()
+        writer = csv.writer(buffer)
+        writer.writerow(["section", "key", "count"])
+        for key in ("memory_count", "unique_browsers", "upcoming_within_days", "lookahead_days"):
+            writer.writerow(["totals", key, analytics.get(key, 0)])
+        for item in analytics.get("occasion_cohorts") or []:
+            writer.writerow(["occasion", item["occasion_type"], item["count"]])
+        for item in analytics.get("relation_cohorts") or []:
+            writer.writerow(["relation", item["recipient_relation"], item["count"]])
+        for item in analytics.get("event_month_cohorts") or []:
+            writer.writerow(["event_month", item["event_month"], item["count"]])
+        return {
+            "filename": "florist-engagement-cohorts.csv",
+            "content_type": "text/csv; charset=utf-8",
+            "body": buffer.getvalue(),
         }
 
     @staticmethod

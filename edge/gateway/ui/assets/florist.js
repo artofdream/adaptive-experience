@@ -214,6 +214,9 @@ const engagementTotals = document.querySelector("#engagement-totals");
 const engagementOccasionRows = document.querySelector("#engagement-occasion-rows");
 const engagementRelationRows = document.querySelector("#engagement-relation-rows");
 const engagementMonthRows = document.querySelector("#engagement-month-rows");
+const engagementExportCsv = document.querySelector("#engagement-export-csv");
+const engagementExportJson = document.querySelector("#engagement-export-json");
+const engagementExportStatus = document.querySelector("#engagement-export-status");
 const transcript = document.querySelector("#transcript");
 const supportAnswers = document.querySelector("#support-answers");
 const orderFacts = document.querySelector("#order-facts");
@@ -425,6 +428,53 @@ function renderEngagement(payload) {
   fillCohort(engagementMonthRows, data.event_month_cohorts, "event_month",
     "No month cohorts yet.",
     (value) => MONTH_LABELS[Number(value)] || String(value || "—"));
+}
+
+function setEngagementExportEnabled(enabled) {
+  for (const button of [engagementExportCsv, engagementExportJson]) {
+    if (button) button.disabled = !enabled;
+  }
+}
+
+async function downloadEngagementExport(format) {
+  if (!state.live) return;
+  const requested = format === "json" ? "json" : "csv";
+  try {
+    const response = await fetch(`/api/v1/operator/engagement/export?format=${requested}`, {
+      method: "GET",
+      headers: headers(),
+      credentials: "same-origin",
+    });
+    if (!response.ok) {
+      throw new Error(`http_${response.status}`);
+    }
+    const blob = await response.blob();
+    const href = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    const disposition = response.headers.get("content-disposition") || "";
+    const named = /filename="([^"]+)"/.exec(disposition);
+    const filename = named ? named[1] : `florist-engagement-cohorts.${requested}`;
+    link.href = href;
+    link.download = filename;
+    document.body.append(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(href);
+    if (engagementExportStatus) {
+      engagementExportStatus.textContent = `Downloaded ${filename}. Counts and cohort keys only.`;
+    }
+  } catch (error) {
+    if (engagementExportStatus) {
+      engagementExportStatus.textContent = `Export unavailable (${error.message}).`;
+    }
+  }
+}
+
+if (engagementExportCsv) {
+  engagementExportCsv.addEventListener("click", () => downloadEngagementExport("csv"));
+}
+if (engagementExportJson) {
+  engagementExportJson.addEventListener("click", () => downloadEngagementExport("json"));
 }
 
 function renderForecasts(items) {
@@ -1243,6 +1293,7 @@ function showSampleLayout(modeCopy) {
   renderInbox(SAMPLE_INBOX);
   renderForecasts(SAMPLE_FORECASTS);
   renderEngagement(SAMPLE_ENGAGEMENT);
+  setEngagementExportEnabled(false);
   renderSession(SAMPLE_SESSIONS[SAMPLE_INBOX[0].session_id], "Sample session (labeled)");
   mode.textContent = modeCopy;
 }
@@ -1337,8 +1388,10 @@ async function boot() {
     renderForecasts(forecasts);
     if (engagementResult.status === "fulfilled") {
       renderEngagement(engagementResult.value);
+      setEngagementExportEnabled(true);
     } else {
       renderEngagement(EMPTY_ENGAGEMENT);
+      setEngagementExportEnabled(false);
     }
     let orders = [];
     state.ordersError = false;
