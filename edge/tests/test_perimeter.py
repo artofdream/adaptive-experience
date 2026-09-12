@@ -95,6 +95,7 @@ class FakeOrchestration:
         }
 
     def list_operator_reminder_outbox(self, **kwargs):
+        # FR-016 dry-run outbox fixture — no contact fields survive least-data.
         return {
             "status": 200,
             "pending_dry_run": 1,

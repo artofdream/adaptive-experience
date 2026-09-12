@@ -228,6 +228,7 @@ class HttpOrchestrationTests(unittest.TestCase):
                 return 200, '{"items":[{"product_id":"classic-rose-dozen","trend":"stable"}]}'
             if url.endswith("/operator/engagement"):
                 return 200, '{"memory_count":3,"unique_browsers":2,"occasion_cohorts":[]}'
+            # FR-016 dry-run reminder outbox operator paths
             if url.endswith("/operator/reminder-outbox"):
                 return 200, '{"pending_dry_run":1,"not_sent":1,"items":[]}'
             if url.endswith("/operator/reminder-outbox/enqueue"):

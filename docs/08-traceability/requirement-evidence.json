@@ -362,6 +362,7 @@
       "implementation": {
         "disposition": "evidenced",
         "paths": [
+          "edge/bff/aea_bff/app.py",
           "edge/gateway/ui/assets/app.js",
           "edge/gateway/ui/assets/florist.js",
           "edge/gateway/ui/florist.html",
@@ -902,6 +903,7 @@
           "platform/migrations/024_operator_crm_subject_profile.sql",
           "platform/migrations/025_crm_retention_indexes.sql",
           "platform/migrations/026_crm_lifetime_spend.sql",
+          "platform/migrations/027_crm_reminder_outbox.sql",
           "platform/scripts/purge_crm_retention.py"
         ]
       },

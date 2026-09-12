@@ -204,6 +204,7 @@ const EMPTY_ENGAGEMENT = {
   relation_cohorts: [],
   event_month_cohorts: [],
 };
+// FR-016 / #428 least-data dry-run reminder outbox (no live outbound channel).
 const SAMPLE_REMINDER_OUTBOX = {
   pending_dry_run: 1,
   not_sent: 1,

@@ -627,6 +627,7 @@ class BrowserUiTests(unittest.TestCase):
         self.assertIn("unique_browsers", script)
         self.assertIn("upcoming_within_days", script)
         self.assertIn('href="#reminder-outbox"', html)
+        # FR-016 operator dry-run outbox (no live outbound channel).
         self.assertIn("Reminder outbox (dry-run)", html)
         self.assertIn("function renderReminderOutbox", script)
         self.assertIn("/api/v1/operator/reminder-outbox", script)
