@@ -501,11 +501,19 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
             [{"occasion_type": "birthday", "count": 2},
              {"occasion_type": "anniversary", "count": 1}],
             body["occasion_cohorts"])
+        self.assertEqual(0, body["subject_count"])
+        self.assertEqual(
+            [{"spend_band": "band_0_50", "count": 0},
+             {"spend_band": "band_50_100", "count": 0},
+             {"spend_band": "band_100_250", "count": 0},
+             {"spend_band": "band_250_plus", "count": 0}],
+            body["spend_band_cohorts"])
         blob = json.dumps(body)
         self.assertNotIn(first, blob)
         self.assertNotIn(second, blob)
         self.assertNotIn("browser_hash", blob)
         self.assertNotIn("session_id", blob)
+        self.assertNotIn("subject_reference", blob)
 
     def test_operator_engagement_export_is_zero_pii_cohorts(self):
         import asyncio
@@ -530,17 +538,23 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         self.assertEqual("csv", body["format"])
         self.assertIn("section,key,count", body["body"])
         self.assertIn("occasion,birthday,2", body["body"])
+        self.assertIn("spend_band,band_0_50,0", body["body"])
+        self.assertIn("totals,subject_count,0", body["body"])
         self.assertNotIn(first, body["body"])
         self.assertNotIn(second, body["body"])
         self.assertNotIn("browser_hash", body["body"])
         self.assertNotIn("session_id", json.dumps(body))
+        self.assertNotIn("subject_reference", body["body"])
 
         status, body = asyncio.run(self._invoke_internal(
             app, "GET", "/internal/v1/operator/engagement/export", query=b"format=json"))
         self.assertEqual(200, status)
         payload = json.loads(body["body"])
         self.assertEqual(2, payload["memory_count"])
+        self.assertEqual(0, payload["subject_count"])
+        self.assertEqual("band_0_50", payload["spend_band_cohorts"][0]["spend_band"])
         self.assertNotIn("browser_hash", payload)
+        self.assertNotIn("subject_reference", payload)
         blob = json.dumps(body)
         self.assertNotIn(first, blob)
         self.assertNotIn(second, blob)
@@ -549,6 +563,50 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
             app, "GET", "/internal/v1/operator/engagement/export", query=b"format=xlsx"))
         self.assertEqual(422, status)
         self.assertEqual("validation_failed", body["code"])
+
+    def test_operator_engagement_spend_bands_are_zero_pii_counts(self):
+        import asyncio
+        from aea_platform.crm import compute_subject_reference
+        from aea_platform.internal_api import InternalOrchestrationApp
+
+        app = InternalOrchestrationApp(self.connection, "internal-token")
+        first = compute_subject_reference(f"itest-spend-a-{uuid.uuid4()}")
+        second = compute_subject_reference(f"itest-spend-b-{uuid.uuid4()}")
+        third = compute_subject_reference(f"itest-spend-c-{uuid.uuid4()}")
+        app.subject_crm.record_completed_order(
+            subject_reference=first, order_total=40.0, occasion="birthday")
+        app.subject_crm.record_completed_order(
+            subject_reference=second, order_total=70.0, occasion="anniversary")
+        app.subject_crm.record_completed_order(
+            subject_reference=third, order_total=300.0, occasion="birthday")
+
+        status, body = asyncio.run(self._invoke_internal(
+            app, "GET", "/internal/v1/operator/engagement"))
+        self.assertEqual(200, status)
+        self.assertEqual(3, body["subject_count"])
+        self.assertEqual(
+            [{"spend_band": "band_0_50", "count": 1},
+             {"spend_band": "band_50_100", "count": 1},
+             {"spend_band": "band_100_250", "count": 0},
+             {"spend_band": "band_250_plus", "count": 1}],
+            body["spend_band_cohorts"])
+        blob = json.dumps(body)
+        self.assertNotIn(first, blob)
+        self.assertNotIn(second, blob)
+        self.assertNotIn(third, blob)
+        self.assertNotIn("subject_reference", blob)
+        self.assertNotIn("lifetime_spend_cents", blob)
+        self.assertNotIn("browser_hash", blob)
+
+        status, exported = asyncio.run(self._invoke_internal(
+            app, "GET", "/internal/v1/operator/engagement/export", query=b"format=csv"))
+        self.assertEqual(200, status)
+        self.assertIn("totals,subject_count,3", exported["body"])
+        self.assertIn("spend_band,band_0_50,1", exported["body"])
+        self.assertIn("spend_band,band_50_100,1", exported["body"])
+        self.assertIn("spend_band,band_250_plus,1", exported["body"])
+        self.assertNotIn(first, exported["body"])
+        self.assertNotIn("subject_reference", exported["body"])
 
     def test_operator_reminder_outbox_is_dry_run_and_never_sends(self):
         import asyncio

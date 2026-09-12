@@ -4,9 +4,11 @@ import json
 import unittest
 from datetime import datetime, timezone
 from aea_platform.crm import (
+    CrmService,
     EngagementCrmService,
     CrmValidationError,
     OccasionReminder,
+    compute_spend_band,
     format_engagement_export,
     format_reminder_text,
 )
@@ -18,6 +20,7 @@ class InMemoryCrmStore:
     def __init__(self):
         self.memories = []
         self.outbox = []
+        self.profiles = []
 
     def upsert_occasion_memory(self, *, memory_id, browser_hash, session_id,
                                occasion_type, event_month, event_day,
@@ -131,6 +134,42 @@ class InMemoryCrmStore:
         self.memories = keep
         self.outbox = [item for item in self.outbox if item["memory_id"] not in removed_ids]
         return before - len(self.memories)
+
+    def record_crm_order(self, *, subject_reference, order_total, occasion, channel, now):
+        cents = max(int(round(float(order_total) * 100)), 0)
+        existing = next(
+            (item for item in self.profiles
+             if item["subject_reference"] == subject_reference),
+            None,
+        )
+        if existing is None:
+            existing = {
+                "subject_reference": subject_reference,
+                "total_orders": 0,
+                "lifetime_spend_cents": 0,
+                "lifetime_spend_band": "band_0_50",
+                "primary_occasion": occasion,
+                "preferred_channel": channel,
+                "first_seen_at": now,
+                "last_seen_at": now,
+            }
+            self.profiles.append(existing)
+        existing["total_orders"] += 1
+        existing["lifetime_spend_cents"] += cents
+        existing["lifetime_spend_band"] = compute_spend_band(
+            existing["lifetime_spend_cents"] / 100.0)
+        existing["preferred_channel"] = channel
+        existing["last_seen_at"] = now
+        return existing
+
+    def count_spend_bands(self):
+        counts = {}
+        for profile in self.profiles:
+            band = profile.get("lifetime_spend_band")
+            if not band:
+                continue
+            counts[band] = counts.get(band, 0) + 1
+        return [{"spend_band": band, "count": count} for band, count in counts.items()]
 
 
 class TestEngagementCrmService(unittest.TestCase):
@@ -326,8 +365,16 @@ class TestEngagementCrmService(unittest.TestCase):
         self.assertEqual([], analytics["occasion_cohorts"])
         self.assertEqual([], analytics["relation_cohorts"])
         self.assertEqual([], analytics["event_month_cohorts"])
+        self.assertEqual(0, analytics["subject_count"])
+        self.assertEqual(
+            [{"spend_band": "band_0_50", "count": 0},
+             {"spend_band": "band_50_100", "count": 0},
+             {"spend_band": "band_100_250", "count": 0},
+             {"spend_band": "band_250_plus", "count": 0}],
+            analytics["spend_band_cohorts"])
         self.assertNotIn("browser_hash", analytics)
         self.assertNotIn("session_id", analytics)
+        self.assertNotIn("subject_reference", analytics)
 
     def test_engagement_analytics_cohorts_are_zero_pii_counts(self):
         self.service.record_occasion(
@@ -360,10 +407,41 @@ class TestEngagementCrmService(unittest.TestCase):
         self.assertEqual(
             [{"event_month": 6, "count": 1}, {"event_month": 9, "count": 2}],
             analytics["event_month_cohorts"])
+        self.assertEqual(0, analytics["subject_count"])
         blob = str(analytics)
         self.assertNotIn(self.browser_hash, blob)
         self.assertNotIn(other, blob)
         self.assertNotIn("sess-001", blob)
+        self.assertNotIn("subject_reference", blob)
+
+    def test_engagement_analytics_spend_bands_are_zero_pii_counts(self):
+        subjects = CrmService(self.store)
+        subjects.record_completed_order(
+            subject_reference="sub_under_fifty", order_total=40.0)
+        subjects.record_completed_order(
+            subject_reference="sub_mid_a", order_total=70.0)
+        subjects.record_completed_order(
+            subject_reference="sub_mid_b", order_total=95.0)
+        subjects.record_completed_order(
+            subject_reference="sub_upper", order_total=150.0)
+        subjects.record_completed_order(
+            subject_reference="sub_plus", order_total=300.0)
+
+        analytics = self.service.get_engagement_analytics()
+        self.assertEqual(5, analytics["subject_count"])
+        self.assertEqual(
+            [{"spend_band": "band_0_50", "count": 1},
+             {"spend_band": "band_50_100", "count": 2},
+             {"spend_band": "band_100_250", "count": 1},
+             {"spend_band": "band_250_plus", "count": 1}],
+            analytics["spend_band_cohorts"])
+        blob = json.dumps(analytics)
+        self.assertNotIn("sub_under_fifty", blob)
+        self.assertNotIn("sub_mid_a", blob)
+        self.assertNotIn("sub_plus", blob)
+        self.assertNotIn("subject_reference", blob)
+        self.assertNotIn("lifetime_spend_cents", blob)
+        self.assertNotIn("browser_hash", blob)
 
     def test_engagement_analytics_rejects_bad_lookahead(self):
         with self.assertRaises(CrmValidationError):
@@ -386,14 +464,17 @@ class TestEngagementCrmService(unittest.TestCase):
         self.assertIn("text/csv", csv_export["content_type"])
         self.assertIn("section,key,count", csv_export["body"])
         self.assertIn("totals,memory_count,2", csv_export["body"])
+        self.assertIn("totals,subject_count,0", csv_export["body"])
         self.assertIn("occasion,birthday,2", csv_export["body"])
         self.assertIn("relation,mother,2", csv_export["body"])
         self.assertIn("event_month,9,2", csv_export["body"])
+        self.assertIn("spend_band,band_0_50,0", csv_export["body"])
         self.assertNotIn(self.browser_hash, csv_export["body"])
         self.assertNotIn(other, csv_export["body"])
         self.assertNotIn("sess-001", csv_export["body"])
         self.assertNotIn("browser_hash", csv_export["body"])
         self.assertNotIn("session_id", csv_export["body"])
+        self.assertNotIn("subject_reference", csv_export["body"])
 
         json_export = self.service.export_engagement_analytics(export_format="json")
         self.assertEqual("json", json_export["format"])
@@ -401,9 +482,12 @@ class TestEngagementCrmService(unittest.TestCase):
         payload = json.loads(json_export["body"])
         self.assertEqual(2, payload["memory_count"])
         self.assertEqual(2, payload["unique_browsers"])
+        self.assertEqual(0, payload["subject_count"])
         self.assertEqual([{"occasion_type": "birthday", "count": 2}], payload["occasion_cohorts"])
+        self.assertEqual("band_0_50", payload["spend_band_cohorts"][0]["spend_band"])
         self.assertNotIn("browser_hash", payload)
         self.assertNotIn("session_id", payload)
+        self.assertNotIn("subject_reference", payload)
         self.assertNotIn(self.browser_hash, json_export["body"])
         self.assertNotIn("sess-002", json_export["body"])
 
@@ -412,15 +496,27 @@ class TestEngagementCrmService(unittest.TestCase):
             "unique_browsers": 1,
             "upcoming_within_days": 1,
             "lookahead_days": 30,
+            "subject_count": 2,
             "occasion_cohorts": [{"occasion_type": "birthday", "count": 1}],
             "relation_cohorts": [],
             "event_month_cohorts": [],
+            "spend_band_cohorts": [
+                {"spend_band": "band_50_100", "count": 2},
+                {"spend_band": "secret_band", "count": 9},
+                {"lifetime_spend_band": "band_250_plus", "count": 1,
+                 "subject_reference": "sub_leak"},
+            ],
             "browser_hash": "a" * 64,
             "email": "private@example.invalid",
+            "subject_reference": "sub_leak",
         })
         self.assertNotIn("browser_hash", dirty["body"])
         self.assertNotIn("private@example.invalid", dirty["body"])
         self.assertNotIn("email", dirty["body"])
+        self.assertNotIn("sub_leak", dirty["body"])
+        self.assertNotIn("secret_band", dirty["body"])
+        self.assertIn("spend_band,band_50_100,2", dirty["body"])
+        self.assertIn("spend_band,band_250_plus,1", dirty["body"])
 
     def test_engagement_export_rejects_bad_format(self):
         with self.assertRaises(CrmValidationError):

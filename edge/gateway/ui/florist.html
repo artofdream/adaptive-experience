@@ -6,8 +6,8 @@
   <meta name="description" content="Local florist operator console sample. Not the customer journey. Zero-PII FR-017 aggregates only.">
   <title>Florist operator — Lily's Florist (local sample)</title>
   <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/assets/styles.css?v=428">
-  <script src="/assets/florist.js?v=428" defer></script>
+  <link rel="stylesheet" href="/assets/styles.css?v=430">
+  <script src="/assets/florist.js?v=430" defer></script>
 </head>
 <body class="operator">
   <a class="skip-link" href="#orders">Skip to staff orders</a>
@@ -19,7 +19,7 @@
   <main class="operator-shell">
     <p class="operator-banner" role="note">
       <strong>Local florist operator sample.</strong>
-      Staff order list (FR-013), today's prepare grouping, read-only T-09 inbox, zero-PII engagement counts plus cohort export (FR-017), and FR-016 dry-run reminder outbox.
+      Staff order list (FR-013), today's prepare grouping, read-only T-09 inbox, zero-PII engagement counts plus spend-band and cohort export (FR-017), and FR-016 dry-run reminder outbox.
       Not live chat, not billing CRM, and not a live outbound channel.
       Inventory here does not enable T-03 Select.
       <details>
@@ -165,14 +165,14 @@
           <div>
             <p class="eyebrow">US-017 · FR-017</p>
             <h2 id="engagement-title">Engagement analytics</h2>
-            <p class="subtitle">Zero-PII occasion cohorts from saved memory. Counts and categorical keys only. Not a customer list. Dry-run outbox is the next section.</p>
+            <p class="subtitle">Zero-PII occasion and spend-band cohorts. Counts and categorical keys only. Not a customer list. Dry-run outbox is the next section.</p>
           </div>
         </header>
         <div class="engagement-export" id="engagement-export-actions">
           <button type="button" class="secondary" id="engagement-export-csv" disabled>Download CSV</button>
           <button type="button" class="secondary" id="engagement-export-json" disabled>Download JSON</button>
         </div>
-        <p id="engagement-export-status" class="hint">Download is live only when operator APIs are enabled. Counts and cohort keys only.</p>
+        <p id="engagement-export-status" class="hint">Download is live only when operator APIs are enabled. Counts, cohort keys, and spend bands only.</p>
         <dl id="engagement-totals" class="operator-facts"></dl>
         <div class="operator-split">
           <div class="operator-table-wrap">
@@ -207,6 +207,17 @@
               </tr>
             </thead>
             <tbody id="engagement-month-rows"></tbody>
+          </table>
+        </div>
+        <div class="operator-table-wrap">
+          <table class="operator-table">
+            <thead>
+              <tr>
+                <th scope="col">Spend band</th>
+                <th scope="col">Count</th>
+              </tr>
+            </thead>
+            <tbody id="engagement-spend-rows"></tbody>
           </table>
         </div>
       </section>
@@ -349,7 +360,7 @@
           <li><strong>Morning Batching (#prepare):</strong> Review bouquet counts and delivery windows (Morning, Afternoon, Evening). Tap <code>Details ↗</code> on any arrangement to read and transcribe customer enclosure card notes.</li>
           <li><strong>Order Assembly (#orders):</strong> Work through the <code>Today</code> queue. Verify channel tags (<code>web</code> vs <code>companion-android</code>) and attach the matching handwritten card.</li>
           <li><strong>Customer Inquiries (#inbox):</strong> Watch for incoming Contact Florist requests (T-09). Tap any inquiry to inspect the customer's shared session context.</li>
-          <li><strong>End-of-Day Review:</strong> Filter by <code>Delayed</code> to confirm zero missed orders, then review <code>3 days</code> / <code>7 days</code> to plan cooler replenishment. Optional: check <code>#engagement</code> for occasion-cohort counts and download CSV/JSON, then <code>#reminder-outbox</code> for dry-run reminder rows (not a live outbound channel).</li>
+          <li><strong>End-of-Day Review:</strong> Filter by <code>Delayed</code> to confirm zero missed orders, then review <code>3 days</code> / <code>7 days</code> to plan cooler replenishment. Optional: check <code>#engagement</code> for occasion and spend-band counts and download CSV/JSON, then <code>#reminder-outbox</code> for dry-run reminder rows (not a live outbound channel).</li>
         </ol>
       </div>
       <div class="dialog-section">

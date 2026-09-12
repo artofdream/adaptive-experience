@@ -89,9 +89,16 @@ class FakeOrchestration:
                 {"event_month": 6, "count": 1},
                 {"event_month": 9, "count": 2},
             ],
+            "subject_count": 4,
+            "spend_band_cohorts": [
+                {"spend_band": "band_0_50", "count": 1},
+                {"spend_band": "band_50_100", "count": 2},
+                {"spend_band": "band_100_250", "count": 1},
+            ],
             "browser_hash": "a" * 64,
             "secret": "omit",
             "email": "private@example.invalid",
+            "subject_reference": "sub_omit",
         }
 
     def list_operator_reminder_outbox(self, **kwargs):
@@ -882,15 +889,23 @@ class PerimeterTests(unittest.TestCase):
         self.assertEqual(30, engagement["lookahead_days"])
         self.assertEqual("birthday", engagement["occasion_cohorts"][0]["occasion_type"])
         self.assertEqual(2, engagement["occasion_cohorts"][0]["count"])
+        self.assertEqual(4, engagement["subject_count"])
+        self.assertEqual("band_0_50", engagement["spend_band_cohorts"][0]["spend_band"])
+        self.assertEqual(1, engagement["spend_band_cohorts"][0]["count"])
+        self.assertEqual("band_50_100", engagement["spend_band_cohorts"][1]["spend_band"])
+        self.assertEqual(2, engagement["spend_band_cohorts"][1]["count"])
         self.assertNotIn("secret", engagement)
         self.assertNotIn("browser_hash", engagement)
+        self.assertNotIn("subject_reference", engagement)
         self.assertNotIn(b"secret", body)
         self.assertNotIn(b"email", body)
+        self.assertNotIn(b"sub_omit", body)
         stripped = BffApp._least_data_operator_engagement({
             "memory_count": "nope",
             "unique_browsers": -4,
             "upcoming_within_days": True,
             "lookahead_days": 900,
+            "subject_count": "nope",
             "occasion_cohorts": [
                 {"occasion_type": "Birthday", "count": 2},
                 {"occasion_type": "x" * 80, "count": 9},
@@ -899,21 +914,37 @@ class PerimeterTests(unittest.TestCase):
             "relation_cohorts": [{"recipient_relation": "Mother", "count": 1}],
             "event_month_cohorts": [{"event_month": 13, "count": 1},
                                     {"event_month": 9, "count": 2}],
+            "spend_band_cohorts": [
+                {"spend_band": "band_50_100", "count": 2},
+                {"spend_band": "secret_band", "count": 9},
+                {"lifetime_spend_band": "band_250_plus", "count": 1,
+                 "subject_reference": "sub_leak"},
+            ],
             "browser_hash": "a" * 64,
             "email": "private@example.invalid",
+            "subject_reference": "sub_leak",
         })
         self.assertEqual(0, stripped["memory_count"])
         self.assertEqual(0, stripped["unique_browsers"])
         self.assertEqual(0, stripped["upcoming_within_days"])
         self.assertEqual(30, stripped["lookahead_days"])
+        self.assertEqual(3, stripped["subject_count"])
         self.assertEqual([{"occasion_type": "birthday", "count": 2}],
                          stripped["occasion_cohorts"])
         self.assertEqual([{"recipient_relation": "mother", "count": 1}],
                          stripped["relation_cohorts"])
         self.assertEqual([{"event_month": 9, "count": 2}],
                          stripped["event_month_cohorts"])
+        self.assertEqual(
+            [{"spend_band": "band_0_50", "count": 0},
+             {"spend_band": "band_50_100", "count": 2},
+             {"spend_band": "band_100_250", "count": 0},
+             {"spend_band": "band_250_plus", "count": 1}],
+            stripped["spend_band_cohorts"])
         self.assertNotIn("browser_hash", stripped)
         self.assertNotIn("email", stripped)
+        self.assertNotIn("subject_reference", stripped)
+        self.assertNotIn("secret_band", json.dumps(stripped))
         status, headers, body = call(
             "GET", "/api/v1/operator/engagement/export", auth, b"", b"format=csv")
         self.assertEqual(200, status)
@@ -923,11 +954,14 @@ class PerimeterTests(unittest.TestCase):
         csv_text = body.decode()
         self.assertIn("section,key,count", csv_text)
         self.assertIn("totals,memory_count,3", csv_text)
+        self.assertIn("totals,subject_count,4", csv_text)
         self.assertIn("occasion,birthday,2", csv_text)
         self.assertIn("relation,mother,2", csv_text)
+        self.assertIn("spend_band,band_50_100,2", csv_text)
         self.assertNotIn("browser_hash", csv_text)
         self.assertNotIn("secret", csv_text)
         self.assertNotIn("private@example.invalid", csv_text)
+        self.assertNotIn("sub_omit", csv_text)
         status, headers, body = call(
             "GET", "/api/v1/operator/engagement/export", auth, b"", b"format=json")
         self.assertEqual(200, status)
@@ -935,9 +969,12 @@ class PerimeterTests(unittest.TestCase):
         self.assertIn("florist-engagement-cohorts.json", headers["content-disposition"])
         exported = json.loads(body)
         self.assertEqual(3, exported["memory_count"])
+        self.assertEqual(4, exported["subject_count"])
         self.assertEqual("birthday", exported["occasion_cohorts"][0]["occasion_type"])
+        self.assertEqual("band_50_100", exported["spend_band_cohorts"][1]["spend_band"])
         self.assertNotIn("browser_hash", exported)
         self.assertNotIn("email", exported)
+        self.assertNotIn("subject_reference", exported)
         self.assertNotIn(b"secret", body)
         status, _, body = call(
             "GET", "/api/v1/operator/engagement/export", auth, b"", b"format=xlsx")

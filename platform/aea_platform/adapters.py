@@ -1363,6 +1363,22 @@ class PsycopgCrmStore:
             ).fetchone()
         return self._subject_profile_row(row)
 
+    def count_spend_bands(self) -> list[dict]:
+        """Zero-PII lifetime spend-band counts for florist dashboards (FR-017).
+
+        Returns band + count only. Never selects subject_reference,
+        lifetime_spend_cents, or contact fields.
+        """
+        rows = self.connection.execute(
+            "SELECT lifetime_spend_band, COUNT(*) "
+            "FROM orchestration.subject_profile "
+            "GROUP BY lifetime_spend_band"
+        ).fetchall()
+        return [
+            {"spend_band": str(row[0]), "count": int(row[1])}
+            for row in rows
+        ]
+
     def get_crm_profile(self, subject_reference: str) -> dict | None:
         """Least-data pseudonymous profile for the operator console (ADR-020)."""
         row = self.connection.execute(
