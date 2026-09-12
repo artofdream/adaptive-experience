@@ -6,8 +6,10 @@ cookie maps to the last accepted SKU. Same-session T-03 hint (#190) is
 already on the shop after an accepted order. Path B Need-phase Reorder
 card (#419) is the customer-visible reorder slice: a returning browser with
 that cookie and a fresh Need (no chat, no occasion) sees **Reorder
-previous bouquet**. Parent #27 stays open — last-SKU recall is not full
-purchase-history CRM. After an accepted order, the same fresh Need also
+previous bouquet**. When the cookie holds more than one accepted SKU, Need
+shows a history chooser (#426). Parent #27 stays open — same-browser
+opaque recall is not cross-device login or CRM (#35 / #36). After an
+accepted order, the same fresh Need also
 surfaces a deterministic FR-016 occasion reminder (#420) from zero-PII
 memory when the delivery anniversary is inside the 30-day lookahead.
 Parent #35 stays open — in-session pull is not AI-generated outbound send.
@@ -56,9 +58,11 @@ Do not open `/florist` in the same browser as the shop.
     selection / the next checkout step (#424). The same fresh Need also
     shows **Shop this occasion →** (#420) when `reminders.items` is present.
     A brand-new browser with no recall cookie is empty-wallet hide — not a
-    product fail.
-11. Multi-order purchase history and cross-device accounts remain leftover on
-    parent #27. Do not treat this script as closing FR-008.
+    product fail. When the same cookie holds ≥2 accepted SKUs, Need shows a
+    history chooser (#426) so the shopper can pick a **non-latest** prior
+    bouquet. Least-data only — no login, no PII.
+11. Cross-device login remains leftover on parent #27. Do not treat this
+    script as closing FR-008. Workbook FR-008 stays Future.
     AI-generated outbound reminders remain leftover on parent #35.
 12. Help (`?`) once — automated answers, not a person.
 

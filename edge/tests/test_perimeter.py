@@ -646,6 +646,27 @@ class PerimeterTests(unittest.TestCase):
         self.assertNotIn("order_id", prior)
         self.assertNotIn("payment_reference", prior)
 
+    def test_workspace_keeps_prior_orders_list_and_drops_secrets(self):
+        """FR-008 #426: BFF allowlists prior_orders[] and drops PII."""
+        shaped = BffApp._least_data_workspace({
+            "context_version": 2,
+            "facets": {"prior_orders": [
+                {"product_id": "lilac-bouquet", "secret": "omit",
+                 "recipient": "Mum", "order_id": "drop-me", "size": "Standard"},
+                {"product_id": "classic-rose-dozen", "quantity": 1},
+                {"product_id": "  "},
+                {"secret": "omit"},
+            ]},
+            "ai_generated": False})
+        items = shaped["facets"]["prior_orders"]
+        self.assertEqual([
+            {"product_id": "lilac-bouquet", "size": "Standard"},
+            {"product_id": "classic-rose-dozen", "quantity": 1},
+        ], items)
+        self.assertNotIn("secret", items[0])
+        self.assertNotIn("order_id", items[0])
+        self.assertNotIn("recipient", items[0])
+
     def test_workspace_omits_empty_prior_order_facet(self):
         shaped = BffApp._least_data_workspace({
             "context_version": 1,

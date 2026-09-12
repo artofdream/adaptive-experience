@@ -2,9 +2,9 @@
 
 Live Path B uses :func:`least_data_reorder_options` against a real
 ``customer_order.product`` snapshot (same-session accepted order or the
-durable ``order_id`` join from migration 017). The in-memory
-``ReorderService`` below remains a unit-test helper — it is not the Path B
-store.
+durable ``order_id`` join from migration 017). :data:`PRIOR_ORDERS_CAP`
+caps the #426 multi-SKU history facet. The in-memory ``ReorderService``
+below remains a unit-test helper — it is not the Path B store.
 
 Coherent with ADR-005, ADR-009, ADR-013, and FR-008.
 """
@@ -16,13 +16,17 @@ from typing import Any, Dict, List, Optional
 
 from .selection import normalize_card_message, normalize_quantity, normalize_size
 
+# Least-data Path B history chooser (#426). Last 3–5 accepted SKUs; not CRM.
+PRIOR_ORDERS_CAP = 5
+
 
 def least_data_reorder_options(product: Any) -> Dict[str, Any]:
     """Extract size / quantity / card from a real order product snapshot.
 
-    FR-008 Path B modify-before-reorder. Drops recipient, delivery, payment,
-    order_id, and any other keys. Invalid tokens are omitted, not raised —
-    a corrupt historical snapshot must not break workspace projection.
+    FR-008 Path B modify-before-reorder and history chooser. Drops
+    recipient, delivery, payment, order_id, and any other keys. Invalid
+    tokens are omitted, not raised — a corrupt historical snapshot must
+    not break workspace projection.
     """
     if not isinstance(product, dict):
         return {}
@@ -47,6 +51,29 @@ def least_data_reorder_options(product: Any) -> Dict[str, Any]:
         except Exception:
             pass
     return projected
+
+
+def least_data_prior_order(product: Any) -> Dict[str, Any] | None:
+    """SKU plus size / quantity / card. No recipient, payment, or order_id."""
+    if not isinstance(product, dict):
+        return None
+    product_id = product.get("product_id")
+    if not isinstance(product_id, str) or not product_id.strip():
+        return None
+    projected = {"product_id": product_id.strip()}
+    projected.update(least_data_reorder_options(product))
+    return projected
+
+
+def prior_order_fingerprint(prior: Dict[str, Any]) -> tuple:
+    """Dedupe key for the history chooser (SKU + allowed option tokens)."""
+    quantity = prior.get("quantity")
+    return (
+        prior.get("product_id") or "",
+        prior.get("size") or "",
+        quantity if isinstance(quantity, int) else "",
+        prior.get("card_message") or "",
+    )
 
 
 @dataclass

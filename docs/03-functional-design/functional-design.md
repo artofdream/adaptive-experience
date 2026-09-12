@@ -34,7 +34,7 @@ active stage without replacing the adaptive workspace.
 | Support Escalation (T-09) | Customer requests human florist follow-up for an unresolved request. Records `support.escalation.requested`; does not open a staff CRM. | FR-006 | Future (thin path delivered) |
 | Situational support (ASO) | Automates answers about this session's order status, delivery details, and product availability from authoritative facts. | FR-010 | Future (thin path delivered) |
 | Inventory forecast | Manager insights from validated inventory snapshot history (replenish / monitor / insufficient). Not a customer tile. | FR-012 | Future (thin path delivered) |
-| Browser prior-order hint | Last accepted product in this browser (durable cookie, no login) may boost that product on T-03. A fresh Need with the same cookie may show a one-tap Reorder card. Not purchase-history CRM. | FR-008 | Future (thin path delivered) |
+| Browser prior-order hint | Last accepted product in this browser (durable cookie, no login) may boost that product on T-03. A fresh Need with the same cookie may show a one-tap Reorder card, or a small history chooser when several accepted SKUs exist. Not purchase-history CRM and not cross-device login. | FR-008 | Future (thin path delivered) |
 
 ASO is distinct from tile **T-09 Support Escalation** (FR-006). See ADR-004 and
 `docs/03-functional-design/automated-support-overlay.md`. The inventory

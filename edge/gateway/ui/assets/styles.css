@@ -228,6 +228,28 @@ h2 { font-size: 1.15rem; }
 .need-reorder-copy strong { font-size: 1rem; }
 .need-reorder-copy span { color: var(--muted); font-size: .8rem; }
 .need-reorder-actions { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
+.need-reorder-history {
+  flex: 1 0 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem;
+}
+.need-reorder-history[hidden] { display: none; }
+.need-reorder-choice {
+  appearance: none;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: inherit;
+  border-radius: .5rem;
+  padding: .35rem .65rem;
+  font: inherit;
+  font-size: .85rem;
+  cursor: pointer;
+}
+.need-reorder-choice[aria-selected="true"] {
+  border-color: var(--purple-deep);
+  background: var(--lavender-soft);
+}
 .need-reminder {
   display: flex;
   align-items: center;

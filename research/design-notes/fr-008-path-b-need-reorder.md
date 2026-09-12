@@ -30,12 +30,13 @@ surface. Modifications persist only through the normal selection /
 delivery / checkout commands. No recipient or payment prefills.
 
 Not AI-ranked. Not CRM (#35 / #36). Not a PII account. Parent #27 stays
-open: this is last-SKU browser recall, not multi-order purchase history.
+open: last-SKU recall is the #419 slice. Multi-SKU same-browser history
+is #426. Cross-device login is still leftover.
 
 ## Not in this slice
 
-Cross-device accounts, persistent purchase-history lists, recipient or
-payment prefills, native push (ADR-019), or replacing FR-007. The
+Cross-device accounts, recipient or payment prefills, native push
+(ADR-019), or replacing FR-007. Multi-order history is #426. The
 in-memory `ReorderService` store is not the live Path B path.
 
 ## Prove

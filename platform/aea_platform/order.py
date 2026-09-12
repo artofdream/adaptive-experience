@@ -4,7 +4,6 @@ import uuid
 from datetime import datetime, timezone
 from typing import Callable
 
-from .reorder import least_data_reorder_options
 from .selection import CARD_MESSAGE_MAX_LENGTH
 
 # Order status lifecycle: creation, checkout submission, payment confirmation
@@ -195,11 +194,27 @@ class OrderService:
             return None
         return str(product["product_id"]).strip()
 
-    def _recalled_product_snapshot(self, session_id: str) -> dict | None:
-        """Durable browser recall → last accepted ``customer_order.product``."""
+    def _recalled_products(self, session_id: str) -> list[dict]:
+        """Durable browser recall → accepted ``customer_order.product`` rows."""
         if not isinstance(session_id, str) or not session_id.strip():
-            return None
+            return []
         sid = session_id.strip()
+        listing = getattr(self.store, "recalled_products", None)
+        if callable(listing):
+            try:
+                rows = listing(sid)
+            except Exception:
+                rows = None
+            if isinstance(rows, list):
+                products = []
+                for value in rows:
+                    if isinstance(value, dict):
+                        product_id = value.get("product_id")
+                        if isinstance(product_id, str) and product_id.strip():
+                            products.append(value)
+                    elif isinstance(value, str) and value.strip():
+                        products.append({"product_id": value.strip()})
+                return products
         snapshot = getattr(self.store, "recalled_product", None)
         if callable(snapshot):
             try:
@@ -209,37 +224,54 @@ class OrderService:
             if isinstance(value, dict):
                 product_id = value.get("product_id")
                 if isinstance(product_id, str) and product_id.strip():
-                    return value
+                    return [value]
             if isinstance(value, str) and value.strip():
-                return {"product_id": value.strip()}
+                return [{"product_id": value.strip()}]
         lookup = getattr(self.store, "recalled_product_id", None)
         if not callable(lookup):
-            return None
+            return []
         try:
             value = lookup(sid)
         except Exception:
-            return None
+            return []
         if not isinstance(value, str) or not value.strip():
-            return None
-        return {"product_id": value.strip()}
+            return []
+        return [{"product_id": value.strip()}]
+
+    def prior_orders_projection(self, session_id: str) -> list[dict]:
+        """Least-data FR-008 history: last few accepted SKUs for this browser.
+
+        Same-session accepted order is listed first; durable recalls follow.
+        Each item is SKU plus size / quantity / card. Never recipient,
+        delivery, payment, or order_id. Cap is :data:`PRIOR_ORDERS_CAP`.
+        """
+        from .reorder import (PRIOR_ORDERS_CAP, least_data_prior_order,
+                              prior_order_fingerprint)
+        items: list[dict] = []
+        seen: set[tuple] = set()
+        same = self.session_prior_product(session_id)
+        if same is not None:
+            projected = least_data_prior_order(same)
+            if projected:
+                items.append(projected)
+                seen.add(prior_order_fingerprint(projected))
+        for product in self._recalled_products(session_id):
+            projected = least_data_prior_order(product)
+            if not projected:
+                continue
+            fingerprint = prior_order_fingerprint(projected)
+            if fingerprint in seen:
+                continue
+            items.append(projected)
+            seen.add(fingerprint)
+            if len(items) >= PRIOR_ORDERS_CAP:
+                break
+        return items[:PRIOR_ORDERS_CAP]
 
     def prior_order_projection(self, session_id: str) -> dict | None:
-        """Least-data FR-008 Need facet: SKU plus size / quantity / card.
-
-        Same-session accepted order wins; otherwise durable recall. Never
-        includes recipient, delivery, payment, or order_id.
-        """
-        product = self.session_prior_product(session_id)
-        if product is None:
-            product = self._recalled_product_snapshot(session_id)
-        if not isinstance(product, dict):
-            return None
-        product_id = product.get("product_id")
-        if not isinstance(product_id, str) or not product_id.strip():
-            return None
-        projected = {"product_id": product_id.strip()}
-        projected.update(least_data_reorder_options(product))
-        return projected
+        """Latest least-data FR-008 Need facet (last accepted SKU + options)."""
+        items = self.prior_orders_projection(session_id)
+        return items[0] if items else None
 
     def prior_product_id(self, session_id: str) -> str | None:
         """FR-007 ranking hint: this session's accepted order, else this browser.

@@ -853,6 +853,18 @@ class BffApp:
             prior = BffApp._least_data_prior_order(facets_in["prior_order"])
             if prior:
                 facets["prior_order"] = prior
+        if isinstance(facets_in.get("prior_orders"), list):
+            items = []
+            for raw_prior in facets_in["prior_orders"]:
+                if not isinstance(raw_prior, dict):
+                    continue
+                prior = BffApp._least_data_prior_order(raw_prior)
+                if prior:
+                    items.append(prior)
+                if len(items) >= 5:
+                    break
+            if items:
+                facets["prior_orders"] = items
         return {"context_version": int(raw.get("context_version", 0)),
                 "facets": facets,
                 "ai_generated": bool(raw.get("ai_generated", False)),

@@ -172,6 +172,36 @@ class ReturningShopperClassifyTests(unittest.TestCase):
         )
         self.assertEqual("blocked", result)
 
+    def test_prior_sku_chooser_blocked_without_two_skus(self) -> None:
+        result, reason = walk.classify_prior_sku_history_chooser(
+            prior_skus=["classic-rose-dozen"],
+            chosen_product_id=None,
+            choice_visible=False,
+            payment_included=True,
+        )
+        self.assertEqual("blocked", result)
+        self.assertIn("≥2", reason)
+
+    def test_prior_sku_chooser_passes_when_non_latest_chosen(self) -> None:
+        result, reason = walk.classify_prior_sku_history_chooser(
+            prior_skus=["lilac-bouquet", "classic-rose-dozen"],
+            chosen_product_id="classic-rose-dozen",
+            choice_visible=True,
+            payment_included=True,
+        )
+        self.assertEqual("pass", result)
+        self.assertIn("classic-rose-dozen", reason)
+
+    def test_prior_sku_chooser_fails_when_history_missing(self) -> None:
+        result, reason = walk.classify_prior_sku_history_chooser(
+            prior_skus=["lilac-bouquet", "classic-rose-dozen"],
+            chosen_product_id=None,
+            choice_visible=False,
+            payment_included=True,
+        )
+        self.assertEqual("fail", result)
+        self.assertIn("#426", reason)
+
     def test_need_reminder_card_blocked_without_payment(self) -> None:
         result, _reason = walk.classify_need_reminder_card(
             card_visible=False, payment_included=False
@@ -211,6 +241,7 @@ class ReturningShopperJourneyDocTests(unittest.TestCase):
         self.assertIn("#420", text)
         self.assertIn("#422", text)
         self.assertIn("#424", text)
+        self.assertIn("#426", text)
         self.assertIn("xfail", text)
         self.assertIn("NFR-007", text)
         self.assertIn("walk_returning_shopper.py", text)
