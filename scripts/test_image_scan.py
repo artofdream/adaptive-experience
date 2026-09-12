@@ -193,6 +193,28 @@ class ImageScanGateTests(unittest.TestCase):
         ]
         self.assertEqual(leftover, [], "do not time-box #409; rebuild gateway libexpat")
 
+    def test_orchestration_rebuilds_libpcre2_instead_of_excepting(self) -> None:
+        dockerfile = (ROOT / "platform" / "Dockerfile.orchestration").read_text(
+            encoding="utf-8")
+        self.assertRegex(
+            dockerfile,
+            r"FROM python:3\.12-slim-bookworm@sha256:[0-9a-f]{64}",
+        )
+        self.assertIn("10.42-1+deb12u1", dockerfile)
+        self.assertIn("libpcre2-8-0", dockerfile)
+        self.assertIn("apt-get install", dockerfile)
+        items = load_exceptions()
+        blocked_ids = {"CVE-2026-86145", "CVE-2026-89161"}
+        leftover = [
+            item
+            for item in items
+            if item["id"] in blocked_ids and item["image"] in {"orchestration", "*"}
+        ]
+        self.assertEqual(
+            leftover, [],
+            "do not time-box libpcre2; rebuild orchestration libpcre2-8-0",
+        )
+
     def test_exceptions_file_is_strict_with_owner_reason_expiry(self) -> None:
         items = load_exceptions()
         payload = json.loads(EXCEPTIONS.read_text(encoding="utf-8"))
