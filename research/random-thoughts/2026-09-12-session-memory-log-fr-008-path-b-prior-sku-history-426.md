@@ -34,7 +34,7 @@ This session ships child [#426](https://gitlab.com/artof-group/adaptive-experien
 | Workbook FR-008 Future | Do not promote IDs from this MR |
 | Full purchase-history CRM | Same-browser cap of 5 least-data SKUs is not #35 / #36 |
 
-#424 modify-before-reorder remains its own child if it has not merged; this slice reuses the same option allowlist and does not reopen that issue.
+#424 modify-before-reorder is already on `main` (`!504`). This slice reuses that option allowlist plus **Modify →**, and does not reopen #419 / #422 / #424. Rebased onto `7050c3d` after #424 landed.
 
 ---
 
