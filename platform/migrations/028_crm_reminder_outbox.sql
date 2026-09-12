@@ -1,4 +1,4 @@
--- 027_crm_reminder_outbox.sql
+-- 028_crm_reminder_outbox.sql
 -- FR-016 / #428: least-data outbound reminder outbox (dry-run only).
 -- Categorical occasion fields + copy. No contact columns (no email/phone/push token).
 -- Rows stay status=dry_run; send is stubbed fail-closed (not_sent / not_implemented).
@@ -27,7 +27,7 @@ CREATE INDEX IF NOT EXISTS idx_crm_reminder_outbox_status
     ON crm.reminder_outbox (status, send_disposition, days_until_event);
 
 INSERT INTO orchestration.schema_migration (version)
-VALUES (27)
+VALUES (28)
 ON CONFLICT (version) DO NOTHING;
 
 COMMIT;

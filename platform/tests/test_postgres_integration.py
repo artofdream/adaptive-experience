@@ -109,8 +109,8 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
             int(path.name[:3])
             for path in sorted((ROOT / "migrations").glob("[0-9][0-9][0-9]_*.sql"))
         ]
-        self.assertEqual(len(expected), 27)
-        self.assertTrue({19, 20, 21, 22, 23, 24, 25, 26, 27}.issubset(set(expected)))
+        self.assertEqual(len(expected), 28)
+        self.assertTrue({19, 20, 21, 22, 23, 24, 25, 26, 27, 28}.issubset(set(expected)))
         self.assertEqual(expected, versions)
 
     def test_superseded_mutation_function_is_dropped(self):

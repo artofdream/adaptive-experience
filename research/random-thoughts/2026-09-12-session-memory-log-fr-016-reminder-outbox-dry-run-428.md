@@ -16,7 +16,7 @@ Parent [#35](https://gitlab.com/artof-group/adaptive-experience-architecture/-/w
 
 ## 2. Slice that shipped
 
-- Migration `027_crm_reminder_outbox.sql` — least-data rows (`occasion_type`, `recipient_relation`, `days_until_event`, copy). No contact columns. `ON DELETE CASCADE` from occasion memory.
+- Migration `028_crm_reminder_outbox.sql` — least-data rows (`occasion_type`, `recipient_relation`, `days_until_event`, copy). No contact columns. `ON DELETE CASCADE` from occasion memory. Renumbered after #426 claimed `027_browser_prior_order_history.sql`.
 - `EngagementCrmService` enqueues when a recorded occasion is inside lookahead; `enqueue_upcoming_dry_run` rescans. Copy reuses #425 `_authored_copy` (`ai` or `template`).
 - Operator `GET /internal/v1/operator/reminder-outbox` + BFF `/api/v1/operator/reminder-outbox` + `/florist` `#reminder-outbox` list counts and rows without contact PII.
 - `POST .../send` is stubbed fail-closed: `not_implemented` / `dry_run` / `sent=false`. Never delivers.
