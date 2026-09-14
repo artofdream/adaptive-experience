@@ -92,3 +92,15 @@ Do **not** mark Live without a probe. Do **not** treat the article as a requirem
 ## 6. Wikilinks
 
 [[2026-09-12-session-memory-log-keep-learning-and-apply-principle]] · [[2026-09-14-session-memory-log-path-b-dual-viewport-probe]] · #434 · #441
+
+## 7. Full research + visual guide regen (same MR)
+
+Sponsor follow-up: regenerate dated full research + visual guide (and undated current copies) integrating the gap matrix — keep pushing onto !520.
+
+- `research/random-thoughts/2026-09-14-aea-framework-harness-engineering.md`
+- `research/random-thoughts/2026-09-14-aea-framework-harness-engineering-visual-guide.md`
+- `research/pdf-export/aea-framework-harness-engineering-full-research-2026-09-14.{html,pdf}` (+ undated current)
+- `research/pdf-export/aea-framework-harness-engineering-visual-guide-2026-09-14.{html,pdf}` (+ undated current)
+- `scripts/build_full_research_paper_pdf.py` / `scripts/build_visual_guide_pdf.py` retargeted to 2026-09-14 (+ Linux Chromium fallback)
+
+Builder commands (box): `/workspace/.venv-pdf/bin/python scripts/build_full_research_paper_pdf.py` then `.../build_visual_guide_pdf.py`.
