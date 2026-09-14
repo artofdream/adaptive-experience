@@ -4,7 +4,7 @@ This page is the public architectural map of Adaptive Experience Architecture. I
 
 > **In Plain English:** When an AI assistant helps a shopper, it shouldn't be an unconstrained chatbot making up answers. This blueprint shows the scaffolding that wraps around the AI: checking real store databases, executing a strict 4-step loop (Interpret → Act → Verify → Remember), and using specialized quality checks to prevent mistakes.
 
-[Formula](#the-core-formula) · [Six layers](#the-six-layers) · [The loop](#the-execution-loop) · [Team roles](#team-roles-and-responsibilities) · [Journeys](#tested-customer-journeys) · [Stack](stack.html)
+[Formula](#the-core-formula) · [Six layers](#the-six-layers) · [The loop](#the-execution-loop) · [Agent coordination](#agent-coordination-harness-loop-graph) · [Team roles](#team-roles-and-responsibilities) · [Journeys](#tested-customer-journeys) · [Stack](stack.html)
 
 ---
 
@@ -49,6 +49,33 @@ Every interaction between a customer and the system follows a disciplined 4-step
 | **4. Remember** | Persist agreed state to session memory | The customer's cart, occasion, and preferences survive page reloads |
 
 ![The four-step execution loop: Interpret, Act, Verify, Remember](assets/the-loop.svg)
+
+---
+
+---
+
+## Agent coordination (Harness / Loop / Graph)
+
+Path B / Lily's Florist remains the **product** case study on this site. This section is about how AEA **agents and the Outer Harness** operate when work is multi-step or multi-role — vocabulary adopted via Keep Learning from an external agent-OS article ([0xwhrrari, 2026-09-03](https://x.com/0xwhrrari/status/2095497109524934750)). It is **not** a product endorsement of any vendor Bot feature, and it invents no FR/NFR IDs. Status until Pages probe: **Documented**.
+
+External writing often names three control layers around a model: **Harness** (environment), **Loop** (improvement), **Graph** (coordination), plus an approval boundary. AEA already owns those jobs inside the six Outer Harness layers — this map makes the correspondence explicit:
+
+| External control layer (learning) | AEA Outer Harness home | What AEA already does |
+|---|---|---|
+| **Harness** (world the agent may enter) | Guides + Memory + Permissions + Observability | Playbooks, committed vault memory, access gates, telemetry |
+| **Loop** (when work may continue) | Loop + Sensors | Interpret→Act→Verify→Remember; 1 finding→1 issue→1 MR; probes before status words |
+| **Graph** (who owns what) | Guides + Permissions (+ team roles) | Stakeholder specialists, MRC ≠ implementer, fail-closed ownership |
+| **Approval boundary** | Permissions + Observability | Human/MRC gates; irreversible actions parked |
+
+**Adopted thin vocabulary** (see [Glossary](glossary.html#agent-coordination-vocabulary)):
+
+1. **Autonomy ladder (0–4)** — Observe → Prepare → Execute-with-approval → Schedule-or-trigger → Coordinate-specialists; promote by evidence, demote on degradation.
+2. **Approval by reversibility** — finish reversible work; park send / publish / purchase / delete / production / legal.
+3. **Handoff packet** — compact `from` / `to` / `objective` / `artifacts` / `decisions` / `constraints` / `open_questions` / `next_gate` (not full transcripts).
+4. **Account connection ≠ role authority** — plumbing is not permission.
+5. **Independent checker** — builder ≠ verifier (same spirit as MRC vs implementer).
+
+Multi-agent work is a **graph**: specialists own lanes; a coordinator owns intake, routing, and escalation; handoff packets pass ownership. Do not grow the graph for spectacle — add a specialist when context noise, weak self-review, or divergent permissions create a real bottleneck.
 
 ---
 

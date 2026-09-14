@@ -103,6 +103,35 @@ A short inbox note after a run: what failed, what changed, which fix worked. It 
 
 ---
 
+## Agent coordination vocabulary
+
+### Autonomy Ladder
+Evidence-backed promotion of agent (or routine) autonomy across five levels: **0 Observe**, **1 Prepare**, **2 Execute-with-approval**, **3 Schedule-or-trigger**, **4 Coordinate-specialists**. Promote only when prior-level runs leave durable proof; demote when quality degrades. Autonomy is a runtime privilege, not a permanent label.
+- **Why it matters:** Jumping from first demo to unattended work turns agents into always-on confusion. Trust expands in the same order as evidence.
+- **Where to see it:** [Schema — Agent coordination](schema.html#agent-coordination-harness-loop-graph); maps onto Permissions + Loop + Observability. External learning cited from [0xwhrrari X Article](https://x.com/0xwhrrari/status/2095497109524934750) (Keep Learning, not product endorsement).
+
+### Approval by Reversibility
+Finish reversible work; park irreversible gates for a human. Irreversible examples: send, publish, purchase, delete, production change, legal commitment. A good run completes the reversible majority, stages the exact next action, and stops at the boundary — it does not stall at 10% because approval is needed later.
+- **Why it matters:** Task size is a weak approval signal. Undoability is a better one. Keeps autonomy useful without becoming reckless.
+- **Where to see it:** [Schema — Agent coordination](schema.html#agent-coordination-harness-loop-graph); same spirit as fail-closed Domain Services and MRC merge gates. External learning: [0xwhrrari](https://x.com/0xwhrrari/status/2095497109524934750).
+
+### Handoff Packet
+A compact ownership transfer between agents or roles — not a full transcript. Minimum fields: **from**, **to**, **objective**, **artifacts**, **decisions**, **constraints**, **open_questions**, **next_gate**. Artifacts hold detail; the packet holds state; the thread holds discussion.
+- **Why it matters:** Copying whole chats pollutes context and hides who owns the next proof. Compact packets make multi-agent graphs auditable.
+- **Where to see it:** [Schema — Agent coordination](schema.html#agent-coordination-harness-loop-graph); complements Shared Understanding and vault memory outside chat. External learning: [0xwhrrari](https://x.com/0xwhrrari/status/2095497109524934750).
+
+### Account Connection vs Role Authority
+Connecting an account or tool is **plumbing** (what the shared environment can reach). A role contract is **permission** (what this agent may do with that reach). Keep the two decisions separate. One careless connection is larger than one agent when sessions are shared.
+- **Why it matters:** "Connected" is not "authorized." Plumbing ≠ permission — same honesty as Domain Services deciding stock while AI only interprets.
+- **Where to see it:** Permissions layer; [Schema — Agent coordination](schema.html#agent-coordination-harness-loop-graph). External learning: [0xwhrrari](https://x.com/0xwhrrari/status/2095497109524934750).
+
+### Independent Checker
+The builder is not the verifier. Generation and approval use separate prompts, rubrics, or roles — same spirit as **MRC vs implementer** and probe-before-status-words. Add a checker before promoting autonomy on the ladder.
+- **Why it matters:** Self-review feels optimistic; independent evidence moves the loop.
+- **Where to see it:** Team roles (MRC merges); Sensors + Observability; [Schema — Agent coordination](schema.html#agent-coordination-harness-loop-graph). External learning: [0xwhrrari](https://x.com/0xwhrrari/status/2095497109524934750).
+
+---
+
 ## Related Documentation
 
 - [Framework Home](index.html) — Core formula and overview.
