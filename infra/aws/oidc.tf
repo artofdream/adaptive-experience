@@ -87,7 +87,7 @@ data "aws_iam_policy_document" "gitlab_ci" {
   }
   statement {
     sid       = "EcsDeployUntaggedRegister"
-    actions   = ["ecs:RegisterTaskDefinition", "ecs:DescribeTaskDefinition", "ecs:UpdateService", "ecs:DescribeServices", "ecs:DescribeClusters", "ecs:RunTask", "iam:PassRole"]
+    actions   = ["ecs:RegisterTaskDefinition", "ecs:DescribeTaskDefinition", "ecs:UpdateService", "ecs:DescribeServices", "ecs:DescribeClusters", "ecs:RunTask", "ecs:DescribeTasks", "ecs:ListTasks", "iam:PassRole"]
     resources = ["*"]
   }
   statement {

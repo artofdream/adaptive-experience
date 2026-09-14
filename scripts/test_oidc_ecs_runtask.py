@@ -1,4 +1,4 @@
-"""#437: GitLab CI OIDC must allow ecs:RunTask without Project tag (task defs)."""
+"""#437: GitLab CI OIDC must allow ecs:RunTask/DescribeTasks without Project tag (task defs)."""
 from __future__ import annotations
 import unittest
 from pathlib import Path
@@ -15,6 +15,8 @@ class OidcRunTaskIamTests(unittest.TestCase):
         end = text.find("statement {", start + 10)
         block = text[start:end if end > start else start + 500]
         self.assertIn("ecs:RunTask", block)
+        self.assertIn("ecs:DescribeTasks", block)
+        self.assertIn("ecs:ListTasks", block)
         self.assertIn("iam:PassRole", block)
 
 
