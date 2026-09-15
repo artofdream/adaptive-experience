@@ -297,8 +297,15 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
         self.assertNotIn("email", blob)
         self.assertNotIn("@", blob)
 
+    @staticmethod
+    def _upcoming_delivery_date(*, days_ahead: int = 14) -> str:
+        """Calendar-stable occasion date inside the FR-016 lookahead window."""
+        return (datetime.now(timezone.utc).date() + timedelta(days=days_ahead)).isoformat()
+
     def _assemble_order_decisions(self, session_id, *, occasion="birthday",
-                                  recipient="mum", date="2026-09-15"):
+                                  recipient="mum", date=None):
+        if date is None:
+            date = self._upcoming_delivery_date()
         from aea_platform.adapters import PsycopgExperienceStateStore
         from aea_platform.state import StatePatch
         store = PsycopgExperienceStateStore(self.connection)
@@ -319,11 +326,11 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
 
     def test_order_capture_writes_occasion_and_workspace_surfaces_reminder(self):
         import asyncio
-        from datetime import date as date_cls
         from aea_platform.internal_api import InternalOrchestrationApp
 
         session_id = self.create_session()
-        self._assemble_order_decisions(session_id)
+        delivery_date = self._upcoming_delivery_date()
+        self._assemble_order_decisions(session_id, date=delivery_date)
         app = InternalOrchestrationApp(self.connection, "internal-token")
 
         def drive(method, path, body=b""):
@@ -343,7 +350,8 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
             "SELECT occasion_type, event_month, event_day, recipient_relation, session_id "
             "FROM crm.customer_occasion_memory").fetchall()
         self.assertEqual(1, len(rows))
-        self.assertEqual(("birthday", 9, 15, "mum"), tuple(rows[0][:4]))
+        expected_month, expected_day = (int(part) for part in delivery_date.split("-")[1:])
+        self.assertEqual(("birthday", expected_month, expected_day, "mum"), tuple(rows[0][:4]))
         self.assertEqual(str(session_id), str(rows[0][4]))
 
         # Subject profile captured once with a running spend band.
@@ -380,10 +388,12 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
     def test_workspace_reminder_copy_is_ai_authored_then_template_on_failure(self):
         # FR-016 #425: same workspace facet; AI copy when author is healthy, template if not.
         import asyncio
+        from aea_platform.crm import format_reminder_text
         from aea_platform.internal_api import InternalOrchestrationApp
 
         session_id = self.create_session()
-        self._assemble_order_decisions(session_id)
+        # Keep occasion off "today" so template fallback includes Upcoming: (not same-day).
+        self._assemble_order_decisions(session_id, date=self._upcoming_delivery_date())
 
         class Healthy:
             def author(self, **_):
@@ -406,12 +416,21 @@ class PostgreSQLIntegrationTests(unittest.TestCase):
                          reminder["reminder_text"])
         self.assertEqual({"occasion_type", "days_until_event", "reminder_text",
                           "recipient_relation"}, set(reminder))
+        self.assertGreater(reminder["days_until_event"], 0)
 
         down = InternalOrchestrationApp(
             self.connection, "internal-token", reminder_copy_author=Down())
         _, fallback = asyncio.run(self._invoke_internal(
             down, "GET", f"/internal/v1/sessions/{session_id}/workspace"))
-        text = fallback["facets"]["reminders"]["items"][0]["reminder_text"]
+        item = fallback["facets"]["reminders"]["items"][0]
+        text = item["reminder_text"]
+        days = item["days_until_event"]
+        self.assertGreater(days, 0)
+        self.assertEqual(
+            format_reminder_text(
+                occasion_type="birthday", recipient_relation="mum",
+                days_until_event=days),
+            text)
         self.assertIn("Upcoming:", text)
         self.assertIn("Birthday", text)
         self.assertNotIn("smtp", json.dumps(fallback).lower())
