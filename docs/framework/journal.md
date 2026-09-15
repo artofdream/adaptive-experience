@@ -76,6 +76,15 @@ A short history of Adaptive Experience Architecture: what was difficult, how we 
 
 ---
 
+## Keep Learning: agent-OS vocabulary (2026-09-14)
+
+- **The Challenge:** An external X Article ([Grok Bot: The AI Team That Never Sleeps](https://x.com/0xwhrrari/status/2095497109524934750) by 0xwhrrari / rari) described harness / loop / graph control layers, an autonomy ladder, reversibility-based approvals, and compact handoff packets. Without a deliberate compare, teams either ignore useful language or rewrite AEA as if those ideas were brand-new.
+- **The Solution:** Keep Learning and Apply — adopt only the **gaps**. AEA already had the formula, six Outer Harness layers, Interpret→Act→Verify→Remember, vault memory, MRC≠implementer, fail-closed, and probe-before-status. We added thin glossary + schema vocabulary: autonomy ladder (0–4), approval by reversibility, handoff packet, account connection vs role authority, independent checker — mapped onto existing layers.
+- **What Shipped:** Documented framework pages + vault gap matrix (this journal entry). **Not** Live until architecture.artof.link is probed after merge. **Not** a Path B shop feature. **Not** an endorsement of any Bot product.
+- **The Lesson Learned:** Cite external learning; map it onto the harness you already run. A useful idea from X is still not a Live claim.
+
+---
+
 ## How This Journal Stays Honest
 
 - **Curated Milestones Only:** Focuses on substantive architectural decisions, not routine bug fixes.

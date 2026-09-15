@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Build Plain-English Visual Guide PDF (Playwright via Edge).
+"""Build Plain-English Visual Guide PDF (Playwright).
 
-Reads research/pdf-export/aea-framework-harness-engineering-visual-guide-2026-09-10.html
+Reads research/pdf-export/aea-framework-harness-engineering-visual-guide-2026-09-14.html
 and emits dated + canonical PDF copies.
+Prefers system Edge on Windows when present; otherwise Playwright Chromium (Linux box).
 """
 from __future__ import annotations
 
@@ -16,13 +17,12 @@ PDF_DIR = ROOT / "research" / "pdf-export"
 ARTIFACT_DIR = Path(r"C:\Users\claud\.gemini\antigravity\brain\9b179aea-00e2-4505-853b-9ccfa0c57ae0")
 
 PDF_DIR.mkdir(parents=True, exist_ok=True)
-ARTIFACT_DIR.mkdir(parents=True, exist_ok=True)
 
-HTML_DATED = PDF_DIR / "aea-framework-harness-engineering-visual-guide-2026-09-10.html"
+HTML_DATED = PDF_DIR / "aea-framework-harness-engineering-visual-guide-2026-09-14.html"
 HTML_CANON = PDF_DIR / "aea-framework-harness-engineering-visual-guide.html"
-PDF_DATED = PDF_DIR / "aea-framework-harness-engineering-visual-guide-2026-09-10.pdf"
+PDF_DATED = PDF_DIR / "aea-framework-harness-engineering-visual-guide-2026-09-14.pdf"
 PDF_CANON = PDF_DIR / "aea-framework-harness-engineering-visual-guide.pdf"
-PDF_ARTIFACT = ARTIFACT_DIR / "aea_framework_harness_engineering_visual_guide_2026_09_10.pdf"
+PDF_ARTIFACT = ARTIFACT_DIR / "aea_framework_harness_engineering_visual_guide_2026_09_14.pdf"
 
 EDGE = Path(r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe")
 
@@ -52,7 +52,15 @@ def main() -> int:
         browser.close()
 
     shutil.copy2(PDF_DATED, PDF_CANON)
-    shutil.copy2(PDF_DATED, PDF_ARTIFACT)
+    # Optional Windows antigravity artifact mirror (skip on Linux box)
+    if EDGE.is_file():
+        try:
+            ARTIFACT_DIR.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(PDF_DATED, PDF_ARTIFACT)
+            print(f"Copied to artifact: {PDF_ARTIFACT}")
+        except OSError as exc:
+            print(f"Artifact copy skipped: {exc}")
+
     print(f"Generated: {PDF_DATED}")
     print(f"Generated: {PDF_CANON}")
     return 0
